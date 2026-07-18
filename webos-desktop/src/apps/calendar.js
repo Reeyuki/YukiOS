@@ -4,6 +4,7 @@ import { KeybindManager } from "../keybindManager.js";
 import { os, StorageKeys } from "../framework.js";
 import { getWeekNumber } from "../shared/calendarUtils.js";
 import { subscribeTimeTick } from "../services/timeWorker.js";
+import { isTaskbarTop } from "../utils/utils.js";
 
 let calendarPopup = null;
 let currentCalendarMonth = new Date();
@@ -245,25 +246,32 @@ function positionCalendarPopup() {
     const popupRect = calendarPopup.getBoundingClientRect();
 
     const margin = 10;
-    let left = rect.left + rect.width / 2 - popupRect.width / 2;
-    let bottom = window.innerHeight - rect.top + 8;
-
-    if (left + popupRect.width > window.innerWidth - margin) {
-      left = window.innerWidth - popupRect.width - margin;
+    const isMac = isTaskbarTop();
+    if (isMac) {
+      calendarPopup.style.top = `${rect.bottom + 8}px`;
+      calendarPopup.style.bottom = "auto";
+      calendarPopup.style.right = `${window.innerWidth - rect.right}px`;
+      calendarPopup.style.left = "auto";
+    } else {
+      let bottom = window.innerHeight - rect.top + 8;
+      if (bottom + popupRect.height > window.innerHeight - margin) {
+        bottom = window.innerHeight - popupRect.height - margin;
+      }
+      if (bottom < margin) {
+        bottom = margin;
+      }
+      calendarPopup.style.bottom = `${bottom}px`;
+      calendarPopup.style.top = "auto";
+      let left = rect.left + rect.width / 2 - popupRect.width / 2;
+      if (left + popupRect.width > window.innerWidth - margin) {
+        left = window.innerWidth - popupRect.width - margin;
+      }
+      if (left < margin) {
+        left = margin;
+      }
+      calendarPopup.style.left = `${left}px`;
+      calendarPopup.style.right = "auto";
     }
-    if (left < margin) {
-      left = margin;
-    }
-    if (bottom + popupRect.height > window.innerHeight - margin) {
-      bottom = window.innerHeight - popupRect.height - margin;
-    }
-    if (bottom < margin) {
-      bottom = margin;
-    }
-
-    calendarPopup.style.left = `${left}px`;
-    calendarPopup.style.bottom = `${bottom}px`;
-    calendarPopup.style.top = "auto";
   });
 }
 

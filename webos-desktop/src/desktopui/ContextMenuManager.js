@@ -278,8 +278,8 @@ export class DesktopContextMenuManager {
         const mime = mimeMap[ext] || "application/octet-stream";
 
         const readAsDataUrl = async () => {
-          const binary = await os.fs.read([filePath, fileName], { encoding: "binary" });
-          const blob = new Blob([binary], { type: mime });
+          const blob = await os.fs.readBinaryFile(filePath, fileName);
+          if (!blob) return null;
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
@@ -361,8 +361,7 @@ export class DesktopContextMenuManager {
       },
       setWallpaper: () => {
         os.app.launch("settingsApp", {
-          section: "pane-appearance",
-          target: "settings-wallpaper-card"
+          section: "pane-appearance"
         });
       },
       background: () => {

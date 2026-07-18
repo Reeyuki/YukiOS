@@ -5,19 +5,15 @@ function getMenu() {
 }
 
 export function hideMenu() {
+  if (dismissHandler) {
+    document.removeEventListener("click", dismissHandler);
+    dismissHandler = null;
+  }
   const menu = getMenu();
   if (!menu) return;
   if (menu.classList.contains("closing")) return;
   menu.classList.add("closing");
-  menu.addEventListener(
-    "animationend",
-    () => {
-      if (!menu.classList.contains("closing")) return;
-      menu.classList.remove("closing");
-      menu.style.display = "none";
-    },
-    { once: true }
-  );
+  menu.style.display = "none";
 }
 
 export function positionMenu(menu, pageX, pageY) {
@@ -68,8 +64,24 @@ export function positionMenu(menu, pageX, pageY) {
   });
 }
 
+let dismissHandler = null;
+
 export function bindDismissal() {
-  document.addEventListener("click", () => hideMenu(), { once: true });
+  if (dismissHandler) {
+    document.removeEventListener("click", dismissHandler);
+    dismissHandler = null;
+  }
+
+  const handler = (e) => {
+    document.removeEventListener("click", handler);
+    if (dismissHandler === handler) dismissHandler = null;
+    hideMenu();
+  };
+  dismissHandler = handler;
+
+  setTimeout(() => {
+    document.addEventListener("click", handler);
+  }, 0);
 }
 
 export function refreshIcons(node = document) {
@@ -226,14 +238,16 @@ function setupKeyboardNav(menuEl) {
 
 function createItemElement(text, onclick, icon) {
   const el = document.createElement("div");
-  const iconVal = (icon || "fa-chevron-right").trim();
-  const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
-  const iconEl = document.createElement("i");
-  iconEl.className = iconCls;
-  iconEl.style.width = "16px";
-  iconEl.style.textAlign = "center";
-  iconEl.style.opacity = "0.7";
-  el.appendChild(iconEl);
+  if (icon) {
+    const iconVal = icon.trim();
+    const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
+    const iconEl = document.createElement("i");
+    iconEl.className = iconCls;
+    iconEl.style.width = "16px";
+    iconEl.style.textAlign = "center";
+    iconEl.style.opacity = "0.7";
+    el.appendChild(iconEl);
+  }
   const label = document.createElement("span");
   label.textContent = text;
   el.appendChild(label);

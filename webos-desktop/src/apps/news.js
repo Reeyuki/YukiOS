@@ -5,6 +5,69 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 19, 2026",
+    sections: [
+      {
+        icon: "fab fa-apple",
+        title: "Dock Customization",
+        items: [
+          [
+            "fab fa-apple",
+            "Dock Settings Panel",
+            "Customize your Mac dock with position, auto-hide, magnification amount and range, icon size, scale, and animation speed — all from Settings."
+          ],
+          [
+            "fa-arrows-alt",
+            "Dock Position & Auto-Hide",
+            "Move the dock to bottom, left, or right edge, and enable auto-hide for a cleaner desktop."
+          ],
+          [
+            "fa-search-plus",
+            "Adjustable Magnification",
+            "Control how much icons scale up on hover and how many adjacent icons are affected."
+          ]
+        ]
+      },
+      {
+        icon: "fa-th",
+        title: "Launchpad",
+        items: [
+          [
+            "fa-th",
+            "macOS Launchpad in Mac Mode",
+            "Browse every installed app in a fullscreen glass grid with instant search — pinned to the Dock in Mac Mode."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 18, 2026",
+    sections: [
+      {
+        icon: "fa-apple-whole",
+        title: "Mac Mode",
+        items: [
+          [
+            "fa-apple-whole",
+            "Mac Desktop Mode",
+            "Switch to a macOS-style desktop with a top menu bar, animated fisheye dock, and Control Center tray."
+          ],
+          [
+            "fa-sliders-h",
+            "Control Center",
+            "Replace cluttered tray icons with a single popup for brightness, volume, battery, power mode, dark mode, DND, and 6 accent colors."
+          ],
+          [
+            "fa-star",
+            "Mac Dock Improvements",
+            "Fisheye hover animation with smooth scale and push, right-click context menus, drag-to-reorder pinned items, and Audio Mixer dock item."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 15, 2026",
     sections: [
       {

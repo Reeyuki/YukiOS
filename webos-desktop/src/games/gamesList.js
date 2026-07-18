@@ -3,7 +3,7 @@ export const appMap = {
     type: "game",
     url: "https://itch.io/embed-upload/18311457?color=107d6f",
     icon: "/static/icons/seaSweeper.webp",
-    title: "Sea Sweeper: Idle Fisher"
+    title: "Abbys Angler"
   },
   angryBirds2: {
     type: "game",

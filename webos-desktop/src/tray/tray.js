@@ -2,6 +2,7 @@ import { showDynamicContextMenu } from "../shared/contextMenu.js";
 
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
+import { isTaskbarTop } from "../utils/utils.js";
 class TrayManager {
   constructor() {
     this.items = new Map();
@@ -296,7 +297,14 @@ class TrayManager {
     }
     this.updatePopupContent(items);
     const trayRect = this.el.getBoundingClientRect();
-    this.popupEl.style.bottom = `${window.innerHeight - trayRect.top + 6}px`;
+    const isMac = isTaskbarTop();
+    if (isMac) {
+      this.popupEl.style.top = `${trayRect.bottom + 6}px`;
+      this.popupEl.style.bottom = "auto";
+    } else {
+      this.popupEl.style.bottom = `${window.innerHeight - trayRect.top + 6}px`;
+      this.popupEl.style.top = "auto";
+    }
     this.popupEl.style.right = `${window.innerWidth - trayRect.right}px`;
     this.popupEl.style.display = "flex";
     this.popupEl.style.flexWrap = "wrap";

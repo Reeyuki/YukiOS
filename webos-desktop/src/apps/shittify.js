@@ -198,7 +198,9 @@ export class ShittifyApp extends BaseApp {
     contentDiv.innerHTML = loadingContent;
     win.appendChild(contentDiv);
 
-    os.tray.register(winId, SHITTIFY_ICON, "Evil Spotify", { showInTray: true, priority: 1 });
+    if (os.storage.get(StorageKeys.macOsControls) !== "true") {
+      os.tray.register(winId, SHITTIFY_ICON, "Evil Spotify", { showInTray: true, priority: 1 });
+    }
     audioMixer().registerWindow(
       winId,
       "Evil Spotify",

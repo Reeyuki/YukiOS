@@ -69,8 +69,15 @@ export function windowMakeDraggable(win, wm) {
             wobbleStart(win);
           }
 
-          const newLeft = clientX - dragOffsetX;
-          const newTop = clientY - dragOffsetY;
+          let newLeft = clientX - dragOffsetX;
+          let newTop = clientY - dragOffsetY;
+
+          if (getComputedStyle(win).position !== "fixed") {
+            const r = desktop.getBoundingClientRect();
+            newLeft -= r.left;
+            newTop -= r.top;
+          }
+
           win.style.left = `${newLeft}px`;
           win.style.top = `${newTop}px`;
 
@@ -222,8 +229,15 @@ export function windowMakeDraggable(win, wm) {
 
     const onMouseMove = (e) => {
       const { clientX, clientY } = getClientXY(e);
-      const newLeft = clientX - dragOffsetX;
-      const newTop = clientY - dragOffsetY;
+      let newLeft = clientX - dragOffsetX;
+      let newTop = clientY - dragOffsetY;
+
+      if (getComputedStyle(win).position !== "fixed") {
+        const r = desktop.getBoundingClientRect();
+        newLeft -= r.left;
+        newTop -= r.top;
+      }
+
       win.style.left = `${newLeft}px`;
       win.style.top = `${newTop}px`;
 

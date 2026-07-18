@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { BusEvents } from "../core/EventBus.js";
 import { updateGridConfig } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { applyTrayEnabled } from "./settingsApply.js";
@@ -14,7 +15,10 @@ import {
   applyUiDensity,
   applyDesktopIconSize,
   applyTaskbarScale,
-  applyVirtualResolution
+  applyVirtualResolution,
+  applyDockIconSize,
+  applyDockScale,
+  applyDockAnimationSpeed
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
@@ -103,7 +107,6 @@ export function bindNavigation(win) {
 export function bindSystemCategory(win, save, settings, notificationCenter, showSaved) {
   const systemSettings = [
     "#settingsWeather",
-    "#settingsMacControls",
     "#settingsClippy",
     "#settingsAchievements",
     "#settingsAnalytics",
@@ -163,6 +166,23 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
 export function bindDesktopCategory(win, save, settings, showSaved) {
   bindEvent($("#settingsDisableDesktopStretchScroll", win), "change", save);
   bindEvent($("#settingsShowWorkspace", win), "change", save);
+
+  const hideDesktopIconsToggle = $("#settingsHideDesktopIcons", win);
+  if (hideDesktopIconsToggle) {
+    bindEvent(hideDesktopIconsToggle, "change", () => {
+      const hideIcons = hideDesktopIconsToggle.checked;
+      settings.hideDesktopIcons = hideIcons;
+      os.storage.set(StorageKeys.hideDesktopIcons, String(hideIcons));
+
+      const desktopIcons = $$(".icon.selectable, .folder-icon, .desktop-file-icon");
+      if (hideIcons) {
+        desktopIcons.forEach((icon) => (icon.style.display = "none"));
+      } else {
+        desktopIcons.forEach((icon) => (icon.style.display = ""));
+      }
+      showSaved();
+    });
+  }
 
   const handleAlignmentClick = (alignment) => {
     $$(".settings-btn[data-alignment]", win).forEach((btn) => {
@@ -275,6 +295,132 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
       showSaved();
     });
   }
+
+  const dockEnabledToggle = $("#settingsDockEnabled", win);
+  if (dockEnabledToggle) {
+    bindEvent(dockEnabledToggle, "change", () => {
+      const enabled = dockEnabledToggle.checked;
+      settings.dockEnabled = enabled;
+      os.storage.set(StorageKeys.dockEnabled, String(enabled));
+      os.storage.set(StorageKeys.macOsControls, String(enabled));
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  $$(".settings-btn[data-dock-pos]", win).forEach((btn) => {
+    bindEvent(btn, "click", () => {
+      const pos = btn.dataset.dockPos;
+      $$(".settings-btn[data-dock-pos]", win).forEach((b) => toggleClass(b, "active", b === btn));
+      settings.dockPosition = pos;
+      os.storage.set(StorageKeys.dockPosition, pos);
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  });
+
+  const dockAutoHideToggle = $("#settingsDockAutoHide", win);
+  if (dockAutoHideToggle) {
+    bindEvent(dockAutoHideToggle, "change", () => {
+      settings.dockAutoHide = dockAutoHideToggle.checked;
+      os.storage.set(StorageKeys.dockAutoHide, String(dockAutoHideToggle.checked));
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  const dockMagnificationToggle = $("#settingsDockMagnification", win);
+  if (dockMagnificationToggle) {
+    bindEvent(dockMagnificationToggle, "change", () => {
+      settings.dockMagnification = dockMagnificationToggle.checked;
+      os.storage.set(StorageKeys.dockMagnification, String(dockMagnificationToggle.checked));
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  const magAmountSlider = $("#settingsDockMagnifyAmount", win);
+  const magAmountValue = $("#settingsDockMagnifyAmountValue", win);
+  if (magAmountSlider) {
+    bindEvent(magAmountSlider, "input", () => {
+      if (magAmountValue)
+        setText(magAmountValue, `${parseFloat(getRangeSliderValue("settingsDockMagnifyAmount", win)).toFixed(1)}x`);
+    });
+    bindEvent(magAmountSlider, "change", () => {
+      const val = parseFloat(getRangeSliderValue("settingsDockMagnifyAmount", win));
+      settings.dockMagnifyAmount = val;
+      os.storage.set(StorageKeys.dockMagnifyAmount, String(val));
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  const magRangeSlider = $("#settingsDockMagnifyRange", win);
+  const magRangeValue = $("#settingsDockMagnifyRangeValue", win);
+  if (magRangeSlider) {
+    bindEvent(magRangeSlider, "input", () => {
+      if (magRangeValue) setText(magRangeValue, `${parseInt(getRangeSliderValue("settingsDockMagnifyRange", win))}`);
+    });
+    bindEvent(magRangeSlider, "change", () => {
+      const val = parseInt(getRangeSliderValue("settingsDockMagnifyRange", win));
+      settings.dockMagnifyRange = val;
+      os.storage.set(StorageKeys.dockMagnifyRange, String(val));
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  const dockIconSizeSlider = $("#settingsDockIconSize", win);
+  const dockIconSizeValue = $("#settingsDockIconSizeValue", win);
+  if (dockIconSizeSlider) {
+    bindEvent(dockIconSizeSlider, "input", () => {
+      if (dockIconSizeValue) setText(dockIconSizeValue, `${getRangeSliderValue("settingsDockIconSize", win)}px`);
+    });
+    bindEvent(dockIconSizeSlider, "change", () => {
+      const val = parseInt(getRangeSliderValue("settingsDockIconSize", win));
+      settings.dockIconSize = val;
+      os.storage.set(StorageKeys.dockIconSize, String(val));
+      applyDockIconSize(val);
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  const dockScaleSlider = $("#settingsDockScale", win);
+  const dockScaleValue = $("#settingsDockScaleValue", win);
+  if (dockScaleSlider) {
+    bindEvent(dockScaleSlider, "input", () => {
+      if (dockScaleValue) setText(dockScaleValue, `${getRangeSliderValue("settingsDockScale", win)}%`);
+    });
+    bindEvent(dockScaleSlider, "change", () => {
+      const val = parseInt(getRangeSliderValue("settingsDockScale", win));
+      settings.dockScale = val;
+      os.storage.set(StorageKeys.dockScale, String(val));
+      applyDockScale(val);
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
+
+  const dockAnimSpeedSlider = $("#settingsDockAnimationSpeed", win);
+  const dockAnimSpeedValue = $("#settingsDockAnimationSpeedValue", win);
+  if (dockAnimSpeedSlider) {
+    bindEvent(dockAnimSpeedSlider, "input", () => {
+      if (dockAnimSpeedValue)
+        setText(
+          dockAnimSpeedValue,
+          `${parseFloat(getRangeSliderValue("settingsDockAnimationSpeed", win)).toFixed(2)}s`
+        );
+    });
+    bindEvent(dockAnimSpeedSlider, "change", () => {
+      const val = parseFloat(getRangeSliderValue("settingsDockAnimationSpeed", win));
+      settings.dockAnimationSpeed = val;
+      os.storage.set(StorageKeys.dockAnimationSpeed, String(val));
+      applyDockAnimationSpeed(val);
+      showSaved();
+      os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
+    });
+  }
 }
 
 export function bindAppearanceCategory(
@@ -290,7 +436,6 @@ export function bindAppearanceCategory(
   normalizeCursorDataUrl,
   showCustomColorsDialog
 ) {
-  bindEvent($("#settingsMacControls", win), "change", save);
   bindEvent($("#settingsCycleWallpaper", win), "change", save);
 
   const resolutionSelect = $("#settingsResolution", win);
@@ -791,7 +936,6 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
   bindEvent($("#btnResetSaved", win), "click", () => {
     $("#settingsWeather", win).checked = settings.weather;
     $("#settingsCycleWallpaper", win).checked = settings.cycleWallpaper;
-    $("#settingsMacControls", win).checked = settings.macOsControls;
     $("#settingsClippy", win).checked = settings.clippy;
     $("#settingsAchievements", win).checked = !settings.achievementsDisabled;
     $("#settingsAnalytics", win).checked = !settings.analyticsDisabled;
@@ -814,7 +958,6 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
 
     $("#settingsWeather", win).checked = true;
     $("#settingsCycleWallpaper", win).checked = true;
-    $("#settingsMacControls", win).checked = false;
     $("#settingsClippy", win).checked = false;
     $("#settingsAchievements", win).checked = true;
     $("#settingsAnalytics", win).checked = true;

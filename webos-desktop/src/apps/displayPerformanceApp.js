@@ -2,9 +2,9 @@ import { turboManager } from "../shared/turboManager.js";
 import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
+import { isTaskbarTop } from "../utils/utils.js";
 
 class DisplayPerformanceApp extends BaseApp {
   constructor(services) {
@@ -114,6 +114,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   initTray() {
+    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
     this.registerTray(this.winId, this.getBatteryIcon(), "Display & Performance", {
       resident: true,
       showInTray: true,
@@ -406,22 +407,13 @@ class DisplayPerformanceApp extends BaseApp {
               <span class="brightness-value">${this.getTemperatureLabel(this.temperature)}</span>
             </div>
           </div>
-          <div class="brightness-presets-row">
-            <button class="brightness-preset-btn" data-preset="default" title="Default"><i class="fas fa-circle"></i></button>
-            <button class="brightness-preset-btn" data-preset="reading" title="Reading"><i class="fas fa-book"></i></button>
-            <button class="brightness-preset-btn" data-preset="cinema" title="Cinema"><i class="fas fa-film"></i></button>
-            <button class="brightness-preset-btn" data-preset="nightCoding" title="Night Coding"><i class="fas fa-moon"></i></button>
-            <button class="brightness-preset-btn" data-preset="softWarm" title="Soft Warm"><i class="fas fa-sun"></i></button>
-            <button class="brightness-preset-btn" data-preset="highClarity" title="High Clarity"><i class="fas fa-eye"></i></button>
-          </div>
         </div>
 
         <div class="display-performance-divider"></div>
 
         <div class="display-performance-section">
-          <div class="display-performance-advanced-toggle" id="display-performance-advanced-toggle">
-            <i class="fas fa-battery"></i>
-            <span>Advanced</span>
+          <div class="display-performance-advanced-toggle display-performance-advanced-toggle--compact" id="display-performance-advanced-toggle">
+            <span>Advanced ▾</span>
           </div>
           <div class="display-performance-advanced-section" id="display-performance-advanced-section" style="display: none;">
             <div class="brightness-advanced-row">
@@ -435,6 +427,14 @@ class DisplayPerformanceApp extends BaseApp {
                 <input type="range" id="gamma-slider" class="brightness-advanced-slider" min="0.5" max="2" step="0.05" value="${this.gamma}" />
                 <span class="brightness-value">${this.gamma.toFixed(2)}</span>
               </div>
+            </div>
+            <div class="brightness-presets-row">
+              <button class="brightness-preset-btn" data-preset="default" title="Default"><i class="fas fa-circle"></i></button>
+              <button class="brightness-preset-btn" data-preset="reading" title="Reading"><i class="fas fa-book"></i></button>
+              <button class="brightness-preset-btn" data-preset="cinema" title="Cinema"><i class="fas fa-film"></i></button>
+              <button class="brightness-preset-btn" data-preset="nightCoding" title="Night Coding"><i class="fas fa-moon"></i></button>
+              <button class="brightness-preset-btn" data-preset="softWarm" title="Soft Warm"><i class="fas fa-sun"></i></button>
+              <button class="brightness-preset-btn" data-preset="highClarity" title="High Clarity"><i class="fas fa-eye"></i></button>
             </div>
             <div class="brightness-night-mode-row">
               <span>Night Mode</span>
@@ -457,10 +457,19 @@ class DisplayPerformanceApp extends BaseApp {
     document.body.appendChild(popup);
 
     const trayEl = document.getElementById("app-tray");
-    const trayRect = trayEl ? trayEl.getBoundingClientRect() : { right: 16, top: window.innerHeight - 48 };
+    const trayRect = trayEl
+      ? trayEl.getBoundingClientRect()
+      : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
 
     popup.style.right = `${window.innerWidth - trayRect.right}px`;
-    popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+    const isMac = isTaskbarTop();
+    if (isMac) {
+      popup.style.top = `${trayRect.bottom + 8}px`;
+      popup.style.bottom = "auto";
+    } else {
+      popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+      popup.style.top = "auto";
+    }
     popup.style.display = "block";
 
     this.popupVisible = true;
@@ -562,7 +571,7 @@ class DisplayPerformanceApp extends BaseApp {
       advancedToggle.addEventListener("click", () => {
         const isHidden = advancedSection.style.display === "none";
         advancedSection.style.display = isHidden ? "flex" : "none";
-        advancedToggle.querySelector("span").textContent = isHidden ? "Advanced ▲" : "Advanced ▼";
+        advancedToggle.querySelector("span").textContent = isHidden ? "Advanced ▴" : "Advanced ▾";
       });
     }
 

@@ -514,62 +514,8 @@
   transform: scale(0.98);
 }
 
-.ntf-tray-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.2s;
-  border-radius: 4px;
-}
-
-.ntf-tray-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.ntf-tray-btn.active {
+.tray-icon-btn[data-win-id="notification"].active {
   background: rgba(0, 120, 215, 0.25);
-}
-
-.ntf-tray-btn svg {
-  width: 24px;
-  height: 24px;
-  fill: #e0e0e0;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
-}
-
-.ntf-tray-btn:hover svg {
-  fill: #ffffff;
-}
-
-.ntf-count {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  background: #f38ba8;
-  color: #11111b;
-  border-radius: 10px;
-  min-width: 18px;
-  height: 18px;
-  font-size: 10px;
-  font-weight: 700;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  box-shadow: 0 4px 10px rgba(243, 139, 168, 0.4);
-  border: 1.5px solid #1e1e2e;
-  animation: pulse-badge 2s infinite;
-}
-
-.ntf-count--hidden {
-  display: none;
-}
-
-.ntf-count--visible {
-  display: flex;
 }
 
 .ntf-panel--closed {
@@ -580,20 +526,6 @@
   width: 16px;
   height: 16px;
   object-fit: cover;
-}
-
-.ntf-dnd-line {
-  stroke: var(--text-secondary);
-}
-
-@keyframes pulse-badge {
-  0%,
-  100% {
-    box-shadow: 0 4px 10px rgba(243, 139, 168, 0.4);
-  }
-  50% {
-    box-shadow: 0 4px 14px rgba(243, 139, 168, 0.7);
-  }
 }
 
 html[data-theme] #ntf-panel {
@@ -823,4 +755,146 @@ html[data-theme] .ntf-toast__close:hover {
 
 html[data-theme="light"] .ntf-toast__progress {
   background: var(--brand, oklch(55% 0.11 264));
+}
+
+@keyframes toastInMac {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mac-mode .ntf-toast-container {
+  top: 70px;
+  bottom: auto;
+}
+
+.mac-mode .ntf-toast-container--bottom-right {
+  top: 70px;
+  bottom: auto;
+  right: 20px;
+  left: auto;
+}
+
+.mac-mode .ntf-toast-container--bottom-left {
+  top: 70px;
+  bottom: auto;
+  left: 20px;
+  right: auto;
+}
+
+.mac-mode .ntf-toast-container--top-right {
+  top: 70px;
+  bottom: auto;
+  right: 20px;
+  left: auto;
+}
+
+.mac-mode .ntf-toast-container--top-left {
+  top: 70px;
+  bottom: auto;
+  left: 20px;
+  right: auto;
+}
+
+.mac-mode .ntf-toast,
+html[data-theme].mac-mode .ntf-toast {
+  animation-name: toastInMac;
+  background: rgb(28 28 32 / 60%) !important;
+  backdrop-filter: blur(40px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+.mac-mode .ntf-toast__glyph-wrap,
+html[data-theme].mac-mode .ntf-toast__glyph-wrap {
+  background: rgb(28 28 32 / 62%) !important;
+}
+
+.mac-mode .ntf-toast__close:hover,
+html[data-theme].mac-mode .ntf-toast__close:hover {
+  background: rgb(28 28 32 / 65%) !important;
+}
+
+.mac-mode #ntf-panel,
+html[data-theme].mac-mode #ntf-panel {
+  top: calc(var(--taskbar-h) + 12px);
+  bottom: auto;
+  max-height: calc(100vh - var(--taskbar-h) - 60px);
+  background: rgb(28 28 32 / 60%) !important;
+  backdrop-filter: blur(40px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+.mac-mode .ntf-panel__head,
+html[data-theme].mac-mode .ntf-panel__head {
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .ntf-panel__dnd,
+html[data-theme].mac-mode .ntf-panel__dnd {
+  background: rgb(28 28 32 / 55%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.mac-mode .ntf-panel__dnd:hover,
+html[data-theme].mac-mode .ntf-panel__dnd:hover {
+  background: rgb(28 28 32 / 65%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.mac-mode .ntf-panel__dismiss:hover,
+html[data-theme].mac-mode .ntf-panel__dismiss:hover {
+  background: rgb(28 28 32 / 62%) !important;
+}
+
+.mac-mode .ntf-card,
+html[data-theme].mac-mode .ntf-card {
+  background: rgb(28 28 32 / 55%) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .ntf-card:hover,
+html[data-theme].mac-mode .ntf-card:hover {
+  background: rgb(28 28 32 / 65%) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.mac-mode .ntf-card__glyph-wrap,
+html[data-theme].mac-mode .ntf-card__glyph-wrap {
+  background: rgb(28 28 32 / 62%) !important;
+}
+
+.mac-mode .ntf-card__remove:hover,
+html[data-theme].mac-mode .ntf-card__remove:hover {
+  background: rgb(28 28 32 / 62%) !important;
+}
+
+.mac-mode .ntf-panel__foot,
+html[data-theme].mac-mode .ntf-panel__foot {
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .ntf-purge-btn,
+html[data-theme].mac-mode .ntf-purge-btn {
+  background: rgb(28 28 32 / 55%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.mac-mode .ntf-purge-btn:hover,
+html[data-theme].mac-mode .ntf-purge-btn:hover {
+  background: rgb(28 28 32 / 65%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }

@@ -3,16 +3,7 @@ import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { getSetting } from "./shared/settingsUtils.js";
-import {
-  $,
-  createElement,
-  setHTML,
-  setText,
-  toggleClass,
-  addClass,
-  removeClass,
-  setClasses
-} from "./shared/domUtils.js";
+import { $, createElement, setHTML, toggleClass, addClass, removeClass } from "./shared/domUtils.js";
 
 import { APP_MANIFESTS, StorageKeys, os } from "./framework.js";
 function escapeHtml(str) {
@@ -47,7 +38,7 @@ export class NotificationCenter {
     this.notificationId = 0;
     this.doNotDisturb = this.loadDoNotDisturb();
     this.createNotificationCenterUI();
-    this.setupTaskbarButton();
+    this.initTrayEntry();
     this.updateDoNotDisturbUI();
   }
 
@@ -110,31 +101,49 @@ export class NotificationCenter {
     });
   }
 
-  setupTaskbarButton() {
-    const systemTray = $("#system-tray");
-    if (!systemTray) return;
+  initTrayEntry() {
+    this.notificationWinId = "notification";
+    this.updateTrayPresence();
+  }
 
-    const notificationBtn = createElement("div", {
-      id: "ntf-tray-btn",
-      className: "ntf-tray-btn",
-      attributes: { title: "Notification Center" }
+  updateTrayPresence() {
+    const totalCount = this.notifications.length + this.snoozedNotifications.length;
+    const hasItems = totalCount > 0;
+
+    if (hasItems) {
+      if (!os.tray.isRegistered(this.notificationWinId)) {
+        os.tray.register(this.notificationWinId, "fas fa-bell", "Notifications", {
+          showInTray: true,
+          onClick: () => this.toggleCenter()
+        });
+        this.updateTrayIcon();
+      }
+    } else {
+      if (os.tray.isRegistered(this.notificationWinId)) {
+        os.tray.unregister(this.notificationWinId);
+      }
+    }
+
+    requestAnimationFrame(() => {
+      if (this.isOpen) {
+        const btn = document.querySelector(`[data-win-id="${this.notificationWinId}"]`);
+        if (btn) btn.classList.add("active");
+      }
     });
+  }
 
-    setHTML(
-      notificationBtn,
-      `
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-      </svg>
-      <span class="ntf-count ntf-count--hidden">0</span>
-    `
-    );
+  updateTrayIcon() {
+    if (os.tray.isRegistered(this.notificationWinId)) {
+      const icon = this.doNotDisturb ? "fas fa-bell-slash" : "fas fa-bell";
+      os.tray.updateIcon(this.notificationWinId, icon);
+    }
+  }
 
-    notificationBtn.addEventListener("click", () => {
-      this.toggleCenter();
-    });
-
-    systemTray.insertBefore(notificationBtn, systemTray.lastChild);
+  updateTrayActiveState() {
+    const btn = document.querySelector(`[data-win-id="${this.notificationWinId}"]`);
+    if (btn) {
+      btn.classList.toggle("active", this.isOpen);
+    }
   }
 
   addNotification(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
@@ -174,7 +183,7 @@ export class NotificationCenter {
     this.notifications.unshift(notification);
     this.enforceMaxNotifications();
     this.updateNotificationCenter();
-    this.updateBadge();
+    this.updateTrayPresence();
     this.showToast(notification);
 
     return notification.id;
@@ -346,14 +355,14 @@ export class NotificationCenter {
     this.notifications = this.notifications.filter((n) => n.id !== id);
     this.snoozedNotifications = this.snoozedNotifications.filter((n) => n.id !== id);
     this.updateNotificationCenter();
-    this.updateBadge();
+    this.updateTrayPresence();
   }
 
   clearAllNotifications() {
     this.notifications = [];
     this.snoozedNotifications = [];
     this.updateNotificationCenter();
-    this.updateBadge();
+    this.updateTrayPresence();
   }
 
   updateNotificationCenter() {
@@ -439,24 +448,6 @@ export class NotificationCenter {
     });
   }
 
-  updateBadge() {
-    const badge = $(".ntf-count");
-    if (!badge) return;
-
-    if (this.doNotDisturb) {
-      removeClass(badge, "ntf-count--visible");
-      return;
-    }
-
-    const count = this.notifications.length;
-    if (count > 0) {
-      setText(badge, count > 99 ? "99+" : count);
-      addClass(badge, "ntf-count--visible");
-    } else {
-      removeClass(badge, "ntf-count--visible");
-    }
-  }
-
   toggleCenter() {
     if (this.isOpen) {
       this.closeCenter();
@@ -474,8 +465,7 @@ export class NotificationCenter {
     addClass(center, "open");
     this.isOpen = true;
 
-    const btn = $("#ntf-tray-btn");
-    if (btn) addClass(btn, "active");
+    this.updateTrayActiveState();
   }
 
   closeCenter() {
@@ -490,8 +480,7 @@ export class NotificationCenter {
     }, 300);
     this.isOpen = false;
 
-    const btn = $("#ntf-tray-btn");
-    if (btn) removeClass(btn, "active");
+    this.updateTrayActiveState();
   }
 
   setDoNotDisturb(enabled) {
@@ -510,7 +499,7 @@ export class NotificationCenter {
 
     this.updateDoNotDisturbUI();
     this.updateNotificationCenter();
-    this.updateBadge();
+    this.updateTrayPresence();
   }
 
   loadDoNotDisturb() {
@@ -535,24 +524,7 @@ export class NotificationCenter {
     const dndBtn = $(".ntf-panel__dnd");
     if (dndBtn) toggleClass(dndBtn, "active", this.doNotDisturb);
 
-    const trayBtn = $("#ntf-tray-btn");
-    if (trayBtn) {
-      toggleClass(trayBtn, "ntf-tray-btn--dnd", this.doNotDisturb);
-      const svg = $("svg", trayBtn);
-      if (svg) {
-        if (this.doNotDisturb) {
-          setHTML(
-            svg,
-            `<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/><line x1="2" y1="2" x2="22" y2="22" class="ntf-dnd-line" stroke-width="2"/>`
-          );
-        } else {
-          setHTML(
-            svg,
-            `<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>`
-          );
-        }
-      }
-    }
+    this.updateTrayIcon();
   }
 
   formatTime(date) {

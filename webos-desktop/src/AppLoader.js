@@ -26,6 +26,7 @@ import { DisplayPerformanceApp } from "./apps/displayPerformanceApp.js";
 import { NetworkTrayApp } from "./tray/networkTray.js";
 import { EmojiSelectorApp } from "./apps/emojiSelector.js";
 import { SystemAppsApp } from "./apps/systemApps.js";
+import { LaunchpadApp } from "./apps/launchpad.js";
 import { RhythmsApp } from "./apps/rhythms.js";
 import { BrowserApp } from "./apps/browser.js";
 import { YoutubeApp } from "./apps/youtube.js";
@@ -42,6 +43,7 @@ import { DiscordApp } from "./apps/discord.js";
 import { RobloxApp } from "./apps/roblox.js";
 import { WallpaperEngineApp } from "./apps/wallpaperEngine.js";
 import { RunApp } from "./apps/run.js";
+import { NotepadApp } from "./apps/notepad.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -70,6 +72,7 @@ const APP_CLASS_MAP = {
   networkTrayApp: NetworkTrayApp,
   emojiSelectorApp: EmojiSelectorApp,
   systemAppsApp: SystemAppsApp,
+  launchpadApp: LaunchpadApp,
   rhythmsApp: RhythmsApp,
   browserApp: BrowserApp,
   youtubeApp: YoutubeApp,
@@ -85,7 +88,8 @@ const APP_CLASS_MAP = {
   discordApp: DiscordApp,
   robloxApp: RobloxApp,
   wallpaperEngineApp: WallpaperEngineApp,
-  runApp: RunApp
+  runApp: RunApp,
+  notepadApp: NotepadApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

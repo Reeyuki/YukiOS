@@ -129,6 +129,10 @@
   --z-overlay: 9999;
 }
 
+html.mac-mode {
+  --font-ui: "SF Pro Display", "Poppins", sans-serif;
+}
+
 *,
 *::before,
 *::after {
@@ -1496,7 +1500,6 @@ html.transparent-ui[data-theme="cherry"] .window,
 html.transparent-ui[data-theme="github-light"] .window,
 html.transparent-ui[data-theme="minimal-gray"] .window,
 html.transparent-ui[data-theme="paper"] .window,
-html.transparent-ui[data-theme="macos-fluent"] .window,
 html.transparent-ui[data-theme="windows-fluent"] .window,
 html.transparent-ui[data-theme="material-you"] .window,
 html.transparent-ui[data-theme="sepia"] .window,
@@ -1510,7 +1513,6 @@ html.transparent-ui[data-theme="cherry"] .window-header,
 html.transparent-ui[data-theme="github-light"] .window-header,
 html.transparent-ui[data-theme="minimal-gray"] .window-header,
 html.transparent-ui[data-theme="paper"] .window-header,
-html.transparent-ui[data-theme="macos-fluent"] .window-header,
 html.transparent-ui[data-theme="windows-fluent"] .window-header,
 html.transparent-ui[data-theme="material-you"] .window-header,
 html.transparent-ui[data-theme="sepia"] .window-header,
@@ -1524,7 +1526,6 @@ html.transparent-ui[data-theme="cherry"] .window-content,
 html.transparent-ui[data-theme="github-light"] .window-content,
 html.transparent-ui[data-theme="minimal-gray"] .window-content,
 html.transparent-ui[data-theme="paper"] .window-content,
-html.transparent-ui[data-theme="macos-fluent"] .window-content,
 html.transparent-ui[data-theme="windows-fluent"] .window-content,
 html.transparent-ui[data-theme="material-you"] .window-content,
 html.transparent-ui[data-theme="sepia"] .window-content,
@@ -1538,7 +1539,6 @@ html.transparent-ui[data-theme="cherry"] #taskbar,
 html.transparent-ui[data-theme="github-light"] #taskbar,
 html.transparent-ui[data-theme="minimal-gray"] #taskbar,
 html.transparent-ui[data-theme="paper"] #taskbar,
-html.transparent-ui[data-theme="macos-fluent"] #taskbar,
 html.transparent-ui[data-theme="windows-fluent"] #taskbar,
 html.transparent-ui[data-theme="material-you"] #taskbar,
 html.transparent-ui[data-theme="sepia"] #taskbar,
@@ -1552,13 +1552,28 @@ html.transparent-ui[data-theme="cherry"] .start-menu,
 html.transparent-ui[data-theme="github-light"] .start-menu,
 html.transparent-ui[data-theme="minimal-gray"] .start-menu,
 html.transparent-ui[data-theme="paper"] .start-menu,
-html.transparent-ui[data-theme="macos-fluent"] .start-menu,
 html.transparent-ui[data-theme="windows-fluent"] .start-menu,
 html.transparent-ui[data-theme="material-you"] .start-menu,
 html.transparent-ui[data-theme="sepia"] .start-menu,
 html.transparent-ui[data-theme="sakura"] .start-menu,
 html.transparent-ui[data-theme="solarized-light"] .start-menu {
   background: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.transparent-ui[data-theme="macos-fluent"] .window {
+  background: rgba(0, 0, 0, 0.55) !important;
+}
+html.transparent-ui[data-theme="macos-fluent"] .window-header {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+html.transparent-ui[data-theme="macos-fluent"] .window-content {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+html.transparent-ui[data-theme="macos-fluent"] #taskbar {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+html.transparent-ui[data-theme="macos-fluent"] .start-menu {
+  background: rgba(0, 0, 0, 0.5) !important;
 }
 
 html[data-theme] .start-menu-item {

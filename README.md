@@ -25,15 +25,14 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ![Login page](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/login.png)
 ![Steam interface](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png)
 ![Start menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)
+![Mac OS mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png)
 ![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)
 ![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png)
-![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
-![Setup](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/setupsettings.png)
 ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png)
 ![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
-![Music player](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/music.png)
 [Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
 [Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
+![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
 
 # Desktop Experience
 
@@ -62,6 +61,16 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
   YouTube embed, photo frame slideshow, timer/stopwatch
 - Automatically saves and restores open apps, window positions and sizes, workspace assignments, scroll positions,
   window states (minimized, fullscreen, snapped), focus order
+
+# 🍎 Mac Desktop Mode
+
+Switchable macOS-style desktop from the session picker with a top menu bar, animated dock, and Control Center tray.
+
+- Top menu bar opening Start Menu and Finder through Help items and macos categories
+- Animated fisheye dock where pinned apps scale and push neighbors on hover, open apps pin automatically, and items are draggable to reorder
+- Control Center tray with brightness, volume, battery, power mode, dark mode, dock toggle, accent colors and lock screen
+- macOS-style traffic light window buttons on all window headers
+- Launchpad: fullscreen app grid with F4 keybind, glassmorphism backdrop, live search, slide-from-dock animation, and bigger icons on hover, pinned to the Dock in Mac Mode
 
 # 🧭 Navigation & UI
 

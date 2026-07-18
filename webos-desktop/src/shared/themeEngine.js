@@ -162,7 +162,7 @@ const BUILTIN_THEMES = [
     icon: "fab fa-apple",
     label: "MacOS Fluent",
     category: "special",
-    preview: "linear-gradient(135deg, #007aff, #5856d6)"
+    preview: "linear-gradient(135deg, #1a1a2e, #16213e)"
   },
   {
     value: "windows-fluent",

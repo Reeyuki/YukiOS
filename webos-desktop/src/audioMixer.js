@@ -1,6 +1,7 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { StorageKeys, os } from "./framework.js";
+import { isTaskbarTop } from "./utils/utils.js";
 export const SystemAudio = Object.freeze({
   START: "static/audio/start.opus",
   SHUTDOWN: "static/audio/shutdown.opus",
@@ -689,18 +690,29 @@ class AudioMixer {
       const panelW = 280;
       let left = btnRect.right - panelW;
       if (left < 8) left = 8;
-      const bottom = window.innerHeight - btnRect.top + 6;
+      const isMac = isTaskbarTop();
+      if (isMac) {
+        this.panel.style.top = `${btnRect.bottom + 6}px`;
+        this.panel.style.bottom = "auto";
+      } else {
+        this.panel.style.bottom = `${window.innerHeight - btnRect.top + 6}px`;
+        this.panel.style.top = "auto";
+      }
       this.panel.style.left = `${left}px`;
-      this.panel.style.bottom = `${bottom}px`;
-      this.panel.style.top = "auto";
     } else {
       const trayEl = document.getElementById("app-tray");
       if (trayEl) {
         const trayRect = trayEl.getBoundingClientRect();
         this.panel.style.right = `${window.innerWidth - trayRect.right}px`;
-        this.panel.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+        const isMac = isTaskbarTop();
+        if (isMac) {
+          this.panel.style.top = `${trayRect.bottom + 8}px`;
+          this.panel.style.bottom = "auto";
+        } else {
+          this.panel.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+          this.panel.style.top = "auto";
+        }
         this.panel.style.left = "auto";
-        this.panel.style.top = "auto";
       } else {
         this.panel.style.right = "16px";
         this.panel.style.bottom = "48px";

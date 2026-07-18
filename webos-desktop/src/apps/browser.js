@@ -49,7 +49,7 @@ export class BrowserApp extends BaseApp {
 
     const title = isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser";
     const win = os.window.create(winId, title, "1024px", "630px", {
-      icon: "fas fa-globe",
+      icon: "static/icons/firefox.webp",
       appId: "browserApp",
       skipHeader: true
     });

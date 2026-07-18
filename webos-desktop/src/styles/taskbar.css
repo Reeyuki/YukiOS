@@ -410,15 +410,6 @@ html[data-theme="light"] .tray-overflow-btn:hover {
   color: #111 !important;
 }
 
-html[data-theme="light"] .ntf-tray-btn {
-  color: rgba(0, 0, 0, 0.75) !important;
-}
-
-html[data-theme="light"] .ntf-tray-btn:hover {
-  background: rgba(0, 0, 0, 0.08) !important;
-  color: #111 !important;
-}
-
 html[data-theme="light"] .desktop-peek-btn {
   color: rgba(0, 0, 0, 0.75) !important;
 }
@@ -430,11 +421,6 @@ html[data-theme="light"] .desktop-peek-btn:hover {
 
 html[data-theme="light"] .desktop-peek-btn.active {
   background: rgba(0, 0, 0, 0.15) !important;
-}
-
-html[data-theme="light"] .ntf-count {
-  background: var(--brand) !important;
-  color: #fff !important;
 }
 
 html[data-theme="light"] .taskbar-item {
@@ -570,6 +556,10 @@ html[data-theme="light"] .tray-popup-item:hover {
 
 .desktop-peek-btn.active svg {
   opacity: 1;
+}
+
+html.mac-mode .desktop-peek-btn {
+  display: none;
 }
 
 .tray-icon-btn,
@@ -732,6 +722,39 @@ html[data-theme="light"] .tray-popup-item:hover {
   to {
     opacity: 0;
     transform: translateY(30px);
+  }
+}
+
+@keyframes trayPopupInMac {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes trayPopupInMacBig {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes trayPopupOutMac {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-30px);
   }
 }
 
@@ -2196,4 +2219,692 @@ html[data-theme="light"] .network-badge {
 
 html[data-theme="light"] .taskbar-scroll-indicator-thumb {
   background: rgba(0, 0, 0, 0.2);
+}
+
+#mac-menu-bar {
+  display: none;
+}
+
+.mac-mode #taskbar-windows {
+  display: none !important;
+}
+
+.mac-mode #taskbar {
+  --taskbar-h: 2.1em;
+  z-index: 20001 !important;
+  background: rgb(28 28 32 / 60%) !important;
+  backdrop-filter: blur(40px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+  justify-content: flex-end !important;
+}
+
+.mac-mode #mac-menu-bar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-right: auto;
+  gap: 0;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.mac-mode .mac-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 100%;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 4px;
+  transition: background 0.12s ease;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+
+.mac-mode .mac-menu-item.mac-menu-apple {
+  width: 48px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.mac-mode .mac-menu-item.mac-menu-apple:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mac-mode .mac-menu-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mac-mode .mac-menu-item.mac-menu-apple:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mac-mode .mac-menu-item:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mac-mode #start-button {
+  display: none !important;
+}
+
+html[data-theme="light"].mac-mode #taskbar,
+html[data-theme].mac-mode[data-theme-mode="light"] #taskbar {
+  background: rgba(235, 235, 238, 0.82) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+html[data-theme="light"].mac-mode .mac-menu-item,
+html[data-theme].mac-mode[data-theme-mode="light"] .mac-menu-item {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+html[data-theme="light"].mac-mode .mac-menu-item:hover,
+html[data-theme].mac-mode[data-theme-mode="light"] .mac-menu-item:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"].mac-mode .mac-menu-item:active,
+html[data-theme].mac-mode[data-theme-mode="light"] .mac-menu-item:active {
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.mac-mode #tray-overflow-popup {
+  animation-name: trayPopupInMac !important;
+}
+
+.mac-mode #clipboard-tray-popup {
+  animation-name: trayPopupInMacBig !important;
+}
+
+.mac-mode #clipboard-tray-popup.closing {
+  animation-name: trayPopupOutMac !important;
+}
+
+.mac-mode #brightness-tray-popup {
+  animation-name: trayPopupInMacBig !important;
+}
+
+.mac-mode #brightness-tray-popup.closing {
+  animation-name: trayPopupOutMac !important;
+}
+
+.mac-mode #display-performance-tray-popup {
+  animation-name: trayPopupInMacBig !important;
+}
+
+.mac-mode #display-performance-tray-popup.closing {
+  animation-name: trayPopupOutMac !important;
+}
+
+.mac-mode #network-tray-popup,
+html[data-theme].mac-mode #network-tray-popup {
+  animation-name: trayPopupInMacBig !important;
+  background: rgb(28 28 32 / 60%) !important;
+  backdrop-filter: blur(40px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+.mac-mode #network-tray-popup.closing,
+html[data-theme].mac-mode #network-tray-popup.closing {
+  animation-name: trayPopupOutMac !important;
+}
+
+.mac-mode .network-header,
+html[data-theme].mac-mode .network-header {
+  background: transparent !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .network-item:hover,
+html[data-theme].mac-mode .network-item:hover {
+  background: rgb(28 28 32 / 62%) !important;
+}
+
+.mac-mode .network-item.connected,
+html[data-theme].mac-mode .network-item.connected {
+  background: rgb(28 28 32 / 65%) !important;
+  border-color: var(--brand) !important;
+}
+
+.mac-mode .network-item.connecting,
+html[data-theme].mac-mode .network-item.connecting {
+  background: rgb(28 28 32 / 55%) !important;
+}
+
+.mac-mode .network-footer,
+html[data-theme].mac-mode .network-footer {
+  background: transparent !important;
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .network-settings-btn,
+html[data-theme].mac-mode .network-settings-btn {
+  background: rgb(28 28 32 / 55%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.mac-mode .network-settings-btn:hover,
+html[data-theme].mac-mode .network-settings-btn:hover {
+  background: rgb(28 28 32 / 65%) !important;
+  border-color: var(--brand) !important;
+}
+
+.mac-mode #context-menu.context-menu-glass {
+  background: rgba(30, 30, 34, 0.55);
+  backdrop-filter: blur(48px) saturate(1.4);
+  -webkit-backdrop-filter: blur(48px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 5px 0;
+  min-width: 220px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  font-size: 13px;
+  z-index: 999999;
+  animation: macMenuIn 0.13s ease-out;
+}
+
+@keyframes macMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.mac-mode #context-menu.context-menu-glass hr {
+  margin: 4px 8px;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mac-mode #context-menu.context-menu-glass > div,
+.mac-mode #context-menu.context-menu-glass .context-menu > div,
+.mac-mode #context-menu.context-menu-glass .context-menu-item > div,
+.mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div {
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+  border-radius: 4px;
+  cursor: default;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  min-height: 22px;
+  gap: 8px;
+  position: relative;
+  transition: background 0.08s ease;
+}
+
+.mac-mode #context-menu.context-menu-glass > div:hover,
+.mac-mode #context-menu.context-menu-glass .context-menu > div:hover,
+.mac-mode #context-menu.context-menu-glass .context-menu-item > div:hover,
+.mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div:hover {
+  background: rgba(110, 120, 255, 0.35);
+}
+
+.mac-mode #context-menu.context-menu-glass > div.cm-focused,
+.mac-mode #context-menu.context-menu-glass .context-menu > div.cm-focused,
+.mac-mode #context-menu.context-menu-glass .context-menu-item > div.cm-focused,
+.mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div.cm-focused {
+  background: rgba(110, 120, 255, 0.35);
+}
+
+.mac-mode #context-menu.context-menu-glass > div i,
+.mac-mode #context-menu.context-menu-glass .context-menu > div i,
+.mac-mode #context-menu.context-menu-glass .context-menu-item > div i,
+.mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div i {
+  width: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.mac-mode #context-menu.context-menu-glass > div span,
+.mac-mode #context-menu.context-menu-glass .context-menu > div span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mac-mode #context-menu.context-menu-glass .context-menu-item.has-submenu > div .submenu-arrow {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: auto;
+  padding-left: 12px;
+  flex-shrink: 0;
+}
+
+.mac-mode #context-menu.context-menu-glass .context-menu {
+  background: rgba(30, 30, 34, 0.95);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 5px 0;
+  min-width: 200px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mac-mode #context-menu.context-menu-glass .context-menu hr {
+  margin: 4px 8px;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass {
+  background: rgba(240, 240, 242, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass > div,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass > div,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu > div,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu > div,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu-item > div,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu-item > div,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div,
+html[data-theme].mac-mode[data-theme-mode="light"]
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item
+  > div {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass > div:hover,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass > div:hover,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu > div:hover,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu > div:hover,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu-item > div:hover,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu-item > div:hover,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div:hover,
+html[data-theme].mac-mode[data-theme-mode="light"]
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item
+  > div:hover {
+  background: rgba(0, 100, 255, 0.25);
+}
+
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass > div i,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass > div i,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu > div i,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu > div i,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu-item > div i,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu-item > div i,
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div i,
+html[data-theme].mac-mode[data-theme-mode="light"]
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item
+  > div
+  i {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass .context-menu,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass .context-menu {
+  background: rgba(240, 240, 242, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"].mac-mode #context-menu.context-menu-glass hr,
+html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-glass hr {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mac-mode .mac-menu-item.active {
+  background: rgba(110, 120, 255, 0.3) !important;
+  color: #fff !important;
+}
+
+#mac-control-center-popup {
+  position: fixed;
+  display: none;
+  width: min(320px, calc(100vw - 24px));
+  background: rgb(28 28 32 / 60%);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--r-lg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55);
+  z-index: 9999;
+  animation: trayPopupIn 100ms ease-out both;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+#mac-control-center-popup.closing {
+  animation: trayPopupOut 160ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.mcc-content {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mcc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mcc-section-battery {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 12px;
+  background: rgb(28 28 32 / 55%);
+  border-radius: var(--r);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mcc-battery-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mcc-battery {
+  width: 32px;
+  height: 16px;
+  border: 2px solid var(--text-secondary);
+  border-radius: 3px;
+  position: relative;
+  padding: 1px;
+}
+
+.mcc-battery::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 4px;
+  width: 3px;
+  height: 6px;
+  background: var(--text-secondary);
+  border-radius: 0 1px 1px 0;
+}
+
+.mcc-battery-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+.mcc-battery-info {
+  flex: 1;
+}
+
+.mcc-battery-percent {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.mcc-battery-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.mcc-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 2px 0;
+}
+
+.mcc-slider-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  min-height: 28px;
+}
+
+.mcc-slider-row i {
+  width: 20px;
+  color: var(--brand);
+  text-align: center;
+  font-size: 13px;
+}
+
+.mcc-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(28 28 32 / 65%);
+  outline: none;
+  cursor: pointer;
+}
+
+.mcc-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--bg-primary);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.mcc-slider-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  min-width: 36px;
+}
+
+.mcc-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mcc-power-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.mcc-power-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: var(--r);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(28 28 32 / 55%);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.12s ease;
+}
+
+.mcc-power-btn:hover {
+  border-color: var(--brand);
+  background: rgb(28 28 32 / 65%);
+}
+
+.mcc-power-btn.active {
+  border-color: var(--brand);
+  background: rgb(28 28 32 / 68%);
+  color: var(--brand);
+}
+
+.mcc-power-btn i {
+  font-size: 16px;
+}
+
+.mcc-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mcc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.mcc-toggle:hover {
+  background: rgb(28 28 32 / 55%);
+}
+
+.mcc-toggle span:first-child {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.mcc-toggle-input {
+  display: none;
+}
+
+.mcc-toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: rgb(28 28 32 / 65%);
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.mcc-toggle-track .mcc-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.mcc-toggle-input:checked + .mcc-toggle-track {
+  background: var(--brand);
+}
+
+.mcc-toggle-input:checked + .mcc-toggle-track .mcc-toggle-thumb {
+  left: 18px;
+  background: #fff;
+}
+
+.mcc-colors {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mcc-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.mcc-color-swatch:hover {
+  transform: scale(1.15);
+  border-color: var(--text-primary);
+}
+
+.mcc-color-swatch.active {
+  border-color: var(--text-primary);
+  box-shadow:
+    0 0 0 2px var(--bg-primary),
+    0 0 0 4px currentColor;
+}
+
+.mcc-shortcuts {
+  display: flex;
+  gap: 8px;
+}
+
+.mcc-shortcut {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--r);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(28 28 32 / 55%);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.12s ease;
+}
+
+.mcc-shortcut:hover {
+  border-color: var(--brand);
+  background: rgb(28 28 32 / 65%);
+  color: var(--brand);
+}
+
+.mcc-shortcut i {
+  font-size: 13px;
 }

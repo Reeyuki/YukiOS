@@ -365,6 +365,9 @@ export class IconManager {
   }
 
   async initializeDesktopFiles(sharedAppLauncher, isRightAlignedSystemApp) {
+    const hideDesktopIcons = os.storage.get(StorageKeys.hideDesktopIcons) === "true";
+    if (hideDesktopIcons) return;
+
     await os.fs.mkdir(["Desktop"]);
     const saved = this.positionStore.load();
 
@@ -372,6 +375,8 @@ export class IconManager {
     const regularIcons = [];
     const systemIcons = [];
     const createdIcons = [];
+
+    const isMacMode = os.storage.get(StorageKeys.macOsControls) === "true";
 
     for (const def of HARDCODED_DESKTOP_ICONS) {
       const icon = createElement("div", { className: "icon selectable" });
@@ -406,7 +411,13 @@ export class IconManager {
     }
 
     let occupied = null;
-    if (regularIcons.length) occupied = this.positionHelper.layoutSync(regularIcons, false, occupied);
+    if (regularIcons.length) {
+      if (isMacMode) {
+        occupied = this.positionHelper.layoutMacVerticalSync(regularIcons, occupied);
+      } else {
+        occupied = this.positionHelper.layoutSync(regularIcons, false, occupied);
+      }
+    }
     if (systemIcons.length) this.positionHelper.layoutRightSync(systemIcons, occupied);
 
     this.desktop.appendChild(fragment);
@@ -416,6 +427,9 @@ export class IconManager {
   }
 
   async loadDesktopItems() {
+    const hideDesktopIcons = os.storage.get(StorageKeys.hideDesktopIcons) === "true";
+    if (hideDesktopIcons) return;
+
     const desktopFolder = await os.fs.readdir(["Desktop"]);
     for (const [name, itemData] of Object.entries(desktopFolder)) {
       if (!itemData.type) {

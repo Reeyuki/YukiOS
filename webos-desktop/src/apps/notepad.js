@@ -30,6 +30,7 @@ export class NotepadApp extends BaseApp {
     const winId = options.forceId || `notepad-${Date.now()}`;
 
     const win = os.window.create(winId, `${title} - Notepad`, "800px", "600px", {
+      ...options,
       icon: "static/icons/notepad.webp"
     });
 

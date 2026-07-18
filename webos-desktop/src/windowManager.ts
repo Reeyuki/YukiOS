@@ -9,6 +9,7 @@ import { InputHandler } from "./windowManager/InputHandler.js";
 import { LayoutManager } from "./windowManager/LayoutManager.js";
 import { SnapSystem } from "./windowManager/SnapSystem.js";
 import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
+import { MacDock } from "./windowManager/MacDock.js";
 import { WindowSessionManager } from "./windowManager/WindowSessionManager.js";
 import { AppRestorationService } from "./windowManager/AppRestorationService.js";
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
@@ -46,6 +47,7 @@ export class WindowManager {
   layoutManager: LayoutManager;
   snapSystem: SnapSystem;
   taskbarSystem: TaskbarSystem;
+  macDock: MacDock;
   sessionManager: WindowSessionManager;
   appRestorationService: AppRestorationService;
   windowStateManager: WindowStateManager;
@@ -82,6 +84,7 @@ export class WindowManager {
     this.layoutManager = new LayoutManager(this);
     this.snapSystem = new SnapSystem(this);
     this.taskbarSystem = new TaskbarSystem(this);
+    this.macDock = new MacDock(this);
     this.sessionManager = new WindowSessionManager(this);
     this.appRestorationService = new AppRestorationService(this);
     this.windowStateManager = new WindowStateManager(this);
@@ -99,7 +102,24 @@ export class WindowManager {
     bus.on(BusEvents.SETTINGS_CHANGED, () => {
       this.updateTransparency();
       this.updateTaskbarAlignment();
+      const wasActive = !!document.getElementById("mac-dock");
+      const nowActive = this.macDock.isActive();
+      if (nowActive && !wasActive) {
+        this.macDock.init();
+      } else if (!nowActive && wasActive) {
+        this.macDock.destroy();
+      } else if (nowActive && wasActive) {
+        this.macDock.onSettingsChanged();
+      }
     });
+
+    setTimeout(() => {
+      const dockActive = this.macDock.isActive();
+      const macControls = os.storage.get(StorageKeys.macOsControls) === "true";
+      if (dockActive !== macControls) {
+        os.storage.set(StorageKeys.macOsControls, String(dockActive));
+      }
+    }, 0);
 
     setTimeout(() => {
       audioMixer().init();
@@ -364,6 +384,9 @@ export class WindowManager {
 
   addToTaskbar(winId: string, title: string, iconValue: string, color: string | null = null): void {
     this.taskbarSystem.addToTaskbar(winId, title, iconValue, color);
+    if (this.macDock.isActive()) {
+      this.macDock.addItem(winId, iconValue, title, color);
+    }
   }
 
   scheduleHideTaskbarPreview(): void {
@@ -400,6 +423,7 @@ export class WindowManager {
 
   removeFromTaskbar(winId: string): void {
     this.taskbarSystem.removeFromTaskbar(winId);
+    this.macDock.removeItem(winId);
   }
 
   minimizeWindow(win: HTMLElement): void {

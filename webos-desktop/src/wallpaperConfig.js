@@ -1,4 +1,35 @@
 export const WALLPAPER_STATIC_DIR = "/static/wallpapers/";
+export const MAC_WALLPAPER_DIR = "/static/wallpapers/mac-wallpapers/";
+
+const MAC_WALLPAPERS = [
+  { name: "Adwaita Lock", filename: "adwaitalock.webp" },
+  { name: "Amber Dark", filename: "amberd.webp" },
+  { name: "Amber Light", filename: "amberl.webp" },
+  { name: "Beach Rock", filename: "beachrockmacosmojavemountainskx.webp" },
+  { name: "Blobs Dark", filename: "blobsd.webp" },
+  { name: "Drool Dark", filename: "droold.webp" },
+  { name: "El Capitan", filename: "elcapitanyosemitinationalparkmountainsosxelcapitanx.webp" },
+  { name: "Grid Dark", filename: "gridd.webp" },
+  { name: "Lib Adwaita Light", filename: "libadwaital.webp" },
+  { name: "MacBook Pro Abstract", filename: "macbookpromapplemacbookprostockabstractbackgroundx.webp" },
+  { name: "macOS Big Sur", filename: "macosbigsurapplelayersfluidiccolorfulwwdcstockx.webp" },
+  { name: "macOS Mojave", filename: "macosmojavex.webp" },
+  { name: "macOS Monterey Dark", filename: "macosmontereywwdcstockdarkmodekx.webp" },
+  { name: "macOS Monterey", filename: "macosmontereywwdcstockkx.webp" },
+  { name: "macOS Sequoia", filename: "macossequoiax.webp" },
+  { name: "macOS Sierra", filename: "macossierramountainpeaksunseteveningstockkx.webp" },
+  { name: "macOS Catalina", filename: "macossurrealdigitalcompositionmacoscatalinamacoshighx.webp" },
+  { name: "macOS Tahoe", filename: "macostahoex.webp" },
+  { name: "macOS Ventura Dark", filename: "macosventuramacosmacosstockdarkmodekretinax.webp" },
+  { name: "Mountain Forest", filename: "macosxmountainsforesthillsfoggymorningstockkx.webp" },
+  { name: "OS X Leopard Stock", filename: "osxleopardstockx.webp" },
+  { name: "OS X Leopard", filename: "osxleopardx.webp" },
+  { name: "OS X Lion Twilight", filename: "osxliontwilightx.webp" },
+  { name: "OS X Yosemite", filename: "yosemite.webp" },
+  { name: "Pills Dark", filename: "pillsd.webp" },
+  { name: "Pixel Pusher Dark", filename: "pixelpusherd.webp" },
+  { name: "Wallpaper", filename: "wp.webp" }
+];
 
 const WALLPAPERS = [
   { name: "Mint Theme", filename: "mint.webp" },
@@ -41,3 +72,8 @@ export function getWallpaperNameUrlPairs() {
 export const STATIC_FALLBACK_WALLPAPERS = getWallpaperFullPaths();
 export const DEFAULT_WALLPAPER_FILES = getWallpaperFilenames();
 export const WALLPAPER_NAME_URL_PAIRS = getWallpaperNameUrlPairs();
+
+export const MAC_WALLPAPER_NAME_URL_PAIRS = MAC_WALLPAPERS.map((w) => ({
+  name: w.name,
+  url: `${MAC_WALLPAPER_DIR}${w.filename}`
+}));

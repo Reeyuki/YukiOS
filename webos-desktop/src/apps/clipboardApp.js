@@ -1,4 +1,5 @@
 import { BaseApp, StorageKeys, os } from "../framework.js";
+import { isTaskbarTop } from "../utils/utils.js";
 class ClipboardManagerApp extends BaseApp {
   constructor(os) {
     super(os);
@@ -21,6 +22,7 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   initTray() {
+    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
     if (this.enabled) {
       this.registerTray(this.winId, "fas fa-paste", "Clipboard", {
         resident: true,
@@ -101,10 +103,19 @@ class ClipboardManagerApp extends BaseApp {
     document.body.appendChild(popup);
 
     const trayEl = document.getElementById("app-tray");
-    const trayRect = trayEl ? trayEl.getBoundingClientRect() : { right: 16, top: window.innerHeight - 48 };
+    const trayRect = trayEl
+      ? trayEl.getBoundingClientRect()
+      : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
 
     popup.style.right = `${window.innerWidth - trayRect.right}px`;
-    popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+    const isMac = isTaskbarTop();
+    if (isMac) {
+      popup.style.top = `${trayRect.bottom + 8}px`;
+      popup.style.bottom = "auto";
+    } else {
+      popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
+      popup.style.top = "auto";
+    }
     popup.style.display = "block";
 
     this.popupVisible = true;

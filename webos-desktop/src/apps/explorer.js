@@ -467,6 +467,49 @@ export class ExplorerApp extends BaseApp {
     this.navigateInstance(inst, path);
   }
 
+  async openTrash() {
+    const winId = `explorer-trash-${Date.now()}`;
+    const inst = this.createInstance(winId, null, null, "browse");
+    const win = os.window.create(winId, "Trash", "700px", "500px", {
+      icon: "fas fa-trash"
+    });
+    addClass(win, "explorer-window");
+
+    win.innerHTML = `
+      <div class="explorer-nav">
+        <div class="back-btn" id="${winId}-back" title="Back"><i class="fas fa-chevron-left"></i></div>
+        <div class="back-btn" id="${winId}-next" title="Next"><i class="fas fa-chevron-right"></i></div>
+        <div class="back-btn" id="${winId}-up" title="Up"><i class="fas fa-arrow-up"></i></div>
+        <div class="explorer-path-wrap">
+          <input type="text" class="explorer-win-path" id="${winId}-path" spellcheck="false" value="/Trash">
+          <i class="fas fa-sync-alt explorer-reload-icon" id="${winId}-reload"></i>
+        </div>
+        <div class="explorer-search-wrap">
+          <input type="text" id="${winId}-search" class="explorer-search-input" placeholder="Search..." spellcheck="false">
+          <i class="fas fa-search explorer-search-icon"></i>
+        </div>
+      </div>
+      <div class="explorer-container">
+        ${this.sidebarHTML()}
+        <div class="explorer-main" id="${winId}-view"></div>
+      </div>
+      <div class="explorer-status-bar" id="${winId}-status-bar">
+        <span id="${winId}-status-items"></span>
+        <span class="explorer-status-selected" id="${winId}-status-selected"></span>
+        <div class="explorer-view-toggle" id="${winId}-view-toggle">
+          <i class="fas fa-th explorer-view-btn" id="${winId}-view-grid" title="Grid view"></i>
+          <i class="fas fa-list explorer-view-btn" id="${winId}-view-list" title="List view"></i>
+        </div>
+      </div>
+      <div class="explorer-upload-progress" id="${winId}-upload-progress">Uploading...</div>
+    `;
+
+    this.initExplorerView(win, winId);
+    this.watchWindowRemoval(winId);
+    this.setupExplorerControls(win, winId);
+    await showTrashView(this, inst);
+  }
+
   async openSaveDialog(defaultFileName = "Untitled.txt", onSave = null) {
     const winId = `explorer-save-${Date.now()}`;
     const inst = this.createInstance(winId, null, null, "save");
@@ -1228,11 +1271,17 @@ export class ExplorerApp extends BaseApp {
 
   navigateInstance(inst, path) {
     if (typeof path === "string") {
+      const resolved = this.fs.paths.resolveUserPath(path);
       const root = this.fs.CONFIG.ROOT;
-      if (path.startsWith(root)) {
-        path = path.slice(root.length).split("/").filter(Boolean);
+      if (resolved === root) {
+        path = [];
+      } else if (resolved.startsWith(root + "/")) {
+        path = resolved
+          .slice(root.length + 1)
+          .split("/")
+          .filter(Boolean);
       } else {
-        path = path.split("/").filter(Boolean);
+        path = resolved.split("/").filter(Boolean);
       }
     }
     inst.isTrashView = false;

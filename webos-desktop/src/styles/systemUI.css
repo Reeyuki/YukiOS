@@ -929,3 +929,46 @@ html[data-theme="light"] .file-tooltip {
 .shortcut-category {
   margin-bottom: 20px;
 }
+
+.mac-mode #audio-mixer-panel,
+html[data-theme].mac-mode #audio-mixer-panel {
+  animation-name: trayPopupInMacBig !important;
+  background: rgb(28 28 32 / 60%) !important;
+  backdrop-filter: blur(40px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+.mac-mode #audio-mixer-panel.closing,
+html[data-theme].mac-mode #audio-mixer-panel.closing {
+  animation-name: trayPopupOutMac !important;
+}
+
+.mac-mode .am-header,
+html[data-theme].mac-mode .am-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .am-close-btn:hover,
+html[data-theme].mac-mode .am-close-btn:hover {
+  background: rgb(28 28 32 / 62%) !important;
+  color: var(--text-primary) !important;
+}
+
+.mac-mode .am-divider,
+html[data-theme].mac-mode .am-divider {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.mac-mode .am-channel-row:hover,
+html[data-theme].mac-mode .am-channel-row:hover {
+  background: rgb(28 28 32 / 55%) !important;
+}
+
+.mac-mode .am-slider,
+html[data-theme].mac-mode .am-slider {
+  background: rgb(28 28 32 / 65%) !important;
+}

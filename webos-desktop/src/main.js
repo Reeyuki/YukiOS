@@ -6,7 +6,7 @@ import { NotepadApp } from "./apps/notepad.js";
 import { SystemUtilities } from "./system.js";
 import { setGameLauncher } from "./games/games.js";
 import { FileSystemManager } from "./fs.js";
-import { setupStartMenu } from "./desktopui/startMenu.js";
+import { setupStartMenu, toggleStartMenu } from "./desktopui/startMenu.js";
 import { DesktopUI } from "./desktopui/desktopui.js";
 import { DesktopPeekManager } from "./desktopPeek.js";
 import { SettingsApp } from "./settings/settings.js";
@@ -40,6 +40,8 @@ import { $ } from "./shared/domUtils.js";
 import { showBootScreen } from "./bootScreen.js";
 import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray/tray.js";
+import { MacControlCenter } from "./tray/macControlCenter.js";
+import { MenuBarManager } from "./menuBar/MenuBarManager.js";
 
 initializeMirrors(appMap);
 registerPWA();
@@ -69,6 +71,7 @@ const os = initializeOSBridge({
 });
 
 os.kernel.clipboardManager = clipboardManager;
+new MacControlCenter();
 init();
 window.os = os;
 
@@ -136,6 +139,7 @@ notepadApp.setExplorer(explorerApp);
 
 const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
 setDesktopUI(desktopUI);
+os.kernel.desktopUI = desktopUI;
 
 appCreatorApp.setDesktopUI(desktopUI);
 settingsApp.setDesktopUI(desktopUI);
@@ -143,6 +147,9 @@ explorerApp.setDesktopUI(desktopUI);
 
 const sessionManager = new SessionManager(os);
 const commandPalette = new CommandPalette(os);
+os.kernel.commandPalette = commandPalette;
+
+const menuBar = new MenuBarManager(os);
 
 SystemUtilities.startClock();
 SystemUtilities.setSettings(settingsApp);
@@ -190,6 +197,7 @@ async function start() {
 
   batteryPerformanceManager.init();
   versionChecker.start();
+  menuBar.init();
 
   const url = new URL(location.href);
 

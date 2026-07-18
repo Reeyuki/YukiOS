@@ -147,3 +147,9 @@ export function sanitizeTitle(title) {
   if (title === "[object Object]") return "Window";
   return title;
 }
+
+export function isTaskbarTop() {
+  if (document.documentElement.classList.contains("mac-mode")) return true;
+  const taskbar = document.getElementById("taskbar");
+  return taskbar && taskbar.classList.contains("position-top");
+}

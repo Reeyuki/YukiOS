@@ -8,6 +8,8 @@ import { $ } from "./shared/domUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
+import { applyTheme } from "./settings/settingsApply.js";
+import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -225,6 +227,7 @@ export class SessionManager {
 
           <div class="session-dropdown" id="session-dropdown">
             <div class="session-option" data-value="desktop">Yuki Desktop</div>
+            <div class="session-option" data-value="mac">Yuki Mac Desktop</div>
             <div class="session-option" data-value="tiling">Yuki Tiling WM</div>
           </div>
         </div>
@@ -525,7 +528,12 @@ export class SessionManager {
       }
     });
 
-    sessionSelectorBtn.value = this.selectedSession === "tiling" ? "Yuki Tiling WM" : "Yuki Desktop";
+    sessionSelectorBtn.value =
+      this.selectedSession === "tiling"
+        ? "Yuki Tiling WM"
+        : this.selectedSession === "Yuki Mac Desktop"
+          ? "Yuki Mac Desktop"
+          : "Yuki Desktop";
     sessionSelectorBtn.addEventListener("change", (e) => {
       const value = e.target.value;
 
@@ -551,7 +559,8 @@ export class SessionManager {
 
       const sessionMap = {
         desktop: "Yuki Desktop",
-        tiling: "Yuki Tiling VM"
+        tiling: "Yuki Tiling VM",
+        mac: "Yuki Mac Desktop"
       };
 
       const labelText = sessionMap[value];
@@ -683,12 +692,18 @@ export class SessionManager {
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
 
+    if (this.selectedSession === "Yuki Mac Desktop") {
+      this.applyMacSettings();
+    }
+
     if (this.os.kernel.windowManager) {
       this.os.kernel.windowManager.setFileSystemManager(this.os.kernel.fileSystemManager);
       setTimeout(() => this.os.kernel.windowManager.restoreSession(), 500);
     }
 
-    audioMixer().playSystemSound(SystemAudio.START);
+    if (os.storage.get(StorageKeys.macOsControls) !== "true") {
+      audioMixer().playSystemSound(SystemAudio.START);
+    }
 
     if (!os.storage.get(StorageKeys.setupCompleted)) {
       const setupApp = this.os.app.apps.setupApp;
@@ -698,6 +713,46 @@ export class SessionManager {
     this.launchStartupApps();
 
     this.startIdleDetection();
+  }
+
+  applyMacSettings() {
+    document.documentElement.classList.add("mac-mode");
+    os.storage.set(StorageKeys.macOsControls, "true");
+    os.storage.set(StorageKeys.dockEnabled, "true");
+    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
+    os.storage.set(StorageKeys.theme, "macos-fluent");
+    applyTheme("macos-fluent", () => os.storage.get(StorageKeys.customColors) || null);
+    os.storage.set(StorageKeys.taskbarPosition, "top");
+    taskbarPositionManager.setPosition("top");
+    os.storage.set(StorageKeys.taskbarAlignment, "center");
+    const taskbarWindows = $("#taskbar-windows");
+    const taskbar = $("#taskbar");
+    if (taskbarWindows && taskbar) {
+      const isHorizontal = taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
+      taskbarWindows.style.justifyContent = isHorizontal ? "center" : "center";
+    }
+    this.loadSfProFonts();
+  }
+
+  loadSfProFonts() {
+    const base = "https://cdn.jsdelivr.net/gh/sahibjotsaggu/San-Francisco-Pro-Fonts@master";
+    const variants = [
+      { weight: "400", file: "SF-Pro-Display-Regular.otf" },
+      { weight: "500", file: "SF-Pro-Display-Medium.otf" },
+      { weight: "600", file: "SF-Pro-Display-Semibold.otf" },
+      { weight: "700", file: "SF-Pro-Display-Bold.otf" }
+    ];
+    variants.forEach(({ weight, file }) => {
+      const font = new FontFace("SF Pro Display", `url(${base}/${file})`, {
+        weight,
+        style: "normal",
+        display: "swap"
+      });
+      font
+        .load()
+        .then(() => document.fonts.add(font))
+        .catch(() => {});
+    });
   }
 
   launchStartupApps() {

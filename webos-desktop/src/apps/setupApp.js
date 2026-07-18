@@ -11,6 +11,7 @@ import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
 import { animateThemeChange } from "../settings/themeTransition.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
+import { isTaskbarTop } from "../utils/utils.js";
 export const FEATURE_DATA = {
   step2: [
     {
@@ -209,7 +210,7 @@ export const FEATURE_DATA = {
     suggestedApps: [
       { id: "notepad", title: "Notepad", icon: "fas fa-file-alt" },
       { id: "terminal", title: "Terminal", icon: "fas fa-terminal" },
-      { id: "browser", title: "Browser", icon: "fas fa-globe" },
+      { id: "browser", title: "Browser", icon: "static/icons/firefox.webp" },
       { id: "explorer", title: "File Explorer", icon: "fas fa-folder" },
       { id: "settings", title: "Settings", icon: "fas fa-cog" },
       { id: "yukiOsGuide", title: "YukiOS Guide", icon: "fas fa-book-open" }
@@ -250,6 +251,7 @@ export class SetupApp extends BaseApp {
       profilePicture: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
       fontFamily: "opensans",
       macOsControls: false,
+      dockEnabled: false,
       mikuCursor: true,
       clippy: false,
       clipboardManager: true
@@ -289,8 +291,9 @@ export class SetupApp extends BaseApp {
   }
 
   buildUI() {
+    const headerClass = isTaskbarTop() ? "window-header mac-header" : "window-header";
     return `
-      <div class="window-header">
+      <div class="${headerClass}">
         <span>Set Up YukiOS</span>
         ${os.window.getWindowControls()}
       </div>
@@ -949,6 +952,7 @@ export class SetupApp extends BaseApp {
 
     os.storage.set(StorageKeys.fontFamily, this.userChoices.fontFamily);
     os.storage.set(StorageKeys.macOsControls, this.userChoices.macOsControls.toString());
+    os.storage.set(StorageKeys.dockEnabled, this.userChoices.macOsControls.toString());
     os.storage.set(StorageKeys.mikuCursor, this.userChoices.mikuCursor.toString());
     os.storage.set(StorageKeys.clippy, this.userChoices.clippy.toString());
     os.storage.set(StorageKeys.clipboardManagerEnabled, this.userChoices.clipboardManager.toString());

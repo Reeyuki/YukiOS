@@ -378,11 +378,13 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
       <div id="games-app-container" style="height:100%;"></div>
     </div>`;
 
-  os.tray.register(STEAM_WIN_ID, taskbarIcon, winTitle, {
-    showInTray: true,
-    contextMenuItems: SteamDataManager.getSteamContextMenuItems(appLauncher),
-    priority: 100
-  });
+  if (os.storage.get(StorageKeys.macOsControls) !== "true") {
+    os.tray.register(STEAM_WIN_ID, taskbarIcon, winTitle, {
+      showInTray: true,
+      contextMenuItems: SteamDataManager.getSteamContextMenuItems(appLauncher),
+      priority: 100
+    });
+  }
 
   const container = win.querySelector("#games-app-container");
   const onLaunch = (appId) => {

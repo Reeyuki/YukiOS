@@ -1,7 +1,7 @@
 import "../styles/wallpaperEngine.css";
 import { BaseApp, os, StorageKeys } from "../framework.js";
 import { SystemUtilities } from "../system.js";
-import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
+import { WALLPAPER_NAME_URL_PAIRS, MAC_WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 import { videos, videos2 } from "../wallpaperList.js";
 import { vantaPresets } from "../vantaPresets.js";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
@@ -173,6 +173,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   initTray() {
+    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
     os.tray.register("wallpaper-engine", "fas fa-paint-roller", "Wallpaper Engine", {
       showInTray: true,
       priority: 5,
@@ -298,6 +299,7 @@ export class WallpaperEngineApp extends BaseApp {
     const categories = [
       { id: "all", icon: "fas fa-th-large", label: "All" },
       { id: "static", icon: "fas fa-image", label: "Static" },
+      { id: "mac", icon: "fab fa-apple", label: "macOS" },
       { id: "video", icon: "fas fa-film", label: "Live Video" },
       { id: "vanta", icon: "fas fa-magic", label: "Animated" },
       { id: "custom-presets", icon: "fas fa-palette", label: "Custom Presets" },
@@ -494,6 +496,7 @@ export class WallpaperEngineApp extends BaseApp {
   async loadAllWallpapers() {
     const items = [];
     items.push(...this.getStaticWallpapers());
+    items.push(...this.getMacWallpapers());
     items.push(...this.getVideoWallpapers());
     items.push(...this.getVantaWallpapers());
     items.push(...(await this.getUserWallpapers()));
@@ -517,6 +520,18 @@ export class WallpaperEngineApp extends BaseApp {
       thumbnail: resolveWallpaperUrl(wp.url),
       isVideo: false,
       meta: { source: "Built-in" }
+    }));
+  }
+
+  getMacWallpapers() {
+    return MAC_WALLPAPER_NAME_URL_PAIRS.map((wp) => ({
+      id: `mac_${wp.filename || wp.name}`,
+      name: wp.name,
+      type: "mac",
+      src: wp.url,
+      thumbnail: resolveWallpaperUrl(wp.url),
+      isVideo: false,
+      meta: { source: "macOS" }
     }));
   }
 

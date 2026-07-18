@@ -27,13 +27,13 @@ import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 
 let sharedAppLauncher;
-let GRID_CONFIG = { width: 76, height: 96, gap: 7 };
+let GRID_CONFIG = { width: 68, height: 82, gap: 1 };
 
 export function updateGridConfig(iconSize) {
   const size = Math.max(32, Math.min(128, Number(iconSize) || 48));
-  GRID_CONFIG.width = size + 12;
-  GRID_CONFIG.height = size + 32;
-  GRID_CONFIG.gap = 7;
+  GRID_CONFIG.width = size + 4;
+  GRID_CONFIG.height = size + 20;
+  GRID_CONFIG.gap = 1;
   relayoutDesktopIcons();
 }
 
@@ -183,6 +183,39 @@ class PositionHelper {
   }
 
   layoutRightSync(icons, occupiedBefore = null) {
+    const { width, height, gap } = this.gridSize;
+    const cellW = width + gap,
+      cellH = height + gap;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const occupied = occupiedBefore || this.buildOccupancySet();
+    let col = maxCols - 1,
+      row = 0;
+    icons.forEach((icon) => {
+      while (occupied.has(`${col},${row}`)) {
+        row++;
+        if (row >= maxRows) {
+          row = 0;
+          col--;
+        }
+        if (col < 0) {
+          col = maxCols - 1;
+          row = 0;
+          break;
+        }
+      }
+      occupied.add(`${col},${row}`);
+      icon.style.left = `${gap + col * cellW}px`;
+      icon.style.top = `${gap + row * cellH}px`;
+      row++;
+      if (row >= maxRows) {
+        row = 0;
+        col--;
+      }
+    });
+  }
+
+  layoutMacVerticalSync(icons, occupiedBefore = null) {
     const { width, height, gap } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
@@ -482,7 +515,7 @@ export class DesktopUI {
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("click", (e) => {
-      if (e.target.closest(".explorer-confirmation-overlay, .fd-dialog")) return;
+      if (e.target.closest(".explorer-confirmation-overlay, .fd-dialog, #context-menu, #mac-menu-bar")) return;
       this.closeAllMenus();
     });
     this.desktop.addEventListener("contextmenu", (e) => this.handleContextMenu(e));

@@ -63,6 +63,7 @@
   color: var(--text-primary, #f5f5f5);
   text-shadow: 0 1px 3px var(--shadow-color, rgba(0, 0, 0, 0.9));
   word-break: break-word;
+  width: 60px;
 }
 
 .icon:hover {
@@ -966,4 +967,245 @@ body.is-resizing * {
 html[data-theme="light"] .window {
   background: #f2f2f2 !important;
   color: #111 !important;
+}
+
+.window-header.mac-header {
+  grid-template-columns: auto 1fr;
+}
+.window-header.mac-header > .window-controls {
+  padding-left: 4px;
+}
+.window-header.mac-header > span {
+  order: 1;
+  text-align: left;
+}
+
+:root {
+  --dock-icon-size: 43px;
+  --dock-scale: 1;
+  --dock-anim-speed: 0.2s;
+}
+
+.mac-dock {
+  --inset: 7px;
+  position: fixed;
+  display: flex;
+  gap: 3px;
+  padding: 3px 10px;
+  backdrop-filter: blur(40px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  z-index: 20001;
+  transition:
+    opacity var(--dock-anim-speed) ease,
+    transform var(--dock-anim-speed) ease;
+  transform-origin: center bottom;
+}
+
+.mac-dock[data-position="bottom"] {
+  bottom: var(--inset);
+  left: 50%;
+  transform: translateX(-50%) scale(var(--dock-scale));
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.mac-dock[data-position="left"] {
+  left: var(--inset);
+  top: 50%;
+  transform: translateY(-50%) scale(var(--dock-scale));
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.mac-dock[data-position="right"] {
+  right: var(--inset);
+  top: 50%;
+  transform: translateY(-50%) scale(var(--dock-scale));
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.mac-dock.dock-auto-hide {
+  opacity: 0.85;
+  transition:
+    opacity var(--dock-anim-speed) ease,
+    transform var(--dock-anim-speed) ease;
+}
+
+.mac-dock.dock-auto-hide.dock-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scale(var(--dock-scale)) translateY(20px);
+}
+
+.mac-dock.dock-auto-hide.dock-hidden:hover {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mac-dock[data-position="left"].dock-auto-hide.dock-hidden {
+  transform: translateY(-50%) scale(var(--dock-scale)) translateX(-20px);
+}
+
+.mac-dock[data-position="right"].dock-auto-hide.dock-hidden {
+  transform: translateY(-50%) scale(var(--dock-scale)) translateX(20px);
+}
+
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: transform var(--dock-anim-speed) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mac-dock[data-position="left"] .dock-item,
+.mac-dock[data-position="right"] .dock-item {
+  flex-direction: row;
+}
+
+.dock-icon-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--dock-icon-size);
+  height: var(--dock-icon-size);
+  border-radius: 10px;
+  overflow: visible;
+  transition: transform var(--dock-anim-speed) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center bottom;
+}
+
+.mac-dock[data-position="left"] .dock-icon-wrap,
+.mac-dock[data-position="right"] .dock-icon-wrap {
+  transform-origin: center center;
+}
+
+.dock-icon-inner {
+  width: var(--dock-icon-size);
+  height: var(--dock-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.dock-icon-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dock-icon-inner i {
+  width: var(--dock-icon-size);
+  height: var(--dock-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--dock-icon-size) * 0.465);
+  color: var(--text-primary);
+  background: var(--glass);
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.dock-icon-inner svg {
+  width: var(--dock-icon-size);
+  height: var(--dock-icon-size);
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.dock-running-dot {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.mac-dock[data-position="left"] .dock-running-dot,
+.mac-dock[data-position="right"] .dock-running-dot {
+  bottom: auto;
+  left: auto;
+  right: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dock-item.active .dock-running-dot,
+.dock-pinned.active .dock-running-dot {
+  opacity: 1;
+}
+
+.dock-item.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.dock-item.drag-over {
+  transform: scale(1.1);
+}
+
+.dock-label {
+  font-size: 12px;
+  color: #fff;
+  position: absolute;
+  bottom: calc(100% + calc(var(--dock-icon-size) * 2) + 1px);
+  left: 50%;
+  transform: translateX(-50%) translateY(3px) scale(0.9);
+  white-space: nowrap;
+  background: rgb(28 28 32 / 27%);
+  backdrop-filter: blur(20px) saturate(1.4);
+  padding: 3px 9px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--dock-anim-speed) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mac-dock[data-position="left"] .dock-label,
+.mac-dock[data-position="right"] .dock-label {
+  bottom: auto;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-3px) scale(0.9);
+}
+
+.mac-dock[data-position="left"] .dock-item:hover .dock-label,
+.mac-dock[data-position="right"] .dock-item:hover .dock-label {
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
+.dock-item:hover .dock-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.mac-dock.dock-magnify .dock-icon-wrap {
+  transition: transform var(--dock-anim-speed) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.mac-dock:not(.dock-magnify) .dock-item {
+  transition: none;
+}
+
+.mac-dock:not(.dock-magnify) .dock-icon-wrap {
+  transition: none;
 }

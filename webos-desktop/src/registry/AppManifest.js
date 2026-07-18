@@ -341,6 +341,21 @@ export const APP_MANIFESTS = [
     description: "Access and manage core system applications and utilities."
   },
   {
+    serviceKey: "launchpadApp",
+    enhanced: false,
+    type: "system",
+    title: "Launchpad",
+    icon: "fas fa-th",
+    launchType: "instance",
+    windowIdPatterns: ["launchpad"],
+    category: "system",
+    clippy: {
+      message: "Open Launchpad to browse every app installed on the system in a fullscreen grid.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Fullscreen grid of all installed apps with search, macOS style."
+  },
+  {
     serviceKey: "rhythmsApp",
     enhanced: true,
     type: "system",

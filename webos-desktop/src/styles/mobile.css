@@ -240,16 +240,6 @@ html.is-mobile #workspace-bar {
   display: none !important;
 }
 
-html.is-mobile .ntf-tray-btn {
-  width: 32px;
-  height: 32px;
-}
-
-html.is-mobile .ntf-tray-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
 html.is-mobile .desktop-peek-btn {
   width: 32px;
   height: 32px;
@@ -325,16 +315,6 @@ html.is-mobile .desktop-peek-btn svg {
 
   #workspace-bar {
     display: none !important;
-  }
-
-  .ntf-tray-btn {
-    width: 32px;
-    height: 32px;
-  }
-
-  .ntf-tray-btn svg {
-    width: 18px;
-    height: 18px;
   }
 
   .desktop-peek-btn {

@@ -49,7 +49,7 @@ class VersionChecker {
           });
         }
 
-        if (!os.tray.isRegistered(TRAY_ID)) {
+        if (!os.tray.isRegistered(TRAY_ID) && os.storage.get(StorageKeys.macOsControls) !== "true") {
           os.tray.register(TRAY_ID, "fas fa-download", `Update: ${remoteVersion}`, {
             resident: true,
             priority: 100,

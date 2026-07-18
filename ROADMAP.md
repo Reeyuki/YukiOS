@@ -96,7 +96,7 @@ Planned features and improvements for YukiOS.
 - [📋] **Sound themes** — System-wide audio feedback for login, window open/close, notifications, errors
 - [📋] **Album art wallpaper** — Extract album art from currently playing music and set it as desktop wallpaper
 - [💡] **Alt+Tab visual switcher with live thumbnails** — Replaces Alt+Q text cycling
-- [💡] **Mac dropdown entry** — Add Mac mode as a boot mode in login screen that automatically enables mac window header setting and changes taskbar
+- [✅] **Mac Mode**  Mac os ui recration selectable on login screen
 - [💡] **Add bash command to terminal for sh script execution**
 ---
 

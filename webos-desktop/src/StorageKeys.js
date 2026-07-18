@@ -189,5 +189,17 @@ export const StorageKeys = {
   isoMounts: "yukiOS_iso_mounts",
   startupApps: "yukiOS_startup_apps",
   batterySaverEnabled: "yukiOS_battery_saver_enabled",
-  batterySaverThreshold: "yukiOS_battery_saver_threshold"
+  batterySaverThreshold: "yukiOS_battery_saver_threshold",
+  hideDesktopIcons: "yukiOS_hide_desktop_icons",
+  dockPinnedItems: "yukiOS_dock_pinned_items",
+  dockEnabled: "yukiOS_dock_enabled",
+  dockPosition: "yukiOS_dock_position",
+  dockAutoHide: "yukiOS_dock_auto_hide",
+  dockMagnification: "yukiOS_dock_magnification",
+  dockMagnifyAmount: "yukiOS_dock_magnify_amount",
+  dockMagnifyRange: "yukiOS_dock_magnify_range",
+  dockIconSize: "yukiOS_dock_icon_size",
+  dockScale: "yukiOS_dock_scale",
+  dockAnimationSpeed: "yukiOS_dock_animation_speed",
+  macWallpaperInitialized: "yukiOS_mac_wallpaper_initialized"
 };

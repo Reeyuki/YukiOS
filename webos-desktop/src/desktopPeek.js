@@ -25,12 +25,7 @@ export class DesktopPeekManager {
       </svg>
     `;
 
-    const ntfBtn = document.getElementById("ntf-tray-btn");
-    if (ntfBtn && ntfBtn.nextSibling) {
-      systemTray.insertBefore(btn, ntfBtn.nextSibling);
-    } else {
-      systemTray.insertBefore(btn, systemTray.lastChild);
-    }
+    systemTray.insertBefore(btn, systemTray.lastChild);
 
     btn.addEventListener("click", () => this.togglePeek());
     btn.addEventListener("mouseenter", () => this.delayedHoverPeek());

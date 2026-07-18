@@ -27,7 +27,7 @@ export class CalculatorApp extends BaseApp {
 
     const win = os.window.create(winId, "Calculator", "360px", "560px", {
       icon: "fas fa-calculator",
-      appId: "calculator"
+      appId: "calculatorApp"
     });
 
     this.win = win;

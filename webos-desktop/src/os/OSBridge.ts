@@ -26,6 +26,22 @@ export class NotificationAPI {
   clearAll(): void {
     this.nc.clearAllNotifications();
   }
+
+  getAll(): any[] {
+    return this.nc.getNotifications?.() || [];
+  }
+
+  getCount(): number {
+    return this.nc.getNotificationCount?.() || 0;
+  }
+
+  setDoNotDisturb(enabled: boolean): void {
+    this.nc.setDoNotDisturb?.(enabled);
+  }
+
+  getDoNotDisturb(): boolean {
+    return this.nc.doNotDisturb ?? false;
+  }
 }
 
 export class AppAPI {

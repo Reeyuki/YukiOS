@@ -1121,6 +1121,236 @@ export const KEYBIND_DEFINITIONS = [
     cat: "global",
     icon: "fas fa-backward",
     hidden: true
+  },
+
+  {
+    id: "global.launchpad",
+    defaultKeys: ["F4"],
+    desc: "Open Launchpad app grid",
+    cat: "global",
+    icon: "fas fa-th"
+  },
+  {
+    id: "mac.about",
+    defaultKeys: ["Meta", ","],
+    desc: "Open About YukiOS",
+    cat: "mac",
+    icon: "fas fa-info-circle",
+    hidden: true
+  },
+  {
+    id: "mac.settings",
+    defaultKeys: ["Meta", "Shift", ","],
+    desc: "Open Settings",
+    cat: "mac",
+    icon: "fas fa-cog",
+    hidden: true
+  },
+  {
+    id: "mac.commandPalette",
+    defaultKeys: ["Meta", "Shift", "P"],
+    desc: "Open Command Palette",
+    cat: "mac",
+    icon: "fas fa-search",
+    hidden: true
+  },
+  {
+    id: "mac.hideOthers",
+    defaultKeys: ["Alt", "Meta", "H"],
+    desc: "Hide other windows",
+    cat: "mac",
+    icon: "fas fa-eye-slash",
+    hidden: true
+  },
+  {
+    id: "mac.lock",
+    defaultKeys: ["Meta", "Control", "Q"],
+    desc: "Lock screen",
+    cat: "mac",
+    icon: "fas fa-lock",
+    hidden: true
+  },
+  {
+    id: "mac.logout",
+    defaultKeys: ["Meta", "Shift", "Q"],
+    desc: "Log out",
+    cat: "mac",
+    icon: "fas fa-sign-out-alt",
+    hidden: true
+  },
+  {
+    id: "mac.newWindow",
+    defaultKeys: ["Meta", "N"],
+    desc: "New window",
+    cat: "mac",
+    icon: "fas fa-plus",
+    hidden: true
+  },
+  {
+    id: "mac.closeWindow",
+    defaultKeys: ["Meta", "W"],
+    desc: "Close window",
+    cat: "mac",
+    icon: "fas fa-times",
+    hidden: true
+  },
+  {
+    id: "mac.minimize",
+    defaultKeys: ["Meta", "M"],
+    desc: "Minimize window",
+    cat: "mac",
+    icon: "fas fa-window-minimize",
+    hidden: true
+  },
+  {
+    id: "mac.fullscreen",
+    defaultKeys: ["Meta", "Control", "F"],
+    desc: "Toggle fullscreen",
+    cat: "mac",
+    icon: "fas fa-expand",
+    hidden: true
+  },
+  {
+    id: "mac.emoji",
+    defaultKeys: ["Meta", "Control", "Space"],
+    desc: "Open emoji picker",
+    cat: "mac",
+    icon: "fas fa-smile",
+    hidden: true
+  },
+  {
+    id: "mac.guide",
+    defaultKeys: ["Meta", "Shift", "/"],
+    desc: "Open YukiOS Guide",
+    cat: "mac",
+    icon: "fas fa-book",
+    hidden: true
+  },
+  {
+    id: "mac.shortcuts",
+    defaultKeys: ["Meta", "Shift", "K"],
+    desc: "Open Keyboard Shortcuts",
+    cat: "mac",
+    icon: "fas fa-keyboard",
+    hidden: true
+  },
+  {
+    id: "mac.screenshot",
+    defaultKeys: ["Meta", "Shift", "4"],
+    desc: "Take screenshot",
+    cat: "mac",
+    icon: "fas fa-camera",
+    hidden: true
+  },
+  {
+    id: "mac.goHome",
+    defaultKeys: ["Meta", "Shift", "H"],
+    desc: "Go to Home folder",
+    cat: "mac",
+    icon: "fas fa-home",
+    hidden: true
+  },
+  {
+    id: "mac.goDesktop",
+    defaultKeys: ["Meta", "Shift", "D"],
+    desc: "Go to Desktop",
+    cat: "mac",
+    icon: "fas fa-desktop",
+    hidden: true
+  },
+  {
+    id: "mac.goDocuments",
+    defaultKeys: ["Meta", "Shift", "O"],
+    desc: "Go to Documents",
+    cat: "mac",
+    icon: "fas fa-file",
+    hidden: true
+  },
+  {
+    id: "mac.goDownloads",
+    defaultKeys: ["Meta", "Shift", "L"],
+    desc: "Go to Downloads",
+    cat: "mac",
+    icon: "fas fa-download",
+    hidden: true
+  },
+  {
+    id: "mac.goFolder",
+    defaultKeys: ["Meta", "Shift", "G"],
+    desc: "Go to Folder",
+    cat: "mac",
+    icon: "fas fa-folder",
+    hidden: true
+  },
+  {
+    id: "dock.launch1",
+    defaultKeys: ["Alt", "1"],
+    desc: "Launch or focus dock item 1",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch2",
+    defaultKeys: ["Alt", "2"],
+    desc: "Launch or focus dock item 2",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch3",
+    defaultKeys: ["Alt", "3"],
+    desc: "Launch or focus dock item 3",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch4",
+    defaultKeys: ["Alt", "4"],
+    desc: "Launch or focus dock item 4",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch5",
+    defaultKeys: ["Alt", "5"],
+    desc: "Launch or focus dock item 5",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch6",
+    defaultKeys: ["Alt", "6"],
+    desc: "Launch or focus dock item 6",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch7",
+    defaultKeys: ["Alt", "7"],
+    desc: "Launch or focus dock item 7",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch8",
+    defaultKeys: ["Alt", "8"],
+    desc: "Launch or focus dock item 8",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch9",
+    defaultKeys: ["Alt", "9"],
+    desc: "Launch or focus dock item 9",
+    cat: "dock",
+    icon: "fab fa-apple"
+  },
+  {
+    id: "dock.launch10",
+    defaultKeys: ["Alt", "0"],
+    desc: "Launch or focus dock item 10",
+    cat: "dock",
+    icon: "fab fa-apple"
   }
 ];
 

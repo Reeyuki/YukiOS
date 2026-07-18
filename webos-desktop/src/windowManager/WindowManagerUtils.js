@@ -102,10 +102,12 @@ export class WindowManagerUtils {
     return "";
   }
 
-  generateWindowHeader(title, iconValue, color = null, externalUrl = null) {
+  generateWindowHeader(title, iconValue, color = null, externalUrl = null, macStyle = null) {
     const iconHtml = this.getWindowIconHtml(iconValue, color);
     const controlsHtml = this.getWindowControls(externalUrl);
-    return `<div class="window-header"><span>${iconHtml}${title}</span>${controlsHtml}</div>`;
+    const isMac = macStyle !== null ? macStyle : getSetting("macOsControls", false);
+    const cls = isMac ? ' class="window-header mac-header"' : ' class="window-header"';
+    return `<div${cls}>${isMac ? "" : `<span>${iconHtml}${title}</span>`}${controlsHtml}</div>`;
   }
 
   updatePageFavicon(iconValue, title) {

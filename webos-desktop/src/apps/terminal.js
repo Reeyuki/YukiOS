@@ -61,6 +61,7 @@ export class TerminalApp extends BaseApp {
 
   open(opts) {
     const win = os.window.create("terminal-win", "Terminal", "700px", "500px", {
+      ...opts,
       icon: "static/icons/terminal.webp"
     });
     win.innerHTML = `<div class="window-content terminal-content">

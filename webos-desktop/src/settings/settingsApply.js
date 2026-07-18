@@ -16,7 +16,6 @@ const LIGHT_THEMES = new Set([
   "github-light",
   "minimal-gray",
   "paper",
-  "macos-fluent",
   "windows-fluent",
   "material-you",
   "sepia",
@@ -271,4 +270,19 @@ export function applyTaskbarScale(scale) {
   document.documentElement.style.setProperty("--taskbar-scale", String(s));
   document.documentElement.style.setProperty("--taskbar-h", `${3.2 * s}em`);
   document.documentElement.style.setProperty("--taskbar-v-w", `${3.2 * s}em`);
+}
+
+export function applyDockIconSize(size) {
+  const iconSize = Math.max(28, Math.min(80, Number(size) || 43));
+  document.documentElement.style.setProperty("--dock-icon-size", `${iconSize}px`);
+}
+
+export function applyDockScale(scale) {
+  const s = Math.max(50, Math.min(200, Number(scale) || 100)) / 100;
+  document.documentElement.style.setProperty("--dock-scale", String(s));
+}
+
+export function applyDockAnimationSpeed(speed) {
+  const s = Math.max(0.05, Math.min(0.5, Number(speed) || 0.2));
+  document.documentElement.style.setProperty("--dock-anim-speed", `${s}s`);
 }

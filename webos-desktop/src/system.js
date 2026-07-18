@@ -718,6 +718,7 @@ export class SystemUtilities {
   }
 
   static async startTaskbarWeather(appLauncher) {
+    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
     SystemUtilities.appLauncher = appLauncher;
     if (!SystemUtilities.weatherEventBound) {
       SystemUtilities.weatherEventBound = true;

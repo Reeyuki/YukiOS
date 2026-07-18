@@ -156,7 +156,7 @@ export class DiscordApp extends ScramjetBaseApp {
 
     const appConfig = SYSTEM_APPS[this.getAppId()];
     const trayOpts = appConfig?.trayOptions;
-    if (trayOpts && this.winId) {
+    if (trayOpts && this.winId && os.storage.get(StorageKeys.macOsControls) !== "true") {
       os.tray.register(this.winId, this.getAppIcon(), this.getAppName(), {
         showInTray: true,
         priority: 50,

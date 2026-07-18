@@ -28,7 +28,7 @@ export class AIAssistantApp extends BaseApp {
     const winId = this.winId;
     if (await this.isSingletonOpen(winId)) return;
 
-    if (this.enabled) {
+    if (this.enabled && os.storage.get(StorageKeys.macOsControls) !== "true") {
       await this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
         resident: true,
         showInTray: true

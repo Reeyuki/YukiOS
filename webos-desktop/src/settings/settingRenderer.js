@@ -472,6 +472,16 @@ export function renderDesktopSettings(s) {
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
+            <span class="settings-label-title">Hide Desktop Icons</span>
+            <span class="settings-label-desc">Hide all desktop icons for a cleaner look</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsHideDesktopIcons" ${s.hideDesktopIcons ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
             <span class="settings-label-title">Taskbar Position</span>
             <span class="settings-label-desc">Dock the taskbar to an edge</span>
           </div>
@@ -631,6 +641,101 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
+      <div class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fab fa-apple"></i> Dock</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Enable Mac Dock</span>
+            <span class="settings-label-desc">Switch from taskbar to a macOS-style dock</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsDockEnabled" ${s.dockEnabled ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Position</span>
+            <span class="settings-label-desc">Dock screen edge</span>
+          </div>
+          <div class="settings-button-group">
+            <button class="settings-btn ${s.dockPosition === "bottom" ? "active" : ""}" data-dock-pos="bottom"><i class="fas fa-arrow-down"></i> Bottom</button>
+            <button class="settings-btn ${s.dockPosition === "left" ? "active" : ""}" data-dock-pos="left"><i class="fas fa-arrow-left"></i> Left</button>
+            <button class="settings-btn ${s.dockPosition === "right" ? "active" : ""}" data-dock-pos="right"><i class="fas fa-arrow-right"></i> Right</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Auto-Hide</span>
+            <span class="settings-label-desc">Dock hides until you hover near the edge</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsDockAutoHide" ${s.dockAutoHide ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Magnification</span>
+            <span class="settings-label-desc">Hover zoom effect on dock icons</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsDockMagnification" ${s.dockMagnification ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Magnification Amount</span>
+            <span class="settings-label-desc">How much icons scale up on hover</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsDockMagnifyAmount", 0.1, 3.0, 0.1, s.dockMagnifyAmount)}
+            <span id="settingsDockMagnifyAmountValue" class="settings-range-value">${s.dockMagnifyAmount}x</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Magnification Range</span>
+            <span class="settings-label-desc">How many adjacent icons are affected</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsDockMagnifyRange", 1, 5, 1, s.dockMagnifyRange)}
+            <span id="settingsDockMagnifyRangeValue" class="settings-range-value">${s.dockMagnifyRange}</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Icon Size</span>
+            <span class="settings-label-desc">Base size of dock icons</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsDockIconSize", 28, 80, 4, s.dockIconSize)}
+            <span id="settingsDockIconSizeValue" class="settings-range-value">${s.dockIconSize}px</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Dock Scale</span>
+            <span class="settings-label-desc">Overall size of the dock bar</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsDockScale", 50, 200, 10, s.dockScale)}
+            <span id="settingsDockScaleValue" class="settings-range-value">${s.dockScale}%</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Animation Speed</span>
+            <span class="settings-label-desc">Hover and transition speed</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsDockAnimationSpeed", 0.05, 0.5, 0.05, s.dockAnimationSpeed)}
+            <span id="settingsDockAnimationSpeedValue" class="settings-range-value">${s.dockAnimationSpeed}s</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   `;
 }
@@ -642,7 +747,7 @@ export function renderAppearanceSettings(s) {
   const basicThemeButtons = basicThemes
     .map(
       (theme) => `
-      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
         <span>${theme.label}</span>
       </button>
     `
@@ -652,7 +757,7 @@ export function renderAppearanceSettings(s) {
   const specialThemeButtons = specialThemes
     .map(
       (theme) => `
-      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
         <span>${theme.label}</span>
       </button>
     `
@@ -662,7 +767,7 @@ export function renderAppearanceSettings(s) {
   const customThemeButtons = customThemes
     .map(
       (theme) => `
-      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || '#8b5cf6'}; color: ${theme.textColor || '#fff'};">
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
         <span>${theme.label}</span>
       </button>
     `
@@ -689,17 +794,6 @@ export function renderAppearanceSettings(s) {
 
       <div class="settings-card" id="sc-style" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-palette"></i> Style &amp; Transparency</div>
-
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">macOS Window Controls</span>
-            <span class="settings-label-desc">Use macOS-style traffic light buttons(needs restart)</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsMacControls" ${s.macOsControls ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
 
         <div class="settings-row settings-row--stacked">
           <div class="settings-label-group">

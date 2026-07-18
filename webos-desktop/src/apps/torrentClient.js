@@ -281,6 +281,7 @@ export class TorrentClientApp extends BaseApp {
   }
 
   registerTray() {
+    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
     if (this.trayRegistered) return;
     const winId = "torrent-client-win";
     os.tray.register(winId, "fas fa-download", "Torrent Client", {

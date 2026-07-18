@@ -22,7 +22,10 @@ import {
   applyUiDensity,
   applyDesktopIconSize,
   applyTaskbarScale,
-  applyVirtualResolution
+  applyVirtualResolution,
+  applyDockIconSize,
+  applyDockScale,
+  applyDockAnimationSpeed
 } from "./settingsApply.js";
 import {
   bindNavigation,
@@ -62,7 +65,6 @@ export class SettingsApp extends BaseApp {
         cursorDataUrl: cursorFromLegacyStorage,
         cursorOriginalDataUrl,
         cursorSize,
-        macOsControls: os.storage.get(StorageKeys.macOsControls) === "true",
         clippy: os.storage.get(StorageKeys.clippy) === "true",
         disableDesktopStretchScroll: os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true",
         achievementsDisabled: os.storage.get(StorageKeys.achievementsDisabled) === "true",
@@ -112,8 +114,18 @@ export class SettingsApp extends BaseApp {
         wobbleMass: Number(os.storage.get(StorageKeys.wobbleMass)) || 1.0,
         wobbleDragLag: Number(os.storage.get(StorageKeys.wobbleDragLag)) || 0.55,
         wobbleCoupleK: Number(os.storage.get(StorageKeys.wobbleCoupleK)) || 90,
-        desktopIconSize: Number(os.storage.get(StorageKeys.desktopIconSize)) || 64,
-        taskbarScale: Number(os.storage.get(StorageKeys.taskbarScale)) || 100
+        desktopIconSize: Number(os.storage.get(StorageKeys.desktopIconSize)) || 48,
+        taskbarScale: Number(os.storage.get(StorageKeys.taskbarScale)) || 100,
+        hideDesktopIcons: os.storage.get(StorageKeys.hideDesktopIcons) === "true",
+        dockEnabled: os.storage.get(StorageKeys.dockEnabled) === "true",
+        dockPosition: os.storage.get(StorageKeys.dockPosition) || "bottom",
+        dockAutoHide: os.storage.get(StorageKeys.dockAutoHide) === "true",
+        dockMagnification: os.storage.get(StorageKeys.dockMagnification) !== "false",
+        dockMagnifyAmount: Number(os.storage.get(StorageKeys.dockMagnifyAmount)) || 1.2,
+        dockMagnifyRange: Number(os.storage.get(StorageKeys.dockMagnifyRange)) || 3,
+        dockIconSize: Number(os.storage.get(StorageKeys.dockIconSize)) || 43,
+        dockScale: Number(os.storage.get(StorageKeys.dockScale)) || 100,
+        dockAnimationSpeed: Number(os.storage.get(StorageKeys.dockAnimationSpeed)) || 0.2
       };
 
       applyCursor(this.settings.cursorDataUrl);
@@ -132,6 +144,9 @@ export class SettingsApp extends BaseApp {
       applyUiDensity(this.settings.uiDensity);
       applyDesktopIconSize(this.settings.desktopIconSize);
       applyTaskbarScale(this.settings.taskbarScale);
+      applyDockIconSize(this.settings.dockIconSize);
+      applyDockScale(this.settings.dockScale);
+      applyDockAnimationSpeed(this.settings.dockAnimationSpeed);
 
       let resizeTimer;
       window.addEventListener("resize", () => {
@@ -162,6 +177,7 @@ export class SettingsApp extends BaseApp {
     }
 
     const win = os.window.create(winId, "Settings", "805px", "600px", {
+      ...options,
       icon: "fas fa-cog"
     });
     win.innerHTML = buildSettingsHTML(this.settings, this.wm);
@@ -231,12 +247,12 @@ export class SettingsApp extends BaseApp {
 
       const weather = !!gc("#settingsWeather");
       const cycleWallpaper = !!gc("#settingsCycleWallpaper");
-      const macOsControls = !!gc("#settingsMacControls");
       const clippy = !!gc("#settingsClippy");
       const achievementsDisabled = !gc("#settingsAchievements");
       const analyticsDisabled = !gc("#settingsAnalytics");
       const adsDisabled = !gc("#settingsAds");
       const disableDesktopStretchScroll = !!gc("#settingsDisableDesktopStretchScroll");
+      const hideDesktopIcons = !!gc("#settingsHideDesktopIcons");
       const showWorkspace = gc("#settingsShowWorkspace") ?? true;
       const cdnMirror = getSelectMenuValue("settingsCdnMirror", win) ?? "jsdelivr";
       const selectedAlignment =
@@ -270,9 +286,9 @@ export class SettingsApp extends BaseApp {
 
       os.storage.set(StorageKeys.weather, String(weather));
       os.storage.set(StorageKeys.cycleWallpaper, String(cycleWallpaper));
-      os.storage.set(StorageKeys.macOsControls, String(macOsControls));
       os.storage.set(StorageKeys.clippy, String(clippy));
       os.storage.set(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
+      os.storage.set(StorageKeys.hideDesktopIcons, String(hideDesktopIcons));
       os.storage.set(StorageKeys.showWorkspace, String(showWorkspace));
       os.storage.set(StorageKeys.achievementsDisabled, String(achievementsDisabled));
       os.storage.set(StorageKeys.analyticsDisabled, String(analyticsDisabled));
@@ -301,13 +317,23 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.wobbleCoupleK, String(wobbleCoupleK));
       os.storage.set(StorageKeys.desktopIconSize, String(this.settings.desktopIconSize));
       os.storage.set(StorageKeys.taskbarScale, String(this.settings.taskbarScale));
+      os.storage.set(StorageKeys.dockEnabled, String(this.settings.dockEnabled));
+      os.storage.set(StorageKeys.macOsControls, String(this.settings.dockEnabled));
+      os.storage.set(StorageKeys.dockPosition, this.settings.dockPosition);
+      os.storage.set(StorageKeys.dockAutoHide, String(this.settings.dockAutoHide));
+      os.storage.set(StorageKeys.dockMagnification, String(this.settings.dockMagnification));
+      os.storage.set(StorageKeys.dockMagnifyAmount, String(this.settings.dockMagnifyAmount));
+      os.storage.set(StorageKeys.dockMagnifyRange, String(this.settings.dockMagnifyRange));
+      os.storage.set(StorageKeys.dockIconSize, String(this.settings.dockIconSize));
+      os.storage.set(StorageKeys.dockScale, String(this.settings.dockScale));
+      os.storage.set(StorageKeys.dockAnimationSpeed, String(this.settings.dockAnimationSpeed));
 
       Object.assign(this.settings, {
         weather,
         cycleWallpaper,
-        macOsControls,
         clippy,
         disableDesktopStretchScroll,
+        hideDesktopIcons,
         showWorkspace,
         achievementsDisabled,
         analyticsDisabled,
@@ -334,7 +360,16 @@ export class SettingsApp extends BaseApp {
         wobbleMass,
         wobbleDragLag,
         wobbleCoupleK,
-        virtualResolution: this.settings.virtualResolution
+        virtualResolution: this.settings.virtualResolution,
+        dockEnabled: this.settings.dockEnabled,
+        dockPosition: this.settings.dockPosition,
+        dockAutoHide: this.settings.dockAutoHide,
+        dockMagnification: this.settings.dockMagnification,
+        dockMagnifyAmount: this.settings.dockMagnifyAmount,
+        dockMagnifyRange: this.settings.dockMagnifyRange,
+        dockIconSize: this.settings.dockIconSize,
+        dockScale: this.settings.dockScale,
+        dockAnimationSpeed: this.settings.dockAnimationSpeed
       });
 
       setCdnMirror(cdnMirror);
@@ -345,6 +380,9 @@ export class SettingsApp extends BaseApp {
       turboManager.setMode(selectedTurboMode);
       applyTransparentUI(transparentUI);
       applyFontFamily(selectedFontFamily);
+      applyDockIconSize(this.settings.dockIconSize);
+      applyDockScale(this.settings.dockScale);
+      applyDockAnimationSpeed(this.settings.dockAnimationSpeed);
       os.events.emit(BusEvents.SETTINGS_CHANGED, this.settings);
 
       this.showSavedMessage(win);

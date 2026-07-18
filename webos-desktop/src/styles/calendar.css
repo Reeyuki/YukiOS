@@ -292,3 +292,47 @@
   opacity: 1;
   text-decoration: underline;
 }
+
+.mac-mode .calendar-popup,
+html[data-theme].mac-mode .calendar-popup {
+  background: rgb(28 28 32 / 60%) !important;
+  backdrop-filter: blur(40px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+.mac-mode .calendar-nav-btn,
+html[data-theme].mac-mode .calendar-nav-btn {
+  background: rgb(28 28 32 / 55%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.mac-mode .calendar-nav-btn:hover,
+html[data-theme].mac-mode .calendar-nav-btn:hover {
+  background: rgb(28 28 32 / 65%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.mac-mode .calendar-alarm-item,
+html[data-theme].mac-mode .calendar-alarm-item {
+  background: rgb(28 28 32 / 55%) !important;
+}
+
+.mac-mode .calendar-day:not(.empty):hover,
+html[data-theme].mac-mode .calendar-day:not(.empty):hover {
+  background: rgb(28 28 32 / 62%) !important;
+}
+
+.mac-mode .calendar-today-btn,
+html[data-theme].mac-mode .calendar-today-btn {
+  background: var(--brand-dim) !important;
+  border-color: var(--brand) !important;
+}
+
+.mac-mode .calendar-today-btn:hover,
+html[data-theme].mac-mode .calendar-today-btn:hover {
+  background: var(--brand) !important;
+}
