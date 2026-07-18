@@ -8,6 +8,7 @@ import { applyFontFamily } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";
 import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
+import { animateThemeChange } from "../settings/themeTransition.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
 export const FEATURE_DATA = {
@@ -915,7 +916,9 @@ export class SetupApp extends BaseApp {
   applyTheme(theme) {
     const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
     const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
-    document.documentElement.setAttribute("data-theme", effective);
+    animateThemeChange(() => {
+      document.documentElement.setAttribute("data-theme", effective);
+    });
   }
 
   async completeSetup(win) {

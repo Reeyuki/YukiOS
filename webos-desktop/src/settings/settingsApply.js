@@ -4,6 +4,7 @@ import { getThemeColors } from "../shared/themeEngine.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { $, $$ } from "../shared/domUtils.js";
 import { applyResolution as applyResolutionTransform } from "../resolution/resolutionManager.js";
+import { animateThemeChange } from "./themeTransition.js";
 const desktop = document.getElementById("desktop");
 
 const LIGHT_THEMES = new Set([
@@ -31,8 +32,10 @@ const LIGHT_THEMES = new Set([
 export function applyTheme(theme, getCustomColors) {
   const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
   const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
-  document.documentElement.setAttribute("data-theme", effective);
-  document.documentElement.setAttribute("data-theme-mode", LIGHT_THEMES.has(effective) ? "light" : "dark");
+  animateThemeChange(() => {
+    document.documentElement.setAttribute("data-theme", effective);
+    document.documentElement.setAttribute("data-theme-mode", LIGHT_THEMES.has(effective) ? "light" : "dark");
+  });
 
   let styleEl = document.getElementById("yukios-theme-override");
   if (!styleEl) {

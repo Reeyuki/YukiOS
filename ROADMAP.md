@@ -91,11 +91,11 @@ Planned features and improvements for YukiOS.
 - [✅] Animated boot screen on first load
 - [✅] Calendar popup from taskbar clock with events ("Plans") system
 - [✅] **Startup app manager** — Choose which apps launch automatically on login (maybe add this feature into task manager.)
+- [✅] **Battery-aware performance** — Reduce animation fidelity and background activity automatically on low battery when running on mobile
+- [✅] **Smooth theme transition animation**
 - [📋] **Sound themes** — System-wide audio feedback for login, window open/close, notifications, errors
 - [📋] **Album art wallpaper** — Extract album art from currently playing music and set it as desktop wallpaper
-- [💡] **Battery-aware performance** — Reduce animation fidelity and background activity automatically on low battery when running on mobile
 - [💡] **Alt+Tab visual switcher with live thumbnails** — Replaces Alt+Q text cycling
-- [💡] **Smooth theme transition animation**
 - [💡] **Mac dropdown entry** — Add Mac mode as a boot mode in login screen that automatically enables mac window header setting and changes taskbar
 - [💡] **Add bash command to terminal for sh script execution**
 ---

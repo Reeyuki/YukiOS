@@ -2,7 +2,7 @@ import { os, StorageKeys } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { formatSize } from "../utils/utils.js";
 import { turboManager } from "../shared/turboManager.js";
-
+import { animateThemeChange } from "../settings/themeTransition.js";
 
 export function yukiHelpText() {
   return [
@@ -90,7 +90,9 @@ export async function cmdYuki(terminal, args) {
         break;
       }
       os.storage.set(StorageKeys.theme, name);
-      document.documentElement.setAttribute("data-theme", name);
+      animateThemeChange(() => {
+        document.documentElement.setAttribute("data-theme", name);
+      });
       os.events.emit("SETTINGS_CHANGED", { theme: name });
       await terminal.enqueuePrint(`  Theme switched to: ${name}`);
       break;
@@ -114,7 +116,9 @@ export async function cmdYuki(terminal, args) {
       if (val === "on" || val === "off") {
         const enabled = val === "on";
         os.storage.set(StorageKeys.dndKey, enabled ? "true" : "false");
-        try { os.notify.setDoNotDisturb(enabled); } catch {}
+        try {
+          os.notify.setDoNotDisturb(enabled);
+        } catch {}
         os.events.emit("SETTINGS_CHANGED", { dnd: enabled });
         await terminal.enqueuePrint(`  Do Not Disturb: ${val}`);
       } else {
@@ -235,7 +239,9 @@ export async function cmdYuki(terminal, args) {
           break;
         }
         default:
-          await terminal.enqueuePrint(`  Unknown subcommand: ${action}. Use: list, uninstall, install, disable, enable`);
+          await terminal.enqueuePrint(
+            `  Unknown subcommand: ${action}. Use: list, uninstall, install, disable, enable`
+          );
       }
       break;
     }

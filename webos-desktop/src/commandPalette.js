@@ -9,6 +9,7 @@ import { KeybindManager } from "./keybindManager.js";
 
 import { StorageKeys, os } from "./framework.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "./settings/settingsNav.js";
+import { animateThemeChange } from "./settings/themeTransition.js";
 export class CommandPalette {
   constructor(os) {
     this.os = os;
@@ -1115,7 +1116,9 @@ export class CommandPalette {
     os.storage.set(StorageKeys.theme, val);
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const effective = val === "auto" ? (prefersDark ? "dark" : "light") : val;
-    document.documentElement.setAttribute("data-theme", effective);
+    animateThemeChange(() => {
+      document.documentElement.setAttribute("data-theme", effective);
+    });
     os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: val });
     os.notify.send("Theme Changed", `System appearance set to ${val}`, {
       type: "success",
