@@ -695,7 +695,25 @@ export class SessionManager {
       if (setupApp) setTimeout(() => setupApp.open(), 1000);
     }
 
+    this.launchStartupApps();
+
     this.startIdleDetection();
+  }
+
+  launchStartupApps() {
+    try {
+      const startupApps = os.storage.get(StorageKeys.startupApps);
+      if (!startupApps || !Array.isArray(startupApps) || startupApps.length === 0) return;
+      const delay = 800;
+      startupApps.forEach((appId, i) => {
+        setTimeout(
+          () => {
+            os.app.launch(appId).catch(() => {});
+          },
+          (i + 1) * delay
+        );
+      });
+    } catch {}
   }
 
   lockToLoginScreen() {

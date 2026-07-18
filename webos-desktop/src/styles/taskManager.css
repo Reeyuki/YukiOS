@@ -443,3 +443,73 @@
   background: rgba(var(--brand-rgb, 130, 100, 255), 0.13);
   color: var(--brand);
 }
+
+.tm-row-startup-enabled {
+  background: var(--brand-dim);
+}
+
+.tm-startup-toggle {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 29px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.tm-startup-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.tm-startup-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--glass-border);
+  border-radius: 29px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.tm-startup-slider::before {
+  content: "";
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  left: 5px;
+  top: 5px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.tm-startup-toggle input:checked + .tm-startup-slider {
+  background: var(--brand);
+}
+
+.tm-startup-toggle input:checked + .tm-startup-slider::before {
+  transform: translateX(22px);
+}
+
+#tm-panel-startup .tm-td {
+  font-size: 18px;
+  padding: 16px 18px;
+}
+
+#tm-panel-startup .tm-proc-icon-fa {
+  font-size: 40px;
+  margin-right: 14px;
+}
+
+#tm-panel-startup .tm-proc-icon-img {
+  width: 40px;
+  height: 40px;
+  margin-right: 14px;
+}
+
+#tm-panel-startup .tm-proc-icon-placeholder {
+  width: 40px;
+  margin-right: 14px;
+}

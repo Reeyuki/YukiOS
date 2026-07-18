@@ -180,7 +180,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 - VS Code
 - Run (Ctrl+R quick-launch)
 - Settings
-- Task Manager
+- Task Manager with system diagnostics and startup app functionality
 - Calculator
 - Clock (alarms, stopwatch, timer)
 - Shortcuts

@@ -2,7 +2,7 @@ import "../styles/taskManager.css";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import { BusEvents } from "../core/EventBusConstants.js";
 
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 import { processManager } from "../services/ProcessManager.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
@@ -21,6 +21,27 @@ export class TaskManagerApp extends BaseApp {
     this.startFrameMonitor();
     this.startLongTaskMonitor();
     processManager.init();
+    this.startupApps = this.loadStartupApps();
+    this.startupFilter = "";
+  }
+
+  loadStartupApps() {
+    try {
+      return os.storage.get(StorageKeys.startupApps) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveStartupApps() {
+    os.storage.set(StorageKeys.startupApps, this.startupApps);
+  }
+
+  toggleStartupApp(appId) {
+    const idx = this.startupApps.indexOf(appId);
+    if (idx >= 0) this.startupApps.splice(idx, 1);
+    else this.startupApps.push(appId);
+    this.saveStartupApps();
   }
 
   startFrameMonitor() {
@@ -74,6 +95,9 @@ export class TaskManagerApp extends BaseApp {
           </button>
           <button id="tm-tab-perf" data-tab="perf" class="tm-nav-item">
             <i class="fa fa-area-chart tm-nav-icon"></i>Performance
+          </button>
+          <button id="tm-tab-startup" data-tab="startup" class="tm-nav-item">
+            <i class="fa fa-rocket tm-nav-icon"></i>Startup
           </button>
         </div>
 
@@ -154,6 +178,38 @@ export class TaskManagerApp extends BaseApp {
             </div>
           </div>
 
+          <div id="tm-panel-startup" class="tm-panel-proc" style="display:none">
+            <div class="tm-panel-header">
+              <span class="tm-panel-title">Startup Apps</span>
+              <div class="tm-search-wrap">
+                <span class="tm-search-icon"><i class="fa fa-search"></i></span>
+                <input id="tm-filter-startup" class="tm-filter-input" placeholder="Search apps…"/>
+                <span id="tm-count-startup" class="tm-count"></span>
+              </div>
+            </div>
+            <div class="tm-table-wrap">
+              <table class="tm-table">
+                <colgroup>
+                  <col style="width:auto">
+                  <col style="width:80px">
+                </colgroup>
+                <thead>
+                  <tr class="tm-thead-row">
+                    <th class="tm-th">App</th>
+                    <th class="tm-th tm-th-right">On Startup</th>
+                  </tr>
+                </thead>
+                <tbody id="tm-tbody-startup"></tbody>
+              </table>
+            </div>
+            <div class="tm-footer">
+              <span id="tm-startup-info" class="tm-selected-label"></span>
+              <div class="tm-footer-actions">
+                <button id="tm-btn-startup-disable-all" class="tm-action-btn">Disable All</button>
+              </div>
+            </div>
+          </div>
+
           <div id="tm-panel-perf" class="tm-panel-perf">
             <div class="tm-panel-header">
               <span class="tm-panel-title">Performance</span>
@@ -212,22 +268,26 @@ export class TaskManagerApp extends BaseApp {
     const tabProc = $("#tm-tab-proc", win);
     const tabApps = $("#tm-tab-apps", win);
     const tabPerf = $("#tm-tab-perf", win);
+    const tabStartup = $("#tm-tab-startup", win);
     const panelProc = $("#tm-panel-proc", win);
     const panelApps = $("#tm-panel-apps", win);
     const panelPerf = $("#tm-panel-perf", win);
+    const panelStartup = $("#tm-panel-startup", win);
 
     const switchTo = (tab, panel, type) => {
-      [tabProc, tabApps, tabPerf].forEach((t) => t.classList.remove("tm-nav-active"));
-      [panelProc, panelApps, panelPerf].forEach((p) => (p.style.display = "none"));
+      [tabProc, tabApps, tabPerf, tabStartup].forEach((t) => t.classList.remove("tm-nav-active"));
+      [panelProc, panelApps, panelPerf, panelStartup].forEach((p) => (p.style.display = "none"));
       tab.classList.add("tm-nav-active");
       panel.style.display = "flex";
       if (type === "perf") this.renderSysInfo(win);
+      else if (type === "startup") this.renderStartupApps(win);
       else this.renderProcesses(win, type);
     };
 
     tabProc.onclick = () => switchTo(tabProc, panelProc, "proc");
     tabApps.onclick = () => switchTo(tabApps, panelApps, "apps");
     tabPerf.onclick = () => switchTo(tabPerf, panelPerf, "perf");
+    tabStartup.onclick = () => switchTo(tabStartup, panelStartup, "startup");
 
     $("#tm-filter", win).oninput = (e) => {
       this.filter = e.target.value.toLowerCase();
@@ -276,7 +336,19 @@ export class TaskManagerApp extends BaseApp {
       setTimeout(() => this.renderProcesses(win, "apps"), 200);
     };
 
+    $("#tm-filter-startup", win).oninput = (e) => {
+      this.startupFilter = e.target.value.toLowerCase();
+      this.renderStartupApps(win);
+    };
+
+    $("#tm-btn-startup-disable-all", win).onclick = () => {
+      this.startupApps = [];
+      this.saveStartupApps();
+      this.renderStartupApps(win);
+    };
+
     $$(".tm-th", win).forEach((th) => {
+      if (!th.dataset.key) return;
       th.onclick = () => {
         const key = th.dataset.key;
         if (this.sortKey === key) this.sortAsc = !this.sortAsc;
@@ -319,6 +391,7 @@ export class TaskManagerApp extends BaseApp {
     setText(countEl, `${procs.length} ${isAppsTab ? "app" : "process"}${procs.length !== 1 ? "es" : ""}`);
 
     $$(".tm-th", win).forEach((th) => {
+      if (!th.dataset.key) return;
       const arrow = th.dataset.key === this.sortKey ? (this.sortAsc ? " ↑" : " ↓") : "";
       th.textContent = { title: "Name", cpu: "CPU", mem: "Memory", status: "Status" }[th.dataset.key] + arrow;
     });
@@ -453,6 +526,78 @@ export class TaskManagerApp extends BaseApp {
       : allProcs.filter((p) => !filterValue || p.title.toLowerCase().includes(filterValue));
     const allSelected = visibleProcs.length > 0 && visibleProcs.every((p) => selectedSet.has(p.winId));
     selectAllBtn.textContent = allSelected ? "Deselect All" : "Select All";
+  }
+
+  getSystemApps() {
+    const allApps = os.app.getAllApps();
+    return Object.entries(allApps)
+      .filter(([, entry]) => entry.type === "system")
+      .map(([id, entry]) => ({ id, title: entry.title, icon: entry.icon }));
+  }
+
+  renderStartupApps(win) {
+    const apps = this.getSystemApps();
+    const filter = this.startupFilter;
+    const filtered = filter ? apps.filter((a) => a.title && a.title.toLowerCase().includes(filter)) : [...apps];
+
+    filtered.sort((a, b) => {
+      const aOn = this.startupApps.includes(a.id);
+      const bOn = this.startupApps.includes(b.id);
+      if (aOn && !bOn) return -1;
+      if (!aOn && bOn) return 1;
+      return (a.title || "").localeCompare(b.title || "");
+    });
+
+    const tbody = $("#tm-tbody-startup", win);
+    const countEl = $("#tm-count-startup", win);
+    const infoEl = $("#tm-startup-info", win);
+
+    setText(countEl, `${this.startupApps.length} / ${apps.length}`);
+    setText(infoEl, `${this.startupApps.length} of ${apps.length} apps launch on startup`);
+
+    if (filtered.length === 0) {
+      setHTML(tbody, '<tr><td colspan="2" class="tm-empty-row">No apps found</td></tr>');
+      return;
+    }
+
+    setHTML(
+      tbody,
+      filtered
+        .map((app) => {
+          const enabled = this.startupApps.includes(app.id);
+          const iconHtml = app.icon
+            ? app.icon.startsWith("http") || app.icon.startsWith("/")
+              ? `<img src="${app.icon}" class="tm-proc-icon-img">`
+              : `<i class="${app.icon} tm-proc-icon-fa"></i>`
+            : `<span class="tm-proc-icon-placeholder"></span>`;
+
+          return `<tr class="tm-row ${enabled ? "tm-row-startup-enabled" : ""}" data-app-id="${app.id}">
+            <td class="tm-td tm-td-name">
+              <span class="tm-bar-content">${iconHtml}${app.title}</span>
+            </td>
+            <td class="tm-td tm-td-right">
+              <label class="tm-startup-toggle">
+                <input type="checkbox" class="tm-startup-cb" ${enabled ? "checked" : ""}>
+                <span class="tm-startup-slider"></span>
+              </label>
+            </td>
+          </tr>`;
+        })
+        .join("")
+    );
+
+    tbody.querySelectorAll(".tm-startup-cb").forEach((cb) => {
+      cb.addEventListener("change", (e) => {
+        const row = e.target.closest(".tm-row");
+        if (!row) return;
+        const appId = row.dataset.appId;
+        this.toggleStartupApp(appId);
+        row.classList.toggle("tm-row-startup-enabled", cb.checked);
+        const apps2 = this.getSystemApps();
+        setText(countEl, `${this.startupApps.length} / ${apps2.length}`);
+        setText(infoEl, `${this.startupApps.length} of ${apps2.length} apps launch on startup`);
+      });
+    });
   }
 
   resolveCSSVar(name) {
