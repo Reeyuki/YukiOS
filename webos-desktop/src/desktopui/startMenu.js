@@ -1753,7 +1753,6 @@ function populateCategoryPage(category, appLauncher) {
 }
 
 function showAppItemContextMenu(e, appId, appData) {
-  console.log("[StartMenu] Context menu triggered for:", appId, appData);
   showDynamicContextMenu(e, (menu, item, hr) => {
     menu.appendChild(
       item(
@@ -1899,7 +1898,6 @@ function createAppItem(appId, appData) {
   });
 
   item.addEventListener("contextmenu", (e) => {
-    console.log("[StartMenu] contextmenu event on item:", appId);
     e.preventDefault();
     e.stopPropagation();
     showAppItemContextMenu(e, appId, appData);

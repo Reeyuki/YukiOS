@@ -24,7 +24,10 @@ export class ISOFileSystem {
     const bytes = new Uint8Array(this.buffer, offset, len);
     let end = len;
     for (let i = 0; i < len; i++) {
-      if (bytes[i] === 0) { end = i; break; }
+      if (bytes[i] === 0) {
+        end = i;
+        break;
+      }
     }
     return new TextDecoder("ascii").decode(bytes.slice(0, end));
   }
@@ -117,7 +120,10 @@ export class ISOFileSystem {
       let name = rawName;
       const semi = name.indexOf(";");
       if (semi > 0) name = name.substring(0, semi);
-      if (!name) { pos += recordLen; continue; }
+      if (!name) {
+        pos += recordLen;
+        continue;
+      }
 
       const extent = this.readBoth(off + pos + 2);
       const fileSize = this.readBoth(off + pos + 10);
@@ -137,16 +143,6 @@ export class ISOFileSystem {
       pos += recordLen;
     }
 
-    if (entries.size === 0) {
-      console.warn("[ISO] Root directory parsed but has 0 entries", {
-        extent: dirNode.extent,
-        size: dirNode.size,
-        offset: dirNode.extent * this.sectorSize,
-        bufferSize: this.buffer.byteLength,
-        sectorSize: this.sectorSize,
-        joliet: dirNode.joliet
-      });
-    }
     dirNode.entries = entries;
   }
 

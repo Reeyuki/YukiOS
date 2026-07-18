@@ -193,14 +193,18 @@ export class TaskManagerApp extends BaseApp {
       if (tabApps) tabApps.click();
     }, 100);
 
-    $(".close-btn", win).addEventListener("click", () => {
+    const cleanup = () => {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
       if (this.windowChangeHandlers) {
         os.events.off(BusEvents.WINDOW_CREATED, this.windowChangeHandlers);
         os.events.off(BusEvents.WINDOW_CLOSED, this.windowChangeHandlers);
+        os.events.off(BusEvents.WINDOW_CLOSED, cleanup);
         this.windowChangeHandlers = null;
       }
+    };
+    os.events.on(BusEvents.WINDOW_CLOSED, (data) => {
+      if (data?.winId === win.id) cleanup();
     });
   }
 
@@ -451,6 +455,25 @@ export class TaskManagerApp extends BaseApp {
     selectAllBtn.textContent = allSelected ? "Deselect All" : "Select All";
   }
 
+  resolveCSSVar(name) {
+    if (!this._resolvedCache) this._resolvedCache = {};
+    if (this._resolvedCache[name]) return this._resolvedCache[name];
+    const el = document.createElement("div");
+    el.style.color = `var(${name})`;
+    document.body.appendChild(el);
+    const color = getComputedStyle(el).color;
+    document.body.removeChild(el);
+    this._resolvedCache[name] = color;
+    return color;
+  }
+
+  resolveCSSVarWithAlpha(name, alpha) {
+    const base = this.resolveCSSVar(name);
+    const m = base.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (m) return `rgba(${m[1]},${m[2]},${m[3]},${alpha})`;
+    return base;
+  }
+
   drawGraph(canvas, history, color) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -458,10 +481,11 @@ export class TaskManagerApp extends BaseApp {
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    ctx.fillStyle = "var(--bg-primary)";
+    const bg = this.resolveCSSVar("--bg-primary");
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = "var(--bg-primary)";
+    ctx.strokeStyle = bg;
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = (h / 4) * i;
@@ -472,9 +496,11 @@ export class TaskManagerApp extends BaseApp {
     }
 
     const step = w / (history.length - 1);
+    const varName = color.replace(/^var\(|\)$/g, "");
+    const resolvedColor = this.resolveCSSVar(varName);
     const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, color + "55");
-    grad.addColorStop(1, color + "00");
+    grad.addColorStop(0, this.resolveCSSVarWithAlpha(varName, 0.33));
+    grad.addColorStop(1, this.resolveCSSVarWithAlpha(varName, 0));
 
     ctx.beginPath();
     ctx.moveTo(0, h);
@@ -485,7 +511,7 @@ export class TaskManagerApp extends BaseApp {
     ctx.fill();
 
     ctx.beginPath();
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = resolvedColor;
     ctx.lineWidth = 1.5;
     history.forEach((v, i) => {
       const x = i * step;
@@ -588,5 +614,4 @@ export class TaskManagerApp extends BaseApp {
 
     this.windowChangeHandlers = handleWindowChange;
   }
-
 }

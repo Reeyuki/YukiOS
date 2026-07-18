@@ -35,12 +35,15 @@ export class AppAPI {
 
   get apps() {
     if (!this._appsProxy) {
-      this._appsProxy = new Proxy({}, {
-        get: (_: any, prop: string) => {
-          if (typeof prop !== "string") return undefined;
-          return this._registry.get(prop) || this._registry.get(prop + "App") || null;
+      this._appsProxy = new Proxy(
+        {},
+        {
+          get: (_: any, prop: string) => {
+            if (typeof prop !== "string") return undefined;
+            return this._registry.get(prop) || this._registry.get(prop + "App") || null;
+          }
         }
-      });
+      );
     }
     return this._appsProxy;
   }
@@ -81,7 +84,7 @@ export class AppAPI {
   }
 
   hasApp(appId: string): boolean {
-    return !!(this._launcher?.appMap?.[appId]);
+    return !!this._launcher?.appMap?.[appId];
   }
 
   searchApps(query: string): string[] {
@@ -152,6 +155,10 @@ export class TrayAPI {
     return this.tray.isRegistered(winId);
   }
 
+  isInTray(winId: string): boolean {
+    return this.tray.isInTray(winId);
+  }
+
   updateItemVisibility(winId: string, visible: boolean): void {
     const item = this.tray.items.get(winId);
     if (item) {
@@ -189,7 +196,13 @@ class TorAPI {
     return this.require().post(url, body);
   }
 
-  request(method: string, url: string, headers?: Record<string, string>, body?: Uint8Array, timeout?: number): Promise<Response> {
+  request(
+    method: string,
+    url: string,
+    headers?: Record<string, string>,
+    body?: Uint8Array,
+    timeout?: number
+  ): Promise<Response> {
     return this.require().request(method, url, headers, body, timeout);
   }
 

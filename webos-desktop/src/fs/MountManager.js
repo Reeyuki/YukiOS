@@ -55,7 +55,6 @@ export class MountManager {
         }
       }
       this.isReady = true;
-      console.log(`[MountManager] Initialized with ${this.mounts.size} mount(s)`);
     } catch (e) {
       console.warn("[MountManager] Init error:", e);
       this.isReady = true;

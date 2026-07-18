@@ -567,7 +567,6 @@ export class FileSystemManager {
 
     const isoFS = new ISOFileSystem(buffer);
 
-    console.log("[ISO] Mounted:", isoFS.debugInfo());
     let label = isoFS.volumeLabel || name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_\-. ]/g, "_");
     if (!label) label = "Unknown Disc";
 

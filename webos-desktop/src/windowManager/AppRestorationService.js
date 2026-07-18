@@ -375,7 +375,6 @@ export class AppRestorationService {
 
   logRestore(message) {
     this.restoreLog.push(message);
-    console.log(`[AppRestoration] ${message}`);
   }
 
   getRestoreLog() {

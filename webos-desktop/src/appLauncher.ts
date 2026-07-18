@@ -52,9 +52,9 @@ export class AppLauncher {
     this.services = services instanceof Map ? Object.fromEntries(services) : services;
     Object.assign(this, this.services);
 
-    this.taskManager = services.taskManagerApp;
-    this.adsManager = services.adsApp;
-    this.brightnessApp = services.displayPerformanceApp;
+    this.taskManager = this.services.taskManagerApp;
+    this.adsManager = this.services.adsApp;
+    this.brightnessApp = this.services.displayPerformanceApp;
 
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
 
@@ -133,6 +133,23 @@ export class AppLauncher {
 
   setEmulatorApp(emulatorApp: any): void {
     this.emulatorApp = emulatorApp;
+  }
+
+  listRunningApps(): Array<{ winId: string; title: string; icon: string; status: string }> {
+    const apps: Array<{ winId: string; title: string; icon: string; status: string }> = [];
+    const seen = new Set<string>();
+    this.wm.openWindows.forEach((entry: any, winId: string) => {
+      if (seen.has(winId)) return;
+      seen.add(winId);
+      if (os.tray.isInTray(winId)) return;
+      apps.push({
+        winId,
+        title: entry.title || winId,
+        icon: entry.iconValue || "fas fa-window-maximize",
+        status: "Running"
+      });
+    });
+    return apps;
   }
 
   registerAppsFromMap(): void {
@@ -273,36 +290,19 @@ export class AppLauncher {
         this.openIframeApp({ appId: app, type: "segaMD", source: info.url, originalName: app, ...appExtra }),
       game: async () => {
         let source = info.url;
-        console.log(
-          "[AppLauncher Game] Launching app:",
-          app,
-          "Scramjet enabled:",
-          info?.scramjetEnabled,
-          "Proxy enabled:",
-          info?.proxyEnabled,
-          "Source:",
-          source
-        );
 
         if (info?.scramjetEnabled) {
           const wispUrl =
             os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
           source = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
-          console.log("[AppLauncher Game] Using scramjet template:", source);
         } else if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
-          console.log("[AppLauncher Game] Fetching through proxy, index:", proxyIndex);
           try {
             source = await fetchHtmlThroughProxy(source, proxyIndex, PROXIES);
-            console.log("[AppLauncher Game] Got blob URL:", source);
           } catch (e) {
-            console.error("[AppLauncher Game] Failed to fetch through proxy:", e);
-            console.log("[AppLauncher Game] Falling back to direct proxy URL");
             source = buildProxyUrl(source, proxyIndex, PROXIES);
-            console.log("[AppLauncher Game] Fallback URL:", source);
           }
         }
-        console.log("[AppLauncher Game] Calling openIframeApp with source:", source);
         this.openIframeApp({ appId: app, type: "game", source, originalName: app, analyticsBase, ...appExtra });
       },
       html: () => this.openHtmlApp(app, info.html, info),

@@ -56,7 +56,6 @@ class ClipboardManager {
 
     if (selectedText) {
       this.set(selectedText, "text");
-      console.log("[ClipboardManager] Captured:", selectedText.substring(0, 50));
     }
   }
 
