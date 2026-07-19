@@ -30,8 +30,8 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png)
 ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png)
 ![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
-[Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
-[Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
+![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
+![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
 ![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
 
 # Desktop Experience
