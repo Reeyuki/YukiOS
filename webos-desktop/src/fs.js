@@ -9,11 +9,9 @@ import { TrashManager } from "./fs/TrashManager.js";
 import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
 import { ISOFileSystem } from "./isoFS.js";
-
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 
 const DEFAULT_STATICALLY_GH_BASE = CDN_BASES.MAIN;
-export { DEFAULT_WALLPAPER_FILES };
 
 function defaultWallpaperUrl(nameOrPath) {
   if (typeof nameOrPath !== "string") return nameOrPath;
