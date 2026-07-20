@@ -39,7 +39,6 @@ export function renderTilingSettings() {
   const borderRadius = getConfigVal("border_radius", 4);
   const resizeDelta = getConfigVal("resize_delta", 0.05);
   const animDuration = getConfigVal("animation_duration", 200);
-  const animEasing = getConfigVal("animation_easing", "ease");
   const mouseResize = getConfigVal("mouse_resize", true);
   const wsDelay = getConfigVal("workspace_switch_delay", 320);
   const resizeDebounce = getConfigVal("resize_debounce", 150);
@@ -219,23 +218,6 @@ export function renderTilingSettings() {
           </div>
           ${rs("settingsTilingAnimDuration", animDuration, 0, 500, 25)}
         </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Animation Easing</span>
-            <span class="settings-label-desc">CSS easing function for transitions</span>
-          </div>
-          <div id="settingsTilingAnimEasing" class="select-menu" data-placeholder="ease" data-selected="${animEasing}">
-            <div class="select-menu-trigger"><span class="select-menu-label">${animEasing}</span><i class="fas fa-chevron-down"></i></div>
-            <div class="select-menu-options">
-              <div class="select-menu-option" data-value="ease">ease</div>
-              <div class="select-menu-option" data-value="ease-in-out">ease-in-out</div>
-              <div class="select-menu-option" data-value="ease-in">ease-in</div>
-              <div class="select-menu-option" data-value="ease-out">ease-out</div>
-              <div class="select-menu-option" data-value="linear">linear</div>
-              <div class="select-menu-option" data-value="cubic-bezier(0.4, 0, 0.2, 1)">cubic-bezier(0.4, 0, 0.2, 1)</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="settings-card" id="sc-tiling-performance">
@@ -278,7 +260,6 @@ export function bindTilingCategory(win, save, settings) {
     borderWidth: () => getRangeSliderValue("settingsTilingBorderWidth", win),
     borderRadius: () => getRangeSliderValue("settingsTilingBorderRadius", win),
     animDuration: () => getRangeSliderValue("settingsTilingAnimDuration", win),
-    animEasing: () => getSelectMenuValue("settingsTilingAnimEasing", win),
     wsDelay: () => getRangeSliderValue("settingsTilingWsDelay", win),
     resizeDebounce: () => getRangeSliderValue("settingsTilingResizeDebounce", win)
   };
@@ -294,7 +275,6 @@ export function bindTilingCategory(win, save, settings) {
       border_radius: Number(els.borderRadius()),
       resize_delta: Number(els.resizeDelta()),
       animation_duration: Number(els.animDuration()),
-      animation_easing: els.animEasing() || "ease",
       mouse_resize: els.mouseResize?.checked ?? true,
       workspace_switch_delay: Number(els.wsDelay()),
       resize_debounce: Number(els.resizeDebounce())
