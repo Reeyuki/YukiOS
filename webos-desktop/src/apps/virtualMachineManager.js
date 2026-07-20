@@ -6,7 +6,7 @@ const OS_LIST = [
   {
     id: "win11",
     name: "Windows 11",
-    url: "https://selenite.cc/resources/sppa/11/index.html",
+    url: "https://test.webos.tenfell.cn",
     color: "#0078d4",
     icon: "fab fa-windows"
   },

@@ -1,6 +1,6 @@
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
-import { shouldEnableAds } from "../ads.js";
+import { injectAdsterraAd } from "../ads.js";
 import { steamAudio } from "./steamAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { StorageKeys, os } from "../framework.js";
@@ -731,23 +731,8 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     });
   }
 
-  const injectAd = (slotId, key, height, width) => {
-    if (!shouldEnableAds()) return;
-    const slot = storePage.querySelector(`#${slotId}`);
-    if (!slot) return;
-    const cfgScript = document.createElement("script");
-    cfgScript.text = `atOptions = { 'key': '${key}', 'format': 'iframe', 'height': ${height}, 'width': ${width}, 'params': {} };`;
-    slot.appendChild(cfgScript);
-    const invokeScript = document.createElement("script");
-    invokeScript.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
-    invokeScript.async = true;
-    slot.appendChild(invokeScript);
-  };
-
-  injectAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160);
-  setTimeout(() => {
-    injectAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160);
-  }, 1000);
+  injectAdsterraAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160, 0);
+  injectAdsterraAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160, 1000);
 }
 
 window.addEventListener("steam-settings-changed", (e) => {

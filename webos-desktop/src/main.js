@@ -18,7 +18,6 @@ import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
 
 import { setDesktopUI, handleSteamUrlParam } from "./games/games.js";
-import { AdsManager } from "./ads.js";
 import { registerPWA } from "./pwa/pwa.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
@@ -109,9 +108,6 @@ const jsDosApp = preloaded.jsDosApp;
 const v86App = preloaded.v86app;
 const settingsApp = preloaded.settingsApp;
 const appCreatorApp = preloaded.appCreatorApp;
-
-const adsManager = new AdsManager(windowManager);
-os.app.register("adsApp", adsManager);
 
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app._registry);
 os.setAppLauncher(appLauncher);
