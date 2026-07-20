@@ -1,5 +1,6 @@
 import { turboManager } from "../shared/turboManager.js";
 import { StorageKeys, os } from "../framework.js";
+import { SystemUtilities } from "../system.js";
 
 class BatteryPerformanceManager {
   constructor() {
@@ -26,10 +27,6 @@ class BatteryPerformanceManager {
       this.threshold = os.storage.get(StorageKeys.batterySaverThreshold) || 20;
     } catch {
       this.threshold = 20;
-    }
-
-    if (this.isMobile) {
-      this.applyMobileDefaults();
     }
 
     if ("getBattery" in navigator) {
@@ -77,7 +74,11 @@ class BatteryPerformanceManager {
 
   mobileLowBattery(level) {
     this.saverActive = true;
+    document.documentElement.classList.add("battery-saver");
     turboManager.setMode("turbo");
+
+    const vc = document.getElementById("vanta-container");
+    if (vc) SystemUtilities.disableVantaWallpaper();
 
     os.notify.send("Battery Saver", `Battery critically low (${level}%) - switched to maximum power saving.`, {
       type: "warning",
@@ -88,7 +89,10 @@ class BatteryPerformanceManager {
 
   mobileBatteryRecovered() {
     this.saverActive = false;
+    document.documentElement.classList.remove("battery-saver");
     turboManager.setMode("balanced");
+
+    SystemUtilities.loadWallpaper();
 
     os.notify.send("Battery Saver", "Battery recovered - back to reduced effects mode.", {
       type: "info",
@@ -104,23 +108,32 @@ class BatteryPerformanceManager {
     turboManager.setMode("turbo");
     document.documentElement.classList.add("battery-saver");
 
+    const vc = document.getElementById("vanta-container");
+    if (vc) SystemUtilities.disableVantaWallpaper();
+
     const vid = document.getElementById("wallpaper-video");
     if (vid && !vid.paused) {
       vid.pause();
       vid.dataset.batterySaverPaused = "true";
     }
 
-    os.notify.send("Battery Saver", `Battery at ${level}% - reduced animations and background activity to save power.`, {
-      type: "warning",
-      duration: 5000,
-      icon: "fa-battery-quarter"
-    });
+    os.notify.send(
+      "Battery Saver",
+      `Battery at ${level}% - reduced animations and background activity to save power.`,
+      {
+        type: "warning",
+        duration: 5000,
+        icon: "fa-battery-quarter"
+      }
+    );
   }
 
   desktopRestore(reason) {
     if (!this.saverActive) return;
 
     document.documentElement.classList.remove("battery-saver");
+
+    SystemUtilities.loadWallpaper();
 
     const vid = document.getElementById("wallpaper-video");
     if (vid && vid.dataset.batterySaverPaused === "true") {
@@ -134,9 +147,10 @@ class BatteryPerformanceManager {
 
     this.saverActive = false;
 
-    const msg = reason === "Charging"
-      ? "Device is charging - full performance restored."
-      : "Battery level recovered - full performance restored.";
+    const msg =
+      reason === "Charging"
+        ? "Device is charging - full performance restored."
+        : "Battery level recovered - full performance restored.";
 
     os.notify.send("Battery Saver Off", msg, {
       type: "success",

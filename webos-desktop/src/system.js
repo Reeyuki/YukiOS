@@ -793,4 +793,10 @@ export class SystemUtilities {
   static async getLoginWallpaper() {
     return await WallpaperManager.getLoginWallpaper();
   }
+  static disableVantaWallpaper() {
+    WallpaperStore.destroyVantaInstance();
+    document.getElementById("vanta-container")?.remove();
+    const fallback = WallpaperManager.pickStaticFallbackWallpaper();
+    WallpaperManager.applyWallpaper(fallback);
+  }
 }
