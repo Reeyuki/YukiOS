@@ -234,10 +234,6 @@ export class AppLauncher {
     const analyticsBase = getAnalyticsBase(app);
     sendLaunchAnalytics(app);
 
-    if (HIGHLIGHTED_GAMES.has(app)) {
-      this.adsManager?.maybeSpawnAd();
-    }
-
     const clippyEntry = this.clippyMap[app];
     if (clippyEntry) {
       clippySpeak(clippyEntry.message, clippyEntry.animation);

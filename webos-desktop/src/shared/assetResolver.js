@@ -393,7 +393,24 @@ export async function fetchHtmlAsBlobUrl(url) {
       "catfish",
       "roblox",
       "gamesforaetheris",
-      "cat_fish"
+      "cat_fish",
+      "miside",
+      "BirthdayBash",
+      "boilNoodlesAtNight",
+      "cuphead",
+      "brotatoPawsNClaws",
+      "cheeseRolling",
+      "fez",
+      "theManFromTheWindow2",
+      "beatblock",
+      "happyRoom",
+      "agesOfConflict",
+      "whileTrueLearn",
+      "theAdventuresOfSirKicksalot",
+      "granny3",
+      "peakVeryWip",
+      "amongUs",
+      "gta3"
     ].some((p) => url.toLowerCase().includes(p.toLowerCase())) || url.toLowerCase().includes("catgoesfishing.html");
 
   let rewritten = html;

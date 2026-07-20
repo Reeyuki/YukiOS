@@ -1162,7 +1162,7 @@ export const appMap = {
     type: "game",
     title: "Diep IO",
     url: "https://diep.io",
-    icon: "/static/icons/diep.webp"
+    icon: "/static/icons/diep.jpg"
   },
   yorgIO: {
     type: "game",
@@ -1265,5 +1265,131 @@ export const appMap = {
     url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/subwaySurfers/clsubwaysurferszurich.html",
     icon: "/static/icons/zurich.webp",
     title: "Subway Surfers Zurich"
+  },
+  bendyAndTheInkMachine: {
+    type: "game",
+    url: "/static/games/wasm/bendyAndTheInkMachine/index.html",
+    icon: "/static/icons/bendyAndTheInkMachine.png",
+    title: "Bendy and the Ink Machine"
+  },
+  miside: {
+    type: "game",
+    url: "/static/games/wasm/miside/index.html",
+    icon: "/static/icons/miside.jpg",
+    title: "MiSide"
+  },
+  baldisBasicsBirthdayBash: {
+    type: "game",
+    url: "/static/games/wasm/baldisBasicsBirthdayBash/index.html",
+    icon: "/static/icons/baldisBasicsBirthdayBash.png",
+    title: "Baldi's Basics Birthday Bash"
+  },
+  boilNoodlesAtNight: {
+    type: "game",
+    url: "/static/games/wasm/boilNoodlesAtNight/index.html",
+    icon: "/static/icons/boilNoodlesAtNight.webp",
+    title: "Boil Noodles at Night"
+  },
+  cuphead: {
+    type: "game",
+    url: "/static/games/wasm/cuphead/index.html",
+    icon: "/static/icons/cuphead.png",
+    title: "Cuphead"
+  },
+  cheeseRolling: {
+    type: "game",
+    url: "/static/games/wasm/cheeseRolling/index.html",
+    icon: "/static/icons/cheeseRolling.jpg",
+    title: "Cheese Rolling"
+  },
+  brotatoPawsNClaws: {
+    type: "game",
+    url: "/static/games/wasm/brotatoPawsNClaws/index.html",
+    icon: "/static/icons/brotatoPawsNClaws.png",
+    title: "Brotato Paws n' Claws"
+  },
+  oneShotWorldMachineEdition: {
+    type: "game",
+    url: "/static/games/wasm/oneShotWorldMachineEdition/index.html",
+    icon: "/static/icons/oneShotWorldMachineEdition.avif",
+    title: "One Shot: World Machine Edition"
+  },
+  helltaker: {
+    type: "game",
+    url: "/static/games/wasm/helltaker/index.html",
+    icon: "/static/icons/helltaker.jpg",
+    title: "Helltaker"
+  },
+  diceAMillion: {
+    type: "game",
+    url: "/static/games/wasm/diceAMillion/index.html",
+    icon: "/static/icons/diceAMillion.webp",
+    title: "Dice A Million"
+  },
+  theManFromTheWindow2: {
+    type: "game",
+    url: "/static/games/wasm/theManFromTheWindow2/index.html",
+    icon: "/static/icons/theManFromTheWindow2.webp",
+    title: "The Man From The Window 2"
+  },
+  fez: {
+    type: "game",
+    url: "/static/games/wasm/fez/index.html",
+    icon: "/static/icons/fez.png",
+    title: "Fez"
+  },
+  beatblock: {
+    type: "game",
+    url: "/static/games/wasm/beatblock/index.html",
+    icon: "/static/icons/beatblock.jpg",
+    title: "Beatblock"
+  },
+  happyRoom: {
+    type: "game",
+    url: "/static/games/wasm/happyRoom/index.html",
+    icon: "/static/icons/happyRoom.png",
+    title: "Happy Room"
+  },
+  agesOfConflict: {
+    type: "game",
+    url: "/static/games/wasm/agesOfConflict/index.html",
+    icon: "/static/icons/agesOfConflict.png",
+    title: "Ages of Conflict"
+  },
+  whileTrueLearn: {
+    type: "game",
+    url: "/static/games/wasm/whileTrueLearn/index.html",
+    icon: "/static/icons/whileTrueLearn.png",
+    title: "While True: Learn()"
+  },
+  theAdventuresOfSirKicksalot: {
+    type: "game",
+    url: "/static/games/wasm/theAdventuresOfSirKicksalot/index.html",
+    icon: "/static/icons/theAdventuresOfSirKicksalot.png",
+    title: "The Adventures Of Sir Kicksalot"
+  },
+  granny3: {
+    type: "game",
+    url: "/static/games/wasm/granny3/index.html",
+    icon: "/static/icons/granny3.jpg",
+    title: "Granny 3"
+  },
+  peakVeryWip: {
+    type: "game",
+    url: "/static/games/wasm/peakVeryWip/index.html",
+    icon: "/static/icons/peakVeryWip.jpg",
+    title: "PEAK (VERY wip)"
+  },
+  amongUs: {
+    type: "game",
+    url: "/static/games/wasm/amongUs/index.html",
+    icon: "/static/icons/amongUs.webp",
+    title: "Among Us"
+  },
+  gta3: {
+    type: "game",
+    url: "/static/games/wasm/gta3/index.html",
+    icon: "/static/icons/gta3.png",
+    title: "GTA 3"
   }
 };
