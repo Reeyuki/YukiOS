@@ -11,6 +11,8 @@ class TrayManager {
     this.popupVisible = false;
     this.wm = null;
     this.MAX_VISIBLE = 7;
+    this.secondaryContainers = new Set();
+    this.dedicatedContainers = new Map();
   }
 
   init(wm) {
@@ -138,6 +140,33 @@ class TrayManager {
       .map(([winId, item]) => ({ winId, ...item }));
   }
 
+  addSecondaryContainer(el) {
+    this.secondaryContainers.add(el);
+  }
+
+  removeSecondaryContainer(el) {
+    this.secondaryContainers.delete(el);
+  }
+
+  handleTrayClick(winId) {
+    const item = this.items.get(winId);
+    if (item && item.onClick) {
+      item.onClick();
+    }
+  }
+
+  addDedicatedContainer(winId, el) {
+    this.dedicatedContainers.set(winId, el);
+  }
+
+  removeDedicatedContainer(winId) {
+    this.dedicatedContainers.delete(winId);
+  }
+
+  getAllItems() {
+    return Array.from(this.items.entries()).map(([winId, item]) => ({ winId, ...item }));
+  }
+
   buildIcon(winId, icon, label) {
     const btn = document.createElement("button");
     btn.className = "tray-icon-btn";
@@ -235,7 +264,7 @@ class TrayManager {
         if (this.popupVisible) {
           this.hidePopup();
         } else {
-          this.showPopup(overflow);
+          this.showPopup(overflow, this.el);
         }
       });
       this.el.appendChild(btn);
@@ -246,6 +275,11 @@ class TrayManager {
     } else {
       this.hidePopup();
     }
+
+    this.secondaryContainers.forEach((el) => {
+      this.renderInContainer(el);
+    });
+    this.renderDedicatedContainers();
   }
 
   updatePopupContent(items) {
@@ -289,16 +323,26 @@ class TrayManager {
     });
   }
 
-  showPopup(items) {
+  showPopup(items, sourceEl) {
     if (!this.popupEl) {
       this.popupEl = document.createElement("div");
       this.popupEl.id = "tray-overflow-popup";
       document.body.appendChild(this.popupEl);
     }
     this.updatePopupContent(items);
-    const trayRect = this.el.getBoundingClientRect();
-    const isMac = isTaskbarTop();
-    if (isMac) {
+    const tilingActive = document.body.classList.contains("tiling-active");
+    let refEl, barAtTop;
+    if (tilingActive) {
+      refEl = sourceEl || document.getElementById("tiling-tray-items");
+      const tilingBar = document.getElementById("tiling-bar");
+      barAtTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : isTaskbarTop();
+    } else {
+      refEl = this.el;
+      barAtTop = isTaskbarTop();
+    }
+    if (!refEl) refEl = this.el;
+    const trayRect = refEl.getBoundingClientRect();
+    if (barAtTop) {
       this.popupEl.style.top = `${trayRect.bottom + 6}px`;
       this.popupEl.style.bottom = "auto";
     } else {
@@ -387,6 +431,103 @@ class TrayManager {
     if (this.popupEl) this.popupEl.style.display = "none";
     this.popupVisible = false;
   }
+
+  renderInContainer(containerEl, includeDedicated) {
+    if (!containerEl) return;
+    containerEl.innerHTML = "";
+    const trayEnabled = os.storage.get(StorageKeys.trayEnabled) !== "false";
+    if (!trayEnabled) {
+      containerEl.style.display = "none";
+      return;
+    }
+    const trayAppVisibility = (() => {
+      try {
+        return os.storage.get(StorageKeys.trayAppVisibility) || {};
+      } catch {
+        return {};
+      }
+    })();
+    const allItems = this.getAllItems()
+      .filter((item) => trayAppVisibility[item.winId] !== false)
+      .filter((item) => includeDedicated || !this.dedicatedContainers.has(item.winId));
+    if (allItems.length === 0) {
+      containerEl.style.display = "none";
+      return;
+    }
+    containerEl.style.display = "flex";
+    const sortedItems = [...allItems].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    const visible = sortedItems.slice(0, this.MAX_VISIBLE);
+    const overflow = sortedItems.slice(this.MAX_VISIBLE);
+    visible.forEach(({ winId, icon, label }) => {
+      containerEl.appendChild(this.buildIcon(winId, icon, label));
+    });
+    if (overflow.length > 0) {
+      const btn = document.createElement("button");
+      btn.className = "tray-overflow-btn";
+      btn.title = `${overflow.length} more`;
+      btn.innerHTML = `<i class="fas fa-chevron-up"></i><span class="tray-overflow-count">${overflow.length}</span>`;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (this.popupVisible) {
+          this.hidePopup();
+        } else {
+          this.showPopup(overflow, containerEl);
+        }
+      });
+      containerEl.appendChild(btn);
+      if (this.popupVisible && this.popupEl) {
+        this.updatePopupContent(overflow);
+      }
+    } else {
+      this.hidePopup();
+    }
+  }
+
+  renderDedicatedContainers() {
+    this.dedicatedContainers.forEach((containerEl, winId) => {
+      if (!containerEl) return;
+      const item = this.items.get(winId);
+      if (!item) {
+        containerEl.style.display = "none";
+        return;
+      }
+      const trayAppVisibility = (() => {
+        try {
+          return os.storage.get(StorageKeys.trayAppVisibility) || {};
+        } catch {
+          return {};
+        }
+      })();
+      if (trayAppVisibility[winId] === false) {
+        containerEl.style.display = "none";
+        return;
+      }
+      containerEl.style.display = "flex";
+      containerEl.innerHTML = "";
+      containerEl.appendChild(this.buildIcon(winId, item.icon, item.label));
+    });
+  }
+}
+
+export function getTrayPosition(refEl) {
+  const tilingActive = document.body.classList.contains("tiling-active");
+  let el, atTop;
+  if (tilingActive) {
+    el = refEl || document.getElementById("tiling-tray-items");
+    const tilingBar = document.getElementById("tiling-bar");
+    atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;
+  } else {
+    el = refEl || document.getElementById("app-tray");
+    atTop = isTaskbarTop();
+  }
+  const trayRect = el
+    ? el.getBoundingClientRect()
+    : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
+  return {
+    right: `${window.innerWidth - trayRect.right}px`,
+    top: atTop ? `${trayRect.bottom + 8}px` : "auto",
+    bottom: atTop ? "auto" : `${window.innerHeight - trayRect.top + 8}px`
+  };
 }
 
 export const trayManager = new TrayManager();

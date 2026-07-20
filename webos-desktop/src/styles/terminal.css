@@ -1,6 +1,10 @@
-.terminal-content,
-html[data-theme] .terminal-content {
-  background: rgb(28 28 32 / 12%);
+[id^="terminal-win"] {
+  background: transparent !important;
+}
+
+[id^="terminal-win"] .window-content.terminal-content,
+html[data-theme] [id^="terminal-win"] .window-content.terminal-content {
+  background: transparent;
   backdrop-filter: blur(40px) saturate(1.4);
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
   color: var(--text-primary, #c0c0c0);

@@ -717,16 +717,15 @@ export class SystemUtilities {
     }
   }
 
-  static async startTaskbarWeather(appLauncher) {
+  static async startTaskbarWeather() {
     if (os.storage.get(StorageKeys.macOsControls) === "true") return;
-    SystemUtilities.appLauncher = appLauncher;
     if (!SystemUtilities.weatherEventBound) {
       SystemUtilities.weatherEventBound = true;
       os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
         if (settings && typeof settings.weather !== "undefined") {
           if (settings.weather) {
             SystemUtilities.stopTaskbarWeather();
-            SystemUtilities.startTaskbarWeather(SystemUtilities.appLauncher);
+            SystemUtilities.startTaskbarWeather();
           } else {
             SystemUtilities.stopTaskbarWeather();
           }
@@ -739,7 +738,7 @@ export class SystemUtilities {
     os.tray.register("weatherApp", "🌡️", "Loading weather...", {
       resident: true,
       onClick: () => {
-        appLauncher?.launch("weatherApp");
+        os.app.launch("weatherApp");
       },
       onQuit: () => {
         SystemUtilities.stopTaskbarWeather();

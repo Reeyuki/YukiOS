@@ -111,8 +111,6 @@ export class AppRestorationService {
       const entry = this.wm.openWindows.get(win.id);
       if (!entry || !entry.record) continue;
 
-      if (win.id === "ads-yukios" || win.id === "ads_main_window") continue;
-
       const record = entry.record;
 
       const geom = this.wm.getWindowNormalGeometry(win);
@@ -265,6 +263,17 @@ export class AppRestorationService {
             console.warn("Failed to focus window:", e);
           }
         }
+      }
+
+      if (this.wm.tilingManager && this.wm.tilingManager.enabled) {
+        const seen = new Set();
+        for (const state of windowStates) {
+          const wsId = state.workspaceId;
+          if (wsId == null || seen.has(wsId)) continue;
+          seen.add(wsId);
+          this.wm.tilingManager.rebuildTreeForWorkspace(wsId);
+        }
+        this.wm.tilingManager.applyLayoutToAllWindows();
       }
     } catch (e) {
       console.error("Failed to restore window session:", e);

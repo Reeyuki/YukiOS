@@ -85,8 +85,11 @@ export class WindowAPI {
       }
     }
 
-    if (autoMount && options.icon) {
-      this.wm.addToTaskbar(id, title, options.icon, options.iconColor);
+    if (autoMount) {
+      if (options.icon) {
+        this.wm.addToTaskbar(win.id, title, options.icon, options.iconColor);
+      }
+      this.wm.onTilingWindowCreated(win.id);
     }
 
     if (autoMount && autoFocus) {
@@ -179,6 +182,45 @@ export class WindowAPI {
 
   getTitle(winId: string): string | null {
     return this.wm.getWindowTitle(winId);
+  }
+
+  toggleFullscreen(win: HTMLElement | string): void {
+    if (typeof win === "string") {
+      const element = $(`#${win}`);
+      if (element) {
+        this.wm.toggleFullscreen(element);
+      }
+    } else {
+      this.wm.toggleFullscreen(win);
+    }
+  }
+
+  setupWindowControls(win: HTMLElement): void {
+    this.wm.setupWindowControls(win);
+  }
+
+  makeDraggable(win: HTMLElement): void {
+    windowMakeDraggable(win, this.wm);
+  }
+
+  makeResizable(win: HTMLElement): void {
+    this.wm.makeResizable(win);
+  }
+
+  applySnap(win: HTMLElement, direction: "left" | "right"): void {
+    this.wm.applySnap?.(win, direction);
+  }
+
+  getOpenWindows(): Map<string, any> | undefined {
+    return this.wm.openWindows;
+  }
+
+  setFileSystemManager(fs: any): void {
+    this.wm.setFileSystemManager?.(fs);
+  }
+
+  restoreSession(): void {
+    this.wm.restoreSession?.();
   }
 
   notify(

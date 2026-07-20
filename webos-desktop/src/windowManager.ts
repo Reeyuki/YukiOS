@@ -15,6 +15,7 @@ import { AppRestorationService } from "./windowManager/AppRestorationService.js"
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
+import { TilingManager } from "./windowManager/TilingManager.js";
 
 import { StorageKeys, os } from "./framework.js";
 import { $ } from "./shared/domUtils.js";
@@ -54,6 +55,7 @@ export class WindowManager {
   contextMenuManager: ContextMenuManager;
   utils: WindowManagerUtils;
   workspaceManager: WorkspaceManager;
+  tilingManager: TilingManager;
 
   constructor(notificationCenter: any = null) {
     this.openWindows = new Map();
@@ -91,11 +93,17 @@ export class WindowManager {
     this.contextMenuManager = new ContextMenuManager(this);
     this.utils = new WindowManagerUtils(this);
 
+    this.tilingManager = new TilingManager(this);
+
     this.snapSystem.init();
     this.inputHandler.init();
     this.utils.init();
 
     this.workspaceManager = new WorkspaceManager(this);
+
+    setTimeout(() => {
+      this.tilingManager.init();
+    }, 0);
 
     initClickBubble();
 
@@ -246,8 +254,18 @@ export class WindowManager {
 
     const win = document.createElement("div");
     win.className = "window";
-    win.id = id;
     win.dataset.fullscreen = "false";
+
+    let winId = options.forceId || id;
+    if (document.getElementById(winId)) {
+      let counter = 1;
+      while (document.getElementById(`${winId}-${counter}`)) {
+        counter++;
+      }
+      winId = `${winId}-${counter}`;
+      win.dataset.dupId = id;
+    }
+    win.id = winId;
     if (!id.startsWith("browser-app-") && id !== "games-app-win") {
       win.style.opacity = "0";
     }
@@ -331,6 +349,7 @@ export class WindowManager {
     }
     win.addEventListener("mousedown", () => this.bringToFront(win));
     win.addEventListener("touchstart", () => this.bringToFront(win), { passive: true });
+    win.setAttribute("tabindex", "-1");
     this.triggerSessionSave();
 
     return win;
@@ -362,6 +381,18 @@ export class WindowManager {
     return this.layoutManager.getCascadePosition(windowWidth, windowHeight, workspace);
   }
 
+  isTilingEnabled(): boolean {
+    return this.tilingManager?.enabled ?? false;
+  }
+
+  setTilingEnabled(enabled: boolean): void {
+    this.tilingManager?.toggleMode(enabled);
+  }
+
+  onTilingWindowCreated(winId: string): void {
+    this.tilingManager?.onWindowCreated(winId);
+  }
+
   mountWindow(win: HTMLElement, winId: string, title: string, iconValue: string, color: string | null = null): void {
     if (!document.body.contains(win)) {
       document.body.appendChild(win);
@@ -370,6 +401,7 @@ export class WindowManager {
     this.makeResizable(win);
     this.setupWindowControls(win);
     this.addToTaskbar(winId, title, iconValue, color);
+    this.onTilingWindowCreated(winId);
     this.bringToFront(win);
     animateWindowOpen(win);
   }

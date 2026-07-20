@@ -37,10 +37,8 @@ const DOCK_ITEM_DEFAULTS = [
 ];
 
 export class GameOverlayController {
-  constructor(appLauncher, os) {
-    this.appLauncher = appLauncher;
+  constructor(os) {
     this.os = os;
-    this.wm = os.kernel?.windowManager;
     this.visible = false;
     this.overlayEl = null;
     this.currentGameId = null;
@@ -171,7 +169,7 @@ export class GameOverlayController {
   }
 
   isSystemApp(appId) {
-    const entry = this.appLauncher.appMap?.[appId];
+    const entry = os.app.getAppInfo(appId);
     return entry?.type === "system";
   }
 
@@ -251,8 +249,8 @@ export class GameOverlayController {
   }
 
   getGameTitle(appId) {
-    const map = this.appLauncher.appMap || {};
-    return map[appId]?.title || appId || "Game";
+    const info = os.app.getAppInfo(appId);
+    return info?.title || appId || "Game";
   }
 
   blockGameInput(win) {
@@ -883,7 +881,7 @@ export class GameOverlayController {
     const pane = this.overlayEl.querySelector('[data-panel="achievements"] .overlay-panel-body');
     if (!pane) return;
 
-    const achApp = this.os.app.apps.achievementsApp;
+    const achApp = this.os.app.getInstance("achievementsApp");
     if (!achApp) {
       pane.innerHTML = `<div class="overlay-no-data">Achievements system not available</div>`;
       return;
@@ -964,17 +962,14 @@ export class GameOverlayController {
   }
 
   openFriendsPopup() {
-    const wm = this.wm;
-    if (!wm) return;
-
     const existing = $("#steam-friends-win");
     if (existing) {
-      wm.bringToFront(existing);
+      os.window.bringToFront(existing);
       return;
     }
 
     const renderer = new steamAppRenderer();
-    renderer.gameUI.openFriendsWindow(wm);
+    renderer.gameUI.openFriendsWindow(os.window);
   }
 
   renderNotes() {

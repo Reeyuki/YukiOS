@@ -34,6 +34,25 @@ function isBlob(obj) {
   );
 }
 
+const DEFAULT_TILING_CONFIG = JSON.stringify(
+  {
+    enabled: false,
+    gaps: { inner: 5, outer: 10 },
+    split_ratio: 0.5,
+    border_width: 2,
+    border_radius: 4,
+    resize_delta: 0.05,
+    animation_duration: 200,
+    animation_easing: "ease",
+    mouse_resize: true,
+    config_poll_interval: 3000,
+    workspace_switch_delay: 320,
+    resize_debounce: 150
+  },
+  null,
+  2
+);
+
 export const defaultStorage = {
   Desktop: {},
   Documents: {
@@ -185,10 +204,44 @@ export const defaultStorage = {
         content: defaultWallpaperUrl("xp.webp"),
         kind: FileKind.IMAGE,
         icon: defaultWallpaperUrl("xp.webp")
+      },
+      "corndog.jpg": {
+        type: "file",
+        content: defaultWallpaperUrl("corndog.jpg"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("corndog.jpg")
+      },
+      "end_4.jpg": {
+        type: "file",
+        content: defaultWallpaperUrl("end_4.jpg"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("end_4.jpg")
+      },
+      "Kath.jpg": {
+        type: "file",
+        content: defaultWallpaperUrl("Kath.jpg"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("Kath.jpg")
+      },
+      "Meptl.png": {
+        type: "file",
+        content: defaultWallpaperUrl("Meptl.png"),
+        kind: FileKind.IMAGE,
+        icon: defaultWallpaperUrl("Meptl.png")
       }
     }
   },
-  Videos: {}
+  Videos: {},
+  Config: {
+    yukiOs: {
+      "tiling.conf": {
+        type: "file",
+        content: DEFAULT_TILING_CONFIG,
+        kind: FileKind.TEXT,
+        icon: "fas fa-layer-group"
+      }
+    }
+  }
 };
 
 export class FileSystemManager {
@@ -288,7 +341,7 @@ export class FileSystemManager {
         }
       }
     };
-    attemptInit();
+    await attemptInit();
     return this.fsReady;
   }
 

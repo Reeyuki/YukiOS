@@ -163,9 +163,9 @@ export function renderAccountsSettings() {
             <a href="https://ko-fi.com/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-kofi">
               <i class="fas fa-mug-hot"></i> Ko-fi
             </a>
-            <a href="https://patreon.com/Reeyuki" target="_blank" class="sponsor-banner-btn sponsor-banner-btn-patreon" id="sponsor-link-patreon">
-              <i class="fab fa-patreon"></i> Patreon
-            </a>
+            <span class="sponsor-banner-btn donation-monero-btn" id="sponsor-link-monero" style="cursor:pointer;">
+              <i class="fab fa-monero"></i> Monero
+            </span>
           </div>
           <button class="sponsor-banner-close" id="sponsor-close" title="Don't show again">
             <i class="fas fa-times"></i>
@@ -563,6 +563,24 @@ export function bindAccountsCategory(win) {
       os.storage.set(StorageKeys.sponsorDismissed, "true");
       const banner = $("#accounts-sponsor-banner", win);
       if (banner) banner.remove();
+    });
+  }
+
+  const moneroBtn = $("#sponsor-link-monero", win);
+  if (moneroBtn) {
+    bindEvent(moneroBtn, "click", () => {
+      const address = "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
+      navigator.clipboard
+        .writeText(address)
+        .then(() => {
+          moneroBtn.innerHTML = '<i class="fab fa-monero"></i> Copied!';
+          setTimeout(() => {
+            moneroBtn.innerHTML = '<i class="fab fa-monero"></i> Monero';
+          }, 2000);
+        })
+        .catch(() => {
+          os.dialog.alert("Monero Address", address);
+        });
     });
   }
 }

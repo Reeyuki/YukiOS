@@ -95,8 +95,14 @@ export function tarStr(bytes, offset, length) {
   return str;
 }
 
-export function decodeFileContent(content) {
+export async function decodeFileContent(content) {
   if (!content) return "";
+
+  if (content instanceof Blob) {
+    return await content.text();
+  }
+
+  if (typeof content !== "string") return String(content);
 
   if (content.startsWith("data:")) {
     try {

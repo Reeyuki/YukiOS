@@ -38,6 +38,7 @@ import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
 import { showBootScreen } from "./bootScreen.js";
+import { checkAndShowDonationPopup } from "./donationPopup.js";
 import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray/tray.js";
 import { MacControlCenter } from "./tray/macControlCenter.js";
@@ -70,7 +71,7 @@ const os = initializeOSBridge({
   trayManager
 });
 
-os.kernel.clipboardManager = clipboardManager;
+os.clipboardManager = clipboardManager;
 new MacControlCenter();
 init();
 window.os = os;
@@ -94,7 +95,6 @@ const preloaded = {};
     preloaded[key] = instance;
     os.app.register(key, instance);
   }
-  preloaded.explorerApp.setNotepadApp(preloaded.notepadApp);
 }
 
 setDialogExplorerApp(preloaded.explorerApp);
@@ -110,50 +110,36 @@ const v86App = preloaded.v86app;
 const settingsApp = preloaded.settingsApp;
 const appCreatorApp = preloaded.appCreatorApp;
 
+const adsManager = new AdsManager(windowManager);
+os.app.register("adsApp", adsManager);
+
 const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app._registry);
 os.setAppLauncher(appLauncher);
 windowManager.setAppLauncher(appLauncher);
 setGameLauncher(appLauncher);
 
-appLauncher.setEmulatorApp(os.app.apps.emulatorApp);
+appLauncher.setEmulatorApp(os.app.getInstance("emulatorApp"));
 appLauncher.overlayController = null;
 
-appCreatorApp.setAppLauncher(appLauncher);
 appCreatorApp.restoreInstalledApps();
 
-const installedAppsApp = os.app.apps.installedAppsApp;
-if (installedAppsApp) installedAppsApp.setAppLauncher(appLauncher);
+const installedAppsApp = os.app.getInstance("installedAppsApp");
 
-settingsApp.setFileSystemManager(fileSystemManager);
-settingsApp.setAppLauncher(appLauncher);
-
-explorerApp.setAppLauncher(appLauncher);
-explorerApp.setOfficeApp(officeApp);
-explorerApp.setJsDos(jsDosApp);
-explorerApp.setv86App(v86App);
-explorerApp.setBrowser(browserApp);
-explorerApp.setMarkdownApp(os.app.apps.markdownApp);
-
-officeApp.setExplorer(explorerApp);
-notepadApp.setExplorer(explorerApp);
-
-const desktopUI = new DesktopUI(appLauncher, notepadApp, explorerApp, fileSystemManager);
+const desktopUI = new DesktopUI(explorerApp);
+os.desktopUI = desktopUI;
+explorerApp.desktopUI = desktopUI;
+desktopUI.fs = fileSystemManager;
+fileSystemManager.setDesktopUI(desktopUI);
 setDesktopUI(desktopUI);
-os.kernel.desktopUI = desktopUI;
-
-appCreatorApp.setDesktopUI(desktopUI);
-settingsApp.setDesktopUI(desktopUI);
-explorerApp.setDesktopUI(desktopUI);
 
 const sessionManager = new SessionManager(os);
 const commandPalette = new CommandPalette(os);
-os.kernel.commandPalette = commandPalette;
 
 const menuBar = new MenuBarManager(os);
 
 SystemUtilities.startClock();
 SystemUtilities.setSettings(settingsApp);
-SystemUtilities.startTaskbarWeather(appLauncher);
+SystemUtilities.startTaskbarWeather();
 
 async function start() {
   const faScript = $('script[src*="font-awesome"], script[src*="fontawesome"]');
@@ -182,11 +168,6 @@ async function start() {
     testImg.src = resolveIconUrl("static/icons/file.webp");
   }, 1500);
   setDesktopUI(desktopUI);
-  explorerApp.setDesktopUI(desktopUI);
-  settingsApp.setDesktopUI(desktopUI);
-  settingsApp.setAppLauncher(appLauncher);
-  appCreatorApp.setDesktopUI(desktopUI);
-  appCreatorApp.setAppLauncher(appLauncher);
   await SystemUtilities.loadWallpaper();
   windowManager.restorePinnedItems();
   desktopPeekManager.setupPeekButton();
@@ -198,6 +179,7 @@ async function start() {
   batteryPerformanceManager.init();
   versionChecker.start();
   menuBar.init();
+  setTimeout(() => checkAndShowDonationPopup(), 4000);
 
   const url = new URL(location.href);
 
@@ -226,7 +208,7 @@ async function start() {
       appLauncher.launch(game, swf);
     }, 0);
   }
-  setupStartMenu(appLauncher, sessionManager);
+  setupStartMenu(sessionManager);
 }
 
 start();

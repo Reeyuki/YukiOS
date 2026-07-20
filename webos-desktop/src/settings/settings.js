@@ -37,6 +37,7 @@ import {
   bindAudioCategory
 } from "./settingsBinders.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
+import { bindTilingCategory } from "./pane-tiling.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
@@ -46,7 +47,7 @@ export { StorageKeys };
 export class SettingsApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.fs = null;
+    this.fs = os.fileSystemManager;
 
     setTimeout(() => {
       const cursorOriginalFromStorage = os.storage.get(StorageKeys.cursorOriginalKey) ?? "";
@@ -206,15 +207,10 @@ export class SettingsApp extends BaseApp {
     }
   }
 
-  setDesktopUI(desktopUi) {
-    this.desktopUI = desktopUi;
+  get desktopUI() {
+    return os.desktopUI;
   }
-  setAppLauncher(appLauncher) {
-    this.appLauncher = appLauncher;
-  }
-  setFileSystemManager(fs) {
-    this.fs = fs;
-  }
+
   setNotificationCenter(nc) {
     this.notificationCenter = nc;
   }
@@ -421,6 +417,7 @@ export class SettingsApp extends BaseApp {
     bindNetworkCategory(win, save, this.settings, showSaved);
     bindAudioCategory(win, this.settings, showSaved);
     bindAccountsCategory(win);
+    bindTilingCategory(win, save, this.settings);
   }
 
   showSavedMessage(win) {

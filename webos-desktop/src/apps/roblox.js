@@ -329,9 +329,8 @@ export class RobloxApp extends BaseApp {
     this.saveHistory(id);
     const game = this.games.find((g) => g.id === id);
     const name = game ? game.name : id;
-    const appLauncher = this.os.app._launcher;
-    if (appLauncher && appLauncher.openIframeApp) {
-      await appLauncher.openIframeApp({
+    if (this.os.app.openIframeApp) {
+      await this.os.app.openIframeApp({
         appId: `roblox-${id}`,
         type: "game",
         source: url,

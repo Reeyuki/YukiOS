@@ -2,6 +2,7 @@ import { CDN_MIRRORS, setCdnMirror, getCdnMirror } from ".././shared/assetResolv
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
+import { getTrayPosition } from "../tray/tray.js";
 class NetworkTrayApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -92,20 +93,10 @@ class NetworkTrayApp extends BaseApp {
 
     document.body.appendChild(popup);
 
-    const trayEl = document.getElementById("app-tray");
-    const trayRect = trayEl
-      ? trayEl.getBoundingClientRect()
-      : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
-
-    popup.style.right = `${window.innerWidth - trayRect.right}px`;
-    const isMac = isTaskbarTop();
-    if (isMac) {
-      popup.style.top = `${trayRect.bottom + 8}px`;
-      popup.style.bottom = "auto";
-    } else {
-      popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
-      popup.style.top = "auto";
-    }
+    const pos = getTrayPosition();
+    popup.style.right = pos.right;
+    popup.style.top = pos.top;
+    popup.style.bottom = pos.bottom;
     popup.style.display = "block";
 
     this.popupVisible = true;
@@ -114,7 +105,21 @@ class NetworkTrayApp extends BaseApp {
     document.addEventListener("click", this.handleOutsideClick);
   }
 
+  getConnectionInfo() {
+    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (c) {
+      return {
+        type: c.effectiveType || "Unknown",
+        downlink: c.downlink != null ? `${c.downlink} Mbps` : "Unknown",
+        rtt: c.rtt != null ? `${c.rtt} ms` : "Unknown"
+      };
+    }
+    return null;
+  }
+
   buildPopupContent() {
+    const online = navigator.onLine;
+    const conn = this.getConnectionInfo();
     const currentCdn = getCdnMirror();
     const cdnList = CDN_MIRRORS.map((cdn) => {
       const signalStrength = this.getSignalStrength(cdn.id);
@@ -133,12 +138,27 @@ class NetworkTrayApp extends BaseApp {
       `;
     }).join("");
 
+    const statusHtml = conn
+      ? `
+        <div class="network-status-row">
+          <div class="network-status-dot ${online ? "online" : "offline"}"></div>
+          <span class="network-status-label">${online ? "Online" : "Offline"}</span>
+          <span class="network-status-detail">${conn.type.toUpperCase()} · ${conn.downlink} · ${conn.rtt}</span>
+        </div>`
+      : `
+        <div class="network-status-row">
+          <div class="network-status-dot ${online ? "online" : "offline"}"></div>
+          <span class="network-status-label">${online ? "Online" : "Offline"}</span>
+          <span class="network-status-detail">Network Info API unavailable</span>
+        </div>`;
+
     return `
       <div class="network-popup-content">
         <div class="network-header">
           <i class="fas fa-wifi"></i>
           <span>Network</span>
         </div>
+        ${statusHtml}
         <div class="network-list">
           ${cdnList}
         </div>

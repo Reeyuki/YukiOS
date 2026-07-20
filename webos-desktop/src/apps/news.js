@@ -5,6 +5,71 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 20, 2026",
+    sections: [
+      {
+        icon: "fa-th-large",
+        title: "Tiling Mode",
+        items: [
+          [
+            "fa-th-large",
+            "Hyprland-Inspired Tiling",
+            "Press Alt+Space to toggle BSP tiling. Navigate with Alt+Arrow, resize with Ctrl+Alt+Arrow, swap with Alt+Shift+Arrow."
+          ],
+          ["fa-sliders-h", "Live Config Editing", "Edit Config/yukiOs/tiling.conf to tweak gaps, borders."],
+          ["fa-keyboard", "Alt+Q to Close Windows", "Close the focused window instantly with Alt+Q in any mode."],
+          [
+            "fa-arrows-alt",
+            "Drag to Swap Windows",
+            "Drag any tiled window onto another to swap their positions in the layout instantly."
+          ]
+        ]
+      },
+      {
+        icon: "fa-window-maximize",
+        title: "Tiling Bar & Rofi Launcher",
+        items: [
+          [
+            "fa-window-maximize",
+            "Tiling Top Bar",
+            "A dedicated top bar appears in tiling mode with workspace dots, focused window title, clock, and tray icons fully customizable in Settings."
+          ],
+          [
+            "fa-search",
+            "Rofi-Style App Launcher",
+            "Press Super+D or click the search icon in the tiling bar to open a rofi-like overlay with fuzzy search, recent apps, and keyboard navigation."
+          ],
+          [
+            "fa-sliders-h",
+            "Full Tiling Settings Panel",
+            "Tweak every tiling setting from Settings → Tiling: gaps, borders, animations, bar elements, rofi width, and more with no manual config editing needed."
+          ]
+        ]
+      },
+      {
+        icon: "fa-star",
+        title: "Features & Improvements",
+        items: [
+          [
+            "fa-layer-group",
+            "Auto-Clean Empty Workspaces",
+            "Workspaces with no windows vanish automatically when you switch away."
+          ],
+          [
+            "fa-arrows-alt",
+            "Position-Aware Snap Zones",
+            "Window snapping accounts for taskbar position on left, right, top, or bottom."
+          ],
+          [
+            "fa-keyboard",
+            "Global Keybinds",
+            "Press Ctrl+Shift+W to cycle wallpapers and Ctrl+Shift+B to launch the browser from anywhere."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 19, 2026",
     sections: [
       {
@@ -14,7 +79,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fab fa-apple",
             "Dock Settings Panel",
-            "Customize your Mac dock with position, auto-hide, magnification amount and range, icon size, scale, and animation speed — all from Settings."
+            "Customize your Mac dock with position, auto-hide, magnification amount and range, icon size, scale, and animation speed, all from Settings."
           ],
           [
             "fa-arrows-alt",
@@ -35,7 +100,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-th",
             "macOS Launchpad in Mac Mode",
-            "Browse every installed app in a fullscreen glass grid with instant search — pinned to the Dock in Mac Mode."
+            "Browse every installed app in a fullscreen glass grid with instant search pinned to the Dock in Mac Mode."
           ]
         ]
       }

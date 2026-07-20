@@ -1,6 +1,7 @@
 import "../styles/about.css";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
+import { bindEvent, $ } from "../shared/domUtils.js";
 import versionTxt from "../../version.txt?raw";
 export const YUKIOS_VERSION = versionTxt.trim();
 
@@ -165,9 +166,9 @@ export class AboutApp extends BaseApp {
                       <a href="https://ko-fi.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-kofi">
                         <i class="fab fa-coffe"></i> Ko-fi
                       </a>
-                      <a href="https://patreon.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-patreon">
-                        <i class="fab fa-patreon"></i> Patreon
-                      </a>
+                      <span class="abx-sponsor-btn abx-sponsor-btn-monero" id="about-monero-btn" style="cursor:pointer;">
+                        <i class="fab fa-monero"></i> Monero
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -183,6 +184,25 @@ export class AboutApp extends BaseApp {
         </div>
       </div>
     `;
+
+    const moneroBtn = $("#about-monero-btn", win);
+    if (moneroBtn) {
+      bindEvent(moneroBtn, "click", () => {
+        const address =
+          "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
+        navigator.clipboard
+          .writeText(address)
+          .then(() => {
+            moneroBtn.innerHTML = '<i class="fab fa-monero"></i> Copied!';
+            setTimeout(() => {
+              moneroBtn.innerHTML = '<i class="fab fa-monero"></i> Monero';
+            }, 2000);
+          })
+          .catch(() => {
+            os.dialog.alert("Monero Address", address);
+          });
+      });
+    }
   }
 
   onClose(winId) {}

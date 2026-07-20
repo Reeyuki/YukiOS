@@ -608,7 +608,7 @@ export class ArchiveExtractor {
     if (audioExts.includes(ext)) return FileKind.AUDIO;
     if (videoExts.includes(ext)) return FileKind.VIDEO;
     return FileKind.OTHER;
-  } // check all "ext" and "exts" and "filekind" and "filetype" logic across project and create a plan to make all of these be shared and not duplicated or spread logic across modules. propose the best solution.
+  }
   inferFileIcon(fileName) {
     const ext = fileName.split(".").pop().toLowerCase();
     const iconMap = {

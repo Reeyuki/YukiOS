@@ -61,6 +61,10 @@ export class FileSystemAPI {
     return await this.fs.getFolder(pathStr);
   }
 
+  async getFolder(path: string | string[]): Promise<FileSystemEntry> {
+    return await this.readdir(path);
+  }
+
   async mkdir(path: string | string[]): Promise<void> {
     const pathStr = await this.resolve(path);
     await this.fs.ensureFolder(pathStr);
@@ -141,6 +145,11 @@ export class FileSystemAPI {
       }
     } catch {}
     return { size, files, dirs };
+  }
+
+  async writeMeta(path: string | string[], name: string, data: any): Promise<void> {
+    const pathStr = await this.resolve(path);
+    await this.fs.writeMeta(pathStr, name, data);
   }
 
   inferKind(filename: string): FileKind {
@@ -280,6 +289,35 @@ export class FileSystemAPI {
   async getTrashCount(): Promise<number> {
     await this.fs.fsReady;
     return await this.fs.trash.getItemCount();
+  }
+
+  dirname(path: string): string {
+    return this.fs.dirname(path);
+  }
+
+  basename(path: string): string {
+    return this.fs.basename(path);
+  }
+
+  resolveUserPath(path: string): string {
+    return this.fs.resolveUserPath(path);
+  }
+
+  join(...parts: string[]): string {
+    return this.fs.paths.join(...parts);
+  }
+
+  async setSession(name: string): Promise<void> {
+    await this.fs.setSession?.(name);
+  }
+
+  async getFileContent(path: string | string[], name: string): Promise<any> {
+    return await this.fs.getFileContent(path, name);
+  }
+
+  async getUniqueFileName(path: string | string[], name: string): Promise<string> {
+    const pathStr = await this.resolve(path);
+    return await this.fs.getUniqueFileName(pathStr, name);
   }
 
   async pickDirectory(): Promise<any> {

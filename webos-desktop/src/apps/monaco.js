@@ -13,7 +13,7 @@ import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.apps.explorerApp;
+    this.explorerApp = os.app.getInstance("explorerApp");
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.monacoLoaded = false;
@@ -25,7 +25,7 @@ export class MonacoApp extends BaseApp {
     this.findWidgetVisible = false;
     this.icon = "fas fa-code";
 
-    this.sessionKey = os.kernel?.fileSystemManager?.sessionKey || "guest";
+    this.sessionKey = "guest";
     this.setupTerminalCore();
   }
 
@@ -938,7 +938,7 @@ export class MonacoApp extends BaseApp {
   }
 
   spawnTerminalWindow() {
-    const terminalApp = this.os.app.apps.terminalApp;
+    const terminalApp = this.os.app.getInstance("terminalApp");
     if (terminalApp) {
       terminalApp.open();
     } else {

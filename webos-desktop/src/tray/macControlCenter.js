@@ -1,6 +1,7 @@
 import { audioMixer } from "../audioMixer.js";
 import { turboManager } from "../shared/turboManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
+import { getTrayPosition } from "../tray/tray.js";
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 import { SystemUtilities } from "../system.js";
@@ -100,8 +101,7 @@ class MacControlCenter {
   }
 
   applyDisplaySettings() {
-    document.documentElement.style.filter =
-      `brightness(${this.brightness / 100}) contrast(1) saturate(1) sepia(0)`;
+    document.documentElement.style.filter = `brightness(${this.brightness / 100}) contrast(1) saturate(1) sepia(0)`;
   }
 
   saveDisplaySettings() {
@@ -205,7 +205,7 @@ class MacControlCenter {
         <div class="mcc-section">
           <div class="mcc-section-title">Accent Color</div>
           <div class="mcc-colors">
-            ${ACCENT_COLORS.map(c => `<button class="mcc-color-swatch" data-color="${c.value}" title="${c.label}" style="background:${c.value}"></button>`).join("")}
+            ${ACCENT_COLORS.map((c) => `<button class="mcc-color-swatch" data-color="${c.value}" title="${c.label}" style="background:${c.value}"></button>`).join("")}
           </div>
         </div>
 
@@ -220,19 +220,10 @@ class MacControlCenter {
 
     document.body.appendChild(popup);
 
-    const trayEl = document.getElementById("app-tray");
-    const trayRect = trayEl
-      ? trayEl.getBoundingClientRect()
-      : { right: 16, top: 48, bottom: 48 };
-
-    popup.style.right = `${window.innerWidth - trayRect.right}px`;
-    if (isTaskbarTop()) {
-      popup.style.top = `${trayRect.bottom + 8}px`;
-      popup.style.bottom = "auto";
-    } else {
-      popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
-      popup.style.top = "auto";
-    }
+    const pos = getTrayPosition();
+    popup.style.right = pos.right;
+    popup.style.top = pos.top;
+    popup.style.bottom = pos.bottom;
     popup.style.display = "block";
 
     this.popupVisible = true;
@@ -287,11 +278,11 @@ class MacControlCenter {
     }
 
     const powerBtns = popup.querySelectorAll(".mcc-power-btn");
-    powerBtns.forEach(btn => {
+    powerBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const mode = btn.dataset.mode;
         turboManager.setMode(mode);
-        powerBtns.forEach(b => b.classList.remove("active"));
+        powerBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
       });
     });
@@ -318,7 +309,7 @@ class MacControlCenter {
       });
     }
 
-    colorSwatches.forEach(swatch => {
+    colorSwatches.forEach((swatch) => {
       swatch.addEventListener("click", () => {
         const color = swatch.dataset.color;
         document.documentElement.style.setProperty("--brand", color);
@@ -327,7 +318,7 @@ class MacControlCenter {
         document.documentElement.style.setProperty("--brand-glow", color + "40");
         const existing = os.storage.get(StorageKeys.customColors) || {};
         os.storage.set(StorageKeys.customColors, { ...existing, brand: color });
-        colorSwatches.forEach(s => s.classList.remove("active"));
+        colorSwatches.forEach((s) => s.classList.remove("active"));
         swatch.classList.add("active");
       });
     });
@@ -335,9 +326,8 @@ class MacControlCenter {
     if (lockBtn) {
       lockBtn.addEventListener("click", () => {
         this.closePopup();
-        import("../desktopui/startMenu.js").then(m => m.closeStartMenu());
-        const sm = os.kernel?.sessionManager;
-        if (sm?.lockSession) sm.lockSession();
+        import("../desktopui/startMenu.js").then((m) => m.closeStartMenu());
+        os.app.lockSession();
       });
     }
 

@@ -30,7 +30,7 @@ function showConfirmDialog({ title, message, confirmText, onConfirm }) {
 
 async function openMarkdownPreview(explorer, fileName, inst) {
   try {
-    const content = decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
+    const content = await decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
     if (explorer.markdownApp?.open) {
       explorer.markdownApp.open(fileName, content, inst.currentPath.join("/"));
       speak("Opening markdown preview. Looking good!", ClippyAnimation.Show);
@@ -45,7 +45,7 @@ async function openMarkdownPreview(explorer, fileName, inst) {
 
 async function openMarkdownInNotepad(explorer, fileName, inst) {
   try {
-    const content = decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
+    const content = await decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
     if (explorer.notepadApp?.open) {
       explorer.notepadApp.open(fileName, content, inst.currentPath.join("/"));
       speak("Opening in Notepad. Time to edit!", ClippyAnimation.Writing);
@@ -60,7 +60,7 @@ async function openMarkdownInNotepad(explorer, fileName, inst) {
 
 async function openTextInNotepad(explorer, fileName, inst) {
   try {
-    const content = decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
+    const content = await decodeFileContent(await explorer.fs.getFileContent(inst.currentPath, fileName));
     if (explorer.notepadApp?.open) {
       explorer.notepadApp.open(fileName, content, inst.currentPath.join("/"));
       speak("Opening in Notepad. Time to edit!", ClippyAnimation.Writing);

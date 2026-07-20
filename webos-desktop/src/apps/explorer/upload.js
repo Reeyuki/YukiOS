@@ -28,7 +28,7 @@ function isBinaryWrite(kind, isBinaryOffice, isBinary) {
   return kind === FileKind.VIDEO || isBinaryOffice || isBinary;
 }
 
-async function resolveFilePayload(file, name) {
+export async function resolveFilePayload(file, name) {
   const kind = fileKindFromName(name);
   const icon = resolveFileIcon(name);
   const isBinaryOffice =

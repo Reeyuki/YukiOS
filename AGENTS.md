@@ -12,7 +12,8 @@ You are working under webos-desktop directory. when src is mentioned it means we
 - Always use CSS variables from `src/styles/style.css`. Never hardcode colors.
 - When making significant changes, new features, or new apps: you must register them in src/news.js with an icon, title,
   and a punchy, active-voice description under 15 words. Bad: 'First-time setup now includes a dedicated profile
-  step...' Good: 'Choose your nickname and avatar during setup, with a quick final preview!'
+  step...' Good: 'Choose your nickname and avatar during setup, with a quick final preview!'. it should not have
+  punchlines or seperating sentences with "—" or "-"
 - When adding a new app, add a `description` field to its manifest entry in `src/registry/AppManifest.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
 - Always use `src/framework.js` barrel for app-level imports. When writing a new app, import
@@ -39,7 +40,10 @@ You are working under webos-desktop directory. when src is mentioned it means we
   in `KEYBIND_DEFINITIONS` inside that file. Never define key combos inline in event handlers.
 - If user asks you to create a new app, read DEVELOPMENT.md to learn how to create a new app.
 - Never use grep, instead always use rg (ripgrep)
-- Never use variable or function names (or any naming convention) starting with `_` (underscore). All identifiers must use descriptive names without leading underscores.
+- Never use variable or function names (or any naming convention) starting with `_` (underscore). All identifiers must
+  use descriptive names without leading underscores.
+- When applying changes to multiple files (2+ files), delegate each file's changes to a separate sub-agent via the Task
+  tool so they can run in parallel. Do not edit multiple files sequentially in a single context.
 
 ---
 

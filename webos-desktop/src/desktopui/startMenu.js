@@ -128,6 +128,7 @@ export function applyStartMenuSettings(el) {
 }
 
 function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
+  if (os.tiling.enabled) return;
   const el = getStartMenuEl();
   if (!el) return;
 
@@ -141,12 +142,10 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   renderedCategories.clear();
   updateFavoritesUI();
 
-  if (sharedAppLauncher) {
-    ["all", "system", "games"].forEach((cat) => {
-      populateCategoryPage(cat, sharedAppLauncher);
-      renderedCategories.add(cat);
-    });
-  }
+  ["all", "system", "games"].forEach((cat) => {
+    populateCategoryPage(cat);
+    renderedCategories.add(cat);
+  });
 
   if (openDefaultPage) {
     const catsData = os.storage.get(StorageKeys.startMenuCats);
@@ -263,7 +262,6 @@ function updateStarState(appName, isFavorite) {
     item.style.background = isFavorite ? "rgba(255, 215, 0, 0.1)" : "transparent";
   }
 }
-let sharedAppLauncher;
 let selectedItem = null;
 let selectedCategory = null;
 let keyboardHandlerInstalled = false;
@@ -452,21 +450,9 @@ function createRecentFileItem(name, path, kind) {
   item.appendChild(content);
 
   item.addEventListener("click", () => {
-    if (!sharedAppLauncher) return;
     closeStartMenu();
     const dir = path.split("/").filter(Boolean);
-    openFileWith({
-      name,
-      path: dir,
-      fs: sharedAppLauncher.fs,
-      notepadApp: sharedAppLauncher.notepadApp,
-      browserApp: sharedAppLauncher.browserApp,
-      windowManager: sharedAppLauncher.wm,
-      officeApp: sharedAppLauncher.officeApp,
-      markdownApp: sharedAppLauncher.markdownApp,
-      jsDosApp: sharedAppLauncher.jsDosApp,
-      appLauncher: sharedAppLauncher
-    });
+    openFileWith({ name, path: dir });
   });
 
   return item;
@@ -623,7 +609,7 @@ function activateCategoryPage(cat) {
     ].includes(cat.dataset.cat)
   ) {
     if (!renderedCategories.has(cat.dataset.cat)) {
-      populateCategoryPage(cat.dataset.cat, sharedAppLauncher);
+      populateCategoryPage(cat.dataset.cat);
       renderedCategories.add(cat.dataset.cat);
     }
   }
@@ -693,11 +679,6 @@ function launchSelectedItem() {
 }
 
 export function updateFavoritesUI() {
-  if (!sharedAppLauncher) {
-    console.error("No app launcher");
-    return;
-  }
-
   const favoritesPage = document.querySelector('.start-page[data-page="favorites"]');
   favoritesPage.innerHTML = "";
   const favorites = getFavorites();
@@ -719,8 +700,7 @@ export function updateFavoritesUI() {
   });
 }
 
-export function setupStartMenu(appLauncher, sessionManager, selectionManager) {
-  sharedAppLauncher = appLauncher;
+export function setupStartMenu(sessionManager) {
   const menuEl = $("#start-menu") || $(".start-menu");
   if (menuEl) {
     applyStartMenuSettings(menuEl);
@@ -1270,7 +1250,7 @@ function getGridItems() {
 function saveGridItems(items) {
   os.storage.set(StorageKeys.startMenuGridItems, items);
 }
-function showStartItemEditor(appLauncher, currentItem) {
+function showStartItemEditor(currentItem) {
   return new Promise((resolve) => {
     const t0 = performance.now();
 
@@ -1477,42 +1457,42 @@ function showStartItemEditor(appLauncher, currentItem) {
   });
 }
 
-function addGridItem(appLauncher) {
-  showStartItemEditor(appLauncher).then((result) => {
+function addGridItem() {
+  showStartItemEditor().then((result) => {
     if (result) {
       const items = getGridItems();
       items.push(result);
       saveGridItems(items);
-      initializeAppGrid(appLauncher);
+      initializeAppGrid();
     }
   });
 }
 
-function editGridItem(itemData, index, appLauncher) {
-  showStartItemEditor(appLauncher, itemData).then((result) => {
+function editGridItem(itemData, index) {
+  showStartItemEditor(itemData).then((result) => {
     if (result) {
       const items = getGridItems();
       items[index] = result;
       saveGridItems(items);
-      initializeAppGrid(appLauncher);
+      initializeAppGrid();
     }
   });
 }
 
-function removeGridItem(index, appLauncher) {
+function removeGridItem(index) {
   const items = getGridItems();
   items.splice(index, 1);
   saveGridItems(items);
-  initializeAppGrid(appLauncher);
+  initializeAppGrid();
 }
 
-function showStartMenuContext(e, itemData, index, appLauncher) {
+function showStartMenuContext(e, itemData, index) {
   showDynamicContextMenu(e, (menu, item, hr) => {
     menu.appendChild(
       item(
         "Edit Item",
         () => {
-          editGridItem(itemData, index, appLauncher);
+          editGridItem(itemData, index);
         },
         "fas fa-edit"
       )
@@ -1521,7 +1501,7 @@ function showStartMenuContext(e, itemData, index, appLauncher) {
       item(
         "Remove Item",
         () => {
-          removeGridItem(index, appLauncher);
+          removeGridItem(index);
         },
         "fas fa-trash-alt"
       )
@@ -1531,7 +1511,7 @@ function showStartMenuContext(e, itemData, index, appLauncher) {
       item(
         "Add New Item",
         () => {
-          addGridItem(appLauncher);
+          addGridItem();
         },
         "fas fa-plus"
       )
@@ -1539,13 +1519,13 @@ function showStartMenuContext(e, itemData, index, appLauncher) {
   });
 }
 
-function showStartGridContext(e, appLauncher) {
+function showStartGridContext(e) {
   showDynamicContextMenu(e, (menu, item, hr) => {
     menu.appendChild(
       item(
         "Add New Item",
         () => {
-          addGridItem(appLauncher);
+          addGridItem();
         },
         "fas fa-plus"
       )
@@ -1553,7 +1533,7 @@ function showStartGridContext(e, appLauncher) {
   });
 }
 
-export function initializeAppGrid(appLauncher) {
+export function initializeAppGrid() {
   const grid = $(".app-grid");
   if (!grid) return;
   grid.innerHTML = "";
@@ -1603,7 +1583,7 @@ export function initializeAppGrid(appLauncher) {
     item.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      showStartMenuContext(e, itemData, index, appLauncher);
+      showStartMenuContext(e, itemData, index);
     });
 
     fragment.appendChild(item);
@@ -1626,7 +1606,7 @@ export function initializeAppGrid(appLauncher) {
     spanEl.textContent = "Add Item";
     placeholder.appendChild(spanEl);
 
-    placeholder.addEventListener("click", () => addGridItem(appLauncher));
+    placeholder.addEventListener("click", () => addGridItem());
 
     grid.appendChild(placeholder);
 
@@ -1645,7 +1625,7 @@ export function initializeAppGrid(appLauncher) {
     if (e.target === grid || items.length === 0) {
       e.preventDefault();
       e.stopPropagation();
-      showStartGridContext(e, appLauncher);
+      showStartGridContext(e);
     }
   });
 
@@ -1654,7 +1634,7 @@ export function initializeAppGrid(appLauncher) {
 
 const LETTER_SEPARATOR = "—".repeat(20);
 
-function populateCategoryPage(category, appLauncher) {
+function populateCategoryPage(category) {
   const page = $(`.start-page[data-page="${category}"]`);
   if (!page) return;
 

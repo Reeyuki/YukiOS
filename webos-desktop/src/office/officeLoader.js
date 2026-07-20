@@ -17,14 +17,12 @@ export async function getOfficeApp(os) {
 export class OfficeAppProxy {
   constructor(os) {
     this.os = os;
-    this.explorer = null;
     this.real = null;
     this.pending = null;
   }
 
-  setExplorer(explorer) {
-    this.explorer = explorer;
-    if (this.real) this.real.explorerApp = explorer;
+  get explorer() {
+    return os.app.getInstance("explorerApp");
   }
 
   async ensure() {

@@ -56,11 +56,15 @@ export class LaunchpadApp extends BaseApp {
     if (!this.overlay) return;
     if (!this.overlay.classList.contains("launchpad-closing")) {
       this.overlay.classList.add("launchpad-closing");
-      this.overlay.addEventListener("animationend", () => {
-        if (!this.overlay) return;
-        this.overlay.remove();
-        this.overlay = null;
-      }, { once: true });
+      this.overlay.addEventListener(
+        "animationend",
+        () => {
+          if (!this.overlay) return;
+          this.overlay.remove();
+          this.overlay = null;
+        },
+        { once: true }
+      );
     }
     document.removeEventListener("keydown", this._boundKeydown);
   }
@@ -82,10 +86,8 @@ export class LaunchpadApp extends BaseApp {
   }
 
   renderGrid() {
-    const appLauncher = this.os.app?._launcher;
-    if (!appLauncher) return;
-    const appMap = appLauncher.appMap;
-    if (!appMap) return;
+    const appMap = this.os.app.getAllApps();
+    if (!appMap || Object.keys(appMap).length === 0) return;
 
     const appRegistry = getAppRegistry();
     appRegistry.refresh();

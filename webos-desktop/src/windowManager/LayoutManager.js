@@ -36,24 +36,44 @@ export class LayoutManager {
   }
 
   getScreenBounds() {
-    const taskbarHeight = this.getTaskbarHeight();
     const padding = 20;
+    const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
+    const taskbar = document.getElementById("taskbar");
+    let taskbarSize = 0;
+    if (taskbar) {
+      const rect = taskbar.getBoundingClientRect();
+      taskbarSize = taskbarPosition === "left" || taskbarPosition === "right" ? rect.width : rect.height;
+    }
 
-    return {
-      minX: padding,
-      minY: padding,
-      maxX: window.innerWidth - padding,
-      maxY: window.innerHeight - taskbarHeight - padding
-    };
+    let minX = padding;
+    let minY = padding;
+    let maxX = window.innerWidth - padding;
+    let maxY = window.innerHeight - padding;
+
+    if (taskbarPosition === "left") minX += taskbarSize;
+    else if (taskbarPosition === "right") maxX -= taskbarSize;
+    else if (taskbarPosition === "top") minY += taskbarSize;
+    else maxY -= taskbarSize;
+
+    return { minX, minY, maxX, maxY };
+  }
+
+  getTaskbarOffset() {
+    const taskbar = document.getElementById("taskbar");
+    if (!taskbar) return { top: 0, left: 0, width: 0, height: 0 };
+    const rect = taskbar.getBoundingClientRect();
+    const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
+    if (taskbarPosition === "left") return { top: 0, left: 0, width: rect.width, height: 0 };
+    if (taskbarPosition === "right") return { top: 0, left: 0, width: rect.width, height: 0 };
+    if (taskbarPosition === "top") return { top: 0, left: 0, width: 0, height: rect.height };
+    return { top: 0, left: 0, width: 0, height: rect.height };
   }
 
   getTaskbarHeight() {
     const taskbar = document.getElementById("taskbar");
     if (!taskbar) return 0;
-
     const rect = taskbar.getBoundingClientRect();
     const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
-
     return taskbarPosition === "bottom" ? rect.height : 0;
   }
 

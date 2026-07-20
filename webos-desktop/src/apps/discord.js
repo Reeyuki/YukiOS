@@ -41,9 +41,10 @@ export class DiscordApp extends ScramjetBaseApp {
 
     this.createSplash();
 
-    const win = this.wm.createWindow(winId, this.getAppName(), size[0], size[1], {
-      icon: this.getAppIcon(),
-      appId: this.getAppId()
+    const win = os.window.create(winId, this.getAppName(), size[0], size[1], {
+      appId: this.getAppId(),
+      skipHeader: true,
+      icon: this.getAppIcon()
     });
 
     win.innerHTML = `
@@ -61,8 +62,6 @@ export class DiscordApp extends ScramjetBaseApp {
         </div>
       </div>
     `;
-    this.wm.mountWindow(win, winId, this.getAppName(), this.getAppIcon());
-
     win.getAnimations().forEach((a) => a.cancel());
     win.style.opacity = "0";
 

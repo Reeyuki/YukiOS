@@ -244,12 +244,12 @@
   transform: translateY(-1px);
 }
 
-#about-yukios .abx-sponsor-btn-patreon {
-  background: #ff424d;
+#about-yukios .abx-sponsor-btn-monero {
+  background: var(--brand);
 }
 
-#about-yukios .abx-sponsor-btn-patreon:hover {
-  background: #e03842;
+#about-yukios .abx-sponsor-btn-monero:hover {
+  background: var(--brand-hover);
 }
 #about-yukios .abx-sponsor-btn-ko-fi {
   background: #df6f3c;

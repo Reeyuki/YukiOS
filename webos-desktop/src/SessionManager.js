@@ -441,11 +441,6 @@ export class SessionManager {
 
       if (!this.selectedUser) return;
 
-      if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
-        await os.dialog.alert("Not Implemented", "Tiling VM isn't ready yet");
-        return;
-      }
-
       this.currentSession = {
         name: this.selectedUser.name,
         key: this.selectedUser.key,
@@ -455,7 +450,15 @@ export class SessionManager {
       actionBtn.disabled = true;
       actionBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
 
-      await this.initializeSession();
+      try {
+        await this.initializeSession();
+      } catch (e) {
+        console.error("Session init failed:", e);
+        actionBtn.disabled = false;
+        actionBtn.innerHTML = `Sign in`;
+        os.dialog.alert("Session Error", e?.message || String(e));
+        return;
+      }
 
       this.container.classList.add("exit");
 
@@ -684,11 +687,13 @@ export class SessionManager {
     os.storage.set(StorageKeys.userId, key);
     os.storage.set(StorageKeys.username, name);
     os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
+    if (!os.storage.get(StorageKeys.firstLaunchTime)) {
+      const lastLaunch = os.storage.get(StorageKeys.lastLaunchTime);
+      os.storage.set(StorageKeys.firstLaunchTime, lastLaunch || Date.now().toString());
+    }
     this.addToUserHistory(this.currentSession);
 
-    if (this.os.kernel.fileSystemManager) {
-      await this.os.kernel.fileSystemManager.setSession(name);
-    }
+    await os.fs.setSession(name);
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
 
@@ -696,17 +701,21 @@ export class SessionManager {
       this.applyMacSettings();
     }
 
-    if (this.os.kernel.windowManager) {
-      this.os.kernel.windowManager.setFileSystemManager(this.os.kernel.fileSystemManager);
-      setTimeout(() => this.os.kernel.windowManager.restoreSession(), 500);
+    if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
+      this.applyTilingSettings();
+    } else {
+      this.disableTilingSettings();
     }
+
+    os.window.setFileSystemManager(os.fileSystemManager);
+    setTimeout(() => os.window.restoreSession(), 500);
 
     if (os.storage.get(StorageKeys.macOsControls) !== "true") {
       audioMixer().playSystemSound(SystemAudio.START);
     }
 
     if (!os.storage.get(StorageKeys.setupCompleted)) {
-      const setupApp = this.os.app.apps.setupApp;
+      const setupApp = this.os.app.getInstance("setupApp");
       if (setupApp) setTimeout(() => setupApp.open(), 1000);
     }
 
@@ -732,6 +741,21 @@ export class SessionManager {
       taskbarWindows.style.justifyContent = isHorizontal ? "center" : "center";
     }
     this.loadSfProFonts();
+  }
+
+  applyTilingSettings() {
+    os.storage.set(StorageKeys.tilingEnabled, "true");
+    os.tiling.setEnabled(true);
+    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
+
+    const tilingWallpapers = ["corndog.jpg", "end_4.jpg", "Kath.jpg", "Meptl.png"];
+    const pick = tilingWallpapers[Math.floor(Math.random() * tilingWallpapers.length)];
+    SystemUtilities.setWallpaper(`/static/wallpapers/${pick}`);
+  }
+
+  disableTilingSettings() {
+    os.storage.set(StorageKeys.tilingEnabled, "false");
+    os.tiling.setEnabled(false);
   }
 
   loadSfProFonts() {
@@ -777,9 +801,7 @@ export class SessionManager {
 
     audioMixer().playSystemSound(SystemAudio.SHUTDOWN);
 
-    if (this.os.kernel.windowManager && typeof this.os.kernel.windowManager.closeAll === "function") {
-      os.window.closeAll();
-    }
+    os.window.closeAll();
 
     const startMenu = document.getElementById("start-menu");
     if (startMenu) {
@@ -834,7 +856,7 @@ export class SessionManager {
       this.uptimeInterval = null;
     }
 
-    if (this.lastActiveWindow && this.os.kernel.windowManager) {
+    if (this.lastActiveWindow) {
       os.window.bringToFront(this.lastActiveWindow);
     }
     this.lastActiveWindow = null;

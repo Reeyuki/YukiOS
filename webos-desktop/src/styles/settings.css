@@ -1524,12 +1524,14 @@ html[data-theme-mode="light"] .accounts-detail-field input[type="text"] {
   transform: translateY(-1px);
 }
 
-.sponsor-banner-btn-patreon {
-  background: #ff424d;
+.sponsor-banner-btn.donation-monero-btn {
+  background: var(--brand);
+  color: #fff;
 }
 
-.sponsor-banner-btn-patreon:hover {
-  background: #e03842;
+.sponsor-banner-btn.donation-monero-btn:hover {
+  background: var(--brand-hover);
+  transform: translateY(-1px);
 }
 
 .sponsor-banner-close {

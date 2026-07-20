@@ -1,0 +1,221 @@
+.donation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: var(--overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.donation-overlay--show {
+  opacity: 1;
+}
+
+.donation-overlay--hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.donation-popup {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  max-width: 400px;
+  width: 90%;
+  padding: 28px 24px 20px;
+  position: relative;
+  transform: scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.donation-overlay--show .donation-popup {
+  transform: scale(1);
+}
+
+.donation-overlay--hide .donation-popup {
+  transform: scale(0.95);
+}
+
+.donation-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.donation-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.donation-heart {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.donation-heart i {
+  font-size: 32px;
+  color: var(--brand);
+  filter: drop-shadow(0 0 8px rgba(107, 92, 231, 0.4));
+}
+
+.donation-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.donation-message {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.donation-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.donation-btn {
+  padding: 10px 20px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex: 1;
+  justify-content: center;
+}
+
+.donation-btn-kofi {
+  background: #df6f3c;
+  color: #fff;
+}
+
+.donation-btn-kofi:hover {
+  background: #c85e2e;
+  transform: translateY(-1px);
+}
+
+.donation-btn-monero {
+  background: var(--brand);
+  color: var(--text-on-brand, #fff);
+}
+
+.donation-btn-monero:hover {
+  background: var(--brand-hover);
+  transform: translateY(-1px);
+}
+
+.donation-monero-section {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.donation-monero-address {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  word-break: break-all;
+  flex: 1;
+  line-height: 1.4;
+  user-select: all;
+}
+
+.donation-copy-btn {
+  background: var(--surface-hover);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.donation-copy-btn:hover {
+  background: var(--brand-dim);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+.donation-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.donation-footer-btn {
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.donation-footer-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.donation-footer-btn--primary {
+  background: var(--brand-dim);
+  border-color: transparent;
+  color: var(--brand);
+}
+
+.donation-footer-btn--primary:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
+.donation-footer-btn--danger {
+  color: var(--text-secondary);
+}
+
+.donation-footer-btn--danger:hover {
+  background: rgba(255, 77, 77, 0.1);
+  border-color: rgba(255, 77, 77, 0.3);
+  color: #ff4d4d;
+}

@@ -467,8 +467,6 @@
   border-color: var(--error);
 }
 
-/* ───── Custom Shortcut Badge ───── */
-
 #shortcuts-app .sc-card-custom {
   border-color: var(--brand);
   background: color-mix(in srgb, var(--brand) 8%, var(--surface-1));
@@ -497,8 +495,6 @@
   font-size: 9px;
 }
 
-/* ───── Create Custom Button ───── */
-
 #shortcuts-app .sc-create-btn {
   display: flex;
   align-items: center;
@@ -520,16 +516,12 @@
   border-color: var(--brand);
 }
 
-/* ───── Empty State Hint ───── */
-
 #shortcuts-app .sc-empty-hint {
   margin-top: 8px;
   font-size: 12px;
   color: var(--text-muted);
   opacity: 0.7;
 }
-
-/* ───── Custom Action Modal ───── */
 
 #shortcuts-app .sc-custom-overlay {
   position: fixed;
@@ -698,8 +690,6 @@
   font-weight: 500;
 }
 
-/* ───── Action Type Selector ───── */
-
 #shortcuts-app .sc-custom-action-types {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -737,8 +727,6 @@
   text-align: center;
 }
 
-/* ───── Config Fields ───── */
-
 #shortcuts-app .sc-custom-config {
   display: flex;
   flex-direction: column;
@@ -749,8 +737,6 @@
   flex-direction: column;
   gap: 8px;
 }
-
-/* ───── App List ───── */
 
 #shortcuts-app .sc-custom-app-list {
   max-height: 160px;
@@ -810,8 +796,6 @@
   font-size: 11px;
   color: var(--text-muted);
 }
-
-/* ───── Modal Footer ───── */
 
 #shortcuts-app .sc-custom-footer {
   display: flex;

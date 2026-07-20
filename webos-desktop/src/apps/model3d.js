@@ -155,7 +155,7 @@ class SceneObject {
 export class Model3DApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.apps.explorerApp;
+    this.explorerApp = os.app.getInstance("explorerApp");
 
     this.sceneObjects = new Map();
     this.selectedIds = new Set();

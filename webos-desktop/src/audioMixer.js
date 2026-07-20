@@ -2,6 +2,7 @@ import { resolveGhUrl } from "./shared/assetResolver.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { StorageKeys, os } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
+import { getTrayPosition } from "./tray/tray.js";
 export const SystemAudio = Object.freeze({
   START: "static/audio/start.opus",
   SHUTDOWN: "static/audio/shutdown.opus",
@@ -685,13 +686,21 @@ class AudioMixer {
     const btn = document.querySelector('[data-win-id="audio-mixer"]');
     if (!this.panel) return;
 
+    const tilingActive = document.body.classList.contains("tiling-active");
+    let atTop;
+    if (tilingActive) {
+      const tilingBar = document.getElementById("tiling-bar");
+      atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;
+    } else {
+      atTop = isTaskbarTop();
+    }
+
     if (btn) {
       const btnRect = btn.getBoundingClientRect();
       const panelW = 280;
       let left = btnRect.right - panelW;
       if (left < 8) left = 8;
-      const isMac = isTaskbarTop();
-      if (isMac) {
+      if (atTop) {
         this.panel.style.top = `${btnRect.bottom + 6}px`;
         this.panel.style.bottom = "auto";
       } else {
@@ -700,25 +709,11 @@ class AudioMixer {
       }
       this.panel.style.left = `${left}px`;
     } else {
-      const trayEl = document.getElementById("app-tray");
-      if (trayEl) {
-        const trayRect = trayEl.getBoundingClientRect();
-        this.panel.style.right = `${window.innerWidth - trayRect.right}px`;
-        const isMac = isTaskbarTop();
-        if (isMac) {
-          this.panel.style.top = `${trayRect.bottom + 8}px`;
-          this.panel.style.bottom = "auto";
-        } else {
-          this.panel.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
-          this.panel.style.top = "auto";
-        }
-        this.panel.style.left = "auto";
-      } else {
-        this.panel.style.right = "16px";
-        this.panel.style.bottom = "48px";
-        this.panel.style.left = "auto";
-        this.panel.style.top = "auto";
-      }
+      const pos = getTrayPosition();
+      this.panel.style.right = pos.right;
+      this.panel.style.top = pos.top;
+      this.panel.style.bottom = pos.bottom;
+      this.panel.style.left = "auto";
     }
   }
 

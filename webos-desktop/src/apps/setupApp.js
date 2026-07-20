@@ -33,12 +33,6 @@ export const FEATURE_DATA = {
       animation: "bounce-card"
     },
     {
-      icon: "fas fa-cloud",
-      title: "Works Offline",
-      desc: "PWA with service worker - install and use without internet",
-      animation: "pulse-card"
-    },
-    {
       icon: "fas fa-box-archive",
       title: "80 Built-in Apps",
       desc: "Notepad, Terminal, Browser, Office viewer, Calculator, and more",
@@ -932,11 +926,11 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.username, finalizedName);
     os.storage.set(StorageKeys.profilePicture, finalizedAvatar);
 
-    if (this.os.app.apps.sessionManager?.currentSession) {
-      this.os.app.apps.sessionManager.currentSession.name = finalizedName;
-      this.os.app.apps.sessionManager.currentSession.key =
-        finalizedName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
-      this.os.app.apps.sessionManager.currentSession.avatar = finalizedAvatar;
+    const sm = this.os.app.getInstance("sessionManager");
+    if (sm?.currentSession) {
+      sm.currentSession.name = finalizedName;
+      sm.currentSession.key = finalizedName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";
+      sm.currentSession.avatar = finalizedAvatar;
     }
 
     os.storage.set(StorageKeys.theme, this.userChoices.theme);
@@ -957,7 +951,7 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.clippy, this.userChoices.clippy.toString());
     os.storage.set(StorageKeys.clipboardManagerEnabled, this.userChoices.clipboardManager.toString());
 
-    this.os.app.apps.achievementsApp?.trigger(Achievements.SetupComplete);
+    this.os.app.triggerAchievement(Achievements.SetupComplete);
 
     if (this.userChoices.wallpaper) {
       try {
@@ -975,7 +969,7 @@ export class SetupApp extends BaseApp {
         detail: { soundEnabled: this.userChoices.sound }
       })
     );
-    const welcomeContent = `All set, ${this.os.app.apps.sessionManager?.currentSession?.name || "Guest"}!
+    const welcomeContent = `All set, ${sm.currentSession?.name || "Guest"}!
 
 Here's what you picked:
 - Theme: ${this.userChoices.theme}
@@ -1019,7 +1013,7 @@ Have fun!`;
   skipSetup(win) {
     os.storage.set(StorageKeys.setupCompleted, "true");
 
-    this.os.app.apps.achievementsApp?.trigger(Achievements.SetupComplete);
+    this.os.app.triggerAchievement(Achievements.SetupComplete);
     os.window.close(win);
     this.openWindows.delete("setup-wizard");
   }

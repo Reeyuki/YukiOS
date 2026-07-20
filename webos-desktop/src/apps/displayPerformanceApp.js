@@ -5,6 +5,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
+import { getTrayPosition } from "../tray/tray.js";
 
 class DisplayPerformanceApp extends BaseApp {
   constructor(services) {
@@ -278,7 +279,7 @@ class DisplayPerformanceApp extends BaseApp {
     this.powerMode = mode;
     turboManager.setMode(mode);
 
-    this.os.app.apps.achievementsApp?.incrementPowerProfileChange();
+    this.os.app.incrementPowerProfileChange();
 
     const modeNames = {
       turbo: "Turbo",
@@ -456,20 +457,10 @@ class DisplayPerformanceApp extends BaseApp {
 
     document.body.appendChild(popup);
 
-    const trayEl = document.getElementById("app-tray");
-    const trayRect = trayEl
-      ? trayEl.getBoundingClientRect()
-      : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
-
-    popup.style.right = `${window.innerWidth - trayRect.right}px`;
-    const isMac = isTaskbarTop();
-    if (isMac) {
-      popup.style.top = `${trayRect.bottom + 8}px`;
-      popup.style.bottom = "auto";
-    } else {
-      popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
-      popup.style.top = "auto";
-    }
+    const pos = getTrayPosition();
+    popup.style.right = pos.right;
+    popup.style.top = pos.top;
+    popup.style.bottom = pos.bottom;
     popup.style.display = "block";
 
     this.popupVisible = true;

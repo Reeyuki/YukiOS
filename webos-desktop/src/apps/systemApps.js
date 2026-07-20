@@ -44,10 +44,8 @@ export class SystemAppsApp extends BaseApp {
   }
 
   renderApps(win) {
-    const appLauncher = this.os.app._launcher;
-    if (!appLauncher) return;
-    const appMap = appLauncher.appMap;
-    if (!appMap) return;
+    const appMap = this.os.app.getAllApps();
+    if (!appMap || Object.keys(appMap).length === 0) return;
 
     const appRegistry = getAppRegistry();
     appRegistry.refresh();

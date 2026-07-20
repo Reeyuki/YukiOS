@@ -1,10 +1,11 @@
 import { BaseApp, StorageKeys, os } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
+import { getTrayPosition } from "../tray/tray.js";
 class ClipboardManagerApp extends BaseApp {
   constructor(os) {
     super(os);
     this.openWindows = new Set();
-    this.clipboardManager = os.kernel?.clipboardManager;
+    this.clipboardManager = os.clipboardManager;
     this.winId = "clipboard-manager-window";
     this.popupId = "clipboard-tray-popup";
     this.enabled = os.storage.get(StorageKeys.clipboardManagerEnabled) !== "false";
@@ -102,20 +103,10 @@ class ClipboardManagerApp extends BaseApp {
 
     document.body.appendChild(popup);
 
-    const trayEl = document.getElementById("app-tray");
-    const trayRect = trayEl
-      ? trayEl.getBoundingClientRect()
-      : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
-
-    popup.style.right = `${window.innerWidth - trayRect.right}px`;
-    const isMac = isTaskbarTop();
-    if (isMac) {
-      popup.style.top = `${trayRect.bottom + 8}px`;
-      popup.style.bottom = "auto";
-    } else {
-      popup.style.bottom = `${window.innerHeight - trayRect.top + 8}px`;
-      popup.style.top = "auto";
-    }
+    const pos = getTrayPosition();
+    popup.style.right = pos.right;
+    popup.style.top = pos.top;
+    popup.style.bottom = pos.bottom;
     popup.style.display = "block";
 
     this.popupVisible = true;

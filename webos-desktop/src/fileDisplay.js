@@ -350,7 +350,7 @@ function setupImageViewer(win) {
   ro.observe(container);
 }
 
-export function openMediaViewer(name, src, kind, windowManager) {
+export function openMediaViewer(name, src, kind) {
   const isVideo = kind === FileKind.VIDEO || isVideoFile(name);
   const isAudio = kind === FileKind.AUDIO || isAudioFile(name);
   const isImage = !isVideo && !isAudio;
@@ -368,7 +368,8 @@ export function openMediaViewer(name, src, kind, windowManager) {
   const winId = `media-${Date.now()}`;
   const win = os.window.create(winId, name, width, height, {
     icon,
-    autoMount: false
+    autoMount: false,
+    skipAutoSetup: true
   });
 
   const headerHtml = `
@@ -409,11 +410,9 @@ export function openMediaViewer(name, src, kind, windowManager) {
 
   const desktop = document.querySelector("#desktop");
   if (desktop) desktop.appendChild(win);
-  if (windowManager) {
-    windowManager.makeDraggable(win);
-    windowManager.makeResizable(win);
-    windowManager.setupWindowControls(win);
-  }
+  os.window.setupWindowControls(win);
+  os.window.makeDraggable(win);
+  os.window.makeResizable(win);
   os.window.addToTaskbar(winId, name, icon);
   os.window.focus(win);
   requestAnimationFrame(() => (win.style.opacity = ""));
@@ -471,17 +470,17 @@ async function confirmLargeFile(name, size) {
   );
 }
 
-async function openModelFile(name, path, fs, appLauncher) {
+async function openModelFile(name, path) {
   try {
-    const model3dApp = appLauncher?.model3dApp;
+    const model3dApp = os.app.getInstance("model3dApp");
     if (model3dApp) {
       let arrayBuffer = null;
       try {
-        const blob = await fs.readBinaryFile(path, name);
+        const blob = await os.fs.readBinaryFile(path, name);
         if (blob && blob.size > 0) {
           arrayBuffer = await blob.arrayBuffer();
         } else {
-          const content = await fs.getFileContent(path, name);
+          const content = await os.fs.getFileContent(path, name);
           if (content instanceof Blob) {
             arrayBuffer = await content.arrayBuffer();
           } else if (content instanceof ArrayBuffer) {
@@ -507,25 +506,26 @@ async function openModelFile(name, path, fs, appLauncher) {
   }
 }
 
-async function openExecutable(name, path, jsDosApp) {
+async function openExecutable(name, path) {
   try {
-    jsDosApp.launchExe(name, path);
+    const jsDosApp = os.app.getInstance("jsDosApp");
+    if (jsDosApp) jsDosApp.launchExe(name, path);
   } catch (err) {
     console.error("[FileDisplay] openExecutable error:", err);
   }
 }
 
-async function openSwfFile(name, path, fs, appLauncher) {
+async function openSwfFile(name, path) {
   try {
-    const ruffleApp = appLauncher?.ruffleApp;
+    const ruffleApp = os.app.getInstance("ruffleApp");
     if (!ruffleApp) return;
     let arrayBuffer = null;
 
-    const blob = await fs.readBinaryFile(path, name);
+    const blob = await os.fs.readBinaryFile(path, name);
     if (blob && blob.size > 0) {
       arrayBuffer = await blob.arrayBuffer();
     } else {
-      const content = await fs.getFileContent(path, name);
+      const content = await os.fs.getFileContent(path, name);
       if (content instanceof Blob && content.size > 0) {
         arrayBuffer = await content.arrayBuffer();
       } else if (content instanceof ArrayBuffer && content.byteLength > 0) {
@@ -548,9 +548,9 @@ async function openSwfFile(name, path, fs, appLauncher) {
   }
 }
 
-async function openRomFile(name, path, appLauncher) {
+async function openRomFile(name, path) {
   try {
-    const emulatorApp = appLauncher?.emulatorApp;
+    const emulatorApp = os.app.getInstance("emulatorApp");
     if (emulatorApp) {
       emulatorApp.launchROM(name, path);
     } else {
@@ -561,7 +561,7 @@ async function openRomFile(name, path, appLauncher) {
   }
 }
 
-async function openMediaFile(name, path, fs, windowManager) {
+async function openMediaFile(name, path) {
   try {
     const ext = getExt(name);
 
@@ -578,14 +578,14 @@ async function openMediaFile(name, path, fs, windowManager) {
       return await readFileAsDataURL(typedBlob);
     };
 
-    const blob = await fs.readBinaryFile(path, name);
+    const blob = await os.fs.readBinaryFile(path, name);
     if (blob && blob.size > 0) {
-      openMediaViewer(name, await getMediaSrc(blob), kind, windowManager);
+      openMediaViewer(name, await getMediaSrc(blob), kind);
       return;
     }
-    const content = await fs.getFileContent(path, name);
+    const content = await os.fs.getFileContent(path, name);
     if (content instanceof Blob && content.size > 0) {
-      openMediaViewer(name, await getMediaSrc(content), kind, windowManager);
+      openMediaViewer(name, await getMediaSrc(content), kind);
       return;
     }
     if (typeof content === "string" && content) {
@@ -596,25 +596,27 @@ async function openMediaFile(name, path, fs, windowManager) {
         const typedBlob = new Blob([Uint8Array.from(content, (c) => c.charCodeAt(0))], { type: mime });
         src = await getMediaSrc(typedBlob);
       }
-      openMediaViewer(name, src, kind, windowManager);
+      openMediaViewer(name, src, kind);
     }
   } catch (err) {
     console.error("[FileDisplay] openMediaFile error:", err);
   }
 }
 
-async function openOfficeFile(name, path, fs, officeApp, notepadApp) {
+async function openOfficeFile(name, path) {
   try {
+    const officeApp = os.app.getInstance("officeApp");
+    const notepadApp = os.app.getInstance("notepadApp");
     if (!officeApp) {
-      const content = await fs.getFileContent(path, name);
+      const content = await os.fs.getFileContent(path, name);
       notepadApp.open(name, content, path);
       return;
     } else {
-      const blob = await fs.readBinaryFile(path, name);
+      const blob = await os.fs.readBinaryFile(path, name);
       if (blob && blob.size > 0) {
         officeApp.loadContent(name, await blob.arrayBuffer(), path);
       } else {
-        officeApp.loadContent(name, await fs.getFileContent(path, name), path);
+        officeApp.loadContent(name, await os.fs.getFileContent(path, name), path);
       }
       return;
     }
@@ -623,8 +625,10 @@ async function openOfficeFile(name, path, fs, officeApp, notepadApp) {
   }
 }
 
-async function openMarkdown(name, path, content, markdownApp, notepadApp) {
+async function openMarkdown(name, path, content) {
   try {
+    const markdownApp = os.app.getInstance("markdownApp");
+    const notepadApp = os.app.getInstance("notepadApp");
     if (markdownApp) {
       markdownApp.open(name, content, path);
     } else {
@@ -635,8 +639,10 @@ async function openMarkdown(name, path, content, markdownApp, notepadApp) {
   }
 }
 
-async function openHtmlFile(name, path, content, browserApp, notepadApp) {
+async function openHtmlFile(name, path, content) {
   try {
+    const browserApp = os.app.getInstance("browserApp");
+    const notepadApp = os.app.getInstance("notepadApp");
     if (browserApp) {
       browserApp.openHtml(content, name, path);
     } else {
@@ -647,8 +653,9 @@ async function openHtmlFile(name, path, content, browserApp, notepadApp) {
   }
 }
 
-async function openTextFile(name, path, content, notepadApp) {
+async function openTextFile(name, path, content) {
   try {
+    const notepadApp = os.app.getInstance("notepadApp");
     const size = getContentSize(content);
     if (size > LARGE_FILE_THRESHOLD) {
       const confirmed = await confirmLargeFile(name, size);
@@ -660,10 +667,10 @@ async function openTextFile(name, path, content, notepadApp) {
   }
 }
 
-async function readFontBlob(name, path, fs) {
-  const blob = await fs.readBinaryFile(path, name);
+async function readFontBlob(name, path) {
+  const blob = await os.fs.readBinaryFile(path, name);
   if (blob && blob.size) return blob;
-  const content = await fs.getFileContent(path, name);
+  const content = await os.fs.getFileContent(path, name);
   if (content instanceof Blob && content.size) return content;
   if (typeof content === "string" && content) {
     if (content.startsWith("data:") || content.startsWith("http://") || content.startsWith("https://")) {
@@ -678,9 +685,9 @@ async function readFontBlob(name, path, fs) {
   return null;
 }
 
-async function openFontFile(name, path, fs) {
+async function openFontFile(name, path) {
   try {
-    const blob = await readFontBlob(name, path, fs);
+    const blob = await readFontBlob(name, path);
     if (!blob || !blob.size) return os.dialog.alert("Error", "Could not read font file");
     const ext = getExt(name);
     const formatMap = { ttf: "truetype", otf: "opentype", woff: "woff", woff2: "woff2" };
@@ -729,22 +736,11 @@ async function openFontFile(name, path, fs) {
   }
 }
 
-export async function openFileWith({
-  name,
-  path,
-  fs,
-  notepadApp,
-  browserApp,
-  windowManager,
-  officeApp,
-  markdownApp,
-  jsDosApp,
-  appLauncher
-}) {
+export async function openFileWith({ name, path }) {
   try {
     if (isZipFile(name)) return;
     if (name.toLowerCase().endsWith(".img")) {
-      const v86App = os.app.apps.v86app;
+      const v86App = os.app.getInstance("v86app");
       if (v86App?.launchImage) {
         v86App.launchImage(name, path);
       } else {
@@ -754,7 +750,7 @@ export async function openFileWith({
     }
     if (isISOFile(name)) {
       try {
-        const mountPoint = await fs.mountISO(path, name);
+        const mountPoint = await os.fs.mountISO(path, name);
         os.notify.send("Disc Image", `Mounted "${name}"`, { icon: "fa-compact-disc" });
         if (mountPoint) os.events.emit("iso:mounted", { mountPoint, path, name });
       } catch (e) {
@@ -765,26 +761,25 @@ export async function openFileWith({
     trackRecentFile(name, path);
     console.log("Open file with: ", name, path);
 
-    if (isModel3DFile(name)) return openModelFile(name, path, fs, appLauncher);
+    if (isModel3DFile(name)) return openModelFile(name, path);
     if (
       isExeFile(name) ||
       name.toLowerCase().endsWith(".jsdos") ||
       name.toLowerCase().endsWith(".com") ||
       name.toLowerCase().endsWith(".bat")
     )
-      return openExecutable(name, path, jsDosApp);
-    if (isSwfFile(name)) return openSwfFile(name, path, fs, appLauncher);
-    if (isRomFile(name)) return openRomFile(name, path, appLauncher);
-    if (isVideoFile(name) || isAudioFile(name) || isImageFile(name))
-      return openMediaFile(name, path, fs, windowManager);
-    if (isOfficeFile(name)) return openOfficeFile(name, path, fs, officeApp, notepadApp);
-    if (isFontFile(name)) return openFontFile(name, path, fs);
+      return openExecutable(name, path);
+    if (isSwfFile(name)) return openSwfFile(name, path);
+    if (isRomFile(name)) return openRomFile(name, path);
+    if (isVideoFile(name) || isAudioFile(name) || isImageFile(name)) return openMediaFile(name, path);
+    if (isOfficeFile(name)) return openOfficeFile(name, path);
+    if (isFontFile(name)) return openFontFile(name, path);
 
-    const content = await fs.getFileContent(path, name);
+    const content = await os.fs.getFileContent(path, name);
 
-    if (isMarkdownFile(name)) return openMarkdown(name, path, content, markdownApp, notepadApp);
-    if (isHtmlFile(name)) return openHtmlFile(name, path, content, browserApp, notepadApp);
-    return openTextFile(name, path, content, notepadApp);
+    if (isMarkdownFile(name)) return openMarkdown(name, path, content);
+    if (isHtmlFile(name)) return openHtmlFile(name, path, content);
+    return openTextFile(name, path, content);
   } catch (err) {
     console.error("[FileDisplay] openFileWith error:", err);
     os.notify.send("File Display", `Failed to open ${name}`, { type: "error" });
@@ -848,26 +843,63 @@ export async function showFileProperties(path, name, isFolder, onRename = null) 
     } else {
       size = await getItemSize(path);
     }
-    let type = isFolder ? "Folder" : fileKindFromName(name);
-    if (typeof type !== "string") {
-      type =
-        type === FileKind.TEXT
-          ? "Text"
-          : type === FileKind.IMAGE
-            ? "Image"
-            : type === FileKind.VIDEO
-              ? "Video"
-              : type === FileKind.AUDIO
-                ? "Audio"
-                : type === FileKind.ROM
-                  ? "ROM"
-                  : type === FileKind.HTML
-                    ? "HTML"
-                    : type === FileKind.FONT
-                      ? "Font"
-                      : "File";
+    const kind = fileKindFromName(name);
+    const ext = name.split(".").pop().toLowerCase();
+    let type = isFolder ? "Folder" : kind;
+
+    if (!isFolder) {
+      const extLabels = {
+        json: "JSON",
+        js: "JavaScript",
+        ts: "TypeScript",
+        jsx: "JSX",
+        tsx: "TSX",
+        css: "CSS",
+        xml: "XML",
+        yaml: "YAML",
+        yml: "YAML",
+        ini: "INI",
+        cfg: "Config",
+        log: "Log",
+        sh: "Shell Script",
+        bash: "Shell Script",
+        zsh: "Shell Script",
+        rtf: "Rich Text",
+        py: "Python",
+        rb: "Ruby",
+        rs: "Rust",
+        go: "Go",
+        java: "Java",
+        cpp: "C++",
+        c: "C",
+        h: "Header",
+        hpp: "C++ Header",
+        md: "Markdown",
+        csv: "CSV",
+        sql: "SQL",
+        toml: "TOML",
+        html: "HTML",
+        htm: "HTML"
+      };
+
+      if (kind === FileKind.TEXT) {
+        type = extLabels[ext] || "Text";
+      } else if (kind === FileKind.IMAGE) {
+        type = "Image";
+      } else if (kind === FileKind.VIDEO) {
+        type = "Video";
+      } else if (kind === FileKind.AUDIO) {
+        type = "Audio";
+      } else if (kind === FileKind.ROM) {
+        type = "ROM";
+      } else if (kind === FileKind.FONT) {
+        type = "Font";
+      } else if (isShortcutFile(name)) {
+        type = "Shortcut";
+      } else {
+        type = "File";
+      }
     }
-    if (type === "other" && isShortcutFile(name)) type = "Shortcut";
     const location = Array.isArray(path) ? path.join("/") : path;
     const modified = await getModifiedDate(path);
 

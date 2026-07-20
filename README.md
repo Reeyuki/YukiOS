@@ -67,20 +67,41 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 Switchable macOS-style desktop from the session picker with a top menu bar, animated dock, and Control Center tray.
 
 - Top menu bar opening Start Menu and Finder through Help items and macos categories
-- Animated fisheye dock where pinned apps scale and push neighbors on hover, open apps pin automatically, and items are draggable to reorder
-- Control Center tray with brightness, volume, battery, power mode, dark mode, dock toggle, accent colors and lock screen
+- Animated fisheye dock where pinned apps scale and push neighbors on hover, open apps pin automatically, and items are
+  draggable to reorder
+- Control Center tray with brightness, volume, battery, power mode, dark mode, dock toggle, accent colors and lock
+  screen
 - macOS-style traffic light window buttons on all window headers
-- Launchpad: fullscreen app grid with F4 keybind, glassmorphism backdrop, live search, slide-from-dock animation, and bigger icons on hover, pinned to the Dock in Mac Mode
+- Launchpad: fullscreen app grid with F4 keybind, glassmorphism backdrop, live search, slide-from-dock animation, and
+  bigger icons on hover, pinned to the Dock in Mac Mode
+
+# 🔲 Tiling Mode
+
+Hyprland-inspired BSP tiling window manager switchable from the session picker, with per-workspace tree layouts and live
+config editing.
+
+- Alt+Space toggles tiling on and off; Alt+Arrow moves focus, Ctrl+Alt+Arrow resizes boundaries, Alt+Shift+Arrow swaps
+  windows
+- Alt+1-9 switches between 9 independent workspaces, each with its own BSP tree
+- Alt+Q closes the focused window, Alt+\ toggles split orientation, Alt+F toggles floating, Alt+Enter fullscreens
+- Drag a tiled window onto another to swap them in the tree
+- Gap, border width, and split ratio adjustable from Settings > Tiling or by editing Config/yukiOs/tiling.conf
+- hyprctl terminal command provides Hyprland-style CLI control
+- Config file at `Config/yukiOs/tiling.conf` (auto-created with defaults if missing)
+- Customizable: gaps (inner/outer), split ratio, border width/radius, resize step, animation duration/easing, mouse
+  resize toggle, workspace switch delay, resize debounce
+- Live-reload: file is polled every 3s, edit and save with any text editor for instant updates
+- GUI alternative: Settings → Tiling panel writes to the same config file automatically
 
 # 🧭 Navigation & UI
 
 - Start menu with:
   - Fuzzy search (Levenshtein distance, word-boundary matching) across all apps and settings categories
-  - Favorites system — star/unstar apps with gold-tinted highlights and dedicated favorites page
-  - Customizable app grid — add/edit/remove items
-  - Category management — rename, delete/hide, restore categories via right-click context menu
+  - Favorites system: star/unstar apps with gold-tinted highlights and dedicated favorites page
+  - Customizable app grid: add/edit/remove items
+  - Category management: rename, delete/hide, restore categories via right-click context menu
   - App grid organized into categories: Core, Web, Games, Files
-  - Desktop icon toggles — show/hide Games and System Apps independently
+  - Desktop icon toggles: show/hide Games and System Apps independently
   - User profile display with avatar, name, and hover tooltip
   - Description tooltips on hover for all items
   - Recent page tracking last-opened apps and files with clear button
@@ -97,7 +118,7 @@ Switchable macOS-style desktop from the session picker with a top menu bar, anim
   submenu traversal)
 - Command palette (Ctrl+K/P/F1) for app, file, and command search with built-in calculator, terminal run support with >
   prefix, and unit converter
-- Run dialog (Ctrl+R-Windows+R) — compact quick-launch window for opening apps, URLs, and terminal commands
+- Run dialog (Ctrl+R-Windows+R): compact quick-launch window for opening apps, URLs, and terminal commands
 - Clippy contextual assistant with per-app tips
 - Animated UI components including start menu, wallpaper switcher, audio mixer, context menus, and notifications
 - Keyboard shortcuts app for customizing global hotkeys
@@ -157,7 +178,7 @@ Switchable macOS-style desktop from the session picker with a top menu bar, anim
 - Power profiles (Turbo, Balanced, Quality) with tray controls
 - Brightness, contrast, gamma, and color temperature sliders
 - Custom cursor support (with miku by default)
-- Custom font system — set any TTF/OTF file as system font
+- Custom font system: set any TTF/OTF file as system font
 - Import/export system for backup and migration
 - Transparent UI toggle with: glass effect on windows, taskbar, start menu.
 - Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
@@ -181,8 +202,10 @@ Switchable macOS-style desktop from the session picker with a top menu bar, anim
   - Multiple independent tabs with Alt+T / Ctrl+Tab / Alt+1-9
   - `file` command with content-based magic byte detection for 10+ file formats
   - `neofetch` with GPU/RAM/browser/engine detection
-  - Pipeline (`|`), redirects (`>`/`>>`), command chaining (`&&`/`||`/`;`), Ctrl+R reverse search, and `file` with magic-byte content detection
-  - `yuki` command for OS control: power mode, brightness, theme, wallpaper, workspaces, app management (list/uninstall/install/disable/enable), DND, notifications, storage report
+  - Pipeline (`|`), redirects (`>`/`>>`), command chaining (`&&`/`||`/`;`), Ctrl+R reverse search, and `file` with
+    magic-byte content detection
+  - `yuki` command for OS control: power mode, brightness, theme, wallpaper, workspaces, app management
+    (list/uninstall/install/disable/enable), DND, notifications, storage report
 - Notepad
 - Markdown Viewer
 - Yuki Code
@@ -196,7 +219,7 @@ Switchable macOS-style desktop from the session picker with a top menu bar, anim
 - Setup Wizard
 - Achievements
 - Profile Customizer
-- Yuki AI Assistant
+- Yuki AI Assistant (WebLLM)
 - Storage Editor
 - Yuki Convert
 - Clipboard Manager

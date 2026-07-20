@@ -10,6 +10,7 @@ import { FileKind } from "../shared/fileKindDetector.js";
 
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
+import { decodeFileContent } from "../utils/utils.js";
 import { scheduleFileTooltip, scheduleAppTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { BusEvents } from "../core/EventBus.js";
 import { Achievements } from "../achievements.js";
@@ -30,18 +31,7 @@ const HARDCODED_DESKTOP_ICONS = [
 ];
 
 export class IconManager {
-  constructor(
-    desktop,
-    fs,
-    positionHelper,
-    positionStore,
-    selectionManager,
-    notepadApp,
-    explorerApp,
-    appLauncher,
-    jsDosApp,
-    dragDropManager
-  ) {
+  constructor(desktop, fs, positionHelper, positionStore, selectionManager, notepadApp, explorerApp, dragDropManager) {
     this.desktop = desktop;
     this.fs = fs;
     this.positionHelper = positionHelper;
@@ -49,8 +39,6 @@ export class IconManager {
     this.selectionManager = selectionManager;
     this.notepadApp = notepadApp;
     this.explorerApp = explorerApp;
-    this.appLauncher = appLauncher;
-    this.jsDosApp = jsDosApp;
     this.dragDropManager = dragDropManager;
   }
 
@@ -245,6 +233,7 @@ export class IconManager {
             thumbnailSrc = this.thumbnailCache?.get(cacheKey);
             if (!thumbnailSrc) {
               const content = await this.fs.getFileContent(["Desktop"], fileName);
+              if (!content) return;
               const src = content instanceof Blob ? await readFileAsDataURL(content) : content;
               thumbnailSrc = await generateThumbnail(src);
               if (thumbnailSrc) {
@@ -282,18 +271,7 @@ export class IconManager {
         console.error("Failed to parse desktop file JSON:", e);
       }
     }
-    await openFileWith({
-      name: fileName,
-      path: ["Desktop"],
-      fs: this.fs,
-      notepadApp: this.notepadApp,
-      browserApp: this.appLauncher.browserApp,
-      windowManager: this.appLauncher.wm,
-      officeApp: this.appLauncher.officeApp,
-      markdownApp: this.appLauncher.markdownApp,
-      jsDosApp: this.jsDosApp,
-      appLauncher: this.appLauncher
-    });
+    await openFileWith({ name: fileName, path: ["Desktop"] });
   }
 
   openYouTubeEmbedDesktop(content) {
@@ -335,8 +313,10 @@ export class IconManager {
 
   async editDesktopFileWithNotepad(fileName) {
     try {
-      const content = await this.fs.getFileContent(["Desktop"], fileName);
-      this.notepadApp.open(fileName, content, ["Desktop"]);
+      const content = await decodeFileContent(await this.fs.getFileContent(["Desktop"], fileName));
+      if (this.notepadApp?.open) {
+        this.notepadApp.open(fileName, content, ["Desktop"]);
+      }
     } catch (e) {
       console.error("Failed to open desktop file in Notepad:", e);
       os.notify.send(`Could not open "${fileName}"`);
@@ -364,7 +344,7 @@ export class IconManager {
     input.click();
   }
 
-  async initializeDesktopFiles(sharedAppLauncher, isRightAlignedSystemApp) {
+  async initializeDesktopFiles(appMap, isRightAlignedSystemApp) {
     const hideDesktopIcons = os.storage.get(StorageKeys.hideDesktopIcons) === "true";
     if (hideDesktopIcons) return;
 
@@ -394,13 +374,12 @@ export class IconManager {
       icon.appendChild(label);
 
       const fileName = `${def.name}.desktop`;
-      await os.fs.write(["Desktop", fileName], JSON.stringify({ app: def.app, name: def.name, path: def.icon }));
       icon.dataset.fileName = fileName;
 
       const key = this.positionStore.getKey(icon);
       if (saved[key]) {
         this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-      } else if (isRightAlignedSystemApp(sharedAppLauncher.appMap, def.app)) {
+      } else if (isRightAlignedSystemApp(appMap, def.app)) {
         systemIcons.push(icon);
       } else {
         regularIcons.push(icon);
@@ -422,6 +401,11 @@ export class IconManager {
 
     this.desktop.appendChild(fragment);
     createdIcons.forEach((icon) => this.makeIconInteractable(icon));
+
+    for (const def of HARDCODED_DESKTOP_ICONS) {
+      const fileName = `${def.name}.desktop`;
+      await os.fs.write(["Desktop", fileName], JSON.stringify({ app: def.app, name: def.name, path: def.icon }));
+    }
 
     await this.loadDesktopItems();
   }

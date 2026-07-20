@@ -134,7 +134,7 @@ export function applyMikuCursor(enabled) {
 
 export function applyDesktopStretchScrollDisabled(disabled) {
   if (!desktop) return;
-  desktop.style.overflow = "auto";
+  desktop.style.overflow = disabled ? "hidden" : "auto";
 
   const desktopRect = desktop.getBoundingClientRect();
   const windows = $$(".window");

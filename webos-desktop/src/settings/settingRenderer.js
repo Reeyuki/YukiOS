@@ -6,6 +6,7 @@ import { StorageKeys, os } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
+import { renderTilingSettings } from "./pane-tiling.js";
 import { RESOLUTION_PRESETS, getViewportLabel } from "../resolution/resolutionManager.js";
 
 function getBrowserInfo() {
@@ -223,6 +224,7 @@ export function buildSettingsHTML(settings, wm) {
           <li class="active" data-target="pane-system"><i class="fas fa-desktop"></i> System</li>
           <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
           <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
+          <li data-target="pane-tiling"><i class="fas fa-th-large"></i> Tiling</li>
           <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
           <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
           <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
@@ -235,6 +237,7 @@ export function buildSettingsHTML(settings, wm) {
         ${renderSystemSettings(settings)}
         ${renderDesktopSettings(settings)}
         ${renderAppearanceSettings(settings)}
+        ${renderTilingSettings()}
         ${renderDataSettings()}
         ${renderNetworkSettings(settings)}
         ${renderAudioSettings(settings)}

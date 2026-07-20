@@ -1033,3 +1033,89 @@ html[data-theme-mode="light"] .app-type.external {
   background: var(--bg-secondary);
   color: var(--text-secondary);
 }
+
+/* ── Config Documentation Table ──*/
+
+.config-doc {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+}
+
+.config-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.config-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.config-table td {
+  padding: 8px 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--glass-border);
+  line-height: var(--lh-body);
+}
+
+.config-table tr:last-child td {
+  border-bottom: none;
+}
+
+.config-table td code {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--brand);
+  white-space: nowrap;
+}
+
+.config-table td:first-child {
+  white-space: nowrap;
+}
+
+.config-table td:last-child {
+  color: var(--text-muted);
+}
+
+.config-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.feature-card code {
+  display: inline;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--brand);
+}
+
+html[data-theme-mode="light"] .config-doc {
+  background: var(--bg-secondary);
+  border-color: var(--glass-border);
+}
+
+html[data-theme-mode="light"] .config-table td code,
+html[data-theme-mode="light"] .feature-card code {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+}

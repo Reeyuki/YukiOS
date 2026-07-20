@@ -8,7 +8,7 @@ const GAMES_DIR = ["Games"];
 export class JsDosApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.apps.explorerApp;
+    this.explorerApp = os.app.getInstance("explorerApp");
   }
 
   async open() {

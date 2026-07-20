@@ -59,13 +59,24 @@ const noopNotify = {
 const noopWindow = {
   create: () => document.createElement("div"),
   close: NOOP,
+  closeAll: NOOP,
+  getOpenWindows: () => undefined,
+  setupWindowControls: NOOP,
+  makeDraggable: NOOP,
+  makeResizable: NOOP,
+  setFileSystemManager: NOOP,
+  restoreSession: NOOP,
   focus: NOOP,
   minimize: NOOP,
   maximize: NOOP,
+  toggleFullscreen: NOOP,
+  applySnap: NOOP,
   bringToFront: NOOP,
   addToTaskbar: NOOP,
   removeFromTaskbar: NOOP,
-  getWindowControls: () => ""
+  getWindowControls: () => "",
+  setTitle: NOOP,
+  getTitle: () => null
 };
 
 const noopFs = {
@@ -90,6 +101,8 @@ const noopFs = {
   renameItem: () => Promise.resolve(),
   updateFile: () => Promise.resolve(),
   trashFile: () => Promise.resolve(),
+  setSession: () => Promise.resolve(),
+  getFileContent: () => Promise.resolve(null),
   trash: {
     moveToTrash: () => Promise.resolve(),
     getItems: () => Promise.resolve([]),
@@ -129,6 +142,7 @@ const noopTray = {
 const noopApp = {
   launch: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
   launchGame: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
+  openIframeApp: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
   getRunningApps: () => [],
   getAllApps: () => ({}),
   getAppInfo: () => null,
@@ -136,8 +150,25 @@ const noopApp = {
   searchApps: () => [],
   getInstance: () => null,
   register: NOOP,
-  close: NOOP,
-  apps: {}
+  close: NOOP
+};
+
+const noopTiling = {
+  get enabled(): boolean {
+    return false;
+  },
+  setEnabled: NOOP,
+  getEffectiveConfig: () => null,
+  updateConfig: NOOP,
+  applyBarSettings: NOOP,
+  focusDirection: NOOP,
+  swapDirection: NOOP,
+  resizeDirection: NOOP,
+  cycleFocus: NOOP,
+  toggleFloating: NOOP,
+  toggleFullscreenOnTiled: NOOP,
+  toggleSplitType: NOOP,
+  closeFocusedWindow: NOOP
 };
 
 const noopTor = {
@@ -157,6 +188,21 @@ const noopTor = {
   reconnect: NOOP
 };
 
+const noopAchievements = {
+  trigger: NOOP,
+  incrementAppLaunched: NOOP,
+  incrementGameLaunched: NOOP,
+  incrementScreenshotTaken: NOOP,
+  incrementCalculationDone: NOOP,
+  incrementPowerProfileChange: NOOP,
+  incrementSession: NOOP,
+  incrementWallpaper: NOOP,
+  incrementTerminalCmd: NOOP,
+  incrementFileUploaded: NOOP,
+  triggerCommandExecution: NOOP,
+  unlock: () => null
+};
+
 const noopAPIs: Record<string, any> = {
   storage: noopStorage,
   events: noopEvents,
@@ -167,7 +213,10 @@ const noopAPIs: Record<string, any> = {
   tray: noopTray,
   app: noopApp,
   tor: noopTor,
-  kernel: {}
+  tiling: noopTiling,
+  achievements: noopAchievements,
+  clipboardManager: null,
+  fileSystemManager: null
 };
 
 export const os = new Proxy({} as OSBridge, {

@@ -38,6 +38,14 @@ export class DesktopContextMenuManager {
         { id: "ctx-copy", label: "Copy", action: "copy", icon: "fa-copy" },
         { id: "ctx-cut", label: "Cut", action: "cut", icon: "fa-cut" },
         "hr",
+        {
+          id: "ctx-paste-icon",
+          label: "Paste",
+          action: "paste",
+          condition: () => !!this.desktopUI.getClipboard(),
+          icon: "fa-paste"
+        },
+        "hr",
         { id: "ctx-delete", label: "Move to Trash", action: "delete", icon: "fa-trash-alt" },
         { id: "ctx-rename", label: "Rename", action: "rename", icon: "fa-edit" },
         { id: "ctx-properties", label: "Properties", action: "properties", icon: "fa-info-circle" }
@@ -50,6 +58,14 @@ export class DesktopContextMenuManager {
         "hr",
         { id: "ctx-copy-folder", label: "Copy", action: "copyFolder", icon: "fa-copy" },
         { id: "ctx-cut-folder", label: "Cut", action: "cutFolder", icon: "fa-cut" },
+        "hr",
+        {
+          id: "ctx-paste-folder",
+          label: "Paste",
+          action: "paste",
+          condition: () => !!this.desktopUI.getClipboard(),
+          icon: "fa-paste"
+        },
         "hr",
         { id: "ctx-delete-folder", label: "Move to Trash", action: "deleteFolder", icon: "fa-trash-alt" },
         { id: "ctx-rename-folder", label: "Rename", action: "renameFolder", icon: "fa-edit" },
@@ -64,6 +80,14 @@ export class DesktopContextMenuManager {
         "hr",
         { id: "ctx-copy-file", label: "Copy", action: "copyFile", icon: "fa-copy" },
         { id: "ctx-cut-file", label: "Cut", action: "cutFile", icon: "fa-cut" },
+        "hr",
+        {
+          id: "ctx-paste-file",
+          label: "Paste",
+          action: "paste",
+          condition: () => !!this.desktopUI.getClipboard(),
+          icon: "fa-paste"
+        },
         "hr",
         { id: "ctx-delete-file", label: "Move to Trash", action: "deleteFile", icon: "fa-trash-alt" },
         { id: "ctx-rename-file", label: "Rename", action: "renameFile", icon: "fa-edit" },
@@ -131,6 +155,9 @@ export class DesktopContextMenuManager {
       propertiesFolder: buildPropertiesAction(folderIcon, this.desktopUI),
       copyFolder: buildCopyAction(selectedArray, this.desktopUI),
       cutFolder: buildCutAction(selectedArray, this.desktopUI),
+      paste: async () => {
+        await this.desktopUI.pasteToDesktop();
+      },
       deleteFolder: buildDeleteAction(selectedArray, this.desktopUI),
       renameFolder: buildRenameAction(folderIcon, this.desktopUI, { PositionStore: this.PositionStore })
     });
@@ -325,6 +352,17 @@ export class DesktopContextMenuManager {
       menu.appendChild(hr());
       menu.appendChild(item("Copy", buildCopyAction(selectedArray, this.desktopUI), "fa-copy"));
       menu.appendChild(item("Cut", buildCutAction(selectedArray, this.desktopUI), "fa-cut"));
+      if (this.desktopUI.getClipboard()) {
+        menu.appendChild(
+          item(
+            "Paste",
+            async () => {
+              await this.desktopUI.pasteToDesktop();
+            },
+            "fa-paste"
+          )
+        );
+      }
       menu.appendChild(hr());
       menu.appendChild(item("Move to Trash", buildDeleteAction(selectedArray, this.desktopUI), "fa-trash-alt"));
       menu.appendChild(item("Rename", () => this.startInlineDesktopRename(fileIcon), "fa-edit"));
@@ -344,6 +382,9 @@ export class DesktopContextMenuManager {
       open: () => os.app.launch(last.dataset.app),
       copy: buildCopyAction(selectedArray, this.desktopUI),
       cut: buildCutAction(selectedArray, this.desktopUI),
+      paste: async () => {
+        await this.desktopUI.pasteToDesktop();
+      },
       delete: buildDeleteAction(selectedArray, this.desktopUI),
       rename: () => this.startInlineDesktopRename(last),
       properties: buildPropertiesAction(last, this.desktopUI)

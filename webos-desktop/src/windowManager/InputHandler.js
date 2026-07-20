@@ -1,6 +1,8 @@
 import { toggleStartMenu } from "../desktopui/startMenu.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
+import { SystemUtilities } from "../system.js";
+import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 
 import { StorageKeys, os } from "../framework.js";
 export class InputHandler {
@@ -61,6 +63,206 @@ export class InputHandler {
         this.manager.applySnap(focused, "maximize");
       }
     });
+
+    document.addEventListener("keydown", (e) => {
+      const tm = this.manager.tilingManager;
+      if (!tm) return;
+
+      if (KeybindManager.matches(e, "tiling.toggleMode")) {
+        e.preventDefault();
+        tm.toggleMode();
+        return;
+      }
+
+      if (KeybindManager.matches(e, "global.nextWallpaper")) {
+        e.preventDefault();
+        const current = os.storage.get(StorageKeys.wallpaperKey);
+        const idx = WALLPAPER_NAME_URL_PAIRS.findIndex(
+          (w) => current && (w.url === current || current.endsWith(w.url))
+        );
+        const next = (idx + 1) % WALLPAPER_NAME_URL_PAIRS.length;
+        SystemUtilities.setWallpaper(WALLPAPER_NAME_URL_PAIRS[next].url);
+        return;
+      }
+
+      if (KeybindManager.matches(e, "global.launchBrowser")) {
+        e.preventDefault();
+        os.app.launch("browserApp");
+        return;
+      }
+
+      if (!tm.enabled) return;
+
+      if (KeybindManager.matches(e, "tiling.terminal")) {
+        e.preventDefault();
+        tm.spawnTerminal();
+        return;
+      }
+
+      if (KeybindManager.matches(e, "tiling.openRofi")) {
+        e.preventDefault();
+        if (tm.tilingBar && tm.tilingBar.rofi) {
+          tm.tilingBar.rofi.toggle();
+        }
+        return;
+      }
+
+      if (KeybindManager.matches(e, "tiling.closeWindow")) {
+        e.preventDefault();
+        tm.closeFocusedWindow();
+        return;
+      }
+
+      if (KeybindManager.matches(e, "tiling.toggleFloatingAlt")) {
+        e.preventDefault();
+        tm.toggleFloating();
+      } else if (KeybindManager.matches(e, "tiling.logout")) {
+        e.preventDefault();
+        window.location.reload();
+      } else if (KeybindManager.matches(e, "tiling.focusLeft")) {
+        e.preventDefault();
+        tm.focusDirection("left");
+      } else if (KeybindManager.matches(e, "tiling.focusRight")) {
+        e.preventDefault();
+        tm.focusDirection("right");
+      } else if (KeybindManager.matches(e, "tiling.focusUp")) {
+        e.preventDefault();
+        tm.focusDirection("up");
+      } else if (KeybindManager.matches(e, "tiling.focusDown")) {
+        e.preventDefault();
+        tm.focusDirection("down");
+      } else if (KeybindManager.matches(e, "tiling.swapLeft")) {
+        e.preventDefault();
+        tm.swapDirection("left");
+      } else if (KeybindManager.matches(e, "tiling.swapRight")) {
+        e.preventDefault();
+        tm.swapDirection("right");
+      } else if (KeybindManager.matches(e, "tiling.swapUp")) {
+        e.preventDefault();
+        tm.swapDirection("up");
+      } else if (KeybindManager.matches(e, "tiling.swapDown")) {
+        e.preventDefault();
+        tm.swapDirection("down");
+      } else if (KeybindManager.matches(e, "tiling.resizeLeft")) {
+        e.preventDefault();
+        tm.resizeDirection("left");
+      } else if (KeybindManager.matches(e, "tiling.resizeRight")) {
+        e.preventDefault();
+        tm.resizeDirection("right");
+      } else if (KeybindManager.matches(e, "tiling.resizeUp")) {
+        e.preventDefault();
+        tm.resizeDirection("up");
+      } else if (KeybindManager.matches(e, "tiling.resizeDown")) {
+        e.preventDefault();
+        tm.resizeDirection("down");
+      } else if (KeybindManager.matches(e, "tiling.floating")) {
+        e.preventDefault();
+        tm.toggleFloating();
+      } else if (KeybindManager.matches(e, "tiling.fullscreen")) {
+        e.preventDefault();
+        tm.toggleFullscreenOnTiled();
+      } else if (KeybindManager.matches(e, "tiling.cycleNext")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.cycleFocus(true);
+      } else if (KeybindManager.matches(e, "tiling.cyclePrev")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.cycleFocus(false);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace1")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(1);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace2")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(2);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace3")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(3);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace4")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(4);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace5")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(5);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace6")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(6);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace7")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(7);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace8")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(8);
+      } else if (KeybindManager.matches(e, "tiling.focusWorkspace9")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.switchToWorkspace(9);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace1")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(1);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace2")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(2);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace3")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(3);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace4")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(4);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace5")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(5);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace6")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(6);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace7")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(7);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace8")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(8);
+      } else if (KeybindManager.matches(e, "tiling.moveToWorkspace9")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        tm.moveWindowToWorkspace(9);
+      }
+    });
+
+    document.addEventListener(
+      "wheel",
+      (e) => {
+        const tm = this.manager.tilingManager;
+        if (!tm || !tm.enabled) return;
+        if (!e.altKey) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const wm = tm.wm.workspaceManager;
+        if (!wm) return;
+        const idx = wm.workspaces.findIndex((w) => w.id === wm.activeId);
+        const delta = e.deltaY > 0 ? 1 : -1;
+        const nextIdx = Math.max(0, Math.min(wm.workspaces.length - 1, idx + delta));
+        if (nextIdx !== idx) {
+          wm.switchTo(wm.workspaces[nextIdx].id);
+        }
+      },
+      { passive: false }
+    );
   }
 
   initStartMenuKeybinds() {
@@ -170,6 +372,8 @@ export class InputHandler {
   }
 
   startWindowSwitcher() {
+    if (this.manager.tilingManager?.enabled) return;
+
     const settings = this.getSwitcherSettings();
     this.windowSwitcherWindows = this.getWindowsForSwitcher();
 
@@ -188,6 +392,8 @@ export class InputHandler {
   }
 
   cycleWindowSwitcher(reverse = false) {
+    if (this.manager.tilingManager?.enabled) return;
+
     const settings = this.getSwitcherSettings();
     const len = this.windowSwitcherWindows.length;
     this.windowSwitcherIndex = reverse

@@ -53,46 +53,24 @@ export class ExplorerApp extends BaseApp {
     os.storage.set(StorageKeys.explorerViewMode, mode);
   }
 
+  get notepadApp() {
+    return os.app.getInstance("notepadApp");
+  }
+
+  get markdownApp() {
+    return os.app.getInstance("markdownApp");
+  }
+
   constructor(os) {
     super(os);
-    this.fs = os.kernel?.fileSystemManager;
-    this.wm = os.kernel?.windowManager;
-    this.notepadApp = os.app.apps.notepadApp;
-    this.markdownApp = null;
     this.officeApp = null;
     this.browserApp = null;
     this.desktopUI = null;
     this.open = this.open.bind(this);
     this.instances = new Map();
     this.thumbnailCache = new Map();
-    this.archiveExtractor = new ArchiveExtractor(this.fs, (msg) => os.notify.send(msg), AppSource.EXPLORER);
+    this.archiveExtractor = new ArchiveExtractor(os.fs, (msg) => os.notify.send(msg), AppSource.EXPLORER);
   }
-  setBrowser(browserApp) {
-    this.browserApp = browserApp;
-  }
-  setNotepadApp(notepadApp) {
-    this.notepadApp = notepadApp;
-  }
-  setMarkdownApp(markdownApp) {
-    this.markdownApp = markdownApp;
-  }
-
-  setDesktopUI(desktopUI) {
-    this.desktopUI = desktopUI;
-  }
-  setOfficeApp(officeApp) {
-    this.officeApp = officeApp;
-  }
-  setAppLauncher(appLauncher) {
-    this.appLauncher = appLauncher;
-  }
-  setJsDos(jsDosApp) {
-    this.jsDosApp = jsDosApp;
-  }
-  setv86App(v86app) {
-    this.v86app = v86app;
-  }
-
   createInstance(winId, callback, notepadRef, mode) {
     const inst = {
       winId,
@@ -971,12 +949,13 @@ export class ExplorerApp extends BaseApp {
           }
 
           const targetParts = val.split("/").filter(Boolean);
-          const userDir = this.fs.resolveUserPath(targetParts);
           try {
-            const exists = await os.fs.exists(userDir);
-            if (exists) {
-              const stat = await this.fs.pStat(userDir);
-              if (stat.isDirectory()) {
+            if (await os.fs.exists(targetParts)) {
+              const isDir = await os.fs
+                .readdir(targetParts)
+                .then(() => true)
+                .catch(() => false);
+              if (isDir) {
                 this.navigateInstance(inst, targetParts);
               } else {
                 os.notify.send(`"${val}" is a file, not a directory.`);
@@ -1271,18 +1250,7 @@ export class ExplorerApp extends BaseApp {
 
   navigateInstance(inst, path) {
     if (typeof path === "string") {
-      const resolved = this.fs.paths.resolveUserPath(path);
-      const root = this.fs.CONFIG.ROOT;
-      if (resolved === root) {
-        path = [];
-      } else if (resolved.startsWith(root + "/")) {
-        path = resolved
-          .slice(root.length + 1)
-          .split("/")
-          .filter(Boolean);
-      } else {
-        path = resolved.split("/").filter(Boolean);
-      }
+      path = path.replace(/^\//, "").split("/").filter(Boolean);
     }
     inst.isTrashView = false;
     inst.isDiskView = false;
@@ -1425,7 +1393,7 @@ export class ExplorerApp extends BaseApp {
     }
 
     if (name.endsWith(".desktop")) {
-      const raw = await this.fs.getFileContent(inst.currentPath, name);
+      const raw = await os.fs.getFileContent(inst.currentPath, name);
       const iconSrc = resolveDesktopIcon(raw, name);
       return buildFileIconHTML(name, { storedIcon: iconSrc });
     }
@@ -1438,7 +1406,7 @@ export class ExplorerApp extends BaseApp {
         thumbnailSrc = cached;
       } else {
         try {
-          const content = await this.fs.getFileContent(inst.currentPath, name);
+          const content = await os.fs.getFileContent(inst.currentPath, name);
           const src = content instanceof Blob ? await readFileAsDataURL(content) : content;
           thumbnailSrc = await generateThumbnail(src);
           if (thumbnailSrc) this.thumbnailCache.set(cacheKey, thumbnailSrc);
@@ -1553,7 +1521,7 @@ export class ExplorerApp extends BaseApp {
     if (isISOFile(name)) {
       triggerCursorEffect("fa-compact-disc");
       try {
-        const mountPoint = await this.fs.mountISO(inst.currentPath, name);
+        const mountPoint = await os.fs.mountISO(inst.currentPath, name);
         os.notify.send("Disc Image", `Mounted "${name}"`, { icon: "fa-compact-disc" });
         if (mountPoint) {
           const win = $(`#${inst.winId}`);
@@ -1569,20 +1537,12 @@ export class ExplorerApp extends BaseApp {
     triggerCursorEffect();
     await openFileWith({
       name,
-      path: [...inst.currentPath],
-      fs: this.fs,
-      notepadApp: this.notepadApp,
-      browserApp: this.browserApp,
-      windowManager: this.wm,
-      officeApp: this.officeApp,
-      markdownApp: this.markdownApp,
-      jsDosApp: this.jsDosApp,
-      appLauncher: this.appLauncher
+      path: [...inst.currentPath]
     });
   }
 
   openMediaViewer(name, src, kind) {
-    openMediaViewer(name, src, kind, this.wm);
+    openMediaViewer(name, src, kind);
   }
 
   openYouTubeEmbedDesktop(content) {
@@ -1791,23 +1751,20 @@ export class ExplorerApp extends BaseApp {
   }
 
   async buildFolderStats(inst) {
-    const dir = this.fs.resolveUserPath(inst.currentPath);
     const stats = {};
     try {
-      const meta = await this.fs.readMeta(dir);
-      const entries = await this.fs.pRead("readdir", dir);
-      for (const name of entries) {
-        if (name === this.fs.CONFIG.META_FILE) continue;
+      const entries = await os.fs.readdir(inst.currentPath);
+      for (const [name, entry] of Object.entries(entries)) {
         if (name === "system" && inst.currentPath.length === 0) continue;
-        try {
-          const full = this.fs.join(dir, name);
-          const s = await this.fs.pStat(full);
-          if (s.isFile()) {
-            stats[name] = { isFile: true, size: meta[name]?.size ?? s.size ?? 0, mtime: s.mtime };
-          } else {
-            stats[name] = { isFile: false, size: await this.calcDirSize(full), mtime: s.mtime };
-          }
-        } catch {}
+        if (entry.type === "file") {
+          stats[name] = { isFile: true, size: entry.size ?? 0, mtime: entry.mtime };
+        } else {
+          stats[name] = {
+            isFile: false,
+            size: await this.calcDirSize(inst.currentPath.concat(name)),
+            mtime: entry.mtime
+          };
+        }
       }
     } catch {}
     return stats;
@@ -1819,7 +1776,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   async calcTotalStorage() {
-    return this.calcDirSize(this.fs.resolveUserPath([]));
+    return this.calcDirSize([]);
   }
 
   async updateStorageIndicator(win, inst) {

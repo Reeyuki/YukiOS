@@ -18,6 +18,7 @@ export function windowMakeDraggable(win, wm) {
     h.dataset.dragReady = "true";
     let dragOffsetX, dragOffsetY;
 
+    let tilingDragTouched;
     makeDraggable(
       h,
       {
@@ -53,7 +54,11 @@ export function windowMakeDraggable(win, wm) {
           dragOffsetX = posX - win.getBoundingClientRect().left;
           dragOffsetY = posY - win.getBoundingClientRect().top;
 
-          if (win.dataset.snapZone) {
+          tilingDragTouched = wm.tilingManager;
+          if (tilingDragTouched && tilingDragTouched.enabled && win.dataset.tiled === "true") {
+            win.dataset.tilingDrag = "true";
+            wobbleStart(win);
+          } else if (win.dataset.snapZone) {
             win.dataset.dragUnsnapPending = "true";
           } else {
             wobbleStart(win);
@@ -88,10 +93,22 @@ export function windowMakeDraggable(win, wm) {
 
           wobbleMove(win, dx, dy);
 
-          const zone = wm.getSnapZone(clientX, clientY);
-          wm.activeSnapZone = zone;
-          if (zone) wm.showSnapGhost(zone);
-          else wm.hideSnapGhost();
+          if (win.dataset.tilingDrag) {
+            wm.hideSnapGhost();
+            document
+              .querySelectorAll(".window.tile-drop-hover")
+              .forEach((el) => el.classList.remove("tile-drop-hover"));
+            const targetWinId = tilingDragTouched?.getWindowAtCursor();
+            if (targetWinId && targetWinId !== win.id) {
+              const targetWin = document.getElementById(targetWinId);
+              if (targetWin) targetWin.classList.add("tile-drop-hover");
+            }
+          } else {
+            const zone = wm.getSnapZone(clientX, clientY);
+            wm.activeSnapZone = zone;
+            if (zone) wm.showSnapGhost(zone);
+            else wm.hideSnapGhost();
+          }
         },
 
         end() {
@@ -100,7 +117,18 @@ export function windowMakeDraggable(win, wm) {
           delete win.dataset.dragUnsnapPending;
           wobbleEnd(win);
 
-          if (wm.activeSnapZone) {
+          if (win.dataset.tilingDrag) {
+            delete win.dataset.tilingDrag;
+            document
+              .querySelectorAll(".window.tile-drop-hover")
+              .forEach((el) => el.classList.remove("tile-drop-hover"));
+            if (tilingDragTouched && tilingDragTouched.enabled) {
+              const targetWinId = tilingDragTouched.getWindowAtCursor();
+              if (targetWinId && targetWinId !== win.id) {
+                tilingDragTouched.swapWindowWithTarget(win.id, targetWinId);
+              }
+            }
+          } else if (wm.activeSnapZone) {
             wm.applySnap(win, wm.activeSnapZone);
             wm.activeSnapZone = null;
             wm.hideSnapGhost();
@@ -406,6 +434,14 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
   const root = document.documentElement;
   const taskbarH = getComputedStyle(root).getPropertyValue("--taskbar-h").trim() || "3.2em";
 
+  let tilingBarH = "0px";
+  let tilingBarTop = "0px";
+  const tilingBar = document.getElementById("tiling-bar");
+  if (tilingBar && tilingBar.style.display !== "none" && document.body.classList.contains("tiling-active")) {
+    tilingBarH = getComputedStyle(tilingBar).height || "38px";
+    tilingBarTop = tilingBar.classList.contains("position-bottom") ? "0px" : tilingBarH;
+  }
+
   let availableWidth, availableHeight;
 
   if (taskbarPosition === "left" || taskbarPosition === "right") {
@@ -413,7 +449,7 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
     availableHeight = "100vh";
   } else {
     availableWidth = "100vw";
-    availableHeight = `calc(100vh - ${taskbarH})`;
+    availableHeight = `calc(100vh - ${taskbarH} - ${tilingBarH})`;
   }
 
   const halfW = taskbarPosition === "left" || taskbarPosition === "right" ? `calc(50vw - ${taskbarH} / 2)` : "50vw";
@@ -421,7 +457,7 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
 
   if (zone === "maximize") {
     Object.assign(win.style, {
-      top: "0",
+      top: tilingBarTop,
       left: "0",
       width: availableWidth,
       height: availableHeight

@@ -656,7 +656,7 @@ export class CameraApp extends BaseApp {
     } else {
       kind = FileKind.VIDEO;
     }
-    openMediaViewer(rec.id, rec.url, kind, this.wm);
+    openMediaViewer(rec.id, rec.url, kind);
   }
 
   startInlineRename(rec, state, nameEl) {

@@ -105,7 +105,7 @@ export class AppLauncher {
     this.launchedAppIds = this.loadLaunchedApps();
     this.appSessions = new Map();
     this.initSteamTracking();
-    initializeAppGrid(this);
+    initializeAppGrid();
 
     const currentNewsSig = getNewsContentSignature();
     const savedNewsSig = os.storage.get(StorageKeys.newsReadSignatureKey);
@@ -225,11 +225,11 @@ export class AppLauncher {
     if (!this.launchedAppIds.has(app)) {
       this.launchedAppIds.add(app);
       this.saveLaunchedApps();
-      this.achievementsApp.incrementAppLaunched();
+      os.achievements.incrementAppLaunched();
     }
     trackRecentlyUsed(app);
     if (info.type !== "system") {
-      this.achievementsApp.incrementGameLaunched();
+      os.achievements.incrementGameLaunched();
     }
     const analyticsBase = getAnalyticsBase(app);
     sendLaunchAnalytics(app);
@@ -336,6 +336,7 @@ export class AppLauncher {
         const durationMin = Math.round((Date.now() - session.startTime) / 60000);
         this.updateSteamStats(session.appId, durationMin);
         this.appSessions.delete(winId);
+        this.adsManager?.onGameClosed();
       }
       return oldRemove(winId);
     };

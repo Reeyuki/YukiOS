@@ -9,7 +9,7 @@ const IMAGES_DIR = ["VMs"];
 export class V86App extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.apps.explorerApp;
+    this.explorerApp = os.app.getInstance("explorerApp");
     this.v86LoadPromise = null;
   }
 

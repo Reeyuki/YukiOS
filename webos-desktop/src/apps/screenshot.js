@@ -190,7 +190,7 @@ export class ScreenshotApp extends BaseApp {
       const blob = await this.pageCapture();
       this.currentBlob = blob;
       this.currentType = "screenshot";
-      this.os.app.apps.achievementsApp?.incrementScreenshotTaken();
+      this.os.app.incrementScreenshotTaken();
       if (autoSave) {
         await this.saveCurrent();
       }
@@ -208,7 +208,7 @@ export class ScreenshotApp extends BaseApp {
       const blob = await this.pageCapture();
       this.currentBlob = blob;
       this.currentType = "screenshot";
-      this.os.app.apps.achievementsApp?.incrementScreenshotTaken();
+      this.os.app.incrementScreenshotTaken();
       this.autoSave = autoSave;
       this.showCropOverlay(blob);
     } catch (e) {

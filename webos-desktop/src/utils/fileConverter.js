@@ -489,14 +489,13 @@ function getVideoMimeType(format, codec) {
 }
 
 export function openFileConverter(fileName, currentPath, os, onComplete = null) {
-  const wm = os.kernel?.windowManager;
-  const fs = os.kernel?.fileSystemManager;
+  const fs = os.fs;
   const ext = getFileExtension(fileName);
   const baseName = getFileNameWithoutExtension(fileName);
   const category = detectCategory(ext);
 
   if (!category) {
-    wm.sendNotify(`Unsupported file extension: .${ext}`);
+    os.notify.send("File Converter", `Unsupported file extension: .${ext}`);
     return;
   }
 
@@ -997,12 +996,12 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
               await fs.updateFile(item.originalPath, item.originalName, item.originalBackup);
             }
           }
-          wm.sendNotify(`Reverted conversion of "${item.originalName}"`);
+          os.notify.send("File Converter", `Reverted conversion of "${item.originalName}"`);
           conversionHistory.splice(hIdx, 1);
           updateHistoryUI();
           if (onComplete) onComplete();
         } catch (err) {
-          wm.sendNotify("Undo operation failed.");
+          os.notify.send("File Converter", "Undo operation failed.");
         }
       };
     });
@@ -1560,7 +1559,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
 
         dom.progressFill.style.width = "100%";
         dom.progressText.textContent = "Conversion Completed successfully!";
-        wm.sendNotify(`Successfully converted to "${finalName}"`);
+        os.notify.send("File Converter", `Successfully converted to "${finalName}"`);
         os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Converter });
 
         updateHistoryUI();
@@ -1570,23 +1569,12 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
         if (dom.autoOpen.checked) {
           setTimeout(async () => {
             if (openFileWith) {
-              openFileWith({
-                name: finalName,
-                path: [...currentPath],
-                fs: fs,
-                notepadApp: os.app.apps.notepadApp,
-                browserApp: os.app.apps.browserApp,
-                windowManager: wm,
-                officeApp: os.app.apps.officeApp,
-                markdownApp: os.app.apps.markdownApp,
-                jsDosApp: os.app.apps.jsDosApp,
-                appLauncher: os.app._launcher
-              });
+              openFileWith({ name: finalName, path: [...currentPath] });
             }
           }, 300);
         }
       } catch (err) {
-        wm.sendNotify(`Conversion Error: ${err.message}`);
+        os.notify.send("File Converter", `Conversion Error: ${err.message}`);
         dom.progressText.textContent = `Error: ${err.message}`;
         dom.progressFill.style.width = "0%";
       } finally {

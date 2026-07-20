@@ -20,6 +20,10 @@ export class WindowRecord {
     this.appStateSnapshot = opts.appStateSnapshot ?? null;
     this.scrollPosition = opts.scrollPosition ?? { x: 0, y: 0 };
     this.focused = opts.focused ?? false;
+    this.tiled = opts.tiled ?? false;
+    this.floating = opts.floating ?? false;
+    this.tileNodeId = opts.tileNodeId ?? null;
+    this.tileGeometry = opts.tileGeometry ?? null;
   }
 
   setGeometry(x, y, w, h) {
@@ -69,7 +73,11 @@ export class WindowRecord {
       color: this.color,
       appStateSnapshot: this.appStateSnapshot,
       scrollPosition: this.scrollPosition,
-      focused: this.focused
+      focused: this.focused,
+      tiled: this.tiled,
+      floating: this.floating,
+      tileNodeId: this.tileNodeId,
+      tileGeometry: this.tileGeometry
     };
   }
 }

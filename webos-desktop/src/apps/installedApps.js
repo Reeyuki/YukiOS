@@ -8,12 +8,7 @@ export class InstalledAppsApp extends BaseApp {
   constructor(services) {
     super(services);
     this.appRegistry = getAppRegistry();
-    this.appLauncher = null;
     this.instances = new Map();
-  }
-
-  setAppLauncher(appLauncher) {
-    this.appLauncher = appLauncher;
   }
 
   createInstance(winId) {
@@ -175,12 +170,7 @@ export class InstalledAppsApp extends BaseApp {
   }
 
   loadApps(inst) {
-    if (!this.appLauncher) {
-      console.error("AppLauncher not set");
-      return;
-    }
-
-    const allApps = this.appRegistry.getAllApps(this.appLauncher.appMap);
+    const allApps = this.appRegistry.getAllApps(os.app.getAllApps());
     inst.apps = allApps;
     this.renderApps(document.getElementById(inst.winId), inst);
   }
@@ -515,8 +505,8 @@ export class InstalledAppsApp extends BaseApp {
   }
 
   handleLaunch(app) {
-    if (this.appLauncher && !app.disabled) {
-      this.appLauncher.launch(app.id);
+    if (!app.disabled) {
+      os.app.launch(app.id);
     }
   }
 

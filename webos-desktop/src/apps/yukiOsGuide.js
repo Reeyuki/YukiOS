@@ -8,12 +8,12 @@ const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
 
 import { BaseApp, os } from "../framework.js";
+import { buildTilingKeybindHTML } from "../tiling/TilingKeybindOverlay.js";
 const SYSTEM_INFO = {
   version: YUKIOS_VERSION,
   architecture: "Browser-based Desktop Environment",
   runtime: "Built with pure javascript",
   persistence: "Files stick around after you close the tab",
-  offline: "Works without internet, install to desktop",
   windowManager: "Custom drag/resize/snap/z-order system",
   audio: "Web Audio API with per-app volume control",
   filesystem: "Virtual VFS mounted at /home/reeyuki/",
@@ -353,8 +353,11 @@ export class YukiOsGuideApp extends BaseApp {
   onClose(winId) {}
 
   buildUI() {
-    const appMap = this.os.app._launcher?.appMap || gamesListAppMap || {};
-    const allApps = this.appRegistry.getAllApps(appMap);
+    const appMap = this.os.app.getAllApps();
+    const allApps =
+      Object.keys(appMap).length > 0
+        ? this.appRegistry.getAllApps(appMap)
+        : this.appRegistry.getAllApps(gamesListAppMap);
     const filteredApps = this.filterApps(allApps);
 
     return `
@@ -379,6 +382,10 @@ export class YukiOsGuideApp extends BaseApp {
                 <i class="fas fa-star"></i>
                 <span>Features</span>
               </button>
+              <button class="guide-nav-item ${this.currentTab === "tiling" ? "active" : ""}" data-tab="tiling">
+                <i class="fas fa-th-large"></i>
+                <span>Tiling</span>
+              </button>
             </nav>
           </div>
           <div class="yuki-guide-main">
@@ -397,6 +404,8 @@ export class YukiOsGuideApp extends BaseApp {
         return this.buildApps(apps);
       case "features":
         return this.buildFeatures();
+      case "tiling":
+        return this.buildTiling();
       default:
         return this.buildOverview(apps);
     }
@@ -419,7 +428,6 @@ export class YukiOsGuideApp extends BaseApp {
             <div class="guide-hero-meta">
               <span class="hero-tag"><i class="fas fa-code"></i> ${SYSTEM_INFO.runtime}</span>
               <span class="hero-tag"><i class="fas fa-database"></i> ${SYSTEM_INFO.persistence}</span>
-              <span class="hero-tag"><i class="fas fa-wifi"></i> ${SYSTEM_INFO.offline}</span>
             </div>
           </div>
         </div>
@@ -690,6 +698,51 @@ export class YukiOsGuideApp extends BaseApp {
         </div>
 
         ${this.buildCategorizedShortcuts(searchLower)}
+      </div>
+    `;
+  }
+
+  buildTiling() {
+    const searchLower = this.searchQuery.toLowerCase();
+
+    return `
+      <div class="guide-section">
+        <div class="guide-header">
+          <h1><i class="fas fa-th-large"></i> Tiling Mode</h1>
+          <p>Hyprland-inspired automatic window tiling for YukiOS</p>
+        </div>
+
+        <div class="guide-subsection">
+          <div class="feature-card" style="margin-bottom:12px">
+            <div class="feature-icon"><i class="fas fa-th-large"></i></div>
+            <h3>Automatic Window Tiling</h3>
+            <p>Select "Yuki Tiling WM" from the login session picker to enable a Hyprland-inspired tiling window manager. Windows are automatically arranged in a non-overlapping layout with a waybar-style status bar at the top.</p>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:4px 0;border:1px solid rgba(255,255,255,0.05)">
+            ${buildTilingKeybindHTML(searchLower)}
+          </div>
+          <div class="feature-card" style="margin-bottom:12px;margin-top:16px">
+            <div class="feature-icon"><i class="fas fa-file-cog"></i></div>
+            <h3>Configuration File</h3>
+            <p>All tiling settings are stored in <code>Config/yukiOs/tiling.conf</code> — a JSON file in your virtual filesystem. Edit it with the Explorer or any text editor; changes are auto-detected and applied within seconds.</p>
+          </div>
+          <div class="config-doc">
+            <table class="config-table">
+              <tr><th>Setting</th><th>Default</th><th>Description</th></tr>
+              <tr><td><code>gaps.inner</code></td><td><code>6</code></td><td>Gap (px) between adjacent tiled windows</td></tr>
+              <tr><td><code>gaps.outer</code></td><td><code>12</code></td><td>Gap (px) between windows and screen edges</td></tr>
+              <tr><td><code>split_ratio</code></td><td><code>0.5</code></td><td>Default split ratio (0.1–0.9) for master/stack areas</td></tr>
+              <tr><td><code>border_width</code></td><td><code>3</code></td><td>Thickness (px) of the focused window border glow</td></tr>
+              <tr><td><code>border_radius</code></td><td><code>8</code></td><td>Corner radius (px) for tiled windows</td></tr>
+              <tr><td><code>resize_delta</code></td><td><code>0.05</code></td><td>Step size when resizing splits via keyboard</td></tr>
+              <tr><td><code>animation_duration</code></td><td><code>250</code></td><td>Animation length (ms) for window placement transitions</td></tr>
+              <tr><td><code>animation_easing</code></td><td><code>"cubic-bezier(…)"</code></td><td>CSS easing function for window animations</td></tr>
+              <tr><td><code>mouse_resize</code></td><td><code>true</code></td><td>Allow dragging the split border with the mouse</td></tr>
+              <tr><td><code>workspace_switch_delay</code></td><td><code>320</code></td><td>Debounce delay (ms) when switching workspaces</td></tr>
+              <tr><td><code>resize_debounce</code></td><td><code>150</code></td><td>Debounce delay (ms) for resize operations</td></tr>
+            </table>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -987,8 +1040,11 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   refreshContent(win) {
-    const appMap = this.os.app._launcher?.appMap || gamesListAppMap || {};
-    const allApps = this.appRegistry.getAllApps(appMap);
+    const appMap = this.os.app.getAllApps();
+    const allApps =
+      Object.keys(appMap).length > 0
+        ? this.appRegistry.getAllApps(appMap)
+        : this.appRegistry.getAllApps(gamesListAppMap);
     const filteredApps = this.filterApps(allApps);
     const mainContent = win.querySelector(".yuki-guide-main");
 

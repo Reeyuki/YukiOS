@@ -31,8 +31,6 @@ export class MenuBarManager {
     this.os.events.on(BusEvents.WINDOW_CLOSED, this.boundClosed);
     bindEvent(document, "click", this.boundClick);
     bindEvent(document, "keydown", this.boundKeydown);
-
-    this.os.kernel.menuBar = this;
   }
 
   wireAppleLogo() {
@@ -50,7 +48,7 @@ export class MenuBarManager {
     if (!finder) return;
     bindEvent(finder, "click", (e) => {
       e.stopPropagation();
-      this.os.kernel?.commandPalette?.toggle();
+      os.app.getInstance("commandPalette")?.toggle();
     });
   }
 
@@ -59,7 +57,6 @@ export class MenuBarManager {
     this.os.events.off(BusEvents.WINDOW_CLOSED, this.boundClosed);
     document.removeEventListener("click", this.boundClick);
     document.removeEventListener("keydown", this.boundKeydown);
-    delete this.os.kernel.menuBar;
   }
 
   registerAppMenu(appId, menuDefs) {
@@ -193,7 +190,7 @@ export class MenuBarManager {
     });
   }
 
-rebuildMenuItems() {
+  rebuildMenuItems() {
     const menuBar = $("#mac-menu-bar");
     if (!menuBar) return;
 
@@ -211,7 +208,7 @@ rebuildMenuItems() {
         setText(el, menuDef.label);
       }
     });
-}
+  }
 
   applyAppMenus(appId) {
     const override = APP_MENU_OVERRIDES[appId] || this.appOverrides.get(appId);
@@ -251,8 +248,7 @@ rebuildMenuItems() {
 
   onWindowClosed() {
     setTimeout(() => {
-      const hasOpenWindows = this.os.kernel?.windowManager?.openWindows?.size > 0;
-      if (!hasOpenWindows) {
+      if (document.querySelectorAll(".window").length === 0) {
         this.clearActiveApp();
       }
     }, 50);
@@ -290,9 +286,7 @@ rebuildMenuItems() {
     }
 
     if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
-      const index = this.currentMenus.findIndex(
-        (m) => m.label[0].toLowerCase() === e.key.toLowerCase()
-      );
+      const index = this.currentMenus.findIndex((m) => m.label[0].toLowerCase() === e.key.toLowerCase());
       if (index >= 0 && (e.key === " " || e.key.length === 1)) {
         if (this.getFocusedAppMenubar()) return;
         e.preventDefault();
@@ -325,11 +319,13 @@ rebuildMenuItems() {
         if (entry.build) {
           const dynamicItems = entry.build();
           if (dynamicItems.length === 0) continue;
-          result.push(...dynamicItems.map((di) => ({
-            type: "item",
-            label: di.label,
-            action: di.action
-          })));
+          result.push(
+            ...dynamicItems.map((di) => ({
+              type: "item",
+              label: di.label,
+              action: di.action
+            }))
+          );
         }
         continue;
       }
@@ -379,8 +375,8 @@ rebuildMenuItems() {
 
   focusWindow(winId) {
     const win = $(`#${winId}`);
-    if (win && this.os.kernel?.windowManager) {
-      this.os.kernel.windowManager.bringToFront(win);
+    if (win) {
+      os.window.bringToFront(win);
     }
   }
 }
@@ -388,7 +384,7 @@ rebuildMenuItems() {
 const ACTION_MAP = {
   "about:open": (os) => os.app.launch("aboutApp").catch(() => {}),
   "settings:open": (os) => os.app.launch("settingsApp").catch(() => {}),
-  "palette:open": (os) => os.kernel?.commandPalette?.open(),
+  "palette:open": () => os.app.getInstance("commandPalette")?.open(),
   "clippy:toggle": (os) => {
     const current = os.storage.get(StorageKeys.clippy);
     os.storage.set(StorageKeys.clippy, current === "true" ? "false" : "true");
@@ -398,28 +394,21 @@ const ACTION_MAP = {
   "screenshot:record": () => {},
   "colorpicker:open": (os) => os.app.launch("colorPickerApp").catch(() => {}),
   "emoji:open": (os) => os.app.launch("emojiSelectorApp").catch(() => {}),
-  "window:hideOthers": (os) => {
-    const wm = os.kernel?.windowManager;
-    if (!wm) return;
+  "window:hideOthers": () => {
     const topWin = $(".window[style*='z-index']");
     if (!topWin) return;
-    wm.openWindows.forEach((entry, id) => {
-      const w = $(`#${id}`);
-      if (w && w !== topWin) {
+    $$(".window").forEach((w) => {
+      if (w !== topWin) {
         w.style.display = "none";
       }
     });
   },
-  "window:showAll": (os) => {
-    const wm = os.kernel?.windowManager;
-    if (!wm) return;
-    wm.openWindows.forEach((entry, id) => {
-      const w = $(`#${id}`);
-      if (w) {
-        if (w.style.display === "none") w.style.display = "";
-        os.kernel?.windowManager?.bringToFront?.(w);
-      }
+  "window:showAll": () => {
+    $$(".window").forEach((w) => {
+      if (w.style.display === "none") w.style.display = "";
     });
+    const topWin = $(".window[style*='z-index']");
+    if (topWin) os.window.bringToFront(topWin);
   },
   "session:lock": () => {
     const bus = window.os?.events;
@@ -429,8 +418,8 @@ const ACTION_MAP = {
     window.location.reload();
   },
   "explorer:newWindow": (os) => os.app.launch("explorerApp").catch(() => {}),
-  "desktop:newFolder": (os) => {
-    const desktopUI = os.kernel?.desktopUI;
+  "desktop:newFolder": () => {
+    const desktopUI = os.app.getInstance("desktopUI");
     if (desktopUI) desktopUI.createNewFolder();
   },
   "notepad:new": (os) => os.app.launch("notepadApp").catch(() => {}),
@@ -484,21 +473,21 @@ const ACTION_MAP = {
       document.exitFullscreen().catch(() => {});
     }
   },
-  "window:maximize": (os) => {
+  "window:maximize": () => {
     const focused = $(".window[style*='z-index']");
-    if (focused && os.kernel?.windowManager) {
-      os.kernel.windowManager.toggleFullscreen(focused);
+    if (focused) {
+      os.window.toggleFullscreen(focused);
     }
   },
-  "window:minimize": (os) => {
+  "window:minimize": () => {
     const focused = $(".window[style*='z-index']");
-    if (focused && os.kernel?.windowManager) {
-      os.kernel.windowManager.minimizeWindow(focused);
+    if (focused) {
+      os.window.minimize(focused);
     }
   },
-  "window:alwaysOnTop": (os) => {
+  "window:alwaysOnTop": () => {
     const focused = $(".window[style*='z-index']");
-    if (focused && os.kernel?.windowManager) {
+    if (focused) {
       const isAlwaysOnTop = focused.classList.contains("always-on-top");
       if (isAlwaysOnTop) {
         focused.classList.remove("always-on-top");
@@ -520,8 +509,8 @@ const ACTION_MAP = {
   "theme:dark": (os) => os.storage.set(StorageKeys.theme, "dark"),
   "theme:light": (os) => os.storage.set(StorageKeys.theme, "light"),
   "settings:themes": (os) => os.app.launch("settingsApp", { category: "appearance" }).catch(() => {}),
-  "workspace:overview": (os) => {
-    const wm = os.kernel?.windowManager;
+  "workspace:overview": () => {
+    const wm = os.window.wm;
     if (wm?.workspaceManager) wm.workspaceManager.toggleOverview?.();
   },
   "go:home": (os) => os.app.launch("explorerApp", { path: [] }).catch(() => {}),
@@ -534,31 +523,27 @@ const ACTION_MAP = {
     const path = await os.dialog.prompt("Go to Folder", "Enter folder path:");
     if (path) os.app.launch("explorerApp", { path }).catch(() => {});
   },
-  "window:snapLeft": (os) => {
+  "window:snapLeft": () => {
     const focused = $(".window[style*='z-index']");
-    if (focused && os.kernel?.windowManager) {
-      os.kernel.windowManager.applySnap?.(focused, "left");
+    if (focused) {
+      os.window.applySnap(focused, "left");
     }
   },
-  "window:snapRight": (os) => {
+  "window:snapRight": () => {
     const focused = $(".window[style*='z-index']");
-    if (focused && os.kernel?.windowManager) {
-      os.kernel.windowManager.applySnap?.(focused, "right");
+    if (focused) {
+      os.window.applySnap(focused, "right");
     }
   },
-  "workspace:new": (os) => {
-    const wm = os.kernel?.windowManager;
+  "workspace:new": () => {
+    const wm = os.window.wm;
     if (wm?.workspaceManager) wm.workspaceManager.addWorkspace?.();
   },
-  "window:bringAllToFront": (os) => {
-    const wm = os.kernel?.windowManager;
-    if (!wm) return;
-    wm.openWindows.forEach((entry, id) => {
-      const win = $(`#${id}`);
-      if (win) {
-        win.style.display = "";
-        wm.bringToFront(win);
-      }
+  "window:bringAllToFront": () => {
+    const wins = $$(".window").reverse();
+    wins.forEach((win) => {
+      win.style.display = "";
+      os.window.bringToFront(win);
     });
   },
   "guide:open": (os) => os.app.launch("yukiOsGuideApp").catch(() => {}),
@@ -573,10 +558,12 @@ const ACTION_MAP = {
   "browser:devtools": () => {
     const iframe = $(".window[style*='z-index'] iframe");
     if (iframe) {
-      try { iframe.contentWindow?.openDevTools?.(); } catch {}
+      try {
+        iframe.contentWindow?.openDevTools?.();
+      } catch {}
     }
   },
   "format:bold": () => document.execCommand("bold"),
   "format:italic": () => document.execCommand("italic"),
-  "format:underline": () => document.execCommand("underline"),
+  "format:underline": () => document.execCommand("underline")
 };

@@ -4,10 +4,9 @@ import { os, StorageKeys } from "../../framework.js";
 export class OSBridge {
   constructor(os) {
     this.os = os;
-    this.wm = os.kernel?.windowManager;
-    this.fs = os.kernel?.fileSystemManager;
+    this.fs = os.fs;
     this.bus = os.events;
-    this.appLauncher = os.app._launcher;
+    this.appLauncher = null;
     this.permissions = new Map();
   }
 
@@ -74,19 +73,13 @@ export class OSBridge {
   }
 
   async openApp(appId, params) {
-    if (!this.appLauncher && !os?.app) {
+    if (!os?.app?.launch) {
       throw new Error("App launcher not available");
     }
 
     try {
       const resolvedAppId = this.resolveAppId(appId);
-
-      if (os?.app?.launch) {
-        await os.app.launch(resolvedAppId, false, params);
-      } else {
-        await this.appLauncher.launch(resolvedAppId, params);
-      }
-
+      await os.app.launch(resolvedAppId, false, params);
       return { success: true, message: `Opened ${resolvedAppId}` };
     } catch (error) {
       throw new Error(`Failed to open ${appId}: ${error.message}`);
@@ -200,7 +193,7 @@ export class OSBridge {
     }
   }
   async switchWorkspace(target, params = {}) {
-    const workspaceManager = this.wm?.workspaceManager;
+    const workspaceManager = os.tiling?.wm?.workspaceManager;
     if (!workspaceManager) {
       throw new Error("Workspace manager not available");
     }
@@ -240,7 +233,7 @@ export class OSBridge {
   }
 
   async moveWindowToWorkspace(winId, params = {}) {
-    const workspaceManager = this.wm?.workspaceManager;
+    const workspaceManager = os.tiling?.wm?.workspaceManager;
     if (!workspaceManager) {
       throw new Error("Workspace manager not available");
     }
@@ -274,10 +267,6 @@ export class OSBridge {
 
   async fsRead(path, params) {
     try {
-      if (this.fs?.fsReady) {
-        await this.fs.fsReady;
-      }
-
       if (!os?.fs?.read) {
         throw new Error("FS API not available");
       }
@@ -292,10 +281,6 @@ export class OSBridge {
 
   async fsWrite(path, params) {
     try {
-      if (this.fs?.fsReady) {
-        await this.fs.fsReady;
-      }
-
       if (!os?.fs?.write) {
         throw new Error("FS API not available");
       }
@@ -354,10 +339,11 @@ export class OSBridge {
       minimized: win.style.display === "none"
     }));
     const runningApps = Array.from(new Set(windows.map((win) => win.appId).filter(Boolean)));
-    const workspaceState = this.wm?.workspaceManager
+    const wsm = os.tiling?.wm?.workspaceManager;
+    const workspaceState = wsm
       ? {
-          activeId: this.wm.workspaceManager.activeId,
-          items: this.wm.workspaceManager.workspaces.map((ws) => ({
+          activeId: wsm.activeId,
+          items: wsm.workspaces.map((ws) => ({
             id: ws.id,
             name: ws.name,
             windowCount: ws.windows.size

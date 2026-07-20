@@ -10,6 +10,7 @@ import { DragDropManager } from "./dragDropManager.js";
 import { ClipboardManager } from "./fileClipboardManager.js";
 import { showFileProperties } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { resolveFilePayload } from "../apps/explorer/upload.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
 import { KeybindManager } from "../keybindManager.js";
 import { WidgetManager } from "./widgetManager.js";
@@ -26,7 +27,6 @@ import { PhotoFrameWidget } from "./widgets/photoFrameWidget.js";
 import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 
-let sharedAppLauncher;
 let GRID_CONFIG = { width: 68, height: 82, gap: 1 };
 
 export function updateGridConfig(iconSize) {
@@ -38,7 +38,6 @@ export function updateGridConfig(iconSize) {
 }
 
 function relayoutDesktopIcons() {
-  if (!sharedAppLauncher) return;
   const allIcons = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
     (icon) => icon.style.display !== "none"
   );
@@ -48,7 +47,7 @@ function relayoutDesktopIcons() {
   const regularIcons = [];
   for (const icon of allIcons) {
     const app = icon.dataset.app;
-    if (isRightAlignedSystemApp(sharedAppLauncher.appMap, app)) {
+    if (isRightAlignedSystemApp(os.app.getAllApps(), app)) {
       systemIcons.push(icon);
     } else {
       regularIcons.push(icon);
@@ -385,8 +384,8 @@ class IconDataHelper {
   }
   static createDesktopFileData(app, name, path = null) {
     const iconPathMap = this.getIconPathMap();
-    const fallback =
-      iconPathMap[app] || sharedAppLauncher?.appMap?.[app]?.icon || resolveIconUrl("static/icons/file.webp");
+    const appInfo = os.app.getAppInfo(app);
+    const fallback = iconPathMap[app] || appInfo?.icon || resolveIconUrl("static/icons/file.webp");
     return JSON.stringify({ app, name, path: path || fallback });
   }
 }
@@ -426,12 +425,8 @@ class SelectionManager {
 }
 
 export class DesktopUI {
-  constructor(appLauncher, notepadApp, explorerApp, fileSystemManager) {
-    this.appLauncher = appLauncher;
-    sharedAppLauncher = appLauncher;
-    this.notepadApp = notepadApp;
+  constructor(explorerApp) {
     this.explorerApp = explorerApp;
-    this.fs = fileSystemManager;
     this.desktop = document.getElementById("desktop");
     this.startButton = document.getElementById("start-button");
     this.startMenu = document.getElementById("start-menu");
@@ -443,20 +438,18 @@ export class DesktopUI {
 
     this.iconManager = new IconManager(
       this.desktop,
-      this.fs,
+      os.fs,
       this.positionHelper,
       PositionStore,
       this.selectionManager,
-      this.notepadApp,
+      null,
       this.explorerApp,
-      this.appLauncher,
-      this.appLauncher.jsDosApp,
       null
     );
 
     this.dragDropManager = new DragDropManager(
       this.desktop,
-      this.fs,
+      os.fs,
       this.positionHelper,
       PositionStore,
       this.selectionManager,
@@ -468,7 +461,7 @@ export class DesktopUI {
     this.iconManager.dragDropManager = this.dragDropManager;
 
     this.clipboardManager = new ClipboardManager(
-      this.fs,
+      os.fs,
       PositionStore,
       DeletedIconsStore,
       this.iconManager,
@@ -476,7 +469,7 @@ export class DesktopUI {
       this.explorerApp
     );
 
-    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper, this.appLauncher.wm);
+    this.contextMenuManager = new DesktopContextMenuManager(this, PositionStore, IconDataHelper, os.window);
 
     this.widgetManager = new WidgetManager();
     this.widgetManager.registerWidgetType("clock", ClockWidget);
@@ -800,16 +793,22 @@ export class DesktopUI {
       let uploadedCount = 0;
       for (const file of files) {
         try {
-          const { kind, content, icon } = await this.explorerApp.resolveFilePayload(file, file.name, ["Desktop"]);
-          const dir = this.fs.resolveUserPath(["Desktop"]);
-          const destExists = await os.fs.exists(this.fs.join(dir, file.name));
+          const { kind, content, icon } = await resolveFilePayload(file, file.name);
+          const destExists = await os.fs.exists(["Desktop", file.name]);
 
           let finalName = file.name;
           if (destExists) {
             const result = await showConflictDialog(file.name);
             if (result.action === "skip") continue;
             if (result.action === "keep") {
-              finalName = await this.fs.getUniqueFileName(["Desktop"], file.name);
+              let counter = 1;
+              const dot = file.name.lastIndexOf(".");
+              const base = dot > 0 ? file.name.slice(0, dot) : file.name;
+              const ext = dot > 0 ? file.name.slice(dot) : "";
+              do {
+                finalName = `${base} (${counter})${ext}`;
+                counter++;
+              } while (await os.fs.exists(["Desktop", finalName]));
             }
           }
 
@@ -848,7 +847,7 @@ export class DesktopUI {
       this.closeStartMenu();
     } else {
       this.startMenu.style.display = "flex";
-      updateFavoritesUI(this.appLauncher);
+      updateFavoritesUI();
     }
   }
 
@@ -960,11 +959,11 @@ export class DesktopUI {
   }
 
   setupStartMenu() {
-    setupStartMenuFn(this.appLauncher, null, this.selectionManager);
+    setupStartMenuFn(null);
   }
 
   async initializeDesktopFiles() {
-    await this.iconManager.initializeDesktopFiles(sharedAppLauncher, isRightAlignedSystemApp);
+    await this.iconManager.initializeDesktopFiles(os.app.getAllApps(), isRightAlignedSystemApp);
     this.widgetManager.init();
   }
 
@@ -1023,8 +1022,6 @@ export class DesktopUI {
       else if (fa) iconPath = Array.from(fa.classList).join(" ");
       const content = JSON.stringify({ app: icon.dataset.app, name, path: iconPath });
       await os.fs.write(filePath, content);
-      const dir = this.fs.resolveUserPath(["Desktop"]);
-      await this.fs.writeMeta(dir, fileName, { size: content.length });
       showFileProperties(filePath, fileName, false);
     }
   }
@@ -1115,7 +1112,6 @@ setInterval(() => {
 }, 5000);
 
 export function sortDesktopIcons(mode) {
-  if (!sharedAppLauncher) return;
   os.storage.set(StorageKeys.desktopSortMode, mode);
   const allIcons = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
     (icon) => icon.style.display !== "none"
@@ -1154,7 +1150,7 @@ export function sortDesktopIcons(mode) {
   const systemIcons = [];
   const regularIcons = [];
   withKey.forEach(({ icon }) => {
-    if (isRightAlignedSystemApp(sharedAppLauncher.appMap, icon.dataset.app)) {
+    if (isRightAlignedSystemApp(os.app.getAllApps(), icon.dataset.app)) {
       systemIcons.push(icon);
     } else {
       regularIcons.push(icon);

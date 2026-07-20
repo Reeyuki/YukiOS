@@ -991,6 +991,195 @@ export const KEYBIND_DEFINITIONS = [
     icon: "fas fa-exchange-alt"
   },
   {
+    id: "tiling.toggleMode",
+    defaultKeys: ["Alt", "Space"],
+    desc: "Toggle tiling mode on/off",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.closeWindow",
+    defaultKeys: ["Alt", "Q"],
+    desc: "Close focused window",
+    cat: "global",
+    icon: "fas fa-times"
+  },
+  {
+    id: "tiling.cycleNext",
+    defaultKeys: ["Alt", "W"],
+    desc: "Cycle focus to next tiled window",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.openRofi",
+    defaultKeys: ["Alt", "D"],
+    desc: "Open Rofi app launcher (tiling mode)",
+    cat: "global",
+    icon: "fas fa-search"
+  },
+  {
+    id: "tiling.cyclePrev",
+    defaultKeys: ["Alt", "K"],
+    desc: "Cycle focus to previous tiled window",
+    cat: "global",
+    icon: "fas fa-arrow-left"
+  },
+  {
+    id: "tiling.focusWorkspace1",
+    defaultKeys: ["Alt", "1"],
+    desc: "Switch to workspace 1",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace2",
+    defaultKeys: ["Alt", "2"],
+    desc: "Switch to workspace 2",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace3",
+    defaultKeys: ["Alt", "3"],
+    desc: "Switch to workspace 3",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace4",
+    defaultKeys: ["Alt", "4"],
+    desc: "Switch to workspace 4",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace5",
+    defaultKeys: ["Alt", "5"],
+    desc: "Switch to workspace 5",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace6",
+    defaultKeys: ["Alt", "6"],
+    desc: "Switch to workspace 6",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace7",
+    defaultKeys: ["Alt", "7"],
+    desc: "Switch to workspace 7",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace8",
+    defaultKeys: ["Alt", "8"],
+    desc: "Switch to workspace 8",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "tiling.focusWorkspace9",
+    defaultKeys: ["Alt", "9"],
+    desc: "Switch to workspace 9",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
+    id: "global.nextWallpaper",
+    defaultKeys: ["Alt", "N"],
+    desc: "Cycle to next wallpaper",
+    cat: "global",
+    icon: "fas fa-image"
+  },
+  {
+    id: "global.launchBrowser",
+    defaultKeys: ["Alt", "F"],
+    desc: "Open Yuki Browser",
+    cat: "global",
+    icon: "fas fa-globe"
+  },
+  {
+    id: "tiling.toggleFloatingAlt",
+    defaultKeys: ["Alt", "V"],
+    desc: "Toggle floating/tiled mode on focused window",
+    cat: "global",
+    icon: "fas fa-window-restore"
+  },
+  {
+    id: "tiling.logout",
+    defaultKeys: ["Alt", "M"],
+    desc: "Log out of session",
+    cat: "global",
+    icon: "fas fa-times"
+  },
+  {
+    id: "tiling.moveToWorkspace1",
+    defaultKeys: ["Alt", "Shift", "1"],
+    desc: "Move active window to workspace 1",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace2",
+    defaultKeys: ["Alt", "Shift", "2"],
+    desc: "Move active window to workspace 2",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace3",
+    defaultKeys: ["Alt", "Shift", "3"],
+    desc: "Move active window to workspace 3",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace4",
+    defaultKeys: ["Alt", "Shift", "4"],
+    desc: "Move active window to workspace 4",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace5",
+    defaultKeys: ["Alt", "Shift", "5"],
+    desc: "Move active window to workspace 5",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace6",
+    defaultKeys: ["Alt", "Shift", "6"],
+    desc: "Move active window to workspace 6",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace7",
+    defaultKeys: ["Alt", "Shift", "7"],
+    desc: "Move active window to workspace 7",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace8",
+    defaultKeys: ["Alt", "Shift", "8"],
+    desc: "Move active window to workspace 8",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "tiling.moveToWorkspace9",
+    defaultKeys: ["Alt", "Shift", "9"],
+    desc: "Move active window to workspace 9",
+    cat: "global",
+    icon: "fas fa-arrow-right"
+  },
+  {
     id: "explorer.refresh",
     defaultKeys: ["F5"],
     desc: "Refresh current directory in Explorer",

@@ -159,6 +159,14 @@ export class WorkspaceManager {
     this.render();
     this.applyVisibility();
     if (this.overviewOpen) this.renderOverview();
+    os.events.emit(BusEvents.WORKSPACE_REMOVED, { workspaceId: id });
+  }
+
+  removeEmptyWorkspace(id) {
+    const ws = this.workspaces.find((w) => w.id === id);
+    if (ws && ws.windows.size === 0) {
+      this.removeWorkspace(id);
+    }
   }
 
   registerWindow(winId) {
@@ -177,6 +185,7 @@ export class WorkspaceManager {
     if (!this.overviewOpen) {
       this.closeOverview();
     }
+    this.removeEmptyWorkspace(this.prevActiveId);
     os.events.emit(BusEvents.WORKSPACE_SWITCHED);
   }
 
@@ -194,6 +203,7 @@ export class WorkspaceManager {
       this.closeOverview();
     }
 
+    this.removeEmptyWorkspace(this.prevActiveId);
     this.animateWorkspaceSwitch(direction);
     os.events.emit(BusEvents.WORKSPACE_SWITCHED);
   }

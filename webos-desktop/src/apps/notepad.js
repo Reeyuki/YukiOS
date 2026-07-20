@@ -127,8 +127,8 @@ export class NotepadApp extends BaseApp {
     this.updateStatusBar(win, winId);
   }
 
-  setExplorer(explorerApp) {
-    this.explorerApp = explorerApp;
+  get explorerApp() {
+    return os.app.getInstance("explorerApp");
   }
 
   escapeHtml(text) {

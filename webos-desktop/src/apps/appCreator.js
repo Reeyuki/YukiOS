@@ -115,8 +115,6 @@ async function tryLoadFavicon(appUrl) {
 export class AppCreatorApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.appLauncher = null;
-    this.desktopUI = null;
 
     this.customScramjetApps = new Map();
   }
@@ -135,7 +133,7 @@ export class AppCreatorApp extends BaseApp {
     });
 
     const appInstance = new AppClass(this.os);
-    this.appLauncher.appRuntime.register(appId, appInstance);
+    os.app.registerAppRuntime(appId, appInstance);
     this.customScramjetApps.set(appId, appInstance);
 
     return appInstance;
@@ -242,25 +240,24 @@ export class AppCreatorApp extends BaseApp {
     if (editAppId) this.enterEditMode(win, editAppId);
   }
 
-  setDesktopUI(desktopUI) {
-    this.desktopUI = desktopUI;
-  }
-
-  setAppLauncher(appLauncher) {
-    this.appLauncher = appLauncher;
+  get desktopUI() {
+    return os.desktopUI;
   }
 
   async restoreInstalledApps() {
     const apps = await this.loadAllCustomApps();
     for (const app of apps) {
-      this.appLauncher.appMap[app.appId] = buildAppMapEntry(
-        app.name,
-        app.url,
-        app.icon,
-        app.faviconUrl,
-        !!app.proxyEnabled,
-        clampProxyIndex(app.proxyIndex, PROXIES),
-        !!app.scramjetEnabled
+      os.app.registerCustomApp(
+        app.appId,
+        buildAppMapEntry(
+          app.name,
+          app.url,
+          app.icon,
+          app.faviconUrl,
+          !!app.proxyEnabled,
+          clampProxyIndex(app.proxyIndex, PROXIES),
+          !!app.scramjetEnabled
+        )
       );
       this.addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
 
@@ -602,15 +599,18 @@ export class AppCreatorApp extends BaseApp {
       os.notify.send("", `Failed to save "${name}" to filesystem.`);
     }
 
-    if (this.appLauncher?.appMap?.[appId]) {
-      this.appLauncher.appMap[appId] = buildAppMapEntry(
-        name,
-        url,
-        iconUrl,
-        faviconUrl,
-        !!proxyEnabled,
-        clampProxyIndex(proxyIndex, PROXIES),
-        !!scramjetEnabled
+    if (os.app.getAppInfo(appId)) {
+      os.app.registerCustomApp(
+        appId,
+        buildAppMapEntry(
+          name,
+          url,
+          iconUrl,
+          faviconUrl,
+          !!proxyEnabled,
+          clampProxyIndex(proxyIndex, PROXIES),
+          !!scramjetEnabled
+        )
       );
     }
 
@@ -618,7 +618,7 @@ export class AppCreatorApp extends BaseApp {
       this.registerCustomScramjetApp(appId, name, url, iconUrl);
     } else {
       if (this.customScramjetApps.has(appId)) {
-        this.appLauncher.appRuntime.unregister(appId);
+        os.app.unregisterAppRuntime(appId);
         this.customScramjetApps.delete(appId);
       }
     }
@@ -658,7 +658,7 @@ export class AppCreatorApp extends BaseApp {
       os.notify.send("", `Failed to delete "${meta.name}" from filesystem.`, { appSource: AppSource.APP_CREATOR });
     }
 
-    delete this.appLauncher?.appMap?.[appId];
+    os.app.unregisterCustomApp(appId);
 
     const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
     if (desktopIcon) desktopIcon.remove();
@@ -786,14 +786,17 @@ export class AppCreatorApp extends BaseApp {
       os.notify.send("", `Failed to save "${name}" to filesystem.`);
     }
 
-    this.appLauncher.appMap[appId] = buildAppMapEntry(
-      name,
-      url,
-      iconUrl,
-      faviconUrl,
-      !!proxyEnabled,
-      clampProxyIndex(proxyIndex, PROXIES),
-      !!scramjetEnabled
+    os.app.registerCustomApp(
+      appId,
+      buildAppMapEntry(
+        name,
+        url,
+        iconUrl,
+        faviconUrl,
+        !!proxyEnabled,
+        clampProxyIndex(proxyIndex, PROXIES),
+        !!scramjetEnabled
+      )
     );
     this.addToDesktop(appId, name, iconUrl, faviconUrl);
 

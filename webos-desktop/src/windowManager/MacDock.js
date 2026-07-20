@@ -17,7 +17,7 @@ const DEFAULT_DOCK_APPS = [
   { appId: "calculatorApp", title: "Calculator", icon: "fas fa-calculator", color: "#20c997" },
   { appId: "notepadApp", title: "Notes", icon: "static/icons/notepad.webp", color: "#ffc107" },
   { appId: "discordApp", title: "Discord", icon: "fab fa-discord", color: "#5865f2" },
-  { appId: "trashApp", title: "Trash", icon: "fas fa-trash", color: "#888", isTrash: true },
+  { appId: "trashApp", title: "Trash", icon: "fas fa-trash", color: "#888", isTrash: true }
 ];
 
 export class MacDock {
@@ -264,11 +264,11 @@ export class MacDock {
       item.appendChild(label);
       item.addEventListener("click", () => {
         if (app.isFinder) {
-          os.kernel?.commandPalette?.open();
+          os.app.getInstance("commandPalette")?.open();
         } else if (app.isAudioMixer) {
-          import("../audioMixer.js").then(m => m.audioMixer().toggle());
+          import("../audioMixer.js").then((m) => m.audioMixer().toggle());
         } else if (app.isTrash) {
-          os.app.apps?.explorerApp?.openTrash();
+          os.app.getInstance("explorerApp")?.openTrash();
         } else {
           os.app.launch(app.appId).catch(() => {});
         }
@@ -288,12 +288,16 @@ export class MacDock {
           }
         }
         showStartStyleMenu(e, (addMenuItem, addSeparator) => {
-          addMenuItem("Launch App", () => {
-            if (app.isFinder) os.kernel?.commandPalette?.open();
-            else if (app.isAudioMixer) import("../audioMixer.js").then(m => m.audioMixer().toggle());
-            else if (app.isTrash) os.app.apps?.explorerApp?.openTrash();
-            else os.app.launch(app.appId);
-          }, "fa-play");
+          addMenuItem(
+            "Launch App",
+            () => {
+              if (app.isFinder) os.app.getInstance("commandPalette")?.open();
+              else if (app.isAudioMixer) import("../audioMixer.js").then((m) => m.audioMixer().toggle());
+              else if (app.isTrash) os.app.getInstance("explorerApp")?.openTrash();
+              else os.app.launch(app.appId);
+            },
+            "fa-play"
+          );
           addSeparator();
           addMenuItem("Unpin from Dock", () => this.unpinItem(app.appId), "fa-thumbtack");
         });
@@ -361,8 +365,11 @@ export class MacDock {
       this.container.classList.remove("dock-hidden");
       this._autoHideVisible = true;
     } else {
-      const isOver = e.clientX >= dockRect.left && e.clientX <= dockRect.right &&
-        e.clientY >= dockRect.top && e.clientY <= dockRect.bottom;
+      const isOver =
+        e.clientX >= dockRect.left &&
+        e.clientX <= dockRect.right &&
+        e.clientY >= dockRect.top &&
+        e.clientY <= dockRect.bottom;
       if (!isOver) {
         this.container.classList.add("dock-hidden");
         this._autoHideVisible = false;
@@ -379,6 +386,7 @@ export class MacDock {
       const id = i === 10 ? "dock.launch10" : `dock.launch${i}`;
       if (KeybindManager.matches(e, id)) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         const items = this.container.querySelectorAll(".dock-item");
         const idx = i - 1;
         if (idx < items.length) {
@@ -428,9 +436,7 @@ export class MacDock {
 
     const containerRect = this.container.getBoundingClientRect();
     const isHorizontal = s.dockPosition === "bottom";
-    const mousePos = isHorizontal
-      ? e.clientX - containerRect.left
-      : e.clientY - containerRect.top;
+    const mousePos = isHorizontal ? e.clientX - containerRect.left : e.clientY - containerRect.top;
 
     const affectRange = Math.max(1, Math.min(10, s.dockMagnifyRange));
     const magnifyAmount = Math.max(0.1, Math.min(3, s.dockMagnifyAmount));
@@ -451,7 +457,7 @@ export class MacDock {
       if (d > affectRange) return 0;
       const scale = 1 + magnifyAmount * Math.pow(0.4, d);
       const dim = isHorizontal ? el.offsetWidth : el.offsetHeight;
-      return dim * (scale - 1) / 2;
+      return (dim * (scale - 1)) / 2;
     });
 
     let maxStartExtra = 0;
@@ -495,11 +501,11 @@ export class MacDock {
     });
 
     if (isHorizontal) {
-      this.container.style.paddingLeft = (9 + maxStartExtra) + "px";
-      this.container.style.paddingRight = (9 + maxEndExtra) + "px";
+      this.container.style.paddingLeft = 9 + maxStartExtra + "px";
+      this.container.style.paddingRight = 9 + maxEndExtra + "px";
     } else {
-      this.container.style.paddingTop = (9 + maxStartExtra) + "px";
-      this.container.style.paddingBottom = (9 + maxEndExtra) + "px";
+      this.container.style.paddingTop = 9 + maxStartExtra + "px";
+      this.container.style.paddingBottom = 9 + maxEndExtra + "px";
     }
   }
 
@@ -509,7 +515,7 @@ export class MacDock {
 
   setupDraggable(item, index, isPinned = false) {
     item.setAttribute("draggable", "true");
-    
+
     item.addEventListener("dragstart", (e) => {
       this.dragState = {
         item,
@@ -547,7 +553,7 @@ export class MacDock {
     item.addEventListener("drop", (e) => {
       e.preventDefault();
       if (!this.dragState || this.dragState.item === item) return;
-      
+
       const fromIndex = this.dragState.index;
       const toIndex = index;
       const fromIsPinned = this.dragState.isPinned;
@@ -565,7 +571,7 @@ export class MacDock {
     if (fromIndex === toIndex) return;
     const [moved] = this.pinnedItems.splice(fromIndex, 1);
     this.pinnedItems.splice(toIndex, 0, moved);
-    
+
     this.container.innerHTML = "";
     this.renderPinnedItems();
     this.savePinnedItems();

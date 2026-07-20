@@ -104,7 +104,7 @@ function saveJSON(key, val) {
 export class WallpaperEngineApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.fs = os.kernel?.fileSystemManager;
+    this.fs = os.fs;
     this.winId = null;
     this.win = null;
     this.currentCategory = "all";
@@ -1524,9 +1524,7 @@ export class WallpaperEngineApp extends BaseApp {
     }
     if (count > 0) {
       this.notify(`Uploaded ${count} wallpaper${count > 1 ? "s" : ""}`);
-      this.wallpaperItems = [...this.wallpaperItems, ...(await this.getUserWallpapers())];
-      this.renderGrid();
-      this.updateStats();
+      await this.loadAllWallpapers();
     }
   }
 
@@ -1577,8 +1575,7 @@ export class WallpaperEngineApp extends BaseApp {
             '<span class="import-status--success"><i class="fas fa-check"></i> Imported successfully!</span>'
           );
         this.notify(`Imported "${name}"`);
-        this.wallpaperItems = [...this.wallpaperItems, ...(await this.getUserWallpapers())];
-        this.updateStats();
+        await this.loadAllWallpapers();
       } catch (err) {
         if (status)
           setHTML(

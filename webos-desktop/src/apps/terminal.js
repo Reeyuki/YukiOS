@@ -10,6 +10,7 @@ import { getExt } from "../shared/fileKindDetector.js";
 import { getPyodide, runPython } from "../services/PyodideManager.js";
 import { runNode } from "../services/WebContainerManager.js";
 import { cmdYuki } from "./yukiCommand.js";
+import { cmdHyprctl } from "./hyprctlCommand.js";
 import { processManager } from "../services/ProcessManager.js";
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "./about.js";
@@ -38,7 +39,7 @@ export class TerminalApp extends BaseApp {
       TERM: "xterm-256color"
     };
     this.aliases = os.storage.get(StorageKeys.terminalAliases) || {};
-    this.fs = os.kernel?.fileSystemManager || os.fs;
+    this.fs = os.fs;
     this.gitManager = new GitManager(this.fs);
     this.lastExitCode = 0;
     this.reverseSearchActive = false;
@@ -57,6 +58,7 @@ export class TerminalApp extends BaseApp {
     this.nodeReplContinuation = false;
     this._nodeFallbackWarned = false;
     this.registerDefaultCommands();
+    this.win = null;
   }
 
   open(opts) {
@@ -64,6 +66,7 @@ export class TerminalApp extends BaseApp {
       ...opts,
       icon: "static/icons/terminal.webp"
     });
+    this.win = win;
     win.innerHTML = `<div class="window-content terminal-content">
       <div class="terminal-tabs" id="terminal-tabs"></div>
       <div class="terminal-output" id="terminal-output"></div>
@@ -78,18 +81,18 @@ export class TerminalApp extends BaseApp {
       this.showTerminalContextMenu(e);
     });
 
-    this.initTerminal(opts);
+    this.initTerminal(win, opts);
   }
 
-  initTerminal(opts) {
+  initTerminal(win, opts) {
     const initialPath = opts?.initialPath || null;
     if (initialPath) this.currentPath = initialPath;
-    this.terminalOutput = document.getElementById("terminal-output");
-    this.terminalInput = document.getElementById("terminal-input");
-    this.terminalPrompt = document.getElementById("terminal-prompt");
-    this.terminalInputLine = document.getElementById("terminal-input-line");
-    this.terminalContent = document.querySelector(".terminal-content");
-    this.terminalTabsEl = document.getElementById("terminal-tabs");
+    this.terminalOutput = win.querySelector("#terminal-output");
+    this.terminalInput = win.querySelector("#terminal-input");
+    this.terminalPrompt = win.querySelector("#terminal-prompt");
+    this.terminalInputLine = win.querySelector("#terminal-input-line");
+    this.terminalContent = win.querySelector(".terminal-content");
+    this.terminalTabsEl = win.querySelector("#terminal-tabs");
     this.tabs = [{ id: 1, currentPath: [...this.currentPath], outputHTML: "" }];
     this.activeTabId = 1;
     this.tabCounter = 1;
@@ -307,9 +310,11 @@ export class TerminalApp extends BaseApp {
         this.enterReverseSearch();
       } else if (e.altKey && e.key.toLowerCase() === "t") {
         e.preventDefault();
+        e.stopPropagation();
         this.newTab();
       } else if (e.altKey && /^[1-9]$/.test(e.key)) {
         e.preventDefault();
+        e.stopPropagation();
         const idx = parseInt(e.key, 10) - 1;
         const tab = this.tabs[idx];
         if (tab) this.switchTab(tab.id);
@@ -328,7 +333,8 @@ export class TerminalApp extends BaseApp {
       }
     });
 
-    const win = document.getElementById("terminal-win");
+    const win = this.win;
+    if (!win) return;
 
     win.addEventListener("mousedown", (e) => {
       if (e.target.closest(".terminal-output")) return;
@@ -1233,6 +1239,20 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("node", (args, flags) => this.cmdNode(args, flags));
     this.registerCommand("bash", (args) => this.cmdBash(args));
     this.registerCommand("yuki", (args) => cmdYuki(this, args));
+    const textEditor = (args) => this.cmdNotepad(args);
+    this.registerCommand("notepad", textEditor);
+    this.registerCommand("vim", textEditor);
+    this.registerCommand("nano", textEditor);
+    this.registerCommand("gedit", textEditor);
+    this.registerCommand("hyprctl", (args) => cmdHyprctl(this, args));
+    this.registerCommand("movefocus", (args) => this.cmdMovefocus(args));
+    this.registerCommand("swapwindow", (args) => this.cmdSwapwindow(args));
+    this.registerCommand("togglefloating", () => this.cmdTogglefloating());
+    this.registerCommand("fullscreen", (args) => this.cmdFullscreen(args));
+    this.registerCommand("togglesplit", () => this.cmdTogglesplit());
+    this.registerCommand("resizeactive", (args) => this.cmdResizeactive(args));
+    this.registerCommand("cyclenext", (args) => this.cmdCyclenext(args));
+    this.registerCommand("killactive", () => this.cmdKillactive());
     processManager.init();
   }
 
@@ -1318,6 +1338,37 @@ export class TerminalApp extends BaseApp {
       } catch (e) {
         await this.print(`mkdir: cannot create directory '${dir}': ${e.message}`);
       }
+    }
+  }
+
+  async cmdNotepad(args = []) {
+    const notepadApp = this.os?.app?.apps?.notepadApp;
+    if (!notepadApp) {
+      await this.print("notepad: Notepad app is not available");
+      return;
+    }
+
+    if (!args.length) {
+      notepadApp.open();
+      return;
+    }
+
+    const filePath = args[0];
+    try {
+      const resolved = this.fs.resolvePath(filePath, this.currentPath);
+      const parentPath = resolved.slice(0, -1);
+      const fileName = resolved[resolved.length - 1];
+
+      const isFile = await this.fs.isFile(parentPath, fileName);
+      if (!isFile) {
+        await this.print(`notepad: ${filePath}: Is a directory`);
+        return;
+      }
+
+      const content = await this.fs.readTextFile(this.pathToRelative(resolved), "");
+      notepadApp.open(fileName, content, resolved);
+    } catch {
+      await this.print(`notepad: ${filePath}: No such file or directory`);
     }
   }
 
@@ -2550,6 +2601,101 @@ export class TerminalApp extends BaseApp {
     }
   }
 
+  get tiling() {
+    return os.tiling || null;
+  }
+
+  async cmdMovefocus(args = []) {
+    const dir = args[0];
+    if (!dir || !["l", "r", "u", "d", "left", "right", "up", "down"].includes(dir)) {
+      await this.print("usage: movefocus <l|r|u|d>");
+      return;
+    }
+    const dirmap = { l: "left", r: "right", u: "up", d: "down" };
+    const direction = dirmap[dir] || dir;
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    this.tiling.focusDirection(direction);
+  }
+
+  async cmdSwapwindow(args = []) {
+    const dir = args[0];
+    if (!dir || !["l", "r", "u", "d", "left", "right", "up", "down"].includes(dir)) {
+      await this.print("usage: swapwindow <l|r|u|d>");
+      return;
+    }
+    const dirmap = { l: "left", r: "right", u: "up", d: "down" };
+    const direction = dirmap[dir] || dir;
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    this.tiling.swapDirection(direction);
+  }
+
+  async cmdTogglefloating() {
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    this.tiling.toggleFloating();
+  }
+
+  async cmdFullscreen(args = []) {
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    this.tiling.toggleFullscreenOnTiled();
+  }
+
+  async cmdTogglesplit() {
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    this.tiling.toggleSplitType();
+  }
+
+  async cmdResizeactive(args = []) {
+    const dir = args[0];
+    if (!dir || !["l", "r", "u", "d", "left", "right", "up", "down"].includes(dir)) {
+      await this.print("usage: resizeactive <l|r|u|d>");
+      return;
+    }
+    const dirmap = { l: "left", r: "right", u: "up", d: "down" };
+    const direction = dirmap[dir] || dir;
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    this.tiling.resizeDirection(direction);
+  }
+
+  async cmdCyclenext(args = []) {
+    if (!this.tiling) {
+      await this.print("Tiling mode is not active");
+      return;
+    }
+    const forward = args[0] !== "prev";
+    this.tiling.cycleFocus(forward);
+  }
+
+  async cmdKillactive() {
+    if (this.tiling) {
+      this.tiling.closeFocusedWindow();
+    } else {
+      const wins = Array.from(this.wm.openWindows.keys())
+        .map((id) => document.getElementById(id))
+        .filter(Boolean)
+        .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex));
+      const focused = wins[0];
+      if (focused) this.wm.closeWindow(focused);
+    }
+  }
+
   async cmdHelp() {
     const cmds = [
       ["help", "Show this help message"],
@@ -2595,6 +2741,17 @@ export class TerminalApp extends BaseApp {
       ["signout", "Sign out and return to login screen"],
       ["exit", "Close the terminal"],
       ["yuki", "OS control command — see 'yuki help'"],
+      ["notepad", "Edit a file in Notepad"],
+      ["vim/nano/gedit", "Aliases for notepad"],
+      ["hyprctl", "Hyprland-style window manager control — see 'hyprctl help'"],
+      ["movefocus", "Move focus to neighbor window (<l|r|u|d>)"],
+      ["swapwindow", "Swap focused window with neighbor (<l|r|u|d>)"],
+      ["togglefloating", "Toggle floating mode for focused window"],
+      ["fullscreen", "Toggle fullscreen for focused tiled window"],
+      ["togglesplit", "Toggle split orientation (h/v)"],
+      ["resizeactive", "Resize the active split boundary (<l|r|u|d>)"],
+      ["cyclenext", "Cycle focus to next/prev tiled window"],
+      ["killactive", "Close the active window"],
       ["python", "Run Python code or enter interactive REPL"],
       ["python3", "Alias for python"],
       ["node", "Run JS code or enter Node.js REPL"]
@@ -3347,21 +3504,18 @@ export class TerminalApp extends BaseApp {
 
   async cmdLock() {
     await this.print("Locking session...");
-    if (this.os.app.apps.sessionManager) {
-      await this.os.app.apps.sessionManager.lockSession();
-    }
+    this.os.app.lockSession();
   }
 
   async cmdLogout() {
     await this.print("Signing out...");
-    if (this.os.app.apps.sessionManager) {
-      await this.os.app.apps.sessionManager.lockToLoginScreen();
-    }
+    this.os.app.lockToLoginScreen();
   }
 
   cmdExit() {
-    const win = document.getElementById("terminal-win");
+    const win = this.win || this.terminalOutput?.closest(".window");
+    if (!win) return;
     os.window.removeFromTaskbar(win.id);
-    if (win) win.remove();
+    win.remove();
   }
 }

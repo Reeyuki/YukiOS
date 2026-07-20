@@ -24,5 +24,7 @@ export const BusEvents = Object.freeze({
   CLIPBOARD_UPDATE: "clipboard:update",
   CLIPBOARD_READ: "clipboard:read",
   CLIPBOARD_CLEAR: "clipboard:clear",
-  PROFILE_UPDATED: "profile:updated"
+  PROFILE_UPDATED: "profile:updated",
+  TILING_MODE_CHANGED: "tiling:mode-changed",
+  TILING_LAYOUT_CHANGED: "tiling:layout-changed"
 });

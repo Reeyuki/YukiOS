@@ -51,7 +51,11 @@ const WALLPAPERS = [
   { name: "Windows 10", filename: "win10.webp" },
   { name: "Windows 11", filename: "win11.webp" },
   { name: "Windows 11 Dark", filename: "win11dark.webp" },
-  { name: "Windows XP", filename: "xp.webp" }
+  { name: "Windows XP", filename: "xp.webp" },
+  { name: "Corndog", filename: "corndog.jpg" },
+  { name: "End 4", filename: "end_4.jpg" },
+  { name: "Kath", filename: "Kath.jpg" },
+  { name: "Meptl", filename: "Meptl.png" }
 ];
 
 export function getWallpaperFullPaths() {
