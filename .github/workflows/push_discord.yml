@@ -98,6 +98,21 @@ jobs:
                      -F "file1=@${HTML_FILE};type=text/html" \
                      "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
 
+                ZIP_FILE="dist.zip"
+                zip -r "$ZIP_FILE" dist/
+
+                if [ -f "$ZIP_FILE" ]; then
+                  ZIP_PAYLOAD=$(jq -n \
+                    --arg sha "$SHA" \
+                    --arg subject "$SUBJECT" \
+                    --arg content "📦 Build archive for YukiOS from $SHA ($SUBJECT)" \
+                    '{content: $content}')
+
+                  curl -F "payload_json=$ZIP_PAYLOAD" \
+                       -F "file1=@${ZIP_FILE};type=application/zip" \
+                       "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+                fi
+
               else
                 echo "No HTML build output found, skipping upload"
               fi
@@ -158,6 +173,21 @@ jobs:
               curl -F "payload_json=$PAYLOAD" \
                    -F "file1=@${HTML_FILE};type=text/html" \
                    "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+
+              ZIP_FILE="dist.zip"
+              zip -r "$ZIP_FILE" dist/
+
+              if [ -f "$ZIP_FILE" ]; then
+                ZIP_PAYLOAD=$(jq -n \
+                  --arg sha "$SHA" \
+                  --arg content "📦 Build archive for YukiOS from $SHA (workflow_dispatch)" \
+                  '{content: $content}')
+
+                curl -F "payload_json=$ZIP_PAYLOAD" \
+                     -F "file1=@${ZIP_FILE};type=application/zip" \
+                     "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+              fi
+
             else
               echo "No HTML build output found, skipping upload"
             fi
