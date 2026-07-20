@@ -22,7 +22,7 @@ import { StorageKeys, os } from "../framework.js";
 const HARDCODED_DESKTOP_ICONS = [
   { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
   { app: "steamApp", name: "Steam", icon: "static/icons/steam.webp" },
-  { app: "seaSweeper", name: "Sea Sweeper: Idle Fisher", icon: "static/icons/seaSweeper.webp" },
+  { app: "seaSweeper", name: "Abbys Angler", icon: "static/icons/seaSweeper.webp" },
   { app: "discordApp", name: "Discord", icon: "fab fa-discord", isFa: true },
   { app: "browserApp", name: "Browser", icon: resolveIconUrl("static/icons/firefox.webp") },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },

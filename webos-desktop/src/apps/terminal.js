@@ -39,7 +39,7 @@ export class TerminalApp extends BaseApp {
       TERM: "xterm-256color"
     };
     this.aliases = os.storage.get(StorageKeys.terminalAliases) || {};
-    this.fs = os.fs;
+    this.fs = os.fileSystemManager;
     this.gitManager = new GitManager(this.fs);
     this.lastExitCode = 0;
     this.reverseSearchActive = false;
@@ -1342,7 +1342,7 @@ export class TerminalApp extends BaseApp {
   }
 
   async cmdNotepad(args = []) {
-    const notepadApp = this.os?.app?.apps?.notepadApp;
+    const notepadApp = os.app.getInstance("notepadApp");
     if (!notepadApp) {
       await this.print("notepad: Notepad app is not available");
       return;

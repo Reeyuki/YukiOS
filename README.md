@@ -27,12 +27,12 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ![Start menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)
 ![Mac OS mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png)
 ![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)
+![Tiling](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)
+![Tiling 2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling-2.png)
 ![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png)
 ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png)
-![Music2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio2.png)
 ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
 ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
-![Web Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/webapps.png)
 
 # Desktop Experience
 
