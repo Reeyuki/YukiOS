@@ -10,6 +10,7 @@ import { StorageKeys, os } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
+import { fetchLiveStats } from "./analytics.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -195,6 +196,10 @@ export class SessionManager {
             </div>
           </div>
         </div>
+        <div class="online-users-badge" id="online-users-badge">
+          <i class="fas fa-users"></i>
+          <span id="online-users-count">--</span> online
+        </div>
         <div class="session-time">${timeStr}</div>
         <div class="session-date">${dateStr}</div>
 
@@ -269,6 +274,8 @@ export class SessionManager {
     this.startUptimeCounter();
     this.disableContextMenu();
     this.setupDragVisibility();
+    this.fetchOnlineUsersCount();
+    this.startOnlineUsersPolling();
   }
 
   async renderUserCarousel() {
@@ -402,6 +409,22 @@ export class SessionManager {
     if (hours > 0) return `${hours}h ${minutes % 60}m`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
+  }
+
+  async fetchOnlineUsersCount() {
+    try {
+      const stats = await fetchLiveStats();
+      if (stats && stats.active_users_5min !== undefined) {
+        const el = this.container?.querySelector("#online-users-count");
+        if (el) el.textContent = stats.active_users_5min;
+      }
+    } catch {}
+  }
+
+  startOnlineUsersPolling() {
+    this._onlineUsersInterval = setInterval(() => {
+      this.fetchOnlineUsersCount();
+    }, 60000);
   }
 
   disableContextMenu() {
@@ -799,6 +822,11 @@ export class SessionManager {
     if (this.isLocked) return;
     this.isLocked = true;
 
+    if (this._onlineUsersInterval) {
+      clearInterval(this._onlineUsersInterval);
+      this._onlineUsersInterval = null;
+    }
+
     audioMixer().playSystemSound(SystemAudio.SHUTDOWN);
 
     os.window.closeAll();
@@ -854,6 +882,11 @@ export class SessionManager {
     if (this.uptimeInterval) {
       clearInterval(this.uptimeInterval);
       this.uptimeInterval = null;
+    }
+
+    if (this._onlineUsersInterval) {
+      clearInterval(this._onlineUsersInterval);
+      this._onlineUsersInterval = null;
     }
 
     if (this.lastActiveWindow) {
