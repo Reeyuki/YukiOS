@@ -2,12 +2,16 @@ name: Discord Notify
 
 on:
   push:
+    branches: ["main"]
   pull_request:
   issues:
   issue_comment:
   workflow_dispatch:
   release:
   watch:
+
+permissions:
+  contents: write
 
 jobs:
   notify:
@@ -16,7 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
+
+      - name: Get next version
+        id: version
+        run: |
+          DATE_TAG="v$(date +'%Y.%-m.%-d')-${{ github.run_number }}"
+          echo "tag=$DATE_TAG" >> $GITHUB_OUTPUT
+          echo "Using version: $DATE_TAG"
 
       - uses: actions/setup-node@v4
         with:
@@ -116,6 +127,17 @@ jobs:
               else
                 echo "No HTML build output found, skipping upload"
               fi
+
+              cd ../..
+
+              if [ -f webos-desktop/dist.zip ]; then
+                NOTES=$(git log --oneline -20 2>/dev/null || echo "No recent commits")
+                gh release create "${{ steps.version.outputs.tag }}" \
+                  webos-desktop/dist.zip \
+                  --title "${{ steps.version.outputs.tag }}" \
+                  --notes "$NOTES"
+              fi
+
             fi
 
             exit 0
