@@ -383,7 +383,7 @@ export class SessionManager {
         timeEl.textContent = data.timeStr;
       };
       const unsub = subscribeTimeTick(update);
-      this._timeWorkerUnsub = unsub;
+      this.timeWorkerUnsub = unsub;
     });
   }
 
@@ -424,7 +424,7 @@ export class SessionManager {
   }
 
   startOnlineUsersPolling() {
-    this._onlineUsersInterval = setInterval(() => {
+    this.onlineUsersInterval = setInterval(() => {
       this.fetchOnlineUsersCount();
     }, 60000);
   }
@@ -857,9 +857,9 @@ export class SessionManager {
     if (this.isLocked) return;
     this.isLocked = true;
 
-    if (this._onlineUsersInterval) {
-      clearInterval(this._onlineUsersInterval);
-      this._onlineUsersInterval = null;
+    if (this.onlineUsersInterval) {
+      clearInterval(this.onlineUsersInterval);
+      this.onlineUsersInterval = null;
     }
 
     audioMixer().playSystemSound(SystemAudio.SHUTDOWN);
@@ -909,9 +909,9 @@ export class SessionManager {
       }, 500);
     }
 
-    if (this._timeWorkerUnsub) {
-      this._timeWorkerUnsub();
-      this._timeWorkerUnsub = null;
+    if (this.timeWorkerUnsub) {
+      this.timeWorkerUnsub();
+      this.timeWorkerUnsub = null;
     }
 
     if (this.uptimeInterval) {
@@ -919,9 +919,9 @@ export class SessionManager {
       this.uptimeInterval = null;
     }
 
-    if (this._onlineUsersInterval) {
-      clearInterval(this._onlineUsersInterval);
-      this._onlineUsersInterval = null;
+    if (this.onlineUsersInterval) {
+      clearInterval(this.onlineUsersInterval);
+      this.onlineUsersInterval = null;
     }
 
     if (this.lastActiveWindow) {
@@ -954,9 +954,9 @@ export class SessionManager {
       wallpaper.pause();
     }
 
-    if (this._timeWorkerUnsub) {
-      this._timeWorkerUnsub();
-      this._timeWorkerUnsub = null;
+    if (this.timeWorkerUnsub) {
+      this.timeWorkerUnsub();
+      this.timeWorkerUnsub = null;
     }
 
     const wakeHandler = () => {

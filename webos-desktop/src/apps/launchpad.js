@@ -7,9 +7,9 @@ export class LaunchpadApp extends BaseApp {
   constructor(services) {
     super(services);
     this.overlay = null;
-    this._boundKeydown = this.handleKeydown.bind(this);
-    this._boundGlobalKeydown = this.handleGlobalKeydown.bind(this);
-    document.addEventListener("keydown", this._boundGlobalKeydown);
+    this.boundKeydown = this.handleKeydown.bind(this);
+    this.boundGlobalKeydown = this.handleGlobalKeydown.bind(this);
+    document.addEventListener("keydown", this.boundGlobalKeydown);
   }
 
   handleGlobalKeydown(e) {
@@ -42,7 +42,7 @@ export class LaunchpadApp extends BaseApp {
     });
 
     document.body.appendChild(this.overlay);
-    document.addEventListener("keydown", this._boundKeydown);
+    document.addEventListener("keydown", this.boundKeydown);
 
     this.renderGrid();
 
@@ -66,7 +66,7 @@ export class LaunchpadApp extends BaseApp {
         { once: true }
       );
     }
-    document.removeEventListener("keydown", this._boundKeydown);
+    document.removeEventListener("keydown", this.boundKeydown);
   }
 
   handleKeydown(e) {
@@ -106,14 +106,14 @@ export class LaunchpadApp extends BaseApp {
     allApps.sort((a, b) => a.title.localeCompare(b.title));
 
     this.allApps = allApps;
-    this._query = "";
+    this.query = "";
     this.renderGridItems();
 
     const input = this.overlay.querySelector(".launchpad-search");
-    if (input && !input._lb) {
-      input._lb = true;
+    if (input && !input.lb) {
+      input.lb = true;
       input.addEventListener("input", (e) => {
-        this._query = e.target.value;
+        this.query = e.target.value;
         this.renderGridItems();
       });
     }
@@ -124,7 +124,7 @@ export class LaunchpadApp extends BaseApp {
     const empty = this.overlay.querySelector("#launchpad-empty");
     if (!grid) return;
 
-    const q = (this._query || "").toLowerCase();
+    const q = (this.query || "").toLowerCase();
     const filtered = q ? this.allApps.filter((a) => a.title.toLowerCase().includes(q)) : this.allApps;
 
     if (filtered.length === 0) {

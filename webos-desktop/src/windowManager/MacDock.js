@@ -32,11 +32,11 @@ export class MacDock {
     this.boundSettings = this.onSettingsChanged.bind(this);
     this.boundAutoHide = this.onAutoHideMove.bind(this);
     this.boundKeydown = this.handleKeydown.bind(this);
-    this._lastClientX = null;
-    this._lastClientY = null;
+    this.lastClientX = null;
+    this.lastClientY = null;
     this.dragState = null;
-    this._autoHideVisible = false;
-    this._showHideTimer = null;
+    this.autoHideVisible = false;
+    this.showHideTimer = null;
     this.settings = this.getDefaultSettings();
   }
 
@@ -342,8 +342,8 @@ export class MacDock {
   }
 
   triggerRecalc() {
-    if (this._lastClientX != null) {
-      this.handleHover({ type: "mousemove", clientX: this._lastClientX, clientY: this._lastClientY });
+    if (this.lastClientX != null) {
+      this.handleHover({ type: "mousemove", clientX: this.lastClientX, clientY: this.lastClientY });
     }
   }
 
@@ -363,7 +363,7 @@ export class MacDock {
     }
     if (show) {
       this.container.classList.remove("dock-hidden");
-      this._autoHideVisible = true;
+      this.autoHideVisible = true;
     } else {
       const isOver =
         e.clientX >= dockRect.left &&
@@ -372,7 +372,7 @@ export class MacDock {
         e.clientY <= dockRect.bottom;
       if (!isOver) {
         this.container.classList.add("dock-hidden");
-        this._autoHideVisible = false;
+        this.autoHideVisible = false;
       }
     }
   }
@@ -413,8 +413,8 @@ export class MacDock {
       this.container.style.paddingRight = "";
       this.container.style.paddingTop = "";
       this.container.style.paddingBottom = "";
-      this._lastClientX = null;
-      this._lastClientY = null;
+      this.lastClientX = null;
+      this.lastClientY = null;
       return;
     }
 
@@ -431,8 +431,8 @@ export class MacDock {
       return;
     }
 
-    this._lastClientX = e.clientX;
-    this._lastClientY = e.clientY;
+    this.lastClientX = e.clientX;
+    this.lastClientY = e.clientY;
 
     const containerRect = this.container.getBoundingClientRect();
     const isHorizontal = s.dockPosition === "bottom";

@@ -4,9 +4,9 @@ import { subscribeTimeTick } from "../../services/timeWorker.js";
 export class ClockWidget extends WidgetBase {
   constructor(manager, id) {
     super(manager, id, "clock", "Clock", 240, 130);
-    this._24h = false;
+    this.use24h = false;
     this.showSeconds = false;
-    this._timeUnsub = null;
+    this.timeUnsub = null;
   }
 
   onRender(contentEl) {
@@ -15,7 +15,7 @@ export class ClockWidget extends WidgetBase {
       <div class="widget-clock-date" id="w-clock-date-${this.id}"></div>
     `;
     this.tickFromWorker();
-    this._timeUnsub = subscribeTimeTick(() => this.tickFromWorker());
+    this.timeUnsub = subscribeTimeTick(() => this.tickFromWorker());
   }
 
   tickFromWorker() {
@@ -24,7 +24,7 @@ export class ClockWidget extends WidgetBase {
     let minutes = now.getMinutes().toString().padStart(2, "0");
     let seconds = now.getSeconds().toString().padStart(2, "0");
     let ampm = "";
-    if (!this._24h) {
+    if (!this.use24h) {
       ampm = hours >= 12 ? " PM" : " AM";
       hours = hours % 12 || 12;
     }
@@ -55,10 +55,10 @@ export class ClockWidget extends WidgetBase {
   getConfigFields() {
     return [
       {
-        key: "_24h",
+        key: "use24h",
         label: "24-hour format",
         type: "select",
-        value: this._24h,
+        value: this.use24h,
         default: false,
         options: [
           { value: "true", label: "24-hour" },
@@ -80,25 +80,25 @@ export class ClockWidget extends WidgetBase {
   }
 
   applyConfig(data) {
-    this._24h = data._24h === "true";
+    this.use24h = data.use24h === "true";
     this.showSeconds = data.showSeconds === "true";
     this.tickFromWorker();
     this.manager.saveState();
   }
 
   getData() {
-    return { _24h: this._24h, showSeconds: this.showSeconds };
+    return { _24h: this.use24h, showSeconds: this.showSeconds };
   }
 
   setData(data) {
     if (data) {
-      this._24h = !!data._24h;
+      this.use24h = !!data.use24h;
       this.showSeconds = !!data.showSeconds;
     }
   }
 
   destroy() {
-    if (this._timeUnsub) this._timeUnsub();
+    if (this.timeUnsub) this.timeUnsub();
     super.destroy();
   }
 }

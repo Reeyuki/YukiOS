@@ -1633,7 +1633,7 @@ export class GameOverlayController {
 
   startClock() {
     import("./services/timeWorker.js").then(({ subscribeTimeTick }) => {
-      this._overlayClockUnsub = subscribeTimeTick((data) => {
+      this.overlayClockUnsub = subscribeTimeTick((data) => {
         const timeEl = this.overlayEl?.querySelector("#overlay-clock-time");
         const dateEl = this.overlayEl?.querySelector("#overlay-clock-date");
         const sessionEl = this.overlayEl?.querySelector("#overlay-session-time");
@@ -1646,17 +1646,17 @@ export class GameOverlayController {
       });
     });
     this.updateOverviewPlaytime();
-    this._playtimeInterval = setInterval(() => this.updateOverviewPlaytime(), 1000);
+    this.playtimeInterval = setInterval(() => this.updateOverviewPlaytime(), 1000);
   }
 
   stopClock() {
-    if (this._overlayClockUnsub) {
-      this._overlayClockUnsub();
-      this._overlayClockUnsub = null;
+    if (this.overlayClockUnsub) {
+      this.overlayClockUnsub();
+      this.overlayClockUnsub = null;
     }
-    if (this._playtimeInterval) {
-      clearInterval(this._playtimeInterval);
-      this._playtimeInterval = null;
+    if (this.playtimeInterval) {
+      clearInterval(this.playtimeInterval);
+      this.playtimeInterval = null;
     }
   }
 

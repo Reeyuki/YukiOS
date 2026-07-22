@@ -11,11 +11,11 @@ export class YouTubeWidget extends WidgetBase {
     contentEl.innerHTML = `
       <div class="widget-yt-container" id="w-yt-container-${this.id}">
         <div class="widget-yt-input-row">
-          <input type="text" class="widget-yt-input" id="w-yt-input-${this.id}" placeholder="Paste YouTube URL..." value="${this.videoId ? `https://youtube.com/watch?v=${this._videoId}` : ""}">
+          <input type="text" class="widget-yt-input" id="w-yt-input-${this.id}" placeholder="Paste YouTube URL..." value="${this.videoId ? `https://youtube.com/watch?v=${this.videoId}` : ""}">
           <button class="widget-yt-btn" id="w-yt-btn-${this.id}"><i class="fas fa-play"></i></button>
         </div>
         <div class="widget-yt-embed" id="w-yt-embed-${this.id}">
-          ${this.videoId ? `<iframe src="https://www.youtube-nocookie.com/embed/${this._videoId}" frameborder="0" allowfullscreen class="widget-yt-iframe"></iframe>` : `<div class="widget-yt-placeholder">Enter a YouTube URL to play</div>`}
+          ${this.videoId ? `<iframe src="https://www.youtube-nocookie.com/embed/${this.videoId}" frameborder="0" allowfullscreen class="widget-yt-iframe"></iframe>` : `<div class="widget-yt-placeholder">Enter a YouTube URL to play</div>`}
         </div>
       </div>
     `;

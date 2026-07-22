@@ -601,14 +601,14 @@ export class TaskManagerApp extends BaseApp {
   }
 
   resolveCSSVar(name) {
-    if (!this._resolvedCache) this._resolvedCache = {};
-    if (this._resolvedCache[name]) return this._resolvedCache[name];
+    if (!this.resolvedCache) this.resolvedCache = {};
+    if (this.resolvedCache[name]) return this.resolvedCache[name];
     const el = document.createElement("div");
     el.style.color = `var(${name})`;
     document.body.appendChild(el);
     const color = getComputedStyle(el).color;
     document.body.removeChild(el);
-    this._resolvedCache[name] = color;
+    this.resolvedCache[name] = color;
     return color;
   }
 

@@ -68,15 +68,15 @@ export class SystemAppsApp extends BaseApp {
 
     this.nativeApps = nativeApps;
     this.webApps = webApps;
-    this._query = "";
-    this.renderGrid(this._query);
+    this.query = "";
+    this.renderGrid(this.query);
 
     const searchInput = win.querySelector("#system-apps-search");
     if (searchInput && !searchInput.saBound) {
       searchInput.saBound = true;
       searchInput.addEventListener("input", (e) => {
-        this._query = e.target.value;
-        this.renderGrid(this._query);
+        this.query = e.target.value;
+        this.renderGrid(this.query);
       });
     }
   }

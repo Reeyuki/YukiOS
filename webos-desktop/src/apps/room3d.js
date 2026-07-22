@@ -14,10 +14,10 @@ import { CanvasOverlay } from "../3d/CanvasOverlay.js";
 import { SystemUtilities } from "../system.js";
 
 const rmStore = {
-  _p: "rm3d_",
+  storagePrefix: "rm3d_",
   get(k, d) {
     try {
-      const v = localStorage.getItem(this._p + k);
+      const v = localStorage.getItem(this.storagePrefix + k);
       return v !== null ? JSON.parse(v) : d;
     } catch {
       return d;
@@ -25,7 +25,7 @@ const rmStore = {
   },
   set(k, v) {
     try {
-      localStorage.setItem(this._p + k, JSON.stringify(v));
+      localStorage.setItem(this.storagePrefix + k, JSON.stringify(v));
     } catch {}
   }
 };
@@ -47,8 +47,8 @@ export class Room3DApp extends BaseApp {
     this.systemOverlay = null;
     this.systemOnExit = null;
     this.overlay = null;
-    this._crosshairEl = null;
-    this._suppressPauseOnUnlock = false;
+    this.crosshairEl = null;
+    this.suppressPauseOnUnlock = false;
   }
 
   async open(opts = {}) {
@@ -69,7 +69,7 @@ export class Room3DApp extends BaseApp {
     });
 
     this.running = true;
-    this._openOverlay = overlay;
+    this.openOverlay = overlay;
 
     window.room3d = {
       renderer: this.renderer,
@@ -122,7 +122,7 @@ export class Room3DApp extends BaseApp {
 
   async init3D(container) {
     const root = container.parentElement;
-    this._crosshairEl = root.querySelector("#room3d-crosshair");
+    this.crosshairEl = root.querySelector("#room3d-crosshair");
 
     const THREE = await import("three");
     this.THREE = THREE;
@@ -138,13 +138,13 @@ export class Room3DApp extends BaseApp {
     );
     this.controls.onLockStateChange = (locked) => {
       if (locked) {
-        this._crosshairEl.classList.add("room3d-crosshair--visible");
+        this.crosshairEl.classList.add("room3d-crosshair--visible");
       } else {
-        this._crosshairEl.classList.remove("room3d-crosshair--visible");
-        if (!this._suppressPauseOnUnlock && this.overlay && !this.overlay.isVisible() && this.running) {
+        this.crosshairEl.classList.remove("room3d-crosshair--visible");
+        if (!this.suppressPauseOnUnlock && this.overlay && !this.overlay.isVisible() && this.running) {
           this.overlay.show("pause");
         }
-        this._suppressPauseOnUnlock = false;
+        this.suppressPauseOnUnlock = false;
       }
     };
     this.controls.start(THREE);
@@ -402,7 +402,7 @@ export class Room3DApp extends BaseApp {
         return;
       }
       if (this.overlay) {
-        this._suppressPauseOnUnlock = true;
+        this.suppressPauseOnUnlock = true;
         this.overlay.show("pause");
         if (this.controls && this.controls.isLocked) {
           this.controls.unlock();
@@ -412,7 +412,7 @@ export class Room3DApp extends BaseApp {
 
     this.captureScreenshot = () => {
       if (!this.renderer || !this.renderer.renderer) return;
-      const crosshair = this._crosshairEl;
+      const crosshair = this.crosshairEl;
       const wasVisible = crosshair.classList.contains("room3d-crosshair--visible");
       crosshair.classList.remove("room3d-crosshair--visible");
 
@@ -533,7 +533,7 @@ export class Room3DApp extends BaseApp {
     });
 
     this.interaction.register("colorPickerButton", () => {
-      this._suppressPauseOnUnlock = true;
+      this.suppressPauseOnUnlock = true;
       if (this.controls && this.controls.isLocked) this.controls.unlock();
       if (this.overlay) this.overlay.show("colors");
     });
@@ -592,7 +592,7 @@ export class Room3DApp extends BaseApp {
     this.overlay = null;
     window.room3d = undefined;
 
-    const overlay = this._openOverlay || this.systemOverlay;
+    const overlay = this.openOverlay || this.systemOverlay;
     if (overlay) {
       overlay.style.opacity = "0";
       overlay.addEventListener(
@@ -711,9 +711,9 @@ export class Room3DApp extends BaseApp {
       SystemUtilities.loadWallpaper();
     }
 
-    this._openOverlay = null;
+    this.openOverlay = null;
     this.systemOverlay = null;
-    this._crosshairEl = null;
+    this.crosshairEl = null;
   }
 
   exitSystemMode() {

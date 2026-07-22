@@ -5,11 +5,11 @@ export class GitManager {
   constructor(fsManager) {
     this.fsManager = fsManager;
     this.storage = fsManager.storage;
-    this._fs = null;
+    this.gitFs = null;
   }
 
   createFS() {
-    if (this._fs) return this._fs;
+    if (this.gitFs) return this.gitFs;
     const storage = this.storage;
 
     const fs = {
@@ -80,7 +80,7 @@ export class GitManager {
       }
     };
 
-    this._fs = fs;
+    this.gitFs = fs;
     return fs;
   }
 
