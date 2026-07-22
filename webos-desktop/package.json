@@ -42,6 +42,7 @@
     "@ruffle-rs/ruffle": "0.2.0-nightly.2026.5.15",
     "@webcontainer/api": "^1.6.4",
     "archive-wasm": "^1.7.1",
+    "cannon-es": "^0.20.0",
     "canvas-confetti": "^1.9.4",
     "clippyjs": "^0.1.0",
     "docx": "^8.6.0",

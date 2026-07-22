@@ -1,0 +1,324 @@
+import { resolveIconUrl } from "../shared/assetResolver.js";
+
+export class HologramRenderer {
+  constructor() {
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = 800;
+    this.canvas.height = 500;
+    this.ctx = this.canvas.getContext("2d");
+
+    this.allItems = [];
+    this.pageItems = [];
+    this.currentPage = 0;
+    this.totalPages = 0;
+    this.itemsPerPage = 15;
+    this.cols = 5;
+    this.rows = 3;
+
+    this.ticker = 0;
+    this.intervalId = null;
+    this.running = false;
+    this.os = null;
+    this.iconBitmaps = new Map();
+    this.iconLoadAttempted = new Set();
+
+    this.gridStartX = 32;
+    this.gridStartY = 32;
+    this.gridCellW = 150;
+    this.gridCellH = 145;
+    this.iconSize = 80;
+
+    this.prevBtnBounds = null;
+    this.nextBtnBounds = null;
+    this.dotBounds = [];
+    this.onDraw = null;
+  }
+
+  start(os) {
+    this.os = os;
+    this.running = true;
+    this.refreshItems();
+    this.goToPage(0);
+    this.loadAllIcons();
+
+    this.intervalId = setInterval(() => this.update(), 100);
+    this.update();
+  }
+
+  loadAllIcons() {
+    for (const item of this.allItems) {
+      if (!item.icon || this.iconLoadAttempted.has(item.icon)) continue;
+      this.iconLoadAttempted.add(item.icon);
+      this.loadIconBitmap(item.icon);
+    }
+  }
+
+  async loadIconBitmap(icon) {
+    if (/^fa[srb]?\s+fa-/.test(icon)) return;
+    let url = icon;
+    try { url = resolveIconUrl(icon); } catch (e) {}
+
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        const bitmap = await createImageBitmap(img);
+        this.iconBitmaps.set(icon, bitmap);
+      }
+    } catch (e) {
+      /* icon failed to load, stay as fallback */
+    }
+  }
+
+  stop() {
+    this.running = false;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+    this.allItems = [];
+    this.pageItems = [];
+    for (const b of this.iconBitmaps.values()) b.close();
+    this.iconBitmaps.clear();
+    this.iconLoadAttempted.clear();
+    this.os = null;
+  }
+
+  refreshItems() {
+    const allApps = this.os ? this.os.app.getAllApps() : {};
+    const entries = Object.entries(allApps || {});
+    this.allItems = entries
+      .filter(([, item]) => item && item.title)
+      .map(([key, item]) => ({ ...item, _appId: item.serviceKey || key }));
+    this.allItems.sort((a, b) => {
+      if (a.type === "game" && b.type !== "game") return -1;
+      if (a.type !== "game" && b.type === "game") return 1;
+      return (a.title || "").localeCompare(b.title || "");
+    });
+    this.totalPages = Math.max(1, Math.ceil(this.allItems.length / this.itemsPerPage));
+  }
+
+  goToPage(page) {
+    this.currentPage = Math.max(0, Math.min(page, this.totalPages - 1));
+    const start = this.currentPage * this.itemsPerPage;
+    this.pageItems = this.allItems.slice(start, start + this.itemsPerPage);
+  }
+
+  update() {
+    if (!this.running) return;
+    this.ticker++;
+    this.draw();
+  }
+
+  draw() {
+    const ctx = this.ctx;
+    const W = 800, H = 500;
+
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, "#0e0618");
+    grad.addColorStop(0.4, "#140a22");
+    grad.addColorStop(0.7, "#10081a");
+    grad.addColorStop(1, "#080310");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = "rgba(136,68,255,0.012)";
+    for (let y = 0; y < H; y += 3) {
+      ctx.fillRect(0, y, W, 1);
+    }
+
+    ctx.fillStyle = "rgba(200,180,255,0.55)";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("YUKIOS LIBRARY", W / 2, 10);
+
+    this.drawGrid(ctx, W, H);
+    this.drawNavigation(ctx, W, H);
+
+    if (this.ticker % 12 === 0) {
+      ctx.fillStyle = `rgba(255,255,255,${0.002 + Math.random() * 0.005})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.fillStyle = "rgba(136,68,255,0.02)";
+    ctx.fillRect(
+      W * 0.5 - 100 + Math.sin(this.ticker * 0.04) * 30,
+      0,
+      200,
+      H
+    );
+
+    if (this.onDraw) this.onDraw();
+  }
+
+  drawGrid(ctx, W, H) {
+    const { gridStartX, gridStartY, gridCellW, gridCellH, iconSize, cols, pageItems } = this;
+
+    pageItems.forEach((item, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const cx = gridStartX + col * gridCellW + gridCellW / 2;
+      const cy = gridStartY + row * gridCellH + 8;
+      const ix = cx - iconSize / 2;
+      const iy = cy;
+
+      ctx.shadowColor = "rgba(136,68,255,0.18)";
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = "rgba(14,7,22,0.88)";
+      this.roundRect(ctx, ix, iy, iconSize, iconSize, 10);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.strokeStyle = "rgba(136,68,255,0.2)";
+      ctx.lineWidth = 0.5;
+      this.roundRect(ctx, ix, iy, iconSize, iconSize, 10);
+      ctx.stroke();
+
+      const bitmap = this.iconBitmaps.get(item.icon);
+      if (bitmap) {
+        ctx.save();
+        this.roundRect(ctx, ix + 2, iy + 2, iconSize - 4, iconSize - 4, 9);
+        ctx.clip();
+        ctx.drawImage(bitmap, ix + 4, iy + 4, iconSize - 8, iconSize - 8);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = this.getIconColor(item);
+        ctx.beginPath();
+        ctx.arc(cx, iy + iconSize / 2, iconSize / 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.font = "bold 30px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText((item.title || "?")[0].toUpperCase(), cx, iy + iconSize / 2 + 1);
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = "11px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const label = (item.title || "").slice(0, 20);
+      ctx.fillText(label, cx, iy + iconSize + 5);
+
+      item._bounds = { x: ix, y: iy, w: iconSize, h: iconSize + 18 };
+    });
+  }
+
+  getIconColor(item) {
+    const hue = this.stringToHue(item.icon || item.title);
+    return `hsl(${hue}, 60%, 30%)`;
+  }
+
+  stringToHue(str) {
+    let hash = 0;
+    for (let i = 0; i < (str || "").length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash) % 360;
+  }
+
+  drawNavigation(ctx, W, H) {
+    this.dotBounds = [];
+    this.prevBtnBounds = null;
+    this.nextBtnBounds = null;
+
+    ctx.fillStyle = "rgba(200,180,255,0.6)";
+    ctx.font = "12px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${this.currentPage + 1} / ${this.totalPages}`, W / 2, H - 34 + 1);
+
+    const maxDots = Math.min(this.totalPages, 9);
+    const dotStartX = W / 2 - (maxDots * 10) / 2;
+    const dotY = H - 34 + 1 + 20;
+    const pageOffset = Math.max(0, Math.min(this.currentPage - Math.floor(maxDots / 2), this.totalPages - maxDots));
+    for (let i = 0; i < maxDots; i++) {
+      const pageIdx = pageOffset + i;
+      if (pageIdx >= this.totalPages) break;
+      const dx = dotStartX + i * 10;
+      this.dotBounds.push({ x: dx - 3, y: dotY - 3, w: 6, h: 6, page: pageIdx });
+
+      const proxim = Math.abs(pageIdx - this.currentPage);
+      const bright = proxim === 0 ? 0.4 : Math.max(0.05, 0.25 - proxim * 0.04);
+      ctx.fillStyle = `rgba(136,68,255,${bright})`;
+      ctx.beginPath();
+      ctx.arc(dx, dotY, proxim === 0 ? 3 : 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  getItemAtUV(uvX, uvY) {
+    const cx = uvX * 800;
+    const cy = (1 - uvY) * 500;
+
+    if (this.prevBtnBounds && this.pointInRect(cx, cy, this.prevBtnBounds)) {
+      return { type: "nav", action: "prev" };
+    }
+    if (this.nextBtnBounds && this.pointInRect(cx, cy, this.nextBtnBounds)) {
+      return { type: "nav", action: "next" };
+    }
+    for (const db of this.dotBounds) {
+      if (this.pointInRect(cx, cy, db)) {
+        return { type: "nav", action: "goto", page: db.page };
+      }
+    }
+    for (const item of this.pageItems) {
+      if (item._bounds && this.pointInRect(cx, cy, item._bounds)) {
+        return { type: "app", appId: item._appId, title: item.title };
+      }
+    }
+    return null;
+  }
+
+  handleClick(uvX, uvY) {
+    const result = this.getItemAtUV(uvX, uvY);
+    if (!result) return null;
+
+    if (result.type === "nav") {
+      if (result.action === "prev") {
+        const target = this.currentPage > 0 ? this.currentPage - 1 : this.totalPages - 1;
+        this.goToPage(target);
+        return { action: "navigate" };
+      }
+      if (result.action === "next" && this.currentPage < this.totalPages - 1) {
+        this.goToPage(this.currentPage + 1);
+        return { action: "navigate" };
+      }
+      if (result.page !== undefined) {
+        this.goToPage(result.page);
+        return { action: "navigate" };
+      }
+    }
+
+    if (result.type === "app") {
+      return { action: "launch", appId: result.appId, title: result.title };
+    }
+
+    return null;
+  }
+
+  pointInRect(px, py, rect) {
+    return px >= rect.x && px <= rect.x + rect.w && py >= rect.y && py <= rect.y + rect.h;
+  }
+
+  roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+}

@@ -659,6 +659,78 @@ export default {
       return jsonResponse({ success: true });
     }
 
+    if (url.pathname === "/live/activity" && request.method === "POST") {
+      if (ipBlocked(env, clientIP)) {
+        return jsonResponse({ error: "Forbidden" }, 403);
+      }
+
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+
+      const events = Array.isArray(payload) ? payload : [payload];
+      const timestamp = new Date().toISOString();
+      const dailyId = await deriveDailyId(env, clientIP);
+
+      const inserts = events.map((event) => {
+        const data = {
+          app: event.appId ? normalizeApp(event.appId) : "unknown",
+          event: "activity_" + (event.event === "stop" ? "stop" : "start"),
+          name: typeof event.username === "string" ? event.username.slice(0, 32) : "Anonymous",
+          gameTitle: typeof event.gameTitle === "string" ? event.gameTitle.slice(0, 128) : "",
+          gameIcon: typeof event.gameIcon === "string" ? event.gameIcon.slice(0, 512) : "",
+          avatarIndex: typeof event.avatarIndex === "number" ? event.avatarIndex : -1,
+          timestamp: event.timestamp || Date.now()
+        };
+        const id = crypto.randomUUID();
+        return env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
+          id,
+          dailyId,
+          timestamp,
+          JSON.stringify(data)
+        );
+      });
+
+      await env.DB.batch(inserts);
+      return jsonResponse({ status: "ok", count: events.length });
+    }
+
+    if (url.pathname === "/live/now-playing" && request.method === "GET") {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+      const result = await env.DB.prepare(
+        `SELECT data FROM analytics
+         WHERE json_extract(data, '$.event') = 'activity_start'
+           AND timestamp >= ?
+         ORDER BY timestamp DESC`
+      )
+        .bind(fiveMinAgo)
+        .all();
+
+      const usersMap = new Map();
+      for (const row of result.results) {
+        try {
+          const d = typeof row.data === "string" ? JSON.parse(row.data) : row.data;
+          if (!d.name) continue;
+          if (!usersMap.has(d.name)) {
+            usersMap.set(d.name, {
+              username: String(d.name).slice(0, 32),
+              appId: String(d.app || "").slice(0, 64),
+              gameTitle: String(d.gameTitle || "").slice(0, 128),
+              gameIcon: String(d.gameIcon || "").slice(0, 512),
+              avatarIndex: typeof d.avatarIndex === "number" ? d.avatarIndex : -1,
+              startedAt: d.timestamp
+            });
+          }
+        } catch {}
+      }
+
+      return jsonResponse({ users: Array.from(usersMap.values()) });
+    }
+
     if (url.pathname === "/analytics" && request.method === "POST") {
       if (ipBlocked(env, clientIP)) {
         return jsonResponse({ error: "Forbidden" }, 403);

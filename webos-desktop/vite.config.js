@@ -68,11 +68,14 @@ function staticCdnRewrite() {
   };
 }
 
-const plugins = [nodePolyfills({
-  include: ["buffer", "process", "stream", "path", "util", "timers"],
-  globals: { Buffer: true, global: true, process: true },
-  protocolImports: true
-}), serveStaticDev()];
+const plugins = [
+  nodePolyfills({
+    include: ["buffer", "process", "stream", "path", "util", "timers"],
+    globals: { Buffer: true, global: true, process: true },
+    protocolImports: true
+  }),
+  serveStaticDev()
+];
 if (isSingleFile) {
   plugins.unshift(viteSingleFile());
 }

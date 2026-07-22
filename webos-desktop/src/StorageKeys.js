@@ -221,5 +221,12 @@ export const StorageKeys = {
   tilingRofiEnabled: "yukiOS_tiling_rofi_enabled",
   tilingRofiMaxResults: "yukiOS_tiling_rofi_max_results",
   tilingRofiWidth: "yukiOS_tiling_rofi_width",
-  tilingKeybindHintHidden: "yukiOS_tiling_keybind_hint_hidden"
+  tilingKeybindHintHidden: "yukiOS_tiling_keybind_hint_hidden",
+  friendsLiveActivity: "yukiOS_friends_live_activity",
+  room3dBookPositions: "yukiOS_room3d_book_positions",
+  room3dBallPosition: "yukiOS_room3d_ball_position",
+  room3dWallColor: "yukiOS_room3d_wall_color",
+  room3dFloorColor: "yukiOS_room3d_floor_color",
+  room3dFurniturePositions: "yukiOS_room3d_furniture_positions",
+  room3dActiveDecorations: "yukiOS_room3d_active_decorations"
 };

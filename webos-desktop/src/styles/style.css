@@ -133,6 +133,13 @@ html.mac-mode {
   --font-ui: "SF Pro Display", "Poppins", sans-serif;
 }
 
+html.3d-mode #taskbar,
+html.3d-mode #desktop,
+html.3d-mode #start-menu,
+html.3d-mode .tray-content {
+  display: none !important;
+}
+
 *,
 *::before,
 *::after {

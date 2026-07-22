@@ -1259,6 +1259,21 @@ export const APP_MANIFESTS = [
       "Remote desktop client supporting VNC protocol with saved connection profiles, fullscreen mode, and clipboard integration."
   },
   {
+    serviceKey: "robloxStudioApp",
+    enhanced: true,
+    type: "system",
+    title: "Roblox Studio",
+    icon: `${CDN_BASE}/static/icons/roblox-studio.webp`,
+    launchType: "iframe",
+    windowIdPatterns: ["roblox-studio"],
+    category: "games",
+    persistContentState: false,
+    clippy: { message: "This is a webport lol", animation: ClippyAnimation.Show },
+    description: "Roblox Studio compiled to web using roblox 2017 source",
+    source: "https://studio.nodium.lol",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
     serviceKey: "robloxApp",
     enhanced: true,
     type: "system",
@@ -1287,5 +1302,20 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.GetWizardy
     },
     description: "Launch apps, open URLs, and run commands instantly with the Run dialog."
+  },
+  {
+    serviceKey: "room3dApp",
+    enhanced: true,
+    type: "system",
+    title: "3D Room",
+    icon: "fas fa-cube",
+    launchType: "instance",
+    windowIdPatterns: ["room3d"],
+    category: "system",
+    clippy: {
+      message: "Explore your game collection in a fully 3D interactive room.",
+      animation: ClippyAnimation.Show
+    },
+    description: "First-person 3D room where your game library comes to life."
   }
 ];

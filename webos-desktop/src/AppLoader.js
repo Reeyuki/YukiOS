@@ -123,5 +123,24 @@ export function loadApps(os, preloaded = {}) {
     os.app.register(serviceKey, instance);
     if (onLoad) onLoad(instance, preloaded);
   }
+
+  let room3dInst = null;
+  const ensureRoom3D = async () => {
+    if (!room3dInst) {
+      const { Room3DApp } = await import("./apps/room3d.js");
+      room3dInst = new Room3DApp(os);
+    }
+    return room3dInst;
+  };
+  const lazyRoom3D = {
+    open: (...a) => ensureRoom3D().then((i) => i.open(...a)),
+    launchSystemMode: (...a) => ensureRoom3D().then((i) => i.launchSystemMode(...a)),
+    exitSystemMode: (...a) => ensureRoom3D().then((i) => i.exitSystemMode(...a)),
+    closeRoom: (...a) => ensureRoom3D().then((i) => i.closeRoom(...a)),
+    onClose: (...a) => ensureRoom3D().then((i) => i.onClose(...a))
+  };
+  preloaded.room3dApp = lazyRoom3D;
+  os.app.register("room3dApp", lazyRoom3D);
+
   return preloaded;
 }

@@ -5,6 +5,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 21, 2026",
+    sections: [
+      {
+        icon: "fa-user-friends",
+        title: "Live Activity",
+        items: [
+          [
+            "fa-bell",
+            "Now Playing Popups",
+            "When someone starts a game, a sleek popup appears with their name and game. Click it to jump in yourself."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 20, 2026",
     sections: [
       {

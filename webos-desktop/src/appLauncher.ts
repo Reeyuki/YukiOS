@@ -34,6 +34,7 @@ export class AppLauncher {
   fs: any;
   services: Record<string, any>;
   taskManager: any;
+  adsManager: any;
   brightnessApp: any;
   TRANSPARENCY_ALLOWED_APP_IDS: Set<string>;
   clippyPromise: Promise<any>;
@@ -52,6 +53,7 @@ export class AppLauncher {
     Object.assign(this, this.services);
 
     this.taskManager = this.services.taskManagerApp;
+    this.adsManager = this.services.adsApp;
     this.brightnessApp = this.services.displayPerformanceApp;
 
     this.TRANSPARENCY_ALLOWED_APP_IDS = new Set(["paint", "photopea", "vscode", "liventcord"]);
@@ -306,6 +308,8 @@ export class AppLauncher {
     if (handler) {
       await handler();
     }
+
+    os.events.emit("app:launched", { appId: app });
   }
 
   loadLaunchedApps(): Set<string> {
@@ -330,6 +334,7 @@ export class AppLauncher {
         const durationMin = Math.round((Date.now() - session.startTime) / 60000);
         this.updateSteamStats(session.appId, durationMin);
         this.appSessions.delete(winId);
+        this.adsManager?.onGameClosed();
       }
       return oldRemove(winId);
     };

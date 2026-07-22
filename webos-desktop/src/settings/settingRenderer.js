@@ -362,6 +362,16 @@ export function renderSystemSettings(s) {
             <span class="settings-track"><span class="settings-thumb"></span></span>
           </label>
         </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Share Live Activity</span>
+            <span class="settings-label-desc">Let others see what game you are playing</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsFriendsActivity" ${s.friendsLiveActivity !== false ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">

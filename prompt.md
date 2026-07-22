@@ -1,0 +1,1 @@
+implement this. in desk, there wlil be a box where user can drop and their game will be snapped here. when user presses to monitor or chair with e, it will  launch yuki os and cloes 3d mode, but also launch that app using yuki os app launch system based on that games appId 

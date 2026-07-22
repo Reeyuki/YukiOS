@@ -109,6 +109,7 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
     "#settingsWeather",
     "#settingsClippy",
     "#settingsAchievements",
+    "#settingsFriendsActivity",
     "#settingsAnalytics",
     "#settingsAds",
     "#settingsDisableBootScreen",

@@ -27,7 +27,8 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "browserApp", name: "Browser", icon: resolveIconUrl("static/icons/firefox.webp") },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
-  { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" }
+  { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" },
+  { app: "room3dApp", name: "3D Room", icon: "fas fa-cube", isFa: true }
 ];
 
 export class IconManager {

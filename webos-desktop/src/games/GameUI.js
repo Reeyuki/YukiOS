@@ -5,6 +5,7 @@ import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettings
 import { KeybindManager } from "../keybindManager.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
+import { resolveAppName } from "../shared/appNameResolver.js";
 import { appMap } from "./gamesList.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 
@@ -897,12 +898,6 @@ export class GameUI {
       return `<img src="${resolveIconUrl(icon)}" style="width:24px;height:24px;border-radius:4px;object-fit:cover;flex-shrink:0;" />`;
     };
 
-    const formatAppName = (appId) => {
-      const entry = appLookup.get(appId.toLowerCase());
-      if (entry?.title) return entry.title;
-      return appId.replace(/app$/i, " App").replace(/([a-z])([A-Z])/g, "$1 $2");
-    };
-
     const topApps = (stats.top_active_apps || []).slice(0, 5);
     const trendingHtml = topApps.length
       ? topApps
@@ -911,7 +906,7 @@ export class GameUI {
         <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--glass-border);">
           ${renderAppIcon(app)}
           <div style="flex:1;min-width:0;">
-            <div style="font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${formatAppName(app)}</div>
+            <div style="font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${resolveAppName(app)}</div>
           </div>
           <div style="font-size:11px;color:var(--brand);font-weight:600;flex-shrink:0;">${count}</div>
         </div>`

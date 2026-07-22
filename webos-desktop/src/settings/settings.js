@@ -69,6 +69,7 @@ export class SettingsApp extends BaseApp {
         clippy: os.storage.get(StorageKeys.clippy) === "true",
         disableDesktopStretchScroll: os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true",
         achievementsDisabled: os.storage.get(StorageKeys.achievementsDisabled) === "true",
+        friendsLiveActivity: os.storage.get(StorageKeys.friendsLiveActivity) !== "false",
         analyticsDisabled: os.storage.get(StorageKeys.analyticsDisabled) === "true",
         adsDisabled: os.storage.get(StorageKeys.adsDisabled) === "true",
         taskbarAlignment: os.storage.get(StorageKeys.taskbarAlignment) || "left",
@@ -247,6 +248,7 @@ export class SettingsApp extends BaseApp {
       const achievementsDisabled = !gc("#settingsAchievements");
       const analyticsDisabled = !gc("#settingsAnalytics");
       const adsDisabled = !gc("#settingsAds");
+      const friendsLiveActivity = !!gc("#settingsFriendsActivity");
       const disableDesktopStretchScroll = !!gc("#settingsDisableDesktopStretchScroll");
       const hideDesktopIcons = !!gc("#settingsHideDesktopIcons");
       const showWorkspace = gc("#settingsShowWorkspace") ?? true;
@@ -289,6 +291,7 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.achievementsDisabled, String(achievementsDisabled));
       os.storage.set(StorageKeys.analyticsDisabled, String(analyticsDisabled));
       os.storage.set(StorageKeys.adsDisabled, String(adsDisabled));
+      os.storage.set(StorageKeys.friendsLiveActivity, String(friendsLiveActivity));
       os.storage.set(StorageKeys.taskbarAlignment, selectedAlignment);
       os.storage.set(StorageKeys.cdnMirror, cdnMirror);
       os.storage.set(StorageKeys.notificationsEnabled, String(notificationsEnabled));
@@ -334,6 +337,7 @@ export class SettingsApp extends BaseApp {
         achievementsDisabled,
         analyticsDisabled,
         adsDisabled,
+        friendsLiveActivity,
         taskbarAlignment: selectedAlignment,
         cdnMirror,
         disableBootScreen,

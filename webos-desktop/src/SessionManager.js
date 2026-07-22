@@ -11,6 +11,7 @@ import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 import { fetchLiveStats } from "./analytics.js";
+import { liveActivityManager } from "./liveActivityManager.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -234,6 +235,7 @@ export class SessionManager {
             <div class="session-option" data-value="desktop">Yuki Desktop</div>
             <div class="session-option" data-value="mac">Yuki Mac Desktop</div>
             <div class="session-option" data-value="tiling">Yuki Tiling WM</div>
+            <div class="session-option" data-value="3d">Yuki 3D Desktop</div>
           </div>
         </div>
       </div>
@@ -559,7 +561,9 @@ export class SessionManager {
         ? "Yuki Tiling WM"
         : this.selectedSession === "Yuki Mac Desktop"
           ? "Yuki Mac Desktop"
-          : "Yuki Desktop";
+          : this.selectedSession === "Yuki 3D Desktop"
+            ? "Yuki 3D Desktop"
+            : "Yuki Desktop";
     sessionSelectorBtn.addEventListener("change", (e) => {
       const value = e.target.value;
 
@@ -586,7 +590,8 @@ export class SessionManager {
       const sessionMap = {
         desktop: "Yuki Desktop",
         tiling: "Yuki Tiling VM",
-        mac: "Yuki Mac Desktop"
+        mac: "Yuki Mac Desktop",
+        "3d": "Yuki 3D Desktop"
       };
 
       const labelText = sessionMap[value];
@@ -719,6 +724,7 @@ export class SessionManager {
     await os.fs.setSession(name);
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
+    liveActivityManager.init();
 
     if (this.selectedSession === "Yuki Mac Desktop") {
       this.applyMacSettings();
@@ -730,10 +736,16 @@ export class SessionManager {
       this.disableTilingSettings();
     }
 
+    if (this.selectedSession === "Yuki 3D Desktop") {
+      await this.apply3DSettings();
+    } else {
+      this.disable3DSettings();
+    }
+
     os.window.setFileSystemManager(os.fileSystemManager);
     setTimeout(() => os.window.restoreSession(), 500);
 
-    if (os.storage.get(StorageKeys.macOsControls) !== "true") {
+    if (this.selectedSession === "Yuki Desktop") {
       audioMixer().playSystemSound(SystemAudio.START);
     }
 
@@ -779,6 +791,29 @@ export class SessionManager {
   disableTilingSettings() {
     os.storage.set(StorageKeys.tilingEnabled, "false");
     os.tiling.setEnabled(false);
+  }
+
+  async apply3DSettings() {
+    document.documentElement.classList.add("3d-mode");
+    const app = this.os.app.getInstance("room3dApp");
+    if (app) {
+      try {
+        await app.launchSystemMode(() => {
+          this.disable3DSettings();
+        });
+      } catch (e) {
+        console.error("3D room launch failed:", e);
+        this.disable3DSettings();
+      }
+    }
+  }
+
+  disable3DSettings() {
+    document.documentElement.classList.remove("3d-mode");
+    const app = this.os.app.getInstance("room3dApp");
+    if (app) {
+      app.exitSystemMode();
+    }
   }
 
   loadSfProFonts() {
