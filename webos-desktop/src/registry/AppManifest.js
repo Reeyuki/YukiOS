@@ -1331,22 +1331,21 @@ export const APP_MANIFESTS = [
       message: "Watch colorful metaballs dance in a lava lamp simulation right inside the terminal.",
       animation: ClippyAnimation.Show
     },
-    description: "Terminal-based lava lamp simulation with customizable metaballs, colors, and gravity effects.",
-    news: {
-      date: "July 22, 2026",
-      sections: [
-        {
-          icon: "fa-fire",
-          title: "Lava Lamp",
-          items: [
-            [
-              "fa-fire",
-              "Lavat Terminal Visualizer",
-              "Type lavat in the terminal for a retro lava lamp simulation with colorful metaballs, adjustable radius, speed, gravity mode, and party mode."
-            ]
-          ]
-        }
-      ]
-    }
+    description: "Terminal-based lava lamp simulation with customizable metaballs, colors, and gravity effects."
+  },
+  {
+    serviceKey: "btopApp",
+    enhanced: true,
+    type: "system",
+    title: "btop",
+    icon: "fas fa-chart-simple",
+    launchType: "instance",
+    windowIdPatterns: ["btop"],
+    category: "utilities",
+    clippy: {
+      message: "Monitor your system performance with a real-time terminal process viewer.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Terminal-based system monitor with real-time CPU, memory and process data."
   }
 ];

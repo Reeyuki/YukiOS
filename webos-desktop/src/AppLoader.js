@@ -45,6 +45,7 @@ import { WallpaperEngineApp } from "./apps/wallpaperEngine.js";
 import { RunApp } from "./apps/run.js";
 import { NotepadApp } from "./apps/notepad.js";
 import { LavatApp } from "./apps/lavat.js";
+import { BtopApp } from "./apps/btop.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -91,7 +92,8 @@ const APP_CLASS_MAP = {
   wallpaperEngineApp: WallpaperEngineApp,
   runApp: RunApp,
   notepadApp: NotepadApp,
-  lavatApp: LavatApp
+  lavatApp: LavatApp,
+  btopApp: BtopApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

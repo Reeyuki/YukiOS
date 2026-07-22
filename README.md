@@ -83,15 +83,14 @@ config editing.
 - Alt+Space toggles tiling on and off; Alt+Arrow moves focus, Ctrl+Alt+Arrow resizes boundaries, Alt+Shift+Arrow swaps
   windows
 - Alt+1-9 switches between 9 independent workspaces, each with its own BSP tree
-- Alt+Q closes the focused window, Alt+\ toggles split orientation, Alt+F toggles floating, Alt+Enter fullscreens
+- Alt+Q closes the focused window, Alt+F toggles floating, alt + 1-2-3-4-5 keys switch workspaces, alt+t spawns terminal  etc.
 - Drag a tiled window onto another to swap them in the tree
 - Gap, border width, and split ratio adjustable from Settings > Tiling or by editing Config/yukiOs/tiling.conf
 - hyprctl terminal command provides Hyprland-style CLI control
 - Config file at `Config/yukiOs/tiling.conf` (auto-created with defaults if missing)
 - Customizable: gaps (inner/outer), split ratio, border width/radius, resize step, animation duration/easing, mouse
   resize toggle, workspace switch delay, resize debounce
-- Live-reload: file is polled every 3s, edit and save with any text editor for instant updates
-- GUI alternative: Settings → Tiling panel writes to the same config file automatically
+- Live-reload: edit and save with any text editor for updating config
 
 # 🧭 Navigation & UI
 

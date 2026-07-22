@@ -61,12 +61,17 @@ export class TerminalApp extends BaseApp {
     this.registerDefaultCommands();
     this.win = null;
     this.lavatActive = false;
-    this._lavatIframeCleanup = null;
-    this._lavatWinHandler = null;
+    this.lavatIframeCleanup = null;
+    this.lavatWinHandler = null;
+    this.btopActive = false;
+    this._btopInterval = null;
+    this.btopIframeCleanup = null;
+    this.btopWinHandler = null;
   }
 
   open(opts) {
     if (this.lavatActive) this._stopLavat();
+    if (this.btopActive) this._stopBtop();
     const win = os.window.create("terminal-win", "Terminal", "700px", "500px", {
       ...opts,
       icon: "static/icons/terminal.webp"
@@ -218,7 +223,9 @@ export class TerminalApp extends BaseApp {
         else await this.runNodeRepl(command);
       } finally {
         this.commandRunning = false;
-        this.terminalInputLine.style.display = "flex";
+        if (!this.lavatActive && !this.btopActive) {
+          this.terminalInputLine.style.display = "flex";
+        }
         this.terminalInput.disabled = false;
         this.terminalInput.focus();
         requestAnimationFrame(() => this.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
@@ -236,7 +243,9 @@ export class TerminalApp extends BaseApp {
       await this.executeCommand(command);
     } finally {
       this.commandRunning = false;
-      this.terminalInputLine.style.display = "flex";
+      if (!this.lavatActive && !this.btopActive) {
+        this.terminalInputLine.style.display = "flex";
+      }
       this.terminalInput.disabled = false;
       this.terminalInput.focus();
       requestAnimationFrame(() => this.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
@@ -468,6 +477,7 @@ export class TerminalApp extends BaseApp {
 
   snapshotActiveTab() {
     if (this.lavatActive) this._stopLavat();
+    if (this.btopActive) this._stopBtop();
     const tab = this.tabs.find((t) => t.id === this.activeTabId);
     if (!tab) return;
     tab.currentPath = [...this.currentPath];
@@ -1264,19 +1274,35 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("resizeactive", (args) => this.cmdResizeactive(args));
     this.registerCommand("cyclenext", (args) => this.cmdCyclenext(args));
     this.registerCommand("killactive", () => this.cmdKillactive());
-    this.registerCommand("lavat", (args) => this.cmdLavat(args));
+    this.registerCommand("lavat", (args, flags) => this.cmdLavat(args, flags));
+    this.registerCommand("btop", (args) => this.cmdBtop(args));
     processManager.init();
   }
 
-  async cmdLavat(args) {
+  async cmdLavat(args, flags) {
     if (this.lavatActive) {
       await this.print("lavat is already running. Press q or Esc inside the lava lamp to exit.");
       return;
     }
 
+    if (args.includes("--help") || args.includes("-h") || flags.includes("--help") || flags.includes("-h")) {
+      await this.print("Usage: lavat [options]");
+      await this.print("");
+      await this.print("Options:");
+      await this.print("  -c <color>   Set color (green, blue, red, purple, pink, cyan, orange, white, yellow)");
+      await this.print("  -s <speed>   Animation speed multiplier");
+      await this.print("  -r <radius>  Metaball radius");
+      await this.print("  -S <size>    Metaball size");
+      await this.print("  -G           Enable gravity mode");
+      await this.print("  -g           Disable gravity mode");
+      await this.print("  -p           Enable party mode (cycling colors)");
+      await this.print("  -h, --help   Show this help");
+      return;
+    }
+
     this.lavatActive = true;
 
-    const lavatArgs = args.length > 0 ? args.join(" ") : "-c green -G";
+    const lavatArgs = [...flags, ...args].join(" ").trim() || "-c green -G";
 
     this.terminalOutput.style.display = "none";
     this.terminalInputLine.style.display = "none";
@@ -1310,7 +1336,7 @@ export class TerminalApp extends BaseApp {
       return;
     }
 
-    this._lavatIframeCleanup = null;
+    this.lavatIframeCleanup = null;
 
     iframe.addEventListener("load", () => {
       iframe.contentWindow?.focus();
@@ -1322,32 +1348,208 @@ export class TerminalApp extends BaseApp {
         }
       };
       iframeDoc.addEventListener("keydown", iframeHandler);
-      this._lavatIframeCleanup = () => {
+      this.lavatIframeCleanup = () => {
         iframeDoc.removeEventListener("keydown", iframeHandler);
       };
     });
 
-    this._lavatWinHandler = (e) => {
+    this.lavatWinHandler = (e) => {
       if (e.key === "Escape" && this.lavatActive) {
         this._stopLavat();
       }
     };
     if (this.win) {
-      this.win.addEventListener("keydown", this._lavatWinHandler);
+      this.win.addEventListener("keydown", this.lavatWinHandler);
     }
   }
 
   _stopLavat() {
     if (!this.lavatActive) return;
     this.lavatActive = false;
-    if (this._lavatIframeCleanup) {
-      this._lavatIframeCleanup();
-      this._lavatIframeCleanup = null;
+    if (this.lavatIframeCleanup) {
+      this.lavatIframeCleanup();
+      this.lavatIframeCleanup = null;
     }
-    if (this._lavatWinHandler && this.win) {
-      this.win.removeEventListener("keydown", this._lavatWinHandler);
+    if (this.lavatWinHandler && this.win) {
+      this.win.removeEventListener("keydown", this.lavatWinHandler);
     }
     const container = document.getElementById("lavat-container");
+    if (container) container.remove();
+    this.terminalOutput.style.display = "";
+    this.terminalInputLine.style.display = "";
+    this.terminalInput.focus();
+  }
+
+  async cmdBtop(args) {
+    if (this.btopActive) {
+      await this.print("btop is already running. Press Ctrl+C to exit.");
+      return;
+    }
+
+    this.btopActive = true;
+
+    this.terminalOutput.style.display = "none";
+    this.terminalInputLine.style.display = "none";
+
+    const btopContainer = document.createElement("div");
+    btopContainer.id = "btop-container";
+    btopContainer.style.cssText =
+      "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a1a2e;overflow:hidden;";
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "btop-iframe";
+    iframe.style.cssText = "width:100%;height:100%;border:none;background:#1a1a2e;";
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+
+    btopContainer.appendChild(iframe);
+    this.terminalContent.appendChild(btopContainer);
+
+    const btopBase = CDN_BASES.MAIN + "/static/apps/btop";
+    try {
+      const response = await fetch(btopBase + "/btop.html");
+      let html = await response.text();
+      html = html.replace('src="btop.js"', 'src="' + btopBase + '/btop.js"');
+      html = html.replace(/'__BTOP_BASE__\/' \+ path/g, "'" + btopBase + "/' + path");
+      iframe.srcdoc = html;
+    } catch (e) {
+      await this.print("btop: failed to load: " + e.message);
+      this.btopActive = false;
+      this.terminalOutput.style.display = "";
+      this.terminalInputLine.style.display = "";
+      return;
+    }
+
+    this.btopIframeCleanup = null;
+
+    iframe.addEventListener("load", () => {
+      iframe.contentWindow?.focus();
+
+      const sendData = () => {
+        if (!this.btopActive || !iframe.contentWindow) return;
+
+        const runningProcs = processManager.getProcesses();
+        const totalCpu = Math.min(
+          99,
+          runningProcs.reduce((s, p) => s + p.cpu, 0)
+        );
+        const cpuUser = Math.min(totalCpu, totalCpu * 0.7);
+        const cpuSys = Math.min(totalCpu, totalCpu * 0.3);
+        const cpuIdle = Math.max(0, 100 - totalCpu);
+
+        const coreCount = navigator.hardwareConcurrency || 4;
+        const cpuCores = Array.from({ length: coreCount }, () =>
+          Math.min(100, Math.max(0, totalCpu * (0.5 + Math.random() * 0.5)))
+        );
+
+        let memPercent;
+        if (performance.memory) {
+          memPercent = Math.min(99, (performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100);
+        } else {
+          memPercent = Math.min(99, 35 + runningProcs.length * 3 + (Math.random() - 0.5) * 2);
+        }
+
+        const totalSystemMem = 8 * 1024 * 1024 * 1024;
+        const usedSystemMem = Math.round(totalSystemMem * (memPercent / 100));
+        const freeSystemMem = totalSystemMem - usedSystemMem;
+        const cachedMem = Math.round(freeSystemMem * 0.3);
+        const availMem = freeSystemMem + cachedMem;
+
+        const displayName = os.storage.get("settings:displayName") || "user";
+        const uptime = Math.floor(performance.now() / 1000);
+        const load1 = Math.min(coreCount, +(totalCpu / 25).toFixed(1));
+        const load5 = Math.max(0, +(load1 * 0.8).toFixed(1));
+        const load15 = Math.max(0, +(load5 * 0.75).toFixed(1));
+        const cpuTemp = Math.min(100, Math.round(totalCpu * 1.5));
+
+        const data = {
+          type: "btop-data",
+          coreCount,
+          hostname: "yukios",
+          username: displayName,
+          uptime,
+          cpuName: "YukiOS Virtual CPU",
+          cpuHz: coreCount > 4 ? "3.20GHz" : "2.40GHz",
+          cpuTotal: +totalCpu.toFixed(1),
+          cpuUser: +cpuUser.toFixed(1),
+          cpuNice: 0,
+          cpuSys: +cpuSys.toFixed(1),
+          cpuIdle: +cpuIdle.toFixed(1),
+          cpuCores,
+          cpuTemp,
+          load1,
+          load5,
+          load15,
+          memUsed: usedSystemMem,
+          memAvail: availMem,
+          memCached: cachedMem,
+          memFree: freeSystemMem,
+          swapTotal: 0,
+          swapUsed: 0,
+          swapFree: 0,
+          netDown: 0,
+          netUp: 0,
+          netDownTotal: 0,
+          netUpTotal: 0,
+          netIpv4: "0.0.0.0",
+          netIpv6: "",
+          netConnected: 0,
+          procs: runningProcs.map((p) => ({
+            pid: p.pid,
+            name: p.title,
+            cmd: p.title,
+            user: "user",
+            mem: Math.round(p.mem * 1024 * 1024),
+            cpuP: +p.cpu.toFixed(1),
+            cpuC: +p.cpu.toFixed(1),
+            state: p.isTray ? "S" : "R",
+            ppid: 1
+          }))
+        };
+
+        try {
+          iframe.contentWindow.postMessage(data, "*");
+        } catch (_) {}
+      };
+
+      sendData();
+      this._btopInterval = setInterval(sendData, 1000);
+
+      const killHandler = (e) => {
+        if (e.data?.type === "btop-kill" && e.source === iframe.contentWindow) {
+          processManager.killByPid(e.data.pid);
+        }
+      };
+      window.addEventListener("message", killHandler);
+      this.btopIframeCleanup = () => {
+        window.removeEventListener("message", killHandler);
+      };
+    });
+
+    this.btopWinHandler = (e) => {
+      if (e.ctrlKey && e.key.toLowerCase() === "c" && this.btopActive) {
+        this._stopBtop();
+      }
+    };
+    if (this.win) {
+      this.win.addEventListener("keydown", this.btopWinHandler);
+    }
+  }
+
+  _stopBtop() {
+    if (!this.btopActive) return;
+    this.btopActive = false;
+    if (this._btopInterval) {
+      clearInterval(this._btopInterval);
+      this._btopInterval = null;
+    }
+    if (this.btopIframeCleanup) {
+      this.btopIframeCleanup();
+      this.btopIframeCleanup = null;
+    }
+    if (this.btopWinHandler && this.win) {
+      this.win.removeEventListener("keydown", this.btopWinHandler);
+    }
+    const container = document.getElementById("btop-container");
     if (container) container.remove();
     this.terminalOutput.style.display = "";
     this.terminalInputLine.style.display = "";
@@ -3612,6 +3814,7 @@ export class TerminalApp extends BaseApp {
 
   cmdExit() {
     if (this.lavatActive) this._stopLavat();
+    if (this.btopActive) this._stopBtop();
     const win = this.win || this.terminalOutput?.closest(".window");
     if (!win) return;
     os.window.removeFromTaskbar(win.id);
@@ -3620,5 +3823,6 @@ export class TerminalApp extends BaseApp {
 
   onClose(winId) {
     if (this.lavatActive) this._stopLavat();
+    if (this.btopActive) this._stopBtop();
   }
 }

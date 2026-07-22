@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>btop++</title>
+<link rel="stylesheet" href="https://unpkg.com/xterm@5.3.0/css/xterm.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: system-ui, sans-serif; background: #1a1a2e; color: #e0e0e0; }
+#app { display: flex; height: 100%; }
+#terminal { flex: 1; display: flex; }
+.xterm { height: 100%; width: 100%; padding: 4px; }
+.xterm-viewport { overflow-y: auto !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="terminal"></main>
+</div>
+
+<script src="https://unpkg.com/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://unpkg.com/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+<script src="btop.js"></script>
+<script>
+(async () => {
+  const term = new Terminal({
+    cursorBlink: true,
+    cursorStyle: 'block',
+    fontSize: 13,
+    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+    allowProposedApi: true,
+    cols: 100,
+    rows: 30,
+    theme: {
+      background: '#1a1a2e',
+      foreground: '#e0e0e0',
+      cursor: '#e94560',
+    },
+  });
+  term.open(document.getElementById('terminal'));
+
+  const fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+
+  let web;
+
+  const module = await BtopModule({
+    locateFile: (path) => '__BTOP_BASE__/' + path,
+    print: (text) => { term.write(text); },
+    printErr: (text) => { console.error(text); },
+    noInitialRun: true,
+  });
+
+  const ccall = module.ccall;
+  web = {
+    setCoreCount:   (n) => ccall('web_set_core_count',    'void', ['number'],            [n]),
+    setCpuName:     (s) => ccall('web_set_cpu_name',       'void', ['string'],            [s]),
+    setCpuHz:       (s) => ccall('web_set_cpu_hz',         'void', ['string'],            [s]),
+    setCpuPercent:  (t,u,nice,sys,idle) => ccall('web_set_cpu_percent',      'void', ['number','number','number','number','number'], [t,u,nice,sys,idle]),
+    setCpuCorePercent: (core,pct) => ccall('web_set_cpu_core_percent', 'void', ['number','number'], [core,pct]),
+    setCpuTemp:     (t,m) => ccall('web_set_cpu_temp',      'void', ['number','number'],  [t,m]),
+    setCpuLoadAvg:  (l1,l5,l15) => ccall('web_set_cpu_load_avg', 'void', ['number','number','number'], [l1,l5,l15]),
+    setMemData:     (used,avail,cached,freeMem,swapTotal,swapUsed,swapFree) =>
+      ccall('web_set_mem_data', 'void', ['bigint','bigint','bigint','bigint','bigint','bigint','bigint'],
+        [BigInt(used),BigInt(avail),BigInt(cached),BigInt(freeMem),BigInt(swapTotal),BigInt(swapUsed),BigInt(swapFree)]),
+    setNetData:     (down,up,downTotal,upTotal,ipv4,ipv6,connected) =>
+      ccall('web_set_net_data', 'void', ['bigint','bigint','bigint','bigint','string','string','number'],
+        [BigInt(down),BigInt(up),BigInt(downTotal),BigInt(upTotal),ipv4,ipv6,connected]),
+    setProcCount:   (n) => ccall('web_set_proc_count',     'void', ['number'],            [n]),
+    addProc:        (pid,name,cmd,user,mem,cpuP,cpuC,state,ppid) =>
+      ccall('web_add_proc', 'void', ['number','string','string','string','bigint','number','number','number','number'],
+        [pid,name,cmd,user,BigInt(mem),cpuP,cpuC,state.charCodeAt(0),ppid]),
+    setUptime:      (s) => ccall('web_set_uptime',           'void', ['number'],            [s]),
+    setHostname:    (s) => ccall('web_set_hostname',         'void', ['string'],            [s]),
+    setUsername:    (s) => ccall('web_set_username',         'void', ['string'],            [s]),
+    pushKey:        (k) => ccall('web_push_key',            'void', ['string'],            [k]),
+    setTermSize:    (c,r) => ccall('web_set_term_size',      'void', ['number','number'],  [c,r]),
+    clearProcs:     ()   => ccall('web_clear_procs',         'void', [],                   []),
+  };
+
+  term.onResize(({ cols, rows }) => {
+    web.setTermSize(cols, rows);
+  });
+
+  term.onKey(e => {
+    const { key, domEvent } = e;
+    if (domEvent.ctrlKey && key === 'c') { web.pushKey('ctrl+c'); return; }
+    if (domEvent.ctrlKey && key === 'd') { web.pushKey('ctrl+d'); return; }
+    if (key === '\r') { web.pushKey('enter'); return; }
+    if (key === '\x7f') { web.pushKey('backspace'); return; }
+    if (key === '\x1b[A') { web.pushKey('up'); return; }
+    if (key === '\x1b[B') { web.pushKey('down'); return; }
+    if (key === '\x1b[C') { web.pushKey('right'); return; }
+    if (key === '\x1b[D') { web.pushKey('left'); return; }
+    if (key === '\t') { web.pushKey('tab'); return; }
+    if (key.length === 1) {
+      web.pushKey(key);
+    }
+  });
+
+  term.attachCustomKeyEventHandler(e => {
+    if (e.type === 'keydown') {
+      if (e.ctrlKey && (e.key === 'c' || e.key === 'd')) return true;
+      if (e.key === 'Escape') { web.pushKey('escape'); return false; }
+    }
+    return true;
+  });
+
+  module._main();
+
+  function fitBtop() {
+    try {
+      fitAddon.fit();
+      web.setTermSize(term.cols, term.rows);
+    } catch (_) {}
+  }
+
+  setTimeout(() => {
+    term.focus();
+    fitBtop();
+  }, 200);
+
+  window.addEventListener('resize', fitBtop);
+
+  window.addEventListener('message', (event) => {
+    if (!event.data || event.data.type !== 'btop-data') return;
+    const d = event.data;
+
+    web.clearProcs();
+    web.setCoreCount(d.coreCount);
+    web.setHostname(d.hostname);
+    web.setUsername(d.username);
+    web.setUptime(d.uptime);
+    web.setCpuName(d.cpuName);
+    web.setCpuHz(d.cpuHz);
+    web.setCpuPercent(d.cpuTotal, d.cpuUser, d.cpuNice, d.cpuSys, d.cpuIdle);
+
+    (d.cpuCores || []).forEach((pct, i) => web.setCpuCorePercent(i, pct));
+
+    web.setCpuTemp(d.cpuTemp, 100);
+    web.setCpuLoadAvg(d.load1, d.load5, d.load15);
+
+    web.setMemData(d.memUsed, d.memAvail, d.memCached, d.memFree, d.swapTotal, d.swapUsed, d.swapFree);
+
+    web.setNetData(d.netDown, d.netUp, d.netDownTotal, d.netUpTotal, d.netIpv4, d.netIpv6, d.netConnected);
+
+    web.setProcCount(d.procs.length);
+    d.procs.forEach(p => {
+      web.addProc(p.pid, p.name, p.cmd, p.user, p.mem, p.cpuP, p.cpuC, p.state, p.ppid);
+    });
+  });
+})();
+</script>
+</body>
+</html>

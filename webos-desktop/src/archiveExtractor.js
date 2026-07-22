@@ -9,12 +9,12 @@ function toOwnedBytes(data) {
   return new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
 }
 
-let _7zipModule = null;
+let sevenZipModule = null;
 async function get7zip() {
-  if (!_7zipModule) {
+  if (!sevenZipModule) {
     if (__SINGLE_FILE__) {
       const { default: SevenZip } = await import("7z-wasm");
-      _7zipModule = await SevenZip({
+      sevenZipModule = await SevenZip({
         locateFile: (path) => {
           if (path.endsWith(".wasm")) {
             return new URL("7z-wasm/7zz.wasm", import.meta.url).href;
@@ -25,7 +25,7 @@ async function get7zip() {
     } else {
       const libUrl = getLibraryUrl("7z-wasm");
       const { default: SevenZip } = await import(/* @vite-ignore */ `${libUrl}`);
-      _7zipModule = await SevenZip({
+      sevenZipModule = await SevenZip({
         locateFile: (path, prefix) => {
           if (path.endsWith(".wasm")) {
             return libUrl.replace("7zz.es6.js", "7zz.wasm");
@@ -35,7 +35,7 @@ async function get7zip() {
       });
     }
   }
-  return _7zipModule;
+  return sevenZipModule;
 }
 
 let archiveWasmModule = null;

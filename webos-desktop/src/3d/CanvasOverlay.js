@@ -7,10 +7,10 @@ export class CanvasOverlay {
     this.visible = false;
     this.parentEl = canvas.parentElement;
     this.onAction = opts.onAction || (() => {});
-    this._mouseX = 0;
-    this._mouseY = 0;
+    this.mouseX = 0;
+    this.mouseY = 0;
 
-    this._resizeBound = () => {
+    this.resizeBound = () => {
       const w = this.parentEl.clientWidth;
       const h = this.parentEl.clientHeight;
       if (this.canvas.width !== w || this.canvas.height !== h) {
@@ -19,32 +19,32 @@ export class CanvasOverlay {
         if (this.visible) this.render();
       }
     };
-    window.addEventListener("resize", this._resizeBound);
-    this._resizeBound();
+    window.addEventListener("resize", this.resizeBound);
+    this.resizeBound();
 
-    this._onClickBound = (e) => {
+    this.onClickBound = (e) => {
       if (!this.visible) return;
       e.stopPropagation();
       const rect = this.canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const btn = this._hitTest(x, y);
+      const btn = this.hitTest(x, y);
       if (btn) this.onAction(btn);
     };
-    this.canvas.addEventListener("click", this._onClickBound);
+    this.canvas.addEventListener("click", this.onClickBound);
 
-    this._onMouseMoveBound = (e) => {
-      this._mouseX = e.clientX;
-      this._mouseY = e.clientY;
+    this.onMouseMoveBound = (e) => {
+      this.mouseX = e.clientX;
+      this.mouseY = e.clientY;
     };
-    document.addEventListener("mousemove", this._onMouseMoveBound);
+    document.addEventListener("mousemove", this.onMouseMoveBound);
   }
 
   show(mode) {
     this.mode = mode;
     this.visible = true;
     this.canvas.style.pointerEvents = "auto";
-    this._resizeBound();
+    this.resizeBound();
     this.render();
   }
 
@@ -67,9 +67,9 @@ export class CanvasOverlay {
   handleEKey() {
     if (!this.visible) return null;
     const rect = this.canvas.getBoundingClientRect();
-    const x = this._mouseX - rect.left;
-    const y = this._mouseY - rect.top;
-    return this._hitTest(x, y);
+    const x = this.mouseX - rect.left;
+    const y = this.mouseY - rect.top;
+    return this.hitTest(x, y);
   }
 
   _hitTest(x, y) {
@@ -243,9 +243,9 @@ export class CanvasOverlay {
   }
 
   destroy() {
-    window.removeEventListener("resize", this._resizeBound);
-    document.removeEventListener("mousemove", this._onMouseMoveBound);
-    this.canvas.removeEventListener("click", this._onClickBound);
+    window.removeEventListener("resize", this.resizeBound);
+    document.removeEventListener("mousemove", this.onMouseMoveBound);
+    this.canvas.removeEventListener("click", this.onClickBound);
     if (this.canvas.parentNode) this.canvas.parentNode.removeChild(this.canvas);
   }
 }

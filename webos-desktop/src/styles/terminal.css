@@ -10,7 +10,6 @@ html[data-theme] [id^="terminal-win"] .window-content.terminal-content {
   color: var(--text-primary, #c0c0c0);
   font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   font-size: 14px;
-  padding: 12px;
   overflow-y: auto;
   height: calc(100% - 40px);
   cursor: text;
