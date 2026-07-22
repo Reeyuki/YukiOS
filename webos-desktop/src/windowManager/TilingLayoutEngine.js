@@ -265,6 +265,7 @@ function calculateLayout(root, x, y, w, h, gaps) {
   const results = [];
   const inner = gaps && gaps.inner != null ? gaps.inner : 4;
   const outer = gaps && gaps.outer != null ? gaps.outer : 3;
+  const outerBottom = gaps && gaps.outerBottom != null ? gaps.outerBottom : outer;
 
   function walk(node, rx, ry, rw, rh, depth) {
     if (!node) return;
@@ -326,8 +327,7 @@ function calculateLayout(root, x, y, w, h, gaps) {
   }
 
   const ox = outer;
-  const oy = outer;
-  walk(root, x + ox, y + oy, w - ox * 2, h - oy * 2, 0);
+  walk(root, x + ox, y + outer, w - ox * 2, h - outer - outerBottom, 0);
   return results;
 }
 

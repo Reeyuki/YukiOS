@@ -22,7 +22,7 @@ export class TilingManager {
   getDefaultConfig() {
     return {
       enabled: false,
-      gaps: { inner: 6, outer: 12 },
+      gaps: { inner: 6, outer: 6, outerBottom: 0 },
       split_ratio: 0.5,
       border_width: 3,
       border_radius: 8,
@@ -265,15 +265,13 @@ export class TilingManager {
         bottom = rect.height;
       }
     }
-    const barTopOffset = this.tilingBar.getHeight();
-    const barBottomOffset = this.tilingBar.getBottomHeight();
-    top = Math.max(top, barTopOffset);
-    bottom = Math.max(bottom, barBottomOffset);
+    const barTopHeight = this.tilingBar.getHeight();
+    top = Math.max(top, barTopHeight);
     return {
       x: left,
       y: top,
       w: window.innerWidth - left - right,
-      h: window.innerHeight - top - bottom
+      h: window.innerHeight - top
     };
   }
 

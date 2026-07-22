@@ -29,7 +29,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 ![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)
 ![Tiling](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)
 ![Tiling 2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling-2.png)
-![Discord](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/dc.png)
+![Btop, Lavat & cmatrix ported to web](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png)
 ![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png)
 ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
 ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
@@ -182,9 +182,7 @@ config editing.
 - Transparent UI toggle with: glass effect on windows, taskbar, start menu.
 - Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
 - Calendar popup from taskbar clock with monthly grid, keyboard navigation, and today button
-- Events ("Plans") system with title, date/time, repeat (daily/weekly/monthly/yearly), reminders, notes, and color
   coding
-- Agenda view showing today's plans and upcoming events, plus next alarm info
 
 # 📦 Built-in Applications
 
@@ -205,6 +203,12 @@ config editing.
     magic-byte content detection
   - `yuki` command for OS control: power mode, brightness, theme, wallpaper, workspaces, app management
     (list/uninstall/install/disable/enable), DND, notifications, storage report
+  - **[lavat](https://github.com/Reeyuki/lavat-web)** -- lava lamp simulation with customizable metaballs and gravity;
+    Emscripten WASM port (by Reeyuki) of the original C program, runs fully client-side
+  - **[cmatrix](https://github.com/Reeyuki/cmatrix/)** -- Matrix rain animation with color, speed, and character
+    modes; browser-native JS reimplementation (by Reeyuki)
+  - **[btop](https://github.com/Reeyuki/btop-emscripten)** -- real-time resource monitor (CPU, memory, disks, network,
+    processes); Emscripten WASM port (by Reeyuki) that feeds live host system data from yuki os into the emulated terminal
 - Notepad
 - Markdown Viewer
 - Yuki Code

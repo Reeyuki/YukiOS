@@ -17,21 +17,19 @@ import { YUKIOS_VERSION } from "./about.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 
 export class TerminalApp extends BaseApp {
+  windowsMap = new Map();
+  activeState = null;
+
   constructor(os) {
     super(os);
-    this.currentPath = ["home", os.storage.get(StorageKeys.username) || "guest"];
     this.history = os.storage.get(StorageKeys.historyStorageKey) || [];
     this.historyIndex = this.history.length;
     this.displayName = os.storage.get(StorageKeys.username) || "guest";
     this.username = this.displayName;
     this.hostname = "yuki-os";
     this.setupSessionListener();
-    this.printQueue = Promise.resolve();
     this.commands = {};
     this.pageLoadTime = Date.now();
-    this.isPrinting = false;
-    this.inputBuffer = "";
-    this.printDepth = 0;
     this.env = {
       PATH: "/usr/bin:/bin",
       HOME: `/home/${this.displayName}`,
@@ -42,45 +40,145 @@ export class TerminalApp extends BaseApp {
     this.aliases = os.storage.get(StorageKeys.terminalAliases) || {};
     this.fs = os.fileSystemManager;
     this.gitManager = new GitManager(this.fs);
-    this.lastExitCode = 0;
-    this.reverseSearchActive = false;
-    this.reverseSearchQuery = "";
-    this.reverseSearchIndex = -1;
-    this.pagerActive = false;
-    this.commandRunning = false;
-    this.tabs = [{ id: 1, currentPath: [...this.currentPath], outputHTML: "" }];
-    this.activeTabId = 1;
-    this.tabCounter = 1;
-    this.pyReplActive = false;
-    this.pyReplBuffer = "";
-    this.pyReplContinuation = false;
-    this.nodeReplActive = false;
-    this.nodeReplBuffer = "";
-    this.nodeReplContinuation = false;
-    this._nodeFallbackWarned = false;
     this.registerDefaultCommands();
-    this.win = null;
-    this.lavatActive = false;
-    this.lavatIframeCleanup = null;
-    this.lavatWinHandler = null;
-    this.btopActive = false;
-    this._btopInterval = null;
-    this.btopIframeCleanup = null;
-    this.btopWinHandler = null;
-    this.cmatrixActive = false;
-    this.cmatrixIframeCleanup = null;
-    this.cmatrixWinHandler = null;
+    this.initPerWindowGetters();
+    this.perWindowDefaults = this.createState({}, null);
+  }
+
+  createState(win, opts) {
+    const initialPath = opts?.initialPath || ["home", this.displayName];
+    return {
+      win,
+      terminalOutput: null,
+      terminalInput: null,
+      terminalPrompt: null,
+      terminalInputLine: null,
+      terminalContent: null,
+      terminalTabsEl: null,
+      tabs: [{ id: 1, currentPath: [...initialPath], outputHTML: "" }],
+      activeTabId: 1,
+      tabCounter: 1,
+      currentPath: [...initialPath],
+      commandRunning: false,
+      isPrinting: false,
+      inputBuffer: "",
+      printDepth: 0,
+      printQueue: Promise.resolve(),
+      pagerActive: false,
+      reverseSearchActive: false,
+      reverseSearchQuery: "",
+      reverseSearchIndex: -1,
+      reverseSearchOriginalPrompt: null,
+      pyReplActive: false,
+      pyReplBuffer: "",
+      pyReplContinuation: false,
+      nodeReplActive: false,
+      nodeReplBuffer: "",
+      nodeReplContinuation: false,
+      nodeFallbackWarned: false,
+      lastExitCode: 0,
+      lavatActive: false,
+      lavatIframeCleanup: null,
+      lavatWinHandler: null,
+      btopActive: false,
+      btopInterval: null,
+      btopIframeCleanup: null,
+      btopWinHandler: null,
+      cmatrixActive: false,
+      cmatrixIframeCleanup: null,
+      cmatrixWinHandler: null
+    };
+  }
+
+  initPerWindowGetters() {
+    const perWindowProps = [
+      "win",
+      "terminalOutput",
+      "terminalInput",
+      "terminalPrompt",
+      "terminalInputLine",
+      "terminalContent",
+      "terminalTabsEl",
+      "tabs",
+      "activeTabId",
+      "tabCounter",
+      "currentPath",
+      "commandRunning",
+      "isPrinting",
+      "inputBuffer",
+      "printDepth",
+      "printQueue",
+      "pagerActive",
+      "reverseSearchActive",
+      "reverseSearchQuery",
+      "reverseSearchIndex",
+      "reverseSearchOriginalPrompt",
+      "pyReplActive",
+      "pyReplBuffer",
+      "pyReplContinuation",
+      "nodeReplActive",
+      "nodeReplBuffer",
+      "nodeReplContinuation",
+      "nodeFallbackWarned",
+      "lastExitCode",
+      "lavatActive",
+      "lavatIframeCleanup",
+      "lavatWinHandler",
+      "btopActive",
+      "btopInterval",
+      "btopIframeCleanup",
+      "btopWinHandler",
+      "cmatrixActive",
+      "cmatrixIframeCleanup",
+      "cmatrixWinHandler"
+    ];
+    for (const prop of perWindowProps) {
+      Object.defineProperty(this, prop, {
+        get() {
+          return this.activeState && prop in this.activeState ? this.activeState[prop] : this.perWindowDefaults?.[prop];
+        },
+        set(val) {
+          if (this.activeState) {
+            this.activeState[prop] = val;
+          } else if (this.perWindowDefaults) {
+            this.perWindowDefaults[prop] = val;
+          }
+        }
+      });
+    }
+  }
+
+  setupTilingObserver() {
+    if (this.tilingObserver) return;
+    this.tilingObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === "class" && m.target === document.body) {
+          this.updateTabsVisibility();
+        }
+      }
+    });
+    this.tilingObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  updateTabsVisibility() {
+    const isTiling = document.body.classList.contains("tiling-active");
+    for (const state of this.windowsMap.values()) {
+      if (state.terminalTabsEl) {
+        state.terminalTabsEl.style.display = isTiling ? "none" : "";
+      }
+    }
   }
 
   open(opts) {
-    if (this.lavatActive) this._stopLavat();
-    if (this.btopActive) this._stopBtop();
-    if (this.cmatrixActive) this._stopCmatrix();
-    const win = os.window.create("terminal-win", "Terminal", "700px", "500px", {
+    const winId = "terminal-win-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+    const win = os.window.create(winId, "Terminal", "700px", "500px", {
       ...opts,
       icon: "static/icons/terminal.webp"
     });
-    this.win = win;
+    const state = this.createState(win, opts);
+    this.windowsMap.set(winId, state);
+    this.activeState = state;
+    state.win = win;
     win.innerHTML = `<div class="window-content terminal-content">
       <div class="terminal-tabs" id="terminal-tabs"></div>
       <div class="terminal-output" id="terminal-output"></div>
@@ -89,9 +187,13 @@ export class TerminalApp extends BaseApp {
         <textarea class="terminal-input" id="terminal-input" spellcheck="false" autocomplete="off" rows="1"></textarea>
       </div>
     </div>`;
+    state.terminalContent = win.querySelector(".terminal-content");
+    state.terminalContent.__termState = state;
+    win.__termState = state;
 
     win.querySelector("#terminal-output")?.addEventListener("contextmenu", (e) => {
       e.preventDefault();
+      this.activeState = state;
       this.showTerminalContextMenu(e);
     });
 
@@ -111,6 +213,8 @@ export class TerminalApp extends BaseApp {
     this.activeTabId = 1;
     this.tabCounter = 1;
     this.renderTabs();
+    this.setupTilingObserver();
+    this.updateTabsVisibility();
     this.updatePrompt();
     this.setupEventHandlers();
     this.pyReplActive = false;
@@ -119,7 +223,8 @@ export class TerminalApp extends BaseApp {
     this.nodeReplActive = false;
     this.nodeReplBuffer = "";
     this.nodeReplContinuation = false;
-    this._nodeFallbackWarned = false;
+    this.nodeFallbackWarned = false;
+    this.terminalInput.__termState = this.activeState;
     this.terminalInput.addEventListener("input", () => {
       this.terminalInput.style.height = "auto";
       this.terminalInput.style.height = this.terminalInput.scrollHeight + "px";
@@ -163,18 +268,20 @@ export class TerminalApp extends BaseApp {
     return path.join("/");
   }
 
-  isNearBottom() {
-    const el = this.terminalContent;
+  isNearBottom(state) {
+    const el = state.terminalContent;
     return el.scrollHeight - el.scrollTop - el.clientHeight < 50;
   }
 
   async print(text, color = null, isCommand = false, promptText = null, delay = 1) {
-    this.printDepth++;
-    if (this.printDepth === 1) {
-      this.isPrinting = true;
-      this.inputBuffer = this.terminalInput.value;
-      this.terminalInput.value = "";
-      this.terminalInput.disabled = true;
+    const state = this.activeState;
+    if (!state) return;
+    state.printDepth++;
+    if (state.printDepth === 1) {
+      state.isPrinting = true;
+      state.inputBuffer = state.terminalInput.value;
+      state.terminalInput.value = "";
+      state.terminalInput.disabled = true;
     }
 
     const line = document.createElement("div");
@@ -192,47 +299,50 @@ export class TerminalApp extends BaseApp {
       line.appendChild(span);
     }
 
-    this.terminalOutput.appendChild(line);
+    state.terminalOutput.appendChild(line);
 
     span.textContent = text;
     requestAnimationFrame(() => {
-      if (this.isNearBottom()) {
+      if (this.isNearBottom(state)) {
         line.scrollIntoView({ block: "end", behavior: "instant" });
       }
     });
 
-    this.printDepth--;
-    if (this.printDepth === 0) {
-      this.isPrinting = false;
-      this.terminalInput.disabled = this.pagerActive || this.commandRunning;
-      this.terminalInput.value = this.inputBuffer;
-      if (!this.pagerActive && !this.commandRunning) this.terminalInput.focus();
+    state.printDepth--;
+    if (state.printDepth === 0) {
+      state.isPrinting = false;
+      state.terminalInput.disabled = state.pagerActive || state.commandRunning;
+      state.terminalInput.value = state.inputBuffer;
+      if (!state.pagerActive && !state.commandRunning) state.terminalInput.focus();
     }
   }
 
   enqueuePrint(text, color = null, isCommand = false, promptText = null, delay = 1) {
-    this.printQueue = this.printQueue.then(() => this.print(text, color, isCommand, promptText, delay));
-    return this.printQueue;
+    const state = this.activeState;
+    if (!state) return;
+    state.printQueue = state.printQueue.then(() => this.print(text, color, isCommand, promptText, delay));
+    return state.printQueue;
   }
 
   async runEnteredCommand() {
-    if (this.commandRunning) return;
-    const command = this.terminalInput.value.trim();
-    if (this.pyReplActive || this.nodeReplActive) {
-      this.terminalInput.value = "";
-      this.terminalInputLine.style.display = "none";
-      this.commandRunning = true;
+    const state = this.activeState;
+    if (!state || state.commandRunning) return;
+    const command = state.terminalInput.value.trim();
+    if (state.pyReplActive || state.nodeReplActive) {
+      state.terminalInput.value = "";
+      state.terminalInputLine.style.display = "none";
+      state.commandRunning = true;
       try {
-        if (this.pyReplActive) await this.runPythonRepl(command);
+        if (state.pyReplActive) await this.runPythonRepl(command);
         else await this.runNodeRepl(command);
       } finally {
-        this.commandRunning = false;
-        if (!this.lavatActive && !this.btopActive && !this.cmatrixActive) {
-          this.terminalInputLine.style.display = "flex";
+        state.commandRunning = false;
+        if (!state.lavatActive && !state.btopActive && !state.cmatrixActive) {
+          state.terminalInputLine.style.display = "flex";
         }
-        this.terminalInput.disabled = false;
-        this.terminalInput.focus();
-        requestAnimationFrame(() => this.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
+        state.terminalInput.disabled = false;
+        state.terminalInput.focus();
+        requestAnimationFrame(() => state.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
       }
       return;
     }
@@ -240,24 +350,25 @@ export class TerminalApp extends BaseApp {
     this.history.push(command);
     this.historyIndex = this.history.length;
     os.storage.set(StorageKeys.historyStorageKey, this.history.slice(-500));
-    this.terminalInput.value = "";
-    this.terminalInputLine.style.display = "none";
-    this.commandRunning = true;
+    state.terminalInput.value = "";
+    state.terminalInputLine.style.display = "none";
+    state.commandRunning = true;
     try {
       await this.executeCommand(command);
     } finally {
-      this.commandRunning = false;
-      if (!this.lavatActive && !this.btopActive && !this.cmatrixActive) {
-        this.terminalInputLine.style.display = "flex";
+      state.commandRunning = false;
+      if (!state.lavatActive && !state.btopActive && !state.cmatrixActive) {
+        state.terminalInputLine.style.display = "flex";
       }
-      this.terminalInput.disabled = false;
-      this.terminalInput.focus();
-      requestAnimationFrame(() => this.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
+      state.terminalInput.disabled = false;
+      state.terminalInput.focus();
+      requestAnimationFrame(() => state.terminalInputLine.scrollIntoView({ block: "end", behavior: "instant" }));
     }
   }
 
   setupEventHandlers() {
     this.terminalInput.addEventListener("keydown", (e) => {
+      this.activeState = e.currentTarget.__termState;
       if (this.commandRunning) return;
       if (this.reverseSearchActive) {
         this.handleReverseSearchKey(e);
@@ -360,12 +471,14 @@ export class TerminalApp extends BaseApp {
     if (!win) return;
 
     win.addEventListener("mousedown", (e) => {
+      this.activeState = e.currentTarget.__termState;
       if (e.target.closest(".terminal-output")) return;
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
     });
 
     win.addEventListener("mouseup", (e) => {
+      this.activeState = e.currentTarget.__termState;
       if (e.target.closest(".terminal-output")) return;
       if (window.getSelection().toString().length > 0) return;
       this.terminalInput.focus();
@@ -480,9 +593,9 @@ export class TerminalApp extends BaseApp {
   }
 
   snapshotActiveTab() {
-    if (this.lavatActive) this._stopLavat();
-    if (this.btopActive) this._stopBtop();
-    if (this.cmatrixActive) this._stopCmatrix();
+    if (this.lavatActive) this.stopLavat();
+    if (this.btopActive) this.stopBtop();
+    if (this.cmatrixActive) this.stopCmatrix();
     const tab = this.tabs.find((t) => t.id === this.activeTabId);
     if (!tab) return;
     tab.currentPath = [...this.currentPath];
@@ -542,15 +655,16 @@ export class TerminalApp extends BaseApp {
   }
 
   renderTabs() {
-    if (!this.terminalTabsEl) return;
-    this.terminalTabsEl.innerHTML = "";
-    this.terminalTabsEl.style.display = "flex";
-    this.terminalTabsEl.style.gap = "4px";
-    this.terminalTabsEl.style.padding = "4px 6px";
+    const state = this.activeState;
+    if (!state || !state.terminalTabsEl) return;
+    state.terminalTabsEl.innerHTML = "";
+    state.terminalTabsEl.style.display = "flex";
+    state.terminalTabsEl.style.gap = "4px";
+    state.terminalTabsEl.style.padding = "4px 6px";
 
-    this.tabs.forEach((tab, i) => {
+    state.tabs.forEach((tab, i) => {
       const el = document.createElement("div");
-      el.className = "terminal-tab" + (tab.id === this.activeTabId ? " active" : "");
+      el.className = "terminal-tab" + (tab.id === state.activeTabId ? " active" : "");
       el.style.display = "flex";
       el.style.alignItems = "center";
       el.style.gap = "6px";
@@ -558,9 +672,12 @@ export class TerminalApp extends BaseApp {
       el.style.borderRadius = "4px";
       el.style.cursor = "pointer";
       el.style.fontSize = "12px";
-      el.style.background = tab.id === this.activeTabId ? "rgba(255,255,255,0.15)" : "transparent";
+      el.style.background = tab.id === state.activeTabId ? "rgba(255,255,255,0.15)" : "transparent";
       el.textContent = `Tab ${i + 1}`;
-      el.addEventListener("click", () => this.switchTab(tab.id));
+      el.addEventListener("click", () => {
+        this.activeState = state;
+        this.switchTab(tab.id);
+      });
 
       const closeBtn = document.createElement("span");
       closeBtn.textContent = "\u00d7";
@@ -568,11 +685,12 @@ export class TerminalApp extends BaseApp {
       closeBtn.style.marginLeft = "4px";
       closeBtn.addEventListener("click", (event) => {
         event.stopPropagation();
+        this.activeState = state;
         this.closeTab(tab.id);
       });
       el.appendChild(closeBtn);
 
-      this.terminalTabsEl.appendChild(el);
+      state.terminalTabsEl.appendChild(el);
     });
 
     const newTabBtn = document.createElement("div");
@@ -581,8 +699,11 @@ export class TerminalApp extends BaseApp {
     newTabBtn.style.cursor = "pointer";
     newTabBtn.style.fontSize = "12px";
     newTabBtn.style.opacity = "0.7";
-    newTabBtn.addEventListener("click", () => this.newTab());
-    this.terminalTabsEl.appendChild(newTabBtn);
+    newTabBtn.addEventListener("click", () => {
+      this.activeState = state;
+      this.newTab();
+    });
+    state.terminalTabsEl.appendChild(newTabBtn);
   }
 
   showTerminalContextMenu(e) {
@@ -935,15 +1056,17 @@ export class TerminalApp extends BaseApp {
   }
 
   async executePipeline(pipeline, redirOut = null, redirAppend = null, redirIn = null) {
+    const state = this.activeState;
+    if (!state) return;
     let output = null;
-    this.lastExitCode = 0;
+    state.lastExitCode = 0;
 
     if (redirIn) {
       try {
-        output = await this.fs.readTextFile(this.pathToRelative(this.fs.resolvePath(redirIn, this.currentPath)), "");
+        output = await this.fs.readTextFile(this.pathToRelative(this.fs.resolvePath(redirIn, state.currentPath)), "");
       } catch {
         await this.enqueuePrint(`bash: ${redirIn}: No such file or directory`);
-        this.lastExitCode = 1;
+        state.lastExitCode = 1;
         return;
       }
     }
@@ -951,7 +1074,7 @@ export class TerminalApp extends BaseApp {
     for (let i = 0; i < pipeline.length; i++) {
       const { command, args, flags } = pipeline[i];
       if (!command) continue;
-      const expandedArgs = await this.expandGlobsInArgs(args, this.currentPath);
+      const expandedArgs = await this.expandGlobsInArgs(args, state.currentPath);
       const isPiped = output !== null;
 
       if (isPiped) expandedArgs.unshift(output);
@@ -959,7 +1082,7 @@ export class TerminalApp extends BaseApp {
       const handler = this.commands[command];
       if (!handler) {
         await this.enqueuePrint(`bash: ${command}: command not found`);
-        this.lastExitCode = 127;
+        state.lastExitCode = 127;
         return;
       }
 
@@ -974,7 +1097,7 @@ export class TerminalApp extends BaseApp {
     if (redirOut || redirAppend) {
       const target = redirOut || redirAppend;
       try {
-        const targetPath = this.pathToString(this.fs.resolvePath(target, this.currentPath));
+        const targetPath = this.pathToString(this.fs.resolvePath(target, state.currentPath));
         const fullPath = this.fs.resolveUserPath(targetPath);
         await this.fs.ensureFolder(this.fs.dirname(fullPath)).catch(() => {});
         if (redirAppend) {
@@ -989,7 +1112,7 @@ export class TerminalApp extends BaseApp {
         }
       } catch (e) {
         await this.enqueuePrint(`bash: ${target}: ${e.message}`);
-        this.lastExitCode = 1;
+        state.lastExitCode = 1;
       }
     }
   }
@@ -1011,6 +1134,8 @@ export class TerminalApp extends BaseApp {
   }
 
   async executeCommand(commandStr) {
+    const state = this.activeState;
+    if (!state) return;
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
     await this.enqueuePrint(commandStr, null, true, this.promptHtml());
 
@@ -1021,8 +1146,8 @@ export class TerminalApp extends BaseApp {
 
     const chain = this.parseCommand(commandStr);
     for (const segment of chain) {
-      if (segment.operator === "&&" && this.lastExitCode !== 0) continue;
-      if (segment.operator === "||" && this.lastExitCode === 0) continue;
+      if (segment.operator === "&&" && state.lastExitCode !== 0) continue;
+      if (segment.operator === "||" && state.lastExitCode === 0) continue;
       await this.executePipeline(segment.pipeline, segment.redirOut, segment.redirAppend, segment.redirIn);
     }
 
@@ -1350,7 +1475,7 @@ export class TerminalApp extends BaseApp {
       if (!iframeDoc) return;
       const iframeHandler = (e) => {
         if (e.key === "Escape" || e.key === "q" || e.key === "Q" || (e.ctrlKey && e.key.toLowerCase() === "c")) {
-          this._stopLavat();
+          this.stopLavat();
         }
       };
       iframeDoc.addEventListener("keydown", iframeHandler);
@@ -1361,7 +1486,7 @@ export class TerminalApp extends BaseApp {
 
     this.lavatWinHandler = (e) => {
       if (e.key === "Escape" && this.lavatActive) {
-        this._stopLavat();
+        this.stopLavat();
       }
     };
     if (this.win) {
@@ -1369,21 +1494,22 @@ export class TerminalApp extends BaseApp {
     }
   }
 
-  _stopLavat() {
-    if (!this.lavatActive) return;
-    this.lavatActive = false;
-    if (this.lavatIframeCleanup) {
-      this.lavatIframeCleanup();
-      this.lavatIframeCleanup = null;
+  stopLavat() {
+    const state = this.activeState;
+    if (!state || !state.lavatActive) return;
+    state.lavatActive = false;
+    if (state.lavatIframeCleanup) {
+      state.lavatIframeCleanup();
+      state.lavatIframeCleanup = null;
     }
-    if (this.lavatWinHandler && this.win) {
-      this.win.removeEventListener("keydown", this.lavatWinHandler);
+    if (state.lavatWinHandler && state.win) {
+      state.win.removeEventListener("keydown", state.lavatWinHandler);
     }
     const container = document.getElementById("lavat-container");
     if (container) container.remove();
-    this.terminalOutput.style.display = "";
-    this.terminalInputLine.style.display = "";
-    this.terminalInput.focus();
+    state.terminalOutput.style.display = "";
+    state.terminalInputLine.style.display = "";
+    state.terminalInput.focus();
   }
 
   async cmdCmatrix(args, flags) {
@@ -1456,7 +1582,7 @@ export class TerminalApp extends BaseApp {
       if (!iframeDoc) return;
       const iframeHandler = (e) => {
         if (e.key === "q" || e.key === "Q" || (e.ctrlKey && e.key.toLowerCase() === "c")) {
-          this._stopCmatrix();
+          this.stopCmatrix();
         }
       };
       iframeDoc.addEventListener("keydown", iframeHandler);
@@ -1467,7 +1593,7 @@ export class TerminalApp extends BaseApp {
 
     this.cmatrixWinHandler = (e) => {
       if (e.ctrlKey && e.key.toLowerCase() === "c" && this.cmatrixActive) {
-        this._stopCmatrix();
+        this.stopCmatrix();
       }
     };
     if (this.win) {
@@ -1475,21 +1601,22 @@ export class TerminalApp extends BaseApp {
     }
   }
 
-  _stopCmatrix() {
-    if (!this.cmatrixActive) return;
-    this.cmatrixActive = false;
-    if (this.cmatrixIframeCleanup) {
-      this.cmatrixIframeCleanup();
-      this.cmatrixIframeCleanup = null;
+  stopCmatrix() {
+    const state = this.activeState;
+    if (!state || !state.cmatrixActive) return;
+    state.cmatrixActive = false;
+    if (state.cmatrixIframeCleanup) {
+      state.cmatrixIframeCleanup();
+      state.cmatrixIframeCleanup = null;
     }
-    if (this.cmatrixWinHandler && this.win) {
-      this.win.removeEventListener("keydown", this.cmatrixWinHandler);
+    if (state.cmatrixWinHandler && state.win) {
+      state.win.removeEventListener("keydown", state.cmatrixWinHandler);
     }
     const container = document.getElementById("cmatrix-container");
     if (container) container.remove();
-    this.terminalOutput.style.display = "";
-    this.terminalInputLine.style.display = "";
-    this.terminalInput.focus();
+    state.terminalOutput.style.display = "";
+    state.terminalInputLine.style.display = "";
+    state.terminalInput.focus();
   }
 
   async cmdBtop(args) {
@@ -1522,6 +1649,14 @@ export class TerminalApp extends BaseApp {
       let html = await response.text();
       html = html.replace('src="btop.js"', 'src="' + btopBase + '/btop.js"');
       html = html.replace(/'__BTOP_BASE__\/' \+ path/g, "'" + btopBase + "/' + path");
+      const scrollStyle = `<style>
+        ::-webkit-scrollbar{width:8px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+        *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
+      </style>`;
+      html = html.replace("</head>", scrollStyle + "</head>");
       iframe.srcdoc = html;
     } catch (e) {
       await this.print("btop: failed to load: " + e.message);
@@ -1624,7 +1759,7 @@ export class TerminalApp extends BaseApp {
       };
 
       sendData();
-      this._btopInterval = setInterval(sendData, 1000);
+      this.btopInterval = setInterval(sendData, 1000);
 
       const killHandler = (e) => {
         if (e.data?.type === "btop-kill" && e.source === iframe.contentWindow) {
@@ -1639,7 +1774,7 @@ export class TerminalApp extends BaseApp {
 
     this.btopWinHandler = (e) => {
       if (e.ctrlKey && e.key.toLowerCase() === "c" && this.btopActive) {
-        this._stopBtop();
+        this.stopBtop();
       }
     };
     if (this.win) {
@@ -1647,25 +1782,26 @@ export class TerminalApp extends BaseApp {
     }
   }
 
-  _stopBtop() {
-    if (!this.btopActive) return;
-    this.btopActive = false;
-    if (this._btopInterval) {
-      clearInterval(this._btopInterval);
-      this._btopInterval = null;
+  stopBtop() {
+    const state = this.activeState;
+    if (!state || !state.btopActive) return;
+    state.btopActive = false;
+    if (state.btopInterval) {
+      clearInterval(state.btopInterval);
+      state.btopInterval = null;
     }
-    if (this.btopIframeCleanup) {
-      this.btopIframeCleanup();
-      this.btopIframeCleanup = null;
+    if (state.btopIframeCleanup) {
+      state.btopIframeCleanup();
+      state.btopIframeCleanup = null;
     }
-    if (this.btopWinHandler && this.win) {
-      this.win.removeEventListener("keydown", this.btopWinHandler);
+    if (state.btopWinHandler && state.win) {
+      state.win.removeEventListener("keydown", state.btopWinHandler);
     }
     const container = document.getElementById("btop-container");
     if (container) container.remove();
-    this.terminalOutput.style.display = "";
-    this.terminalInputLine.style.display = "";
-    this.terminalInput.focus();
+    state.terminalOutput.style.display = "";
+    state.terminalInputLine.style.display = "";
+    state.terminalInput.focus();
   }
 
   cmdClear() {
@@ -3788,8 +3924,8 @@ export class TerminalApp extends BaseApp {
   async execNodeCode(code, filename) {
     try {
       if (!self.crossOriginIsolated) {
-        if (!this._nodeFallbackWarned) {
-          this._nodeFallbackWarned = true;
+        if (!this.nodeFallbackWarned) {
+          this.nodeFallbackWarned = true;
           await this.enqueuePrint(
             "Current webserver lacks cross-origin isolation, falling back to basic JavaScript eval."
           );
@@ -3925,18 +4061,30 @@ export class TerminalApp extends BaseApp {
   }
 
   cmdExit() {
-    if (this.lavatActive) this._stopLavat();
-    if (this.btopActive) this._stopBtop();
-    if (this.cmatrixActive) this._stopCmatrix();
-    const win = this.win || this.terminalOutput?.closest(".window");
+    const state = this.activeState;
+    if (state) {
+      if (state.lavatActive) this.stopLavat();
+      if (state.btopActive) this.stopBtop();
+      if (state.cmatrixActive) this.stopCmatrix();
+    }
+    const win = state?.win || this.win || state?.terminalOutput?.closest(".window");
     if (!win) return;
+    if (state) this.windowsMap.delete(win.id);
     os.window.removeFromTaskbar(win.id);
     win.remove();
   }
 
   onClose(winId) {
-    if (this.lavatActive) this._stopLavat();
-    if (this.btopActive) this._stopBtop();
-    if (this.cmatrixActive) this._stopCmatrix();
+    const state = this.windowsMap.get(winId);
+    if (!state) {
+      if (this.lavatActive) this.stopLavat();
+      if (this.btopActive) this.stopBtop();
+      if (this.cmatrixActive) this.stopCmatrix();
+      return;
+    }
+    if (state.lavatActive) this.stopLavat();
+    if (state.btopActive) this.stopBtop();
+    if (state.cmatrixActive) this.stopCmatrix();
+    this.windowsMap.delete(winId);
   }
 }

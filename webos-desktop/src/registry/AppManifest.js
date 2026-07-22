@@ -1338,15 +1338,15 @@ export const APP_MANIFESTS = [
     enhanced: true,
     type: "system",
     title: "btop",
-    icon: "fas fa-chart-simple",
+    icon: `${CDN_BASE}/static/icons/btop.webp`,
     launchType: "instance",
     windowIdPatterns: ["btop"],
     category: "utilities",
     clippy: {
-      message: "Monitor your system performance with a real-time terminal process viewer.",
+      message: "Resource monitor that shows usage and stats for processor, memory, disks, network and processes",
       animation: ClippyAnimation.Show
     },
-    description: "Terminal-based system monitor with real-time CPU, memory and process data."
+    description: "Resource monitor that shows usage and stats for processor, memory, disks, network and processes"
   },
   {
     serviceKey: "cmatrixApp",
