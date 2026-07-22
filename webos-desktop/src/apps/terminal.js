@@ -67,11 +67,15 @@ export class TerminalApp extends BaseApp {
     this._btopInterval = null;
     this.btopIframeCleanup = null;
     this.btopWinHandler = null;
+    this.cmatrixActive = false;
+    this.cmatrixIframeCleanup = null;
+    this.cmatrixWinHandler = null;
   }
 
   open(opts) {
     if (this.lavatActive) this._stopLavat();
     if (this.btopActive) this._stopBtop();
+    if (this.cmatrixActive) this._stopCmatrix();
     const win = os.window.create("terminal-win", "Terminal", "700px", "500px", {
       ...opts,
       icon: "static/icons/terminal.webp"
@@ -223,7 +227,7 @@ export class TerminalApp extends BaseApp {
         else await this.runNodeRepl(command);
       } finally {
         this.commandRunning = false;
-        if (!this.lavatActive && !this.btopActive) {
+        if (!this.lavatActive && !this.btopActive && !this.cmatrixActive) {
           this.terminalInputLine.style.display = "flex";
         }
         this.terminalInput.disabled = false;
@@ -243,7 +247,7 @@ export class TerminalApp extends BaseApp {
       await this.executeCommand(command);
     } finally {
       this.commandRunning = false;
-      if (!this.lavatActive && !this.btopActive) {
+      if (!this.lavatActive && !this.btopActive && !this.cmatrixActive) {
         this.terminalInputLine.style.display = "flex";
       }
       this.terminalInput.disabled = false;
@@ -478,6 +482,7 @@ export class TerminalApp extends BaseApp {
   snapshotActiveTab() {
     if (this.lavatActive) this._stopLavat();
     if (this.btopActive) this._stopBtop();
+    if (this.cmatrixActive) this._stopCmatrix();
     const tab = this.tabs.find((t) => t.id === this.activeTabId);
     if (!tab) return;
     tab.currentPath = [...this.currentPath];
@@ -1276,6 +1281,7 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("killactive", () => this.cmdKillactive());
     this.registerCommand("lavat", (args, flags) => this.cmdLavat(args, flags));
     this.registerCommand("btop", (args) => this.cmdBtop(args));
+    this.registerCommand("cmatrix", (args, flags) => this.cmdCmatrix(args, flags));
     processManager.init();
   }
 
@@ -1374,6 +1380,112 @@ export class TerminalApp extends BaseApp {
       this.win.removeEventListener("keydown", this.lavatWinHandler);
     }
     const container = document.getElementById("lavat-container");
+    if (container) container.remove();
+    this.terminalOutput.style.display = "";
+    this.terminalInputLine.style.display = "";
+    this.terminalInput.focus();
+  }
+
+  async cmdCmatrix(args, flags) {
+    if (this.cmatrixActive) {
+      await this.print("cmatrix is already running. Press q or Ctrl+C to exit.");
+      return;
+    }
+
+    if (args.includes("--help") || args.includes("-h") || flags.includes("--help") || flags.includes("-h")) {
+      await this.print("Usage: cmatrix [options]");
+      await this.print("");
+      await this.print("Options:");
+      await this.print("  -a           Asynchronous scroll");
+      await this.print("  -b           Bold characters (even positions)");
+      await this.print("  -B           All bold characters");
+      await this.print("  -c           Classic mode (katakana)");
+      await this.print("  -o           Old-style scrolling");
+      await this.print("  -r           Rainbow mode");
+      await this.print("  -m           Lambda mode (\\u03bb characters)");
+      await this.print("  -k           Character changes (flickering)");
+      await this.print("  -u <0-10>    Update speed (default: 4)");
+      await this.print("  -C <color>   Color: green, red, blue, white, yellow, cyan, magenta, black");
+      await this.print("  -s           Screensaver mode (any key to exit)");
+      await this.print("  -L           Lock screen with message");
+      await this.print("  -M <msg>     Set lock message");
+      await this.print("  -h, --help   Show this help");
+      return;
+    }
+
+    this.cmatrixActive = true;
+
+    const cmatrixArgs = [...flags, ...args].join(" ").trim();
+
+    this.terminalOutput.style.display = "none";
+    this.terminalInputLine.style.display = "none";
+
+    const cmatrixContainer = document.createElement("div");
+    cmatrixContainer.id = "cmatrix-container";
+    cmatrixContainer.style.cssText =
+      "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;";
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "cmatrix-iframe";
+    iframe.style.cssText = "width:100%;height:100%;border:none;background:#000;";
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+
+    cmatrixContainer.appendChild(iframe);
+    this.terminalContent.appendChild(cmatrixContainer);
+
+    const cmatrixBase = CDN_BASES.MAIN + "/static/apps/cmatrix";
+    try {
+      const response = await fetch(cmatrixBase + "/cmatrix.html");
+      let html = await response.text();
+      const escapedArgs = cmatrixArgs.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      html = html.replace('var INIT_ARGS = "";', "var INIT_ARGS = '" + escapedArgs + "';");
+      iframe.srcdoc = html;
+    } catch (e) {
+      await this.print("cmatrix: failed to load: " + e.message);
+      this.cmatrixActive = false;
+      this.terminalOutput.style.display = "";
+      this.terminalInputLine.style.display = "";
+      return;
+    }
+
+    this.cmatrixIframeCleanup = null;
+
+    iframe.addEventListener("load", () => {
+      iframe.contentWindow?.focus();
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) return;
+      const iframeHandler = (e) => {
+        if (e.key === "q" || e.key === "Q" || (e.ctrlKey && e.key.toLowerCase() === "c")) {
+          this._stopCmatrix();
+        }
+      };
+      iframeDoc.addEventListener("keydown", iframeHandler);
+      this.cmatrixIframeCleanup = () => {
+        iframeDoc.removeEventListener("keydown", iframeHandler);
+      };
+    });
+
+    this.cmatrixWinHandler = (e) => {
+      if (e.ctrlKey && e.key.toLowerCase() === "c" && this.cmatrixActive) {
+        this._stopCmatrix();
+      }
+    };
+    if (this.win) {
+      this.win.addEventListener("keydown", this.cmatrixWinHandler);
+    }
+  }
+
+  _stopCmatrix() {
+    if (!this.cmatrixActive) return;
+    this.cmatrixActive = false;
+    if (this.cmatrixIframeCleanup) {
+      this.cmatrixIframeCleanup();
+      this.cmatrixIframeCleanup = null;
+    }
+    if (this.cmatrixWinHandler && this.win) {
+      this.win.removeEventListener("keydown", this.cmatrixWinHandler);
+    }
+    const container = document.getElementById("cmatrix-container");
     if (container) container.remove();
     this.terminalOutput.style.display = "";
     this.terminalInputLine.style.display = "";
@@ -3815,6 +3927,7 @@ export class TerminalApp extends BaseApp {
   cmdExit() {
     if (this.lavatActive) this._stopLavat();
     if (this.btopActive) this._stopBtop();
+    if (this.cmatrixActive) this._stopCmatrix();
     const win = this.win || this.terminalOutput?.closest(".window");
     if (!win) return;
     os.window.removeFromTaskbar(win.id);
@@ -3824,5 +3937,6 @@ export class TerminalApp extends BaseApp {
   onClose(winId) {
     if (this.lavatActive) this._stopLavat();
     if (this.btopActive) this._stopBtop();
+    if (this.cmatrixActive) this._stopCmatrix();
   }
 }

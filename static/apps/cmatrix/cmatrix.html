@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>cmatrix</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;width:100vw;font-family:monospace}
+canvas{display:block;width:100vw;height:100vh;background:#000;cursor:default}
+#bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,.92);
+  border-top:1px solid #0a0;
+  padding:6px 10px;font-size:12px;
+  display:none;flex-wrap:wrap;gap:4px 6px;align-items:center;
+  z-index:10;user-select:none
+}
+#bar.show{display:flex}
+#bar button{
+  background:#000;color:#0f0;border:1px solid #0f0;
+  padding:2px 7px;cursor:pointer;font:11px monospace;border-radius:2px
+}
+#bar button:hover{background:#0f0;color:#000}
+#bar button.on{background:#0f0;color:#000}
+#bar label{color:#0f0;display:flex;align-items:center;gap:3px;font:11px monospace}
+#bar input[type=range]{width:54px;height:14px;accent-color:#0f0;background:#000}
+#bar select{background:#000;color:#0f0;border:1px solid #0f0;font:11px monospace;padding:1px 3px;border-radius:2px}
+#bar .sep{width:1px;height:18px;background:#0a0;display:inline-block}
+#bar .hint{color:#080;font:10px monospace;margin-left:auto}
+@media(max-width:720px){#bar .hint{display:none}}
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+<div id="bar">
+  <button id="btnPause" title="Pause/Resume">⏸</button>
+  <span class="sep"></span>
+  <button id="btnClassic">Kata</button>
+  <button id="btnLambda">λ</button>
+  <button id="btnBold">Bld:off</button>
+  <button id="btnRainbow">Rain</button>
+  <button id="btnChanges">Chg</button>
+  <button id="btnAsync">Async</button>
+  <button id="btnOld">Old</button>
+  <button id="btnTrail">Trail</button>
+  <span class="sep"></span>
+  <label>Spd <input type="range" id="speed" min="0" max="10" value="4"></label>
+  <label>Col <select id="colorSel">
+    <option value="green">green</option>
+    <option value="red">red</option>
+    <option value="blue">blue</option>
+    <option value="white">white</option>
+    <option value="yellow">yellow</option>
+    <option value="cyan">cyan</option>
+    <option value="magenta">magenta</option>
+    <option value="black">black</option>
+  </select></label>
+  <span class="sep"></span>
+  <span class="hint">q:quit p:pause a:async b:Bold r:rain m:λ c:classic Esc:panel</span>
+</div>
+<script>
+(function(){
+'use strict';
+
+const DPR = window.devicePixelRatio || 1;
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+const bar = document.getElementById('bar');
+
+var INIT_ARGS = "";
+
+function parseArgs(str) {
+  if (!str) return;
+  var tokens = str.split(" ");
+  for (var i = 0; i < tokens.length; i++) {
+    var t = tokens[i];
+    if (t.charAt(0) !== "-") continue;
+    switch (t.charAt(1)) {
+      case "a": C.asynch = true; break;
+      case "c": C.classic = true; break;
+      case "o": C.oldstyle = true; break;
+      case "b": if (C.bold !== 2) C.bold = 1; break;
+      case "B": C.bold = 2; break;
+      case "r": C.rainbow = true; break;
+      case "m": C.lambda = true; break;
+      case "k": C.changes = true; break;
+      case "s": /* screensaver - ignored */ break;
+      case "u": if (t.length > 2) C.update = parseInt(t.substring(2)); else if (i + 1 < tokens.length) { i++; C.update = parseInt(tokens[i]); } if (C.update < 0) C.update = 0; if (C.update > 10) C.update = 10; break;
+      case "C": { var col = t.length > 2 ? t.substring(2) : (i + 1 < tokens.length ? tokens[++i] : null); if (col) C.color = col; break; }
+      case "L": /* lock mode - ignored */ break;
+      case "M": if (t.length > 2) {/* msg */} else if (i + 1 < tokens.length) i++; break;
+      case "h": case "V": /* help/version - ignored */ break;
+    }
+  }
+}
+
+const C = {
+  classic:false, lambda:false, bold:0,
+  rainbow:false, changes:false, asynch:true,
+  oldstyle:false, trail:true, update:4,
+  color:'green', paused:false
+};
+
+const COLOR = {
+  green:'#0f0',red:'#f00',blue:'#00f',
+  white:'#fff',yellow:'#ff0',cyan:'#0ff',
+  magenta:'#f0f',black:'#000'
+};
+const RAINBOW = ['green','blue','yellow','cyan','magenta'];
+
+let COLS=0,ROWS=0,charW=0,charH=0;
+let mat=null,lens=null,spcs=null,updts=null;
+let frame=0;
+
+const SP=32;
+function idx(r,c){return (r*COLS+c)*2}
+function v(r,c){return mat[idx(r,c)]}
+function ih(r,c){return mat[idx(r,c)+1]===1}
+function sv(r,c,x){mat[idx(r,c)]=x}
+function sh(r,c,x){mat[idx(r,c)+1]=x?1:0}
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+function alloc(){
+  const n=(ROWS+1)*COLS*2;
+  mat=new Int32Array(n);
+  for(let i=0;i<n;i+=2)mat[i]=-1;
+  // row 1 must be ' ' for spawn condition
+  for(let c=0;c<COLS;c+=2)sv(1,c,SP);
+  lens=new Int32Array(COLS);
+  spcs=new Int32Array(COLS);
+  updts=new Int32Array(COLS);
+  for(let c=0;c<COLS;c+=2){
+    lens[c]=rand(3,Math.max(3,ROWS-1));
+    spcs[c]=rand(1,ROWS);
+    updts[c]=rand(1,3);
+  }
+}
+
+function resize(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  canvas.width=w*DPR;canvas.height=h*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.font='18px "Courier New",monospace';
+  charW=ctx.measureText('M').width;
+  charH=Math.ceil(18*1.35);
+  const nC=Math.max(2,Math.floor(w/charW));
+  const nR=Math.max(2,Math.floor(h/charH));
+  if(nC!==COLS||nR!==ROWS){COLS=nC;ROWS=nR;alloc()}
+}
+
+function rchar(){
+  return C.classic?rand(0xff66,0xff9d):rand(33,123);
+}
+
+// ── new-style column update ──
+function updateColNew(c){
+  if(v(0,c)===-1&&v(1,c)===SP){
+    if(spcs[c]>0){spcs[c]--}
+    else{
+      lens[c]=rand(3,Math.max(3,ROWS-1));
+      sv(0,c,rchar());
+      spcs[c]=rand(1,ROWS);
+      updts[c]=rand(1,3);
+    }
+    // fall through — existing stream below must still be processed
+  }
+
+  let i=0,first=false;
+  while(i<=ROWS){
+    while(i<=ROWS&&(v(i,c)===-1||v(i,c)===SP))i++;
+    if(i>ROWS)break;
+
+    const z=i;
+    let y=0;
+    while(i<=ROWS&&v(i,c)!==-1&&v(i,c)!==SP){
+      sh(i,c,false);
+      if(C.changes&&rand(0,7)===0)sv(i,c,rchar());
+      i++;y++;
+    }
+
+    if(i>ROWS){sv(z,c,SP);continue}
+
+    sv(i,c,rchar());
+    sh(i,c,true);
+
+    if(y>lens[c]||first){sv(z,c,SP);sv(0,c,-1)}
+    first=true;
+    i++;
+  }
+}
+
+// ── old-style column update ──
+function updateColOld(c){
+  for(let r=ROWS-1;r>=1;r--)sv(r,c,v(r-1,c));
+
+  const hi=rand(33,123+8);
+  const t=v(1,c);
+
+  if(t===0){
+    sv(0,c,1);
+  }else if(t===SP||t===-1){
+    if(spcs[c]>0){sv(0,c,SP);spcs[c]--}
+    else{
+      if(rand(0,2)===1)sv(0,c,0);
+      else sv(0,c,rchar());
+      spcs[c]=rand(1,ROWS);
+    }
+  }else if(hi>123+8&&v(1,c)!==1){
+    sv(0,c,SP);
+  }else{
+    sv(0,c,rchar());
+  }
+}
+
+function update(){
+  frame++;
+  const count=(frame%4)+1;
+  for(let c=0;c<COLS;c+=2){
+    if(!C.asynch||count>updts[c]){
+      if(C.oldstyle)updateColOld(c);
+      else updateColNew(c);
+    }
+  }
+}
+
+function render(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(C.trail){
+    ctx.fillStyle='rgba(0,0,0,'+(0.06+0.02*C.update/10)+')';
+    ctx.fillRect(0,0,w,h);
+  }else{ctx.fillStyle='#000';ctx.fillRect(0,0,w,h)}
+
+  const base=COLOR[C.color]||'#0f0';
+  const fN='18px "Courier New",monospace';
+  const fB='bold '+fN;
+  ctx.textBaseline='top';ctx.textAlign='left';
+
+  const r0=C.oldstyle?0:1;
+  const r1=C.oldstyle?ROWS-1:ROWS;
+
+  for(let c=0;c<COLS;c+=2){
+    for(let r=r0;r<=r1;r++){
+      const val=v(r,c);
+      if(val===SP||val===-1)continue;
+
+      const isHead=ih(r,c);
+      let ch,color,bold=false;
+
+      if(val===0){ch='&';color='#fff';bold=C.bold!==0}
+      else if(isHead&&!C.rainbow){
+        ch=String.fromCodePoint(val);
+        color='#fff';
+        bold=C.bold!==0;
+        ctx.font=bold?fB:fN;ctx.fillStyle=color;
+        ctx.fillText(ch,c*charW,(r-r0)*charH);
+        continue;
+      }else{
+        if(val===1)ch='|';
+        else if(C.lambda)ch='\u03bb';
+        else ch=String.fromCodePoint(val);
+        if(C.rainbow)color=COLOR[RAINBOW[rand(0,RAINBOW.length-1)]];
+        else color=base;
+        if(val===1)bold=C.bold!==0;
+        else if(C.bold===2||(C.bold===1&&val%2===0))bold=true;
+      }
+
+      ctx.font=bold?fB:fN;ctx.fillStyle=color;
+      ctx.fillText(ch,c*charW,(r-r0)*charH);
+    }
+  }
+}
+
+function tick(){
+  if(!C.paused){update();render()}
+  requestAnimationFrame(tick)
+}
+
+function togglePause(){
+  C.paused=!C.paused;
+  document.getElementById('btnPause').textContent=C.paused?'▶':'⏸';
+}
+
+function syncUI(){
+  const g=id=>document.getElementById(id);
+  g('btnClassic').classList.toggle('on',C.classic);
+  g('btnLambda').classList.toggle('on',C.lambda);
+  g('btnBold').textContent='Bld:'+['off','even','all'][C.bold];
+  g('btnBold').classList.toggle('on',C.bold>0);
+  g('btnRainbow').classList.toggle('on',C.rainbow);
+  g('btnChanges').classList.toggle('on',C.changes);
+  g('btnAsync').classList.toggle('on',C.asynch);
+  g('btnOld').classList.toggle('on',C.oldstyle);
+  g('btnTrail').classList.toggle('on',C.trail);
+}
+
+function handleKey(e){
+  const k=e.key;
+  if(k==='q')return;
+  if(k==='p'||k==='P'||k===' '){e.preventDefault();togglePause();syncUI();return}
+  if(k==='a'||k==='A'){e.preventDefault();C.asynch=!C.asynch;syncUI();return}
+  if(k==='r'||k==='R'){e.preventDefault();C.rainbow=!C.rainbow;syncUI();return}
+  if(k==='m'||k==='M'){e.preventDefault();C.lambda=!C.lambda;syncUI();return}
+  if(k==='c'||k==='C'){e.preventDefault();C.classic=!C.classic;syncUI();return}
+  if(k==='b'){e.preventDefault();C.bold=(C.bold+1)%3;syncUI();return}
+  if(k==='B'){e.preventDefault();C.bold=2;syncUI();return}
+  if(k==='n'){e.preventDefault();C.bold=0;syncUI();return}
+  if(k==='Escape'){e.preventDefault();bar.classList.toggle('show');return}
+  if(k>='0'&&k<='9'){e.preventDefault();C.update=parseInt(k);document.getElementById('speed').value=k;syncUI();return}
+}
+
+function setupUI(){
+  const g=id=>document.getElementById(id);
+  g('btnPause').onclick=()=>{togglePause();syncUI()};
+  g('btnClassic').onclick=()=>{C.classic=!C.classic;syncUI()};
+  g('btnLambda').onclick=()=>{C.lambda=!C.lambda;syncUI()};
+  g('btnBold').onclick=()=>{C.bold=(C.bold+1)%3;syncUI()};
+  g('btnRainbow').onclick=()=>{C.rainbow=!C.rainbow;syncUI()};
+  g('btnChanges').onclick=()=>{C.changes=!C.changes;syncUI()};
+  g('btnAsync').onclick=()=>{C.asynch=!C.asynch;syncUI()};
+  g('btnOld').onclick=()=>{C.oldstyle=!C.oldstyle;syncUI()};
+  g('btnTrail').onclick=()=>{C.trail=!C.trail;syncUI()};
+  g('speed').oninput=function(){C.update=parseInt(this.value)};
+  g('colorSel').onchange=function(){C.color=this.value};
+  syncUI();
+}
+
+function init(){
+  canvas.width=window.innerWidth*DPR;
+  canvas.height=window.innerHeight*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.font='18px "Courier New",monospace';
+  charW=ctx.measureText('M').width;
+  charH=Math.ceil(18*1.35);
+  COLS=Math.max(2,Math.floor(canvas.clientWidth/charW));
+  ROWS=Math.max(2,Math.floor(canvas.clientHeight/charH));
+  alloc();
+  window.addEventListener('resize',resize);
+  document.addEventListener('keydown',handleKey);
+  let ht=null;
+  document.addEventListener('mousemove',()=>{
+    bar.classList.add('show');
+    if(ht)clearTimeout(ht);
+    ht=setTimeout(()=>{if(!bar.matches(':hover'))bar.classList.remove('show')},3000);
+  });
+  bar.addEventListener('mouseenter',()=>{if(ht)clearTimeout(ht)});
+  bar.addEventListener('mouseleave',()=>{ht=setTimeout(()=>bar.classList.remove('show'),1000)});
+  setupUI();
+  tick();
+}
+
+if (INIT_ARGS) parseArgs(INIT_ARGS);
+init();
+})();
+</script>
+</body>
+</html>

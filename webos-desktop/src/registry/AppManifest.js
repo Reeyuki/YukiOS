@@ -1347,5 +1347,20 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "Terminal-based system monitor with real-time CPU, memory and process data."
+  },
+  {
+    serviceKey: "cmatrixApp",
+    enhanced: true,
+    type: "system",
+    title: "Cmatrix",
+    icon: "fa-solid fa-code",
+    launchType: "instance",
+    windowIdPatterns: ["cmatrix"],
+    category: "games",
+    clippy: {
+      message: "Watch the iconic Matrix-style green rain of characters cascade down your terminal.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Matrix-style terminal animation with cascading green characters and customizable effects."
   }
 ];

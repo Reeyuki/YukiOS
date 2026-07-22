@@ -5,6 +5,28 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 23, 2026",
+    sections: [
+      {
+        icon: "fa-terminal",
+        title: "Terminal Apps",
+        items: [
+          ["fa-fire", "Lavat", "Watch colorful metaballs dance in a lava lamp simulation right inside the terminal."],
+          [
+            "fa-chart-simple",
+            "btop",
+            "Monitor system performance with a real-time terminal process viewer, featuring CPU, memory, and process data."
+          ],
+          [
+            "fa-code",
+            "Cmatrix",
+            "Watch the Matrix rain fall in your terminal with customizable colors, speed, and visual modes."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 21, 2026",
     sections: [
       {
