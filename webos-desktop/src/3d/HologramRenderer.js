@@ -56,7 +56,9 @@ export class HologramRenderer {
   async loadIconBitmap(icon) {
     if (/^fa[srb]?\s+fa-/.test(icon)) return;
     let url = icon;
-    try { url = resolveIconUrl(icon); } catch (e) {}
+    try {
+      url = resolveIconUrl(icon);
+    } catch (e) {}
 
     try {
       const img = new Image();
@@ -117,7 +119,8 @@ export class HologramRenderer {
 
   draw() {
     const ctx = this.ctx;
-    const W = 800, H = 500;
+    const W = 800,
+      H = 500;
 
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, "#0e0618");
@@ -147,12 +150,7 @@ export class HologramRenderer {
     }
 
     ctx.fillStyle = "rgba(136,68,255,0.02)";
-    ctx.fillRect(
-      W * 0.5 - 100 + Math.sin(this.ticker * 0.04) * 30,
-      0,
-      200,
-      H
-    );
+    ctx.fillRect(W * 0.5 - 100 + Math.sin(this.ticker * 0.04) * 30, 0, 200, H);
 
     if (this.onDraw) this.onDraw();
   }

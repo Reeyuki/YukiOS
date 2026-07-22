@@ -50,28 +50,43 @@ export async function cmdHyprctl(terminal, args) {
       }
       const action = subArgs[0];
       const actionArgs = subArgs.slice(1);
-      if (!tm) { await terminal.enqueuePrint("Tiling manager not available"); break; }
-      if (!tm.enabled) { await terminal.enqueuePrint("Tiling mode is not active"); break; }
+      if (!tm) {
+        await terminal.enqueuePrint("Tiling manager not available");
+        break;
+      }
+      if (!tm.enabled) {
+        await terminal.enqueuePrint("Tiling mode is not active");
+        break;
+      }
 
       switch (action) {
         case "movefocus": {
           const dir = actionArgs[0];
           const dirmap = { l: "left", r: "right", u: "up", d: "down" };
-          if (!dir || !dirmap[dir]) { await terminal.enqueuePrint("usage: hyprctl dispatch movefocus <l|r|u|d>"); break; }
+          if (!dir || !dirmap[dir]) {
+            await terminal.enqueuePrint("usage: hyprctl dispatch movefocus <l|r|u|d>");
+            break;
+          }
           tm.focusDirection(dirmap[dir]);
           break;
         }
         case "swapwindow": {
           const dir = actionArgs[0];
           const dirmap = { l: "left", r: "right", u: "up", d: "down" };
-          if (!dir || !dirmap[dir]) { await terminal.enqueuePrint("usage: hyprctl dispatch swapwindow <l|r|u|d>"); break; }
+          if (!dir || !dirmap[dir]) {
+            await terminal.enqueuePrint("usage: hyprctl dispatch swapwindow <l|r|u|d>");
+            break;
+          }
           tm.swapDirection(dirmap[dir]);
           break;
         }
         case "resizeactive": {
           const dir = actionArgs[0];
           const dirmap = { l: "left", r: "right", u: "up", d: "down" };
-          if (!dir || !dirmap[dir]) { await terminal.enqueuePrint("usage: hyprctl dispatch resizeactive <l|r|u|d>"); break; }
+          if (!dir || !dirmap[dir]) {
+            await terminal.enqueuePrint("usage: hyprctl dispatch resizeactive <l|r|u|d>");
+            break;
+          }
           tm.resizeDirection(dirmap[dir]);
           break;
         }
@@ -99,13 +114,19 @@ export async function cmdHyprctl(terminal, args) {
     }
 
     case "activewindow": {
-      if (!wm) { await terminal.enqueuePrint("Window manager not available"); break; }
+      if (!wm) {
+        await terminal.enqueuePrint("Window manager not available");
+        break;
+      }
       const wins = Array.from(wm.openWindows.keys())
         .map((id) => document.getElementById(id))
         .filter(Boolean)
         .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex));
       const focused = wins[0];
-      if (!focused) { await terminal.enqueuePrint("No active window"); break; }
+      if (!focused) {
+        await terminal.enqueuePrint("No active window");
+        break;
+      }
       const entry = wm.openWindows.get(focused.id);
       await terminal.enqueuePrint(`Window ${focused.id}`);
       await terminal.enqueuePrint(`\ttitle: ${entry?.title || "unknown"}`);
@@ -119,7 +140,10 @@ export async function cmdHyprctl(terminal, args) {
     }
 
     case "clients": {
-      if (!wm) { await terminal.enqueuePrint("Window manager not available"); break; }
+      if (!wm) {
+        await terminal.enqueuePrint("Window manager not available");
+        break;
+      }
       const list = [];
       wm.openWindows.forEach((entry, winId) => {
         const win = document.getElementById(winId);
@@ -138,22 +162,34 @@ export async function cmdHyprctl(terminal, args) {
           mapped: win.style.display !== "none" ? 1 : 0
         });
       });
-      if (!list.length) { await terminal.enqueuePrint("No windows"); break; }
+      if (!list.length) {
+        await terminal.enqueuePrint("No windows");
+        break;
+      }
       await terminal.enqueuePrint(`Windows (${list.length}):`);
-      await terminal.enqueuePrint("  WINID              TITLE                     APP              TILED FLOAT  WORKSPACE");
-      await terminal.enqueuePrint("  ─────────────────────────────────────────────────────────────────────────────────");
+      await terminal.enqueuePrint(
+        "  WINID              TITLE                     APP              TILED FLOAT  WORKSPACE"
+      );
+      await terminal.enqueuePrint(
+        "  ─────────────────────────────────────────────────────────────────────────────────"
+      );
       for (const c of list) {
         const id = c.winId.padEnd(18).slice(0, 18);
         const title = (c.title.length > 24 ? c.title.slice(0, 21) + "..." : c.title).padEnd(24).slice(0, 24);
         const app = c.appId.padEnd(16).slice(0, 16);
-        await terminal.enqueuePrint(`  ${id} ${title} ${app} ${c.tiled ? "Y" : "N"}    ${c.floating ? "Y" : "N"}    ${c.workspace}`);
+        await terminal.enqueuePrint(
+          `  ${id} ${title} ${app} ${c.tiled ? "Y" : "N"}    ${c.floating ? "Y" : "N"}    ${c.workspace}`
+        );
       }
       break;
     }
 
     case "workspaces": {
       const ws = wm?.workspaceManager;
-      if (!ws) { await terminal.enqueuePrint("Workspace manager not available"); break; }
+      if (!ws) {
+        await terminal.enqueuePrint("Workspace manager not available");
+        break;
+      }
       const active = ws.activeId ?? 0;
       const all = ws.workspaces || [];
       await terminal.enqueuePrint(`Workspaces (${all.length}):`);
@@ -165,8 +201,14 @@ export async function cmdHyprctl(terminal, args) {
     }
 
     case "getoption": {
-      if (!subArgs.length) { await terminal.enqueuePrint("usage: hyprctl getoption <name>"); break; }
-      if (!tm || !tm.config) { await terminal.enqueuePrint("Tiling config not available"); break; }
+      if (!subArgs.length) {
+        await terminal.enqueuePrint("usage: hyprctl getoption <name>");
+        break;
+      }
+      if (!tm || !tm.config) {
+        await terminal.enqueuePrint("Tiling config not available");
+        break;
+      }
       const name = subArgs[0];
       const value = name.split(".").reduce((obj, key) => obj?.[key], tm.config);
       if (value === undefined) {
@@ -182,7 +224,10 @@ export async function cmdHyprctl(terminal, args) {
         await terminal.enqueuePrint("usage: hyprctl keyword <name> <value>");
         break;
       }
-      if (!tm || !tm.config) { await terminal.enqueuePrint("Tiling config not available"); break; }
+      if (!tm || !tm.config) {
+        await terminal.enqueuePrint("Tiling config not available");
+        break;
+      }
       const name = subArgs[0];
       const valStr = subArgs.slice(1).join(" ");
       const keys = name.split(".");
@@ -193,7 +238,13 @@ export async function cmdHyprctl(terminal, args) {
       }
       const lastKey = keys[keys.length - 1];
       const prev = target[lastKey];
-      const parsed = !isNaN(Number(valStr)) ? Number(valStr) : valStr === "true" ? true : valStr === "false" ? false : valStr;
+      const parsed = !isNaN(Number(valStr))
+        ? Number(valStr)
+        : valStr === "true"
+          ? true
+          : valStr === "false"
+            ? false
+            : valStr;
       target[lastKey] = parsed;
       tm.configString = JSON.stringify(tm.config, null, 2);
       os.fs.write(["Config", "yukiOs", "tiling.conf"], tm.configString).catch(() => {});

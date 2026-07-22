@@ -72,7 +72,9 @@ body.tiling-active #tiling-bar {
   border-radius: 999px;
   cursor: pointer;
   color: var(--tiling-bar-text-secondary);
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
   border: none;
   background: transparent;
   font-size: 13px;
@@ -110,7 +112,10 @@ body.tiling-active #tiling-bar {
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, transform 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    transform 0.12s;
   font-family: inherit;
   line-height: 1;
 }
@@ -187,13 +192,23 @@ body.tiling-active #tiling-bar {
 }
 
 @keyframes battery-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 @keyframes battery-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
 }
 
 /* ── Volume states ──*/
@@ -218,8 +233,13 @@ body.tiling-active #tiling-bar {
 }
 
 @keyframes net-pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 /* ── Generic tray items ──*/
@@ -600,7 +620,9 @@ body.tiling-active #tiling-bar {
   border-radius: 999px;
   cursor: pointer;
   color: var(--tiling-bar-text-secondary);
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
   border: none;
   background: transparent;
   font-size: 11px;
@@ -753,7 +775,9 @@ body.tiling-active #tiling-bar {
   color: var(--tiling-bar-text-secondary);
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
 .tiling-kb-hide-btn:hover {

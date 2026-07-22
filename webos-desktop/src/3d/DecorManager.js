@@ -181,9 +181,12 @@ export class DecorManager {
           ctx.beginPath();
           ctx.moveTo(Math.random() * 256, Math.random() * 192);
           ctx.bezierCurveTo(
-            Math.random() * 256, Math.random() * 192,
-            Math.random() * 256, Math.random() * 192,
-            Math.random() * 256, Math.random() * 192
+            Math.random() * 256,
+            Math.random() * 192,
+            Math.random() * 256,
+            Math.random() * 192,
+            Math.random() * 256,
+            Math.random() * 192
           );
           ctx.stroke();
         }

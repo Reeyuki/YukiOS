@@ -63,12 +63,7 @@ export class RoomRenderer {
     const renderPass = new RenderPass(this.scene, this.camera);
     this.composer.addPass(renderPass);
 
-    this.bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(w, h),
-      0.4,
-      0.2,
-      0.1
-    );
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.4, 0.2, 0.1);
     this.composer.addPass(this.bloomPass);
 
     this.clock = new THREE.Clock();
@@ -127,8 +122,8 @@ export class RoomRenderer {
     backWallShape.lineTo(-4, 3);
     backWallShape.lineTo(-4, 0);
 
-    const winHalfW = 0.60;
-    const winHalfH = 0.50;
+    const winHalfW = 0.6;
+    const winHalfH = 0.5;
     const winCenterY = 1.5;
     const holePath = new THREE.Path();
     holePath.moveTo(-winHalfW, winCenterY - winHalfH);
@@ -170,7 +165,12 @@ export class RoomRenderer {
     this.registerObject(desk, "Desk");
 
     const legMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.3 });
-    const legPositions = [[-0.85, 0.35, -0.55], [-0.85, 0.35, -1.45], [0.85, 0.35, -0.55], [0.85, 0.35, -1.45]];
+    const legPositions = [
+      [-0.85, 0.35, -0.55],
+      [-0.85, 0.35, -1.45],
+      [0.85, 0.35, -0.55],
+      [0.85, 0.35, -1.45]
+    ];
     for (const pos of legPositions) {
       const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.7, 6), legMat);
       leg.position.set(pos[0], pos[1], pos[2]);
@@ -198,7 +198,13 @@ export class RoomRenderer {
 
     const projectorRing = new THREE.Mesh(
       new THREE.TorusGeometry(0.13, 0.008, 8, 16),
-      new THREE.MeshStandardMaterial({ color: 0x8844ff, emissive: 0x8844ff, emissiveIntensity: 0.3, metalness: 0.8, roughness: 0.2 })
+      new THREE.MeshStandardMaterial({
+        color: 0x8844ff,
+        emissive: 0x8844ff,
+        emissiveIntensity: 0.3,
+        metalness: 0.8,
+        roughness: 0.2
+      })
     );
     projectorRing.position.y = 0.065;
     projectorRing.rotation.x = Math.PI / 2;
@@ -239,12 +245,18 @@ export class RoomRenderer {
       depthWrite: false
     });
     const borderGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(1.8, 1.2));
-    const borderLine = new THREE.LineSegments(borderGeo, new THREE.LineBasicMaterial({ color: 0x8844ff, transparent: true, opacity: 0.15, depthWrite: false }));
+    const borderLine = new THREE.LineSegments(
+      borderGeo,
+      new THREE.LineBasicMaterial({ color: 0x8844ff, transparent: true, opacity: 0.15, depthWrite: false })
+    );
     borderLine.position.set(0, 0.8, 0);
     hologramGroup.add(borderLine);
 
     const cornerDots = [
-      [-0.9, 0.6, 0], [0.9, 0.6, 0], [-0.9, -0.6, 0], [0.9, -0.6, 0]
+      [-0.9, 0.6, 0],
+      [0.9, 0.6, 0],
+      [-0.9, -0.6, 0],
+      [0.9, -0.6, 0]
     ];
     const dotMat = new THREE.MeshBasicMaterial({ color: 0xaa66ff });
     for (const cd of cornerDots) {
@@ -258,28 +270,37 @@ export class RoomRenderer {
 
     {
       const as = 0.08;
-      ["prev","next"].forEach(d=>{
-        const c=document.createElement("canvas");
-        c.width=30;c.height=30;
-        const cx=c.getContext("2d");
-        cx.fillStyle="rgba(136,68,255,0.15)";
+      ["prev", "next"].forEach((d) => {
+        const c = document.createElement("canvas");
+        c.width = 30;
+        c.height = 30;
+        const cx = c.getContext("2d");
+        cx.fillStyle = "rgba(136,68,255,0.15)";
         cx.beginPath();
-        cx.arc(15,15,14,0,Math.PI*2);
+        cx.arc(15, 15, 14, 0, Math.PI * 2);
         cx.fill();
-        cx.fillStyle="rgba(200,180,255,0.55)";
+        cx.fillStyle = "rgba(200,180,255,0.55)";
         cx.beginPath();
-        if(d==="prev"){cx.moveTo(20,8);cx.lineTo(10,15);cx.lineTo(20,22);}
-        else{cx.moveTo(10,8);cx.lineTo(20,15);cx.lineTo(10,22);}
-        cx.closePath();cx.fill();
-        const tex=new THREE.CanvasTexture(c);
-        tex.needsUpdate=true;
-        const m=new THREE.Mesh(
-          new THREE.PlaneGeometry(as,as),
-          new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide})
+        if (d === "prev") {
+          cx.moveTo(20, 8);
+          cx.lineTo(10, 15);
+          cx.lineTo(20, 22);
+        } else {
+          cx.moveTo(10, 8);
+          cx.lineTo(20, 15);
+          cx.lineTo(10, 22);
+        }
+        cx.closePath();
+        cx.fill();
+        const tex = new THREE.CanvasTexture(c);
+        tex.needsUpdate = true;
+        const m = new THREE.Mesh(
+          new THREE.PlaneGeometry(as, as),
+          new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide })
         );
-        m.position.set(d==="prev"?-0.95:0.95,0.8,0.02);
-        m.userData.objectId="holoArrow"+(d==="prev"?"Prev":"Next");
-        m.userData.interactive=true;
+        m.position.set(d === "prev" ? -0.95 : 0.95, 0.8, 0.02);
+        m.userData.objectId = "holoArrow" + (d === "prev" ? "Prev" : "Next");
+        m.userData.interactive = true;
         hologramGroup.add(m);
         this.interactiveObjects.push(m);
         this.navArrowMeshes.push(m);
@@ -355,8 +376,7 @@ export class RoomRenderer {
     ];
   }
 
-  buildDecor() {
-  }
+  buildDecor() {}
 
   buildChair() {
     const T = this.THREE;
@@ -481,10 +501,7 @@ export class RoomRenderer {
       metalness: 0.1
     });
 
-    const handle = new T.Mesh(
-      new T.TorusGeometry(0.025, 0.006, 8, 12, Math.PI),
-      handleMat
-    );
+    const handle = new T.Mesh(new T.TorusGeometry(0.025, 0.006, 8, 12, Math.PI), handleMat);
     handle.position.set(-0.55 + 0.035 + 0.025, 0.81 + 0.035, -0.55);
     handle.rotation.z = -Math.PI / 2;
     handle.castShadow = true;
@@ -519,15 +536,8 @@ export class RoomRenderer {
     });
 
     for (let i = 0; i < 3; i++) {
-      const steam = new T.Mesh(
-        new T.PlaneGeometry(0.025, 0.035),
-        steamMat
-      );
-      steam.position.set(
-        -0.55 + (i - 1) * 0.025,
-        0.81 + 0.09 + i * 0.02,
-        -0.55
-      );
+      const steam = new T.Mesh(new T.PlaneGeometry(0.025, 0.035), steamMat);
+      steam.position.set(-0.55 + (i - 1) * 0.025, 0.81 + 0.09 + i * 0.02, -0.55);
       steam.rotation.x = (i - 1) * 0.1;
       steam.rotation.z = (i - 1) * 0.1;
       this.scene.add(steam);
@@ -582,10 +592,7 @@ export class RoomRenderer {
     rim.rotation.x = Math.PI / 2;
     this.scene.add(rim);
 
-    const bulb = new T.Mesh(
-      new T.SphereGeometry(0.035, 8, 8),
-      new T.MeshBasicMaterial({ color: 0xffbb77 })
-    );
+    const bulb = new T.Mesh(new T.SphereGeometry(0.035, 8, 8), new T.MeshBasicMaterial({ color: 0xffbb77 }));
     bulb.position.set(0, 2.7, -0.5);
     this.scene.add(bulb);
 
@@ -876,7 +883,7 @@ export class RoomRenderer {
     const walls = [
       { pos: [0, h / 2, -3.96], rot: [0, 0, 0], w: 8 },
       { pos: [-3.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 8 },
-      { pos: [3.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 8 },
+      { pos: [3.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 8 }
     ];
     for (const w of walls) {
       const mesh = new T.Mesh(new T.BoxGeometry(w.w, h, 0.02), mat);
@@ -890,7 +897,7 @@ export class RoomRenderer {
     const crownWalls = [
       { pos: [0, 2.97, -3.96], w: 8 },
       { pos: [-3.96, 2.97, 0], w: 8, ry: Math.PI / 2 },
-      { pos: [3.96, 2.97, 0], w: 8, ry: Math.PI / 2 },
+      { pos: [3.96, 2.97, 0], w: 8, ry: Math.PI / 2 }
     ];
     for (const w of crownWalls) {
       const mesh = new T.Mesh(new T.BoxGeometry(w.w, ch, 0.03), crown);
@@ -923,9 +930,12 @@ export class RoomRenderer {
       ctx.beginPath();
       ctx.moveTo(Math.random() * 256, Math.random() * 192);
       ctx.bezierCurveTo(
-        Math.random() * 256, Math.random() * 192,
-        Math.random() * 256, Math.random() * 192,
-        Math.random() * 256, Math.random() * 192
+        Math.random() * 256,
+        Math.random() * 192,
+        Math.random() * 256,
+        Math.random() * 192,
+        Math.random() * 256,
+        Math.random() * 192
       );
       ctx.stroke();
     }
@@ -957,7 +967,7 @@ export class RoomRenderer {
       { w: fw, h: fb, x: -2.0, y: 1.8 + fh / 2 - fb / 2, z: -3.94 },
       { w: fw, h: fb, x: -2.0, y: 1.8 - fh / 2 + fb / 2, z: -3.94 },
       { w: fb, h: fh - 2 * fb, x: -2.0 - fw / 2 + fb / 2, y: 1.8, z: -3.94 },
-      { w: fb, h: fh - 2 * fb, x: -2.0 + fw / 2 - fb / 2, y: 1.8, z: -3.94 },
+      { w: fb, h: fh - 2 * fb, x: -2.0 + fw / 2 - fb / 2, y: 1.8, z: -3.94 }
     ];
     for (const p of frameParts) {
       const m = new T.Mesh(new T.BoxGeometry(p.w, p.h, fd), frameMat);
@@ -990,10 +1000,7 @@ export class RoomRenderer {
     this.registerObject(shade, "Desk Lamp", true);
     shade.userData.tooltip = "Click to toggle lamp";
 
-    this.lampBulb = new T.Mesh(
-      new T.SphereGeometry(0.03, 8, 8),
-      new T.MeshBasicMaterial({ color: 0xffcc88 })
-    );
+    this.lampBulb = new T.Mesh(new T.SphereGeometry(0.03, 8, 8), new T.MeshBasicMaterial({ color: 0xffcc88 }));
     this.lampBulb.position.set(0.85, 1.13, -1.0);
     this.scene.add(this.lampBulb);
 
@@ -1093,11 +1100,7 @@ export class RoomRenderer {
     const instancedMesh = new T.InstancedMesh(geo, mat, count);
     const dummyMatrix = new T.Matrix4();
     for (let i = 0; i < count; i++) {
-      dummyMatrix.makeTranslation(
-        positions[i * 3],
-        positions[i * 3 + 1],
-        positions[i * 3 + 2]
-      );
+      dummyMatrix.makeTranslation(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
       instancedMesh.setMatrixAt(i, dummyMatrix);
     }
     instancedMesh.instanceMatrix.needsUpdate = true;
@@ -1119,7 +1122,7 @@ export class RoomRenderer {
       { pos: [-3.98, 1.5, -3.98], ry: Math.PI / 4 },
       { pos: [3.98, 1.5, -3.98], ry: -Math.PI / 4 },
       { pos: [-3.98, 1.5, 3.98], ry: -Math.PI / 4 },
-      { pos: [3.98, 1.5, 3.98], ry: Math.PI / 4 },
+      { pos: [3.98, 1.5, 3.98], ry: Math.PI / 4 }
     ];
     for (const c of corners) {
       const plane = new T.Mesh(new T.PlaneGeometry(0.6, 3), aoMat);
@@ -1138,7 +1141,7 @@ export class RoomRenderer {
     const baseWalls = [
       { pos: [0, 0.15, -3.98], w: 8 },
       { pos: [-3.98, 0.15, 0], w: 8, ry: Math.PI / 2 },
-      { pos: [3.98, 0.15, 0], w: 8, ry: Math.PI / 2 },
+      { pos: [3.98, 0.15, 0], w: 8, ry: Math.PI / 2 }
     ];
     for (const b of baseWalls) {
       const strip = new T.Mesh(new T.PlaneGeometry(b.w, 0.3), baseAOMat);
@@ -1160,7 +1163,8 @@ export class RoomRenderer {
 
     ctx.strokeStyle = "rgba(80,30,60,0.25)";
     ctx.lineWidth = 1;
-    const cx = 128, cy = 85;
+    const cx = 128,
+      cy = 85;
     for (let r = 10; r < 80; r += 8) {
       ctx.beginPath();
       ctx.ellipse(cx, cy, r, r * 0.65, 0, 0, Math.PI * 2);
@@ -1219,10 +1223,14 @@ export class RoomRenderer {
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#ff4444"; ctx.fillRect(0, 0, 32, 32);
-    ctx.fillStyle = "#44ff44"; ctx.fillRect(32, 0, 32, 32);
-    ctx.fillStyle = "#4444ff"; ctx.fillRect(0, 32, 32, 32);
-    ctx.fillStyle = "#ffaa00"; ctx.fillRect(32, 32, 32, 32);
+    ctx.fillStyle = "#ff4444";
+    ctx.fillRect(0, 0, 32, 32);
+    ctx.fillStyle = "#44ff44";
+    ctx.fillRect(32, 0, 32, 32);
+    ctx.fillStyle = "#4444ff";
+    ctx.fillRect(0, 32, 32, 32);
+    ctx.fillStyle = "#ffaa00";
+    ctx.fillRect(32, 32, 32, 32);
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
     ctx.lineWidth = 2;
     ctx.strokeRect(0, 0, 64, 64);
@@ -1349,7 +1357,9 @@ export class RoomRenderer {
       metalness: 0
     });
 
-    this.hologramRenderer.onDraw = () => { texture.needsUpdate = true; };
+    this.hologramRenderer.onDraw = () => {
+      texture.needsUpdate = true;
+    };
     this.hologramRenderer.start(os);
   }
 
@@ -1414,7 +1424,7 @@ export class RoomRenderer {
   registerObject(mesh, title, interactive) {
     mesh.userData.title = title;
     if (!mesh.userData.objectId) {
-      mesh.userData.objectId = title.toLowerCase().replace(/\s+/g, '');
+      mesh.userData.objectId = title.toLowerCase().replace(/\s+/g, "");
     }
     this.roomObjects.push(mesh);
     this.allMeshes.push(mesh);

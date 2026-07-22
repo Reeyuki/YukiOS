@@ -117,12 +117,16 @@ export class TilingBar {
         e.stopPropagation();
         this.toggleCalendar();
       });
-      this.clockEl.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        this.clock24h = !this.clock24h;
-        os.storage.set(StorageKeys.tilingClock24h, this.clock24h ? "true" : "false");
-        this.updateClock();
-      }, { passive: false });
+      this.clockEl.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          this.clock24h = !this.clock24h;
+          os.storage.set(StorageKeys.tilingClock24h, this.clock24h ? "true" : "false");
+          this.updateClock();
+        },
+        { passive: false }
+      );
     }
 
     if (powerEl) {
@@ -130,13 +134,17 @@ export class TilingBar {
         e.stopPropagation();
         trayManager.handleTrayClick("display-performance-window");
       });
-      powerEl.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        const cur = turboManager.getMode();
-        const idx = TURBO_MODES.indexOf(cur);
-        const next = TURBO_MODES[(idx + 1) % TURBO_MODES.length];
-        turboManager.setMode(next);
-      }, { passive: false });
+      powerEl.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          const cur = turboManager.getMode();
+          const idx = TURBO_MODES.indexOf(cur);
+          const next = TURBO_MODES[(idx + 1) % TURBO_MODES.length];
+          turboManager.setMode(next);
+        },
+        { passive: false }
+      );
     }
 
     if (audioEl) {
@@ -144,12 +152,16 @@ export class TilingBar {
         e.stopPropagation();
         audioMixer().toggle();
       });
-      audioEl.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        const mx = audioMixer();
-        const delta = e.deltaY > 0 ? -0.05 : 0.05;
-        mx.setMaster(Math.max(0, Math.min(1, mx.masterVolume + delta)));
-      }, { passive: false });
+      audioEl.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          const mx = audioMixer();
+          const delta = e.deltaY > 0 ? -0.05 : 0.05;
+          mx.setMaster(Math.max(0, Math.min(1, mx.masterVolume + delta)));
+        },
+        { passive: false }
+      );
     }
 
     if (networkEl) {
@@ -278,8 +290,13 @@ export class TilingBar {
       <span class="tiling-clock-date">${now.toLocaleDateString([], { month: "short", day: "numeric" })}</span>
     `;
     this.clockEl.title = now.toLocaleString([], {
-      weekday: "long", year: "numeric", month: "long", day: "numeric",
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
     });
   }
 
@@ -341,8 +358,20 @@ export class TilingBar {
     const lastDay = new Date(year, month + 1, 0);
     const startDow = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
-    const monthNames = ["January","February","March","April","May","June",
-      "July","August","September","October","November","December"];
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
 
     let html = "";
     for (let i = 0; i < startDow; i++) html += `<div class="tiling-cal-day empty"></div>`;
@@ -369,12 +398,18 @@ export class TilingBar {
 
     this.calendarPopup.querySelector("[data-action=prev]").addEventListener("click", () => {
       this.calendarState.month--;
-      if (this.calendarState.month < 0) { this.calendarState.month = 11; this.calendarState.year--; }
+      if (this.calendarState.month < 0) {
+        this.calendarState.month = 11;
+        this.calendarState.year--;
+      }
       this.renderCalendarMonth();
     });
     this.calendarPopup.querySelector("[data-action=next]").addEventListener("click", () => {
       this.calendarState.month++;
-      if (this.calendarState.month > 11) { this.calendarState.month = 0; this.calendarState.year++; }
+      if (this.calendarState.month > 11) {
+        this.calendarState.month = 0;
+        this.calendarState.year++;
+      }
       this.renderCalendarMonth();
     });
     this.calendarPopup.querySelector(".tiling-cal-today").addEventListener("click", () => {
@@ -465,7 +500,6 @@ export class TilingBar {
     el.title = mx.muted ? "Volume: Muted" : `Volume: ${vol}%`;
   }
 
-
   initNetwork() {
     this.updateNetwork();
     window.addEventListener("online", () => this.updateNetwork());
@@ -481,7 +515,6 @@ export class TilingBar {
     if (!online) el.classList.add("disconnected");
     el.title = online ? "Network: Online" : "Network: Offline";
   }
-
 
   startNowPlayingPoll() {
     this.stopNowPlayingPoll();
@@ -517,7 +550,6 @@ export class TilingBar {
     }
   }
 
-
   startSystemMonitor() {
     this.stopSystemMonitor();
     this.updateSystemMonitor();
@@ -534,7 +566,11 @@ export class TilingBar {
   updateSystemMonitor() {
     if (!this.systemEl) return;
     let mem;
-    try { mem = performance.memory; } catch { mem = null; }
+    try {
+      mem = performance.memory;
+    } catch {
+      mem = null;
+    }
     const cores = navigator.hardwareConcurrency;
 
     this.systemEl.style.display = "flex";
@@ -555,9 +591,9 @@ export class TilingBar {
       titleParts.push(`RAM: ${used}G / ${total}G`);
     }
     this.systemEl.innerHTML = html;
-    this.systemEl.title = (titleParts.length ? titleParts.join(" | ") + " · " : "System · ") + "Click to toggle CPU/RAM";
+    this.systemEl.title =
+      (titleParts.length ? titleParts.join(" | ") + " · " : "System · ") + "Click to toggle CPU/RAM";
   }
-
 
   renderPills() {
     if (!this.pillsContainer) return;
@@ -578,7 +614,6 @@ export class TilingBar {
       this.pillsContainer.appendChild(pill);
     });
   }
-
 
   getHeight() {
     if (os.storage.get(StorageKeys.tilingBarEnabled) === "false") return 0;

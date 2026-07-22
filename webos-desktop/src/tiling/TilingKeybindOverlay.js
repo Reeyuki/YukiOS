@@ -49,9 +49,7 @@ export function buildTilingKeybindHTML(searchLower) {
   CATEGORY_ORDER.forEach((cat) => {
     const items = groups[cat];
     if (!items || items.length === 0) return;
-    const filtered = searchLower
-      ? items.filter((k) => k.desc.toLowerCase().includes(searchLower))
-      : items;
+    const filtered = searchLower ? items.filter((k) => k.desc.toLowerCase().includes(searchLower)) : items;
     if (filtered.length === 0) return;
     html += `<div class="tiling-kb-category"><div class="tiling-kb-cat-title"><i class="${CATEGORY_ICONS[cat]}"></i>${CATEGORY_LABELS[cat]}</div><div class="tiling-kb-items">`;
     filtered.forEach((k) => {
@@ -61,7 +59,8 @@ export function buildTilingKeybindHTML(searchLower) {
     html += `</div></div>`;
   });
 
-  if (!html) html = `<p style="padding:16px;text-align:center;color:var(--tiling-bar-text-secondary);font-size:13px">No matching shortcuts</p>`;
+  if (!html)
+    html = `<p style="padding:16px;text-align:center;color:var(--tiling-bar-text-secondary);font-size:13px">No matching shortcuts</p>`;
   return html;
 }
 

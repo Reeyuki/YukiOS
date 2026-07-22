@@ -128,7 +128,10 @@ export class TilingRofi {
     });
     const maxResults = Number(os.storage.get(StorageKeys.tilingRofiMaxResults)) || 10;
     const sliced = matched.slice(0, maxResults);
-    this.renderItems(sliced, matched.length > maxResults ? `Apps (${matched.length} found, showing ${maxResults})` : "Apps");
+    this.renderItems(
+      sliced,
+      matched.length > maxResults ? `Apps (${matched.length} found, showing ${maxResults})` : "Apps"
+    );
   }
 
   renderItems(items, label) {
@@ -153,8 +156,18 @@ export class TilingRofi {
       el.className = "rofi-item";
       el.dataset.index = idx;
 
-      const isUrl = typeof item.icon === "string" && (item.icon.startsWith("http") || item.icon.startsWith("data:") || item.icon.startsWith("/") || /\.(webp|png|jpg|jpeg|gif|svg)/.test(item.icon));
-      const isFa = typeof item.icon === "string" && (item.icon.startsWith("fa-") || item.icon.startsWith("fas") || item.icon.startsWith("fab") || item.icon.startsWith("far"));
+      const isUrl =
+        typeof item.icon === "string" &&
+        (item.icon.startsWith("http") ||
+          item.icon.startsWith("data:") ||
+          item.icon.startsWith("/") ||
+          /\.(webp|png|jpg|jpeg|gif|svg)/.test(item.icon));
+      const isFa =
+        typeof item.icon === "string" &&
+        (item.icon.startsWith("fa-") ||
+          item.icon.startsWith("fas") ||
+          item.icon.startsWith("fab") ||
+          item.icon.startsWith("far"));
 
       if (isUrl) {
         const img = document.createElement("img");

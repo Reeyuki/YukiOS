@@ -3,7 +3,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { BookPhysics } from "./BookPhysics.js";
 import * as CANNON from "cannon-es";
 
-const BOOK_WIDTH = 0.30;
+const BOOK_WIDTH = 0.3;
 const BOOK_HEIGHT = 0.42;
 const BOOK_DEPTH = 0.04;
 const TEXTURE_W = 320;
@@ -14,35 +14,35 @@ const INITIAL_SPAWN = 20;
 const EXCLUDED = new Set(["TMNP", "vscode", "paint", "photopea", "liventcord"]);
 
 const FIXED_POSITIONS = {
-  seaSweeper:           { x: -1.917, y: 0.020, z:  0.933, rx: -1.571, ry: 0, rz:  1.010 },
-  deltaruneCh5:         { x: -0.936, y: 0.820, z: -0.740, rx: -1.571, ry: 0, rz: -0.010 },
-  slimeRancher:         { x:  2.759, y: 0.020, z: -0.545, rx: -1.571, ry: 0, rz: -2.781 },
-  tabs:                 { x:  1.076, y: 0.020, z:  1.090, rx: -1.571, ry: 0, rz: -0.296 },
-  plagueIncEvolved:     { x: -3.212, y: 0.020, z: -1.365, rx: -1.571, ry: 0, rz:  0.406 },
-  fiveNightsAtFrickbears3: { x: 2.000, y: 0.056, z: -0.748, rx: -1.704, ry: 0.065, rz: 1.735 },
-  helltaker:            { x:  2.367, y: 0.020, z:  0.699, rx: -1.571, ry: 0, rz: -0.548 },
-  daddy:                { x:  1.900, y: 0.020, z:  1.318, rx: -1.571, ry: 0, rz: -0.278 },
-  suicideGuy:           { x: -3.525, y: 0.535, z:  0.782, rx: -1.571, ry: 0, rz:  2.018 },
-  ytlifeomg:            { x:  1.999, y: 0.089, z: -0.802, rx: -1.704, ry: 0.065, rz: 2.734 },
-  slenderina:           { x:  1.751, y: 0.048, z: -0.627, rx: -1.703, ry: 0.065, rz: 0.911 },
-  baldiBalds:           { x:  1.930, y: 0.020, z: -0.257, rx: -1.571, ry: 0, rz:  0.097 },
-  baldisBasicsTeachingOnTwos: { x: 0.190, y: 0.020, z: -2.388, rx: -1.571, ry: 0, rz: 1.344 },
-  playtimeHellBear5van: { x:  2.437, y: 0.020, z: -2.496, rx: -1.571, ry: 0, rz:  0.828 }
+  seaSweeper: { x: -1.917, y: 0.02, z: 0.933, rx: -1.571, ry: 0, rz: 1.01 },
+  deltaruneCh5: { x: -0.936, y: 0.82, z: -0.74, rx: -1.571, ry: 0, rz: -0.01 },
+  slimeRancher: { x: 2.759, y: 0.02, z: -0.545, rx: -1.571, ry: 0, rz: -2.781 },
+  tabs: { x: 1.076, y: 0.02, z: 1.09, rx: -1.571, ry: 0, rz: -0.296 },
+  plagueIncEvolved: { x: -3.212, y: 0.02, z: -1.365, rx: -1.571, ry: 0, rz: 0.406 },
+  fiveNightsAtFrickbears3: { x: 2.0, y: 0.056, z: -0.748, rx: -1.704, ry: 0.065, rz: 1.735 },
+  helltaker: { x: 2.367, y: 0.02, z: 0.699, rx: -1.571, ry: 0, rz: -0.548 },
+  daddy: { x: 1.9, y: 0.02, z: 1.318, rx: -1.571, ry: 0, rz: -0.278 },
+  suicideGuy: { x: -3.525, y: 0.535, z: 0.782, rx: -1.571, ry: 0, rz: 2.018 },
+  ytlifeomg: { x: 1.999, y: 0.089, z: -0.802, rx: -1.704, ry: 0.065, rz: 2.734 },
+  slenderina: { x: 1.751, y: 0.048, z: -0.627, rx: -1.703, ry: 0.065, rz: 0.911 },
+  baldiBalds: { x: 1.93, y: 0.02, z: -0.257, rx: -1.571, ry: 0, rz: 0.097 },
+  baldisBasicsTeachingOnTwos: { x: 0.19, y: 0.02, z: -2.388, rx: -1.571, ry: 0, rz: 1.344 },
+  playtimeHellBear5van: { x: 2.437, y: 0.02, z: -2.496, rx: -1.571, ry: 0, rz: 0.828 }
 };
 
 const FIXED_SHELVES = {
-  angryBirds2:          23,
-  lobotomyCorporation:  16,
-  catGoesFishing:       27,
-  inscryption:          15,
-  nightInTheWoods:      17,
-  inStarsAndTime:       13
+  angryBirds2: 23,
+  lobotomyCorporation: 16,
+  catGoesFishing: 27,
+  inscryption: 15,
+  nightInTheWoods: 17,
+  inStarsAndTime: 13
 };
 
 function hashId(id) {
   let h = 0;
   for (let i = 0; i < id.length; i++) {
-    h = ((h << 5) - h) + id.charCodeAt(i);
+    h = (h << 5) - h + id.charCodeAt(i);
     h |= 0;
   }
   return Math.abs(h);
@@ -137,11 +137,7 @@ export class BookManager {
           body.invMass = 0;
           body.updateMassProperties();
         } else {
-          body.velocity.set(
-            (Math.random() - 0.5) * 0.15,
-            -0.1 - Math.random() * 0.1,
-            (Math.random() - 0.5) * 0.15
-          );
+          body.velocity.set((Math.random() - 0.5) * 0.15, -0.1 - Math.random() * 0.1, (Math.random() - 0.5) * 0.15);
           body.angularVelocity.set(
             (Math.random() - 0.5) * 0.08,
             (Math.random() - 0.5) * 0.08,
@@ -232,16 +228,8 @@ export class BookManager {
       body.invMass = 0;
       body.updateMassProperties();
     } else {
-      body.velocity.set(
-        (Math.random() - 0.5) * 0.5,
-        0.6 + Math.random() * 0.4,
-        (Math.random() - 0.5) * 0.5
-      );
-      body.angularVelocity.set(
-        (Math.random() - 0.5) * 1.5,
-        (Math.random() - 0.5) * 1.5,
-        (Math.random() - 0.5) * 1.5
-      );
+      body.velocity.set((Math.random() - 0.5) * 0.5, 0.6 + Math.random() * 0.4, (Math.random() - 0.5) * 0.5);
+      body.angularVelocity.set((Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5);
     }
 
     this.scene.add(mesh);
@@ -368,9 +356,7 @@ export class BookManager {
 
   async loadIcons() {
     const all = [...this.spawnQueue];
-    const promises = all.map((book) =>
-      this.loadSingleIcon(book).catch(() => {})
-    );
+    const promises = all.map((book) => this.loadSingleIcon(book).catch(() => {}));
     await Promise.allSettled(promises);
   }
 
@@ -433,7 +419,7 @@ export class BookManager {
   spawnPosition(game) {
     const h = hashId(game.id);
     const angle = h * 0.618;
-    const radius = 1 + (h % 3000) / 3000 * 3;
+    const radius = 1 + ((h % 3000) / 3000) * 3;
     return new this.THREE.Vector3(
       Math.cos(angle) * radius,
       Math.min(SPAWN_Y + (h % 20) * 0.05, 2.7),
@@ -492,8 +478,12 @@ export class BookManager {
       const p = book.mesh.position;
       const r = book.mesh.rotation;
       positions[book.gameId] = {
-        x: p.x, y: p.y, z: p.z,
-        rx: r.x, ry: r.y, rz: r.z
+        x: p.x,
+        y: p.y,
+        z: p.z,
+        rx: r.x,
+        ry: r.y,
+        rz: r.z
       };
     }
     return positions;

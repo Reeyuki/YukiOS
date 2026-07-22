@@ -15,7 +15,7 @@ html, body { width: 100%; height: 100%; background: #000; overflow: hidden; disp
 <canvas id="canvas"></canvas>
 <script>
 var Module = {
-  quit: function(status, toThrow) {
+  onExit: function(status) {
     window.parent.postMessage({ type: "lavat-exit" }, "*");
   },
   onRuntimeInitialized: function() {

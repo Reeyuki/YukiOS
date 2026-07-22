@@ -1339,7 +1339,11 @@ export const APP_MANIFESTS = [
           icon: "fa-fire",
           title: "Lava Lamp",
           items: [
-            ["fa-fire", "Lavat Terminal Visualizer", "Type lavat in the terminal for a retro lava lamp simulation with colorful metaballs, adjustable radius, speed, gravity mode, and party mode."]
+            [
+              "fa-fire",
+              "Lavat Terminal Visualizer",
+              "Type lavat in the terminal for a retro lava lamp simulation with colorful metaballs, adjustable radius, speed, gravity mode, and party mode."
+            ]
           ]
         }
       ]

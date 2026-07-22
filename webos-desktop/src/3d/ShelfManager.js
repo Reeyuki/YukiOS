@@ -158,21 +158,14 @@ export class ShelfManager {
         anim.book.mesh.quaternion.copy(anim.targetQuat);
         anim.book.mesh.position.copy(anim.targetPos);
         anim.book.body.position.set(anim.targetPos.x, anim.targetPos.y, anim.targetPos.z);
-        anim.book.body.quaternion.set(
-          anim.targetQuat.x, anim.targetQuat.y,
-          anim.targetQuat.z, anim.targetQuat.w
-        );
+        anim.book.body.quaternion.set(anim.targetQuat.x, anim.targetQuat.y, anim.targetQuat.z, anim.targetQuat.w);
         this.animatingBooks.splice(i, 1);
       } else {
         const t = easeOutCubic(anim.progress);
         anim.book.mesh.position.lerpVectors(anim.startPos, anim.targetPos, t);
         anim.book.mesh.quaternion.slerpQuaternions(anim.startQuat, anim.targetQuat, t);
         anim.book.pos.copy(anim.book.mesh.position);
-        anim.book.body.position.set(
-          anim.book.mesh.position.x,
-          anim.book.mesh.position.y,
-          anim.book.mesh.position.z
-        );
+        anim.book.body.position.set(anim.book.mesh.position.x, anim.book.mesh.position.y, anim.book.mesh.position.z);
       }
     }
   }

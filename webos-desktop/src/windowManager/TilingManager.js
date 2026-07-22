@@ -161,8 +161,7 @@ export class TilingManager {
             }
             bus.emit(BusEvents.TILING_LAYOUT_CHANGED);
           }
-        } catch {
-        }
+        } catch {}
         poll();
       }, cfg.config_poll_interval);
     };
@@ -249,14 +248,22 @@ export class TilingManager {
 
   getLayoutRect() {
     const taskbar = document.getElementById("taskbar");
-    let left = 0, top = 0, right = 0, bottom = 0;
+    let left = 0,
+      top = 0,
+      right = 0,
+      bottom = 0;
     if (taskbar) {
       const rect = taskbar.getBoundingClientRect();
       const pos = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
-      if (pos === "left") { left = rect.width; }
-      else if (pos === "right") { right = rect.width; }
-      else if (pos === "top") { top = rect.height; }
-      else { bottom = rect.height; }
+      if (pos === "left") {
+        left = rect.width;
+      } else if (pos === "right") {
+        right = rect.width;
+      } else if (pos === "top") {
+        top = rect.height;
+      } else {
+        bottom = rect.height;
+      }
     }
     const barTopOffset = this.tilingBar.getHeight();
     const barBottomOffset = this.tilingBar.getBottomHeight();
@@ -360,7 +367,12 @@ export class TilingManager {
     if (entry && entry.record) {
       if (!entry.record.tiled) {
         entry.record.tiled = true;
-        entry.record.tileGeometry = { x: entry.record.x, y: entry.record.y, width: entry.record.width, height: entry.record.height };
+        entry.record.tileGeometry = {
+          x: entry.record.x,
+          y: entry.record.y,
+          width: entry.record.width,
+          height: entry.record.height
+        };
         entry.record.tilePosition = win.style.position || getComputedStyle(win).position;
       }
       entry.record.x = rect.x;

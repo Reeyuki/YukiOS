@@ -71,11 +71,7 @@ export class BookPhysics {
         mass: 0,
         shape: new CANNON.Box(new CANNON.Vec3(sx, sy, sz))
       });
-      body.position.set(
-        (col.min.x + col.max.x) / 2,
-        (col.min.y + col.max.y) / 2,
-        (col.min.z + col.max.z) / 2
-      );
+      body.position.set((col.min.x + col.max.x) / 2, (col.min.y + col.max.y) / 2, (col.min.z + col.max.z) / 2);
       this.world.addBody(body);
     }
   }
@@ -106,11 +102,7 @@ export class BookPhysics {
         book.body.velocity.set(0, 0, 0);
         book.body.angularVelocity.set(0, 0, 0);
       }
-      book.body.position.set(
-        book.mesh.position.x,
-        book.mesh.position.y,
-        book.mesh.position.z
-      );
+      book.body.position.set(book.mesh.position.x, book.mesh.position.y, book.mesh.position.z);
       book.body.quaternion.set(
         book.mesh.quaternion.x,
         book.mesh.quaternion.y,
@@ -124,11 +116,7 @@ export class BookPhysics {
 
     for (const book of books) {
       if (book.grabbed) continue;
-      book.mesh.position.set(
-        book.body.position.x,
-        book.body.position.y,
-        book.body.position.z
-      );
+      book.mesh.position.set(book.body.position.x, book.body.position.y, book.body.position.z);
       book.mesh.quaternion.set(
         book.body.quaternion.x,
         book.body.quaternion.y,

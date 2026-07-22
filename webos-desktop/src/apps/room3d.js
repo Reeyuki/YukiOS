@@ -14,9 +14,20 @@ import { CanvasOverlay } from "../3d/CanvasOverlay.js";
 import { SystemUtilities } from "../system.js";
 
 const rmStore = {
-  _p: 'rm3d_',
-  get(k, d) { try { const v = localStorage.getItem(this._p + k); return v !== null ? JSON.parse(v) : d; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(this._p + k, JSON.stringify(v)); } catch {} }
+  _p: "rm3d_",
+  get(k, d) {
+    try {
+      const v = localStorage.getItem(this._p + k);
+      return v !== null ? JSON.parse(v) : d;
+    } catch {
+      return d;
+    }
+  },
+  set(k, v) {
+    try {
+      localStorage.setItem(this._p + k, JSON.stringify(v));
+    } catch {}
+  }
 };
 
 export class Room3DApp extends BaseApp {
@@ -42,7 +53,8 @@ export class Room3DApp extends BaseApp {
 
   async open(opts = {}) {
     const overlay = document.createElement("div");
-    overlay.style.cssText = "position:fixed;inset:0;z-index:999999;background:#000;opacity:0;transition:opacity 0.4s ease";
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:999999;background:#000;opacity:0;transition:opacity 0.4s ease";
     document.body.appendChild(overlay);
 
     SystemUtilities.disableVantaWallpaper();
@@ -72,7 +84,8 @@ export class Room3DApp extends BaseApp {
 
     const overlay = document.createElement("div");
     overlay.id = "room3d-system-overlay";
-    overlay.style.cssText = "position:fixed;inset:0;z-index:999999;background:#000;opacity:0;transition:opacity 0.4s ease";
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:999999;background:#000;opacity:0;transition:opacity 0.4s ease";
     document.body.appendChild(overlay);
 
     SystemUtilities.disableVantaWallpaper();
@@ -129,7 +142,7 @@ export class Room3DApp extends BaseApp {
       } else {
         this._crosshairEl.classList.remove("room3d-crosshair--visible");
         if (!this._suppressPauseOnUnlock && this.overlay && !this.overlay.isVisible() && this.running) {
-          this.overlay.show('pause');
+          this.overlay.show("pause");
         }
         this._suppressPauseOnUnlock = false;
       }
@@ -156,13 +169,13 @@ export class Room3DApp extends BaseApp {
       this.interaction,
       this.renderer.getColliders()
     );
-    const savedState = rmStore.get('bookPositions') || {};
+    const savedState = rmStore.get("bookPositions") || {};
     const savedPositions = savedState.positions || {};
     const savedShelves = savedState.shelves || {};
     await this.bookManager.init(THREE, savedPositions, savedShelves);
     this.interaction.setBooks(this.bookManager.getBooks());
 
-    const savedBallPos = rmStore.get('ballPosition');
+    const savedBallPos = rmStore.get("ballPosition");
     const ballPos = savedBallPos
       ? new THREE.Vector3(savedBallPos.x, savedBallPos.y, savedBallPos.z)
       : new THREE.Vector3(0.4, 0.95, -0.6);
@@ -176,16 +189,13 @@ export class Room3DApp extends BaseApp {
     this.bookManager.placeShelvedBooks(this.shelfManager);
     this.interaction.setShelfManager(this.shelfManager);
 
-    this.furnitureManager = new FurnitureManager(
-      THREE, this.renderer.scene, this.renderer, this.interaction,
-      () => {
-        const fp = this.furnitureManager.getPositions();
-        rmStore.set('furniturePositions', fp);
-      }
-    );
+    this.furnitureManager = new FurnitureManager(THREE, this.renderer.scene, this.renderer, this.interaction, () => {
+      const fp = this.furnitureManager.getPositions();
+      rmStore.set("furniturePositions", fp);
+    });
     this.interaction.setFurnitureManager(this.furnitureManager);
 
-    const savedFurniturePos = rmStore.get('furniturePositions');
+    const savedFurniturePos = rmStore.get("furniturePositions");
     if (savedFurniturePos) {
       this.furnitureManager.restorePositions(savedFurniturePos);
     }
@@ -196,14 +206,14 @@ export class Room3DApp extends BaseApp {
     for (const item of this.decorManager.getAllItems()) {
       this.decorManager.spawn(item.id);
     }
-    const savedDecorStates = rmStore.get('activeDecorations');
+    const savedDecorStates = rmStore.get("activeDecorations");
     if (savedDecorStates) {
       this.decorManager.restoreStates(savedDecorStates);
     }
 
-    const savedWallColor = rmStore.get('wallColor');
+    const savedWallColor = rmStore.get("wallColor");
     if (savedWallColor) this.renderer.setWallColor(savedWallColor);
-    const savedFloorColor = rmStore.get('floorColor');
+    const savedFloorColor = rmStore.get("floorColor");
     if (savedFloorColor) this.renderer.setFloorColor(savedFloorColor);
 
     this.wallDisplay = new WallDisplay(
@@ -254,8 +264,13 @@ export class Room3DApp extends BaseApp {
       this.interaction.updateEGrabbed(this.renderer.camera);
       this.interaction.updateWastebinProximity(this.renderer.camera);
       this.bookManager.update(delta);
-      if (this.rainbowBall && this.rainbowBall.body && this.rainbowBall.mesh &&
-          !this.interaction.grabbedBallMesh && !this.interaction.ballGrabbed) {
+      if (
+        this.rainbowBall &&
+        this.rainbowBall.body &&
+        this.rainbowBall.mesh &&
+        !this.interaction.grabbedBallMesh &&
+        !this.interaction.ballGrabbed
+      ) {
         this.rainbowBall.mesh.position.set(
           this.rainbowBall.body.position.x,
           this.rainbowBall.body.position.y,
@@ -284,18 +299,15 @@ export class Room3DApp extends BaseApp {
           pos[i * 3 + 2] += Math.cos(t * vel[i * 3 + 2] + i * 0.9) * 0.0003;
           if (pos[i * 3 + 1] > 2.9) pos[i * 3 + 1] = 0.1;
           if (pos[i * 3 + 1] < 0.05) pos[i * 3 + 1] = 2.8;
-          dummyMatrix.makeTranslation(
-            pos[i * 3],
-            pos[i * 3 + 1],
-            pos[i * 3 + 2]
-          );
+          dummyMatrix.makeTranslation(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]);
           this.renderer.dustMesh.setMatrixAt(i, dummyMatrix);
         }
         this.renderer.dustMesh.instanceMatrix.needsUpdate = true;
       }
 
       if (this.renderer.ceilingLight) {
-        this.renderer.ceilingLight.intensity = 0.35 + Math.sin(t * 3.7) * 0.02 + Math.sin(t * 7.1) * 0.01 + Math.sin(t * 13) * 0.005;
+        this.renderer.ceilingLight.intensity =
+          0.35 + Math.sin(t * 3.7) * 0.02 + Math.sin(t * 7.1) * 0.01 + Math.sin(t * 13) * 0.005;
       }
 
       for (const c of this.renderer.curtainGeos) {
@@ -323,47 +335,49 @@ export class Room3DApp extends BaseApp {
         if (!this.bookManager) return;
         const positions = this.bookManager.getPositions();
         const shelves = this.shelfManager ? this.shelfManager.getShelfAssignments() : {};
-        rmStore.set('bookPositions', { positions, shelves });
+        rmStore.set("bookPositions", { positions, shelves });
 
         if (this.rainbowBall && this.rainbowBall.body) {
           const bp = this.rainbowBall.mesh.position;
-          rmStore.set('ballPosition', { x: bp.x, y: bp.y, z: bp.z });
+          rmStore.set("ballPosition", { x: bp.x, y: bp.y, z: bp.z });
         }
         if (this.furnitureManager) {
-          rmStore.set('furniturePositions', this.furnitureManager.getPositions());
+          rmStore.set("furniturePositions", this.furnitureManager.getPositions());
         }
         if (this.decorManager) {
-          rmStore.set('activeDecorations', this.decorManager.getActiveStates());
+          rmStore.set("activeDecorations", this.decorManager.getActiveStates());
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
     };
 
     this.autoSaveInterval = setInterval(() => this.saveRoomState(), 30000);
 
     this.handleHUDAction = (btn) => {
       switch (btn.id) {
-        case 'resume':
+        case "resume":
           this.overlay.hide();
           if (this.controls && !this.controls.isLocked) this.controls.lock();
           break;
-        case 'colors':
-          this.overlay.show('colors');
+        case "colors":
+          this.overlay.show("colors");
           break;
-        case 'exit':
+        case "exit":
           this.overlay.hide();
           if (this.systemOnExit) this.systemOnExit();
           else this.closeRoom();
           break;
-        case 'back':
-          this.overlay.show('pause');
+        case "back":
+          this.overlay.show("pause");
           break;
         default:
-          if (btn.type === 'wall') {
+          if (btn.type === "wall") {
             this.renderer.setWallColor(btn.hex);
-            rmStore.set('wallColor', btn.hex);
-          } else if (btn.type === 'floor') {
+            rmStore.set("wallColor", btn.hex);
+          } else if (btn.type === "floor") {
             this.renderer.setFloorColor(btn.hex);
-            rmStore.set('floorColor', btn.hex);
+            rmStore.set("floorColor", btn.hex);
           }
           break;
       }
@@ -380,8 +394,8 @@ export class Room3DApp extends BaseApp {
         return;
       }
       if (this.overlay && this.overlay.isVisible()) {
-        if (this.overlay.getMode() === 'colors') {
-          this.overlay.show('pause');
+        if (this.overlay.getMode() === "colors") {
+          this.overlay.show("pause");
         } else {
           this.overlay.hide();
         }
@@ -389,7 +403,7 @@ export class Room3DApp extends BaseApp {
       }
       if (this.overlay) {
         this._suppressPauseOnUnlock = true;
-        this.overlay.show('pause');
+        this.overlay.show("pause");
         if (this.controls && this.controls.isLocked) {
           this.controls.unlock();
         }
@@ -521,7 +535,7 @@ export class Room3DApp extends BaseApp {
     this.interaction.register("colorPickerButton", () => {
       this._suppressPauseOnUnlock = true;
       if (this.controls && this.controls.isLocked) this.controls.unlock();
-      if (this.overlay) this.overlay.show('colors');
+      if (this.overlay) this.overlay.show("colors");
     });
 
     if (this.renderer) {
@@ -581,33 +595,117 @@ export class Room3DApp extends BaseApp {
     const overlay = this._openOverlay || this.systemOverlay;
     if (overlay) {
       overlay.style.opacity = "0";
-      overlay.addEventListener("transitionend", () => {
-        try { if (w) w.destroy(); } catch (e) { /* ignore */ }
-        try { if (r) r.destroy(); } catch (e) { /* ignore */ }
-        try { if (s) s.destroy(); } catch (e) { /* ignore */ }
-        try { if (f) f.destroy(); } catch (e) { /* ignore */ }
-        try { if (d) d.destroy(); } catch (e) { /* ignore */ }
-        try { if (i) i.destroy(); } catch (e) { /* ignore */ }
-        try { if (c) c.stop(); } catch (e) { /* ignore */ }
-        try { if (b) b.destroy(); } catch (e) { /* ignore */ }
-        try { if (re) re.destroy(); } catch (e) { /* ignore */ }
-        try { if (o) o.destroy(); } catch (e) { /* ignore */ }
-        if (ro) ro.disconnect();
-        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-        document.getElementById("desktop").style.display = "";
-        SystemUtilities.loadWallpaper();
-      }, { once: true });
+      overlay.addEventListener(
+        "transitionend",
+        () => {
+          try {
+            if (w) w.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (r) r.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (s) s.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (f) f.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (d) d.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (i) i.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (c) c.stop();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (b) b.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (re) re.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            if (o) o.destroy();
+          } catch (e) {
+            /* ignore */
+          }
+          if (ro) ro.disconnect();
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          document.getElementById("desktop").style.display = "";
+          SystemUtilities.loadWallpaper();
+        },
+        { once: true }
+      );
     } else {
-      try { if (w) w.destroy(); } catch (e) { /* ignore */ }
-      try { if (r) r.destroy(); } catch (e) { /* ignore */ }
-      try { if (s) s.destroy(); } catch (e) { /* ignore */ }
-      try { if (f) f.destroy(); } catch (e) { /* ignore */ }
-      try { if (d) d.destroy(); } catch (e) { /* ignore */ }
-      try { if (i) i.destroy(); } catch (e) { /* ignore */ }
-      try { if (c) c.stop(); } catch (e) { /* ignore */ }
-      try { if (b) b.destroy(); } catch (e) { /* ignore */ }
-      try { if (re) re.destroy(); } catch (e) { /* ignore */ }
-      try { if (o) o.destroy(); } catch (e) { /* ignore */ }
+      try {
+        if (w) w.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (r) r.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (s) s.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (f) f.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (d) d.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (i) i.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (c) c.stop();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (b) b.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (re) re.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        if (o) o.destroy();
+      } catch (e) {
+        /* ignore */
+      }
       if (ro) ro.disconnect();
       document.getElementById("desktop").style.display = "";
       SystemUtilities.loadWallpaper();

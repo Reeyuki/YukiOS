@@ -23,7 +23,7 @@ export const RESOLUTION_PRESETS = [
 ];
 
 export function getResolutionLabel(value) {
-  const preset = RESOLUTION_PRESETS.find(p => p.value === value);
+  const preset = RESOLUTION_PRESETS.find((p) => p.value === value);
   return preset ? preset.label : "Native (Use Actual Display)";
 }
 

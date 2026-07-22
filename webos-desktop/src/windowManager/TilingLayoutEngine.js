@@ -253,7 +253,7 @@ function resizeSplit(root, winId, direction, delta) {
   const isTop = parent.split === "v" && isLeft;
 
   if ((direction === "left" || direction === "up") && (isLeft || isTop)) return false;
-  if ((direction === "right" || direction === "down") && (!isLeft && !isTop)) {
+  if ((direction === "right" || direction === "down") && !isLeft && !isTop) {
     parent.ratio = Math.max(0.1, Math.min(0.9, parent.ratio + delta));
   } else {
     parent.ratio = Math.max(0.1, Math.min(0.9, parent.ratio - delta));

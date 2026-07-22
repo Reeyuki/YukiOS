@@ -476,7 +476,7 @@ export class RoomInteraction {
       this.nearWastebin = false;
       return;
     }
-    const dx = camera.position.x - (-2.5);
+    const dx = camera.position.x - -2.5;
     const dz = camera.position.z - 2;
     const wasteDist = Math.sqrt(dx * dx + dz * dz);
     this.nearWastebin = wasteDist < 0.35;
@@ -493,7 +493,7 @@ export class RoomInteraction {
   hashId(id) {
     let h = 0;
     for (let i = 0; i < id.length; i++) {
-      h = ((h << 5) - h) + id.charCodeAt(i);
+      h = (h << 5) - h + id.charCodeAt(i);
       h |= 0;
     }
     return Math.abs(h);

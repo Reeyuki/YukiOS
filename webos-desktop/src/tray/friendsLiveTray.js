@@ -119,7 +119,10 @@ class FriendsLiveTray {
     if (!this.panel) return;
 
     if (!stats) {
-      setHTML(content, `<div style="color:var(--text-secondary);font-size:12px;text-align:center;padding-top:24px;">Could not load live stats.</div>`);
+      setHTML(
+        content,
+        `<div style="color:var(--text-secondary);font-size:12px;text-align:center;padding-top:24px;">Could not load live stats.</div>`
+      );
       return;
     }
 
@@ -145,17 +148,23 @@ class FriendsLiveTray {
 
     const topApps = (stats.top_active_apps || []).slice(0, 5);
     const trendingHtml = topApps.length
-      ? topApps.map(({ app, count }) => `
+      ? topApps
+          .map(
+            ({ app, count }) => `
         <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--glass-border);">
           ${renderAppIcon(app)}
           <div style="flex:1;min-width:0;">
             <div style="font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${resolveAppName(app)}</div>
           </div>
           <div style="font-size:11px;color:var(--brand);font-weight:600;flex-shrink:0;">${count}</div>
-        </div>`).join("")
+        </div>`
+          )
+          .join("")
       : `<div style="color:var(--text-secondary);font-size:12px;">No trending data right now</div>`;
 
-    setHTML(content, `
+    setHTML(
+      content,
+      `
       <div style="display:flex;gap:8px;margin-bottom:16px;">
         <div style="flex:1;background:var(--surface-1);border:1px solid var(--glass-border);border-radius:6px;padding:10px 6px;text-align:center;">
           <div style="font-size:24px;font-weight:700;color:var(--brand);line-height:1.1;">${stats.active_users_5min}</div>
@@ -168,7 +177,8 @@ class FriendsLiveTray {
       </div>
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;letter-spacing:.5px;">Trending Now</div>
       ${trendingHtml}
-    `);
+    `
+    );
   }
 }
 

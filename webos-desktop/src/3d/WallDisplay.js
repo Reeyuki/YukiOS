@@ -14,7 +14,7 @@ const TAB_IDS = ["all", "available", "spawned", "trashed"];
 function hashId(id) {
   let h = 0;
   for (let i = 0; i < id.length; i++) {
-    h = ((h << 5) - h) + id.charCodeAt(i);
+    h = (h << 5) - h + id.charCodeAt(i);
     h |= 0;
   }
   return Math.abs(h);
@@ -87,7 +87,7 @@ export class WallDisplay {
       spawned: (g) => g.status === "spawned",
       trashed: (g) => g.status === "trashed"
     };
-    this.items = this.items.filter((filterFn[this.tab] || filterFn.all));
+    this.items = this.items.filter(filterFn[this.tab] || filterFn.all);
   }
 
   buildGroup() {
@@ -321,7 +321,7 @@ export class WallDisplay {
     if (start >= this.items.length) return;
 
     const gridW = (COLS - 1) * 0.36;
-    const gridH = (ROWS - 1) * 0.40;
+    const gridH = (ROWS - 1) * 0.4;
     const originX = -gridW / 2;
     const originY = gridH / 2 - 0.05;
 
@@ -332,7 +332,7 @@ export class WallDisplay {
       const col = idx % COLS;
       const row = Math.floor(idx / COLS);
       const lx = originX + col * 0.36;
-      const ly = originY - row * 0.40;
+      const ly = originY - row * 0.4;
 
       const game = this.items[i];
       const tex = this.createCardTexture(game);
@@ -447,8 +447,7 @@ export class WallDisplay {
       const img = await this.loadImage(url);
       this.images.set(game.id, img);
       this.updateCardWithImage(cardItem);
-    } catch {
-    }
+    } catch {}
   }
 
   updateCardWithImage(cardItem) {

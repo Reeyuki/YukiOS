@@ -2,7 +2,8 @@ import "./styles/donationPopup.css";
 import { StorageKeys, os } from "./framework.js";
 import { $, bindEvent } from "./shared/domUtils.js";
 
-const MONERO_ADDRESS = "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
+const MONERO_ADDRESS =
+  "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
 const DAY_MS = 86400000;
 const FOURTEEN_DAYS = 14 * DAY_MS;
 

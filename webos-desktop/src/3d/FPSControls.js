@@ -78,27 +78,61 @@ export class FPSControls {
   onKeyDown(event) {
     if (!this.enabled) return;
     switch (event.code) {
-      case "KeyW": this.keys.forward = true; event.preventDefault(); break;
-      case "KeyS": this.keys.backward = true; event.preventDefault(); break;
-      case "KeyA": this.keys.left = true; event.preventDefault(); break;
-      case "KeyD": this.keys.right = true; event.preventDefault(); break;
+      case "KeyW":
+        this.keys.forward = true;
+        event.preventDefault();
+        break;
+      case "KeyS":
+        this.keys.backward = true;
+        event.preventDefault();
+        break;
+      case "KeyA":
+        this.keys.left = true;
+        event.preventDefault();
+        break;
+      case "KeyD":
+        this.keys.right = true;
+        event.preventDefault();
+        break;
       case "ShiftLeft":
-      case "ShiftRight": this.keys.sprint = true; break;
-      case "Space": this.keys.jump = true; event.preventDefault(); break;
-      case "KeyC": this.keys.crouch = true; event.preventDefault(); break;
+      case "ShiftRight":
+        this.keys.sprint = true;
+        break;
+      case "Space":
+        this.keys.jump = true;
+        event.preventDefault();
+        break;
+      case "KeyC":
+        this.keys.crouch = true;
+        event.preventDefault();
+        break;
     }
   }
 
   onKeyUp(event) {
     switch (event.code) {
-      case "KeyW": this.keys.forward = false; break;
-      case "KeyS": this.keys.backward = false; break;
-      case "KeyA": this.keys.left = false; break;
-      case "KeyD": this.keys.right = false; break;
+      case "KeyW":
+        this.keys.forward = false;
+        break;
+      case "KeyS":
+        this.keys.backward = false;
+        break;
+      case "KeyA":
+        this.keys.left = false;
+        break;
+      case "KeyD":
+        this.keys.right = false;
+        break;
       case "ShiftLeft":
-      case "ShiftRight": this.keys.sprint = false; break;
-      case "Space": this.keys.jump = false; break;
-      case "KeyC": this.keys.crouch = false; break;
+      case "ShiftRight":
+        this.keys.sprint = false;
+        break;
+      case "Space":
+        this.keys.jump = false;
+        break;
+      case "KeyC":
+        this.keys.crouch = false;
+        break;
     }
   }
 
@@ -158,7 +192,8 @@ export class FPSControls {
 
     if (!this.isLocked) return;
 
-    const speed = this.moveSpeed * (this.keys.sprint ? this.sprintMultiplier : 1) * (this.keys.crouch ? this.crouchMultiplier : 1);
+    const speed =
+      this.moveSpeed * (this.keys.sprint ? this.sprintMultiplier : 1) * (this.keys.crouch ? this.crouchMultiplier : 1);
 
     const sinYaw = Math.sin(this.yaw);
     const cosYaw = Math.cos(this.yaw);
@@ -166,10 +201,22 @@ export class FPSControls {
     let dx = 0;
     let dz = 0;
 
-    if (this.keys.forward) { dx -= sinYaw; dz -= cosYaw; }
-    if (this.keys.backward) { dx += sinYaw; dz += cosYaw; }
-    if (this.keys.left) { dx -= cosYaw; dz += sinYaw; }
-    if (this.keys.right) { dx += cosYaw; dz -= sinYaw; }
+    if (this.keys.forward) {
+      dx -= sinYaw;
+      dz -= cosYaw;
+    }
+    if (this.keys.backward) {
+      dx += sinYaw;
+      dz += cosYaw;
+    }
+    if (this.keys.left) {
+      dx -= cosYaw;
+      dz += sinYaw;
+    }
+    if (this.keys.right) {
+      dx += cosYaw;
+      dz -= sinYaw;
+    }
 
     const len = Math.sqrt(dx * dx + dz * dz);
     if (len > 0) {

@@ -151,7 +151,8 @@ class ProcessManager {
     trayArray.forEach((item) => {
       if (procs.find((p) => p.winId === item.winId)) return;
       const win = document.getElementById(item.winId);
-      let cpu = 0, mem = 0;
+      let cpu = 0,
+        mem = 0;
       if (win) {
         const m = this.measureProcess(item.winId, win);
         cpu = m.cpu;
@@ -183,11 +184,17 @@ class ProcessManager {
     const winEl = document.getElementById(id);
     if (winEl) {
       const title = os.window.getTitle(winEl.id)?.trim() || id;
-      try { os.app.close(id); } catch (_) {}
+      try {
+        os.app.close(id);
+      } catch (_) {}
       if (document.getElementById(id)) winEl.remove();
       os.window.removeFromTaskbar(id);
-      try { os.tray.unregister(id); } catch (_) {}
-      try { os.notify.send("", `"${title}" ended`); } catch (_) {}
+      try {
+        os.tray.unregister(id);
+      } catch (_) {}
+      try {
+        os.notify.send("", `"${title}" ended`);
+      } catch (_) {}
     } else {
       const trayItems = os.tray.getTrayItems();
       const trayArray =
@@ -195,15 +202,23 @@ class ProcessManager {
           ? Array.from(trayItems.entries())
               .filter(([, item]) => item.inTray)
               .map(([winId, item]) => ({ winId, ...item }))
-          : Array.isArray(trayItems) ? trayItems : [];
+          : Array.isArray(trayItems)
+            ? trayItems
+            : [];
       const trayItem = trayArray.find((item) => item.winId === id);
       if (trayItem) {
-        try { os.app.close(id); } catch (_) {}
-        try { os.tray.unregister(id); } catch (_) {}
+        try {
+          os.app.close(id);
+        } catch (_) {}
+        try {
+          os.tray.unregister(id);
+        } catch (_) {}
         os.window.removeFromTaskbar(id);
         const hiddenWin = document.getElementById(id);
         if (hiddenWin) hiddenWin.remove();
-        try { os.notify.send("", `"${trayItem.label || id}" ended`); } catch (_) {}
+        try {
+          os.notify.send("", `"${trayItem.label || id}" ended`);
+        } catch (_) {}
       }
     }
 

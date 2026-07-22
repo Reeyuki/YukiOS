@@ -152,9 +152,10 @@ export class LiveActivityManager {
     const gameIcon = resolveAppIcon(user.appId);
 
     const avatarIndex = user.avatarIndex;
-    const avatarUrl = typeof avatarIndex === "number" && avatarIndex >= 0 && avatarIndex < PREDEFINED_AVATARS.length
-      ? PREDEFINED_AVATARS[avatarIndex]
-      : null;
+    const avatarUrl =
+      typeof avatarIndex === "number" && avatarIndex >= 0 && avatarIndex < PREDEFINED_AVATARS.length
+        ? PREDEFINED_AVATARS[avatarIndex]
+        : null;
 
     const popup = document.createElement("div");
     popup.className = "activity-popup";

@@ -61,10 +61,12 @@ export class TerminalApp extends BaseApp {
     this.registerDefaultCommands();
     this.win = null;
     this.lavatActive = false;
-    this._lavatCleanup = null;
+    this._lavatIframeCleanup = null;
+    this._lavatWinHandler = null;
   }
 
   open(opts) {
+    if (this.lavatActive) this._stopLavat();
     const win = os.window.create("terminal-win", "Terminal", "700px", "500px", {
       ...opts,
       icon: "static/icons/terminal.webp"
@@ -1281,50 +1283,74 @@ export class TerminalApp extends BaseApp {
 
     const lavatContainer = document.createElement("div");
     lavatContainer.id = "lavat-container";
-    lavatContainer.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;";
+    lavatContainer.style.cssText =
+      "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;";
 
     const iframe = document.createElement("iframe");
     iframe.id = "lavat-iframe";
     iframe.style.cssText = "width:100%;height:100%;border:none;background:#000;";
-    iframe.src = CDN_BASES.MAIN + "/static/apps/lavat/lavat.html?args=" + encodeURIComponent(lavatArgs);
     iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
 
     lavatContainer.appendChild(iframe);
     this.terminalContent.appendChild(lavatContainer);
 
-    this._lavatCleanup = () => {
+    const lavatBase = CDN_BASES.MAIN + "/static/apps/lavat";
+    try {
+      const response = await fetch(lavatBase + "/lavat.html");
+      let html = await response.text();
+      html = html.replace('src="index.js"', 'src="' + lavatBase + '/index.js"');
+      const escapedArgs = lavatArgs.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      html = html.replace('var argsStr = params.get("args") || "-c green -G";', "var argsStr = '" + escapedArgs + "';");
+      iframe.srcdoc = html;
+    } catch (e) {
+      await this.print("lavat: failed to load: " + e.message);
+      this.lavatActive = false;
       this.terminalOutput.style.display = "";
       this.terminalInputLine.style.display = "";
-      const container = document.getElementById("lavat-container");
-      if (container) container.remove();
-      this.lavatActive = false;
-    };
+      return;
+    }
 
-    const messageHandler = (e) => {
-      if (e.data?.type === "lavat-exit" && this.lavatActive) {
-        this._stopLavat();
-      }
-    };
-    window.addEventListener("message", messageHandler);
-    this._lavatCleanup = (() => {
-      const cleanup = this._lavatCleanup;
-      return () => {
-        window.removeEventListener("message", messageHandler);
-        cleanup();
-      };
-    })();
+    this._lavatIframeCleanup = null;
 
     iframe.addEventListener("load", () => {
       iframe.contentWindow?.focus();
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) return;
+      const iframeHandler = (e) => {
+        if (e.key === "Escape" || e.key === "q" || e.key === "Q" || (e.ctrlKey && e.key.toLowerCase() === "c")) {
+          this._stopLavat();
+        }
+      };
+      iframeDoc.addEventListener("keydown", iframeHandler);
+      this._lavatIframeCleanup = () => {
+        iframeDoc.removeEventListener("keydown", iframeHandler);
+      };
     });
+
+    this._lavatWinHandler = (e) => {
+      if (e.key === "Escape" && this.lavatActive) {
+        this._stopLavat();
+      }
+    };
+    if (this.win) {
+      this.win.addEventListener("keydown", this._lavatWinHandler);
+    }
   }
 
   _stopLavat() {
     if (!this.lavatActive) return;
-    if (this._lavatCleanup) {
-      this._lavatCleanup();
-      this._lavatCleanup = null;
+    this.lavatActive = false;
+    if (this._lavatIframeCleanup) {
+      this._lavatIframeCleanup();
+      this._lavatIframeCleanup = null;
     }
+    if (this._lavatWinHandler && this.win) {
+      this.win.removeEventListener("keydown", this._lavatWinHandler);
+    }
+    const container = document.getElementById("lavat-container");
+    if (container) container.remove();
+    this.terminalOutput.style.display = "";
+    this.terminalInputLine.style.display = "";
     this.terminalInput.focus();
   }
 
@@ -3585,6 +3611,7 @@ export class TerminalApp extends BaseApp {
   }
 
   cmdExit() {
+    if (this.lavatActive) this._stopLavat();
     const win = this.win || this.terminalOutput?.closest(".window");
     if (!win) return;
     os.window.removeFromTaskbar(win.id);
