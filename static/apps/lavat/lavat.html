@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>lavat</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+#canvas { display: block; image-rendering: pixelated; width: 100%; height: 100%; }
+.emscripten { display: none; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+var Module = {
+  quit: function(status, toThrow) {
+    window.parent.postMessage({ type: "lavat-exit" }, "*");
+  },
+  onRuntimeInitialized: function() {
+    var params = new URLSearchParams(window.location.search);
+    var argsStr = params.get("args") || "-c green -G";
+    var args = argsStr.trim().split(/\s+/).filter(function(s) { return s.length > 0; });
+    Module.callMain(args);
+  }
+};
+</script>
+<script async src="index.js"></script>
+</body>
+</html>

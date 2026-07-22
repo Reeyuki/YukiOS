@@ -44,6 +44,7 @@ import { RobloxApp } from "./apps/roblox.js";
 import { WallpaperEngineApp } from "./apps/wallpaperEngine.js";
 import { RunApp } from "./apps/run.js";
 import { NotepadApp } from "./apps/notepad.js";
+import { LavatApp } from "./apps/lavat.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -89,7 +90,8 @@ const APP_CLASS_MAP = {
   robloxApp: RobloxApp,
   wallpaperEngineApp: WallpaperEngineApp,
   runApp: RunApp,
-  notepadApp: NotepadApp
+  notepadApp: NotepadApp,
+  lavatApp: LavatApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

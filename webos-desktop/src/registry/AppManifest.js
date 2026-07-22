@@ -1317,5 +1317,32 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "First-person 3D room where your game library comes to life."
+  },
+  {
+    serviceKey: "lavatApp",
+    enhanced: true,
+    type: "system",
+    title: "Lavat",
+    icon: "fas fa-fire",
+    launchType: "instance",
+    windowIdPatterns: ["lavat"],
+    category: "games",
+    clippy: {
+      message: "Watch colorful metaballs dance in a lava lamp simulation right inside the terminal.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Terminal-based lava lamp simulation with customizable metaballs, colors, and gravity effects.",
+    news: {
+      date: "July 22, 2026",
+      sections: [
+        {
+          icon: "fa-fire",
+          title: "Lava Lamp",
+          items: [
+            ["fa-fire", "Lavat Terminal Visualizer", "Type lavat in the terminal for a retro lava lamp simulation with colorful metaballs, adjustable radius, speed, gravity mode, and party mode."]
+          ]
+        }
+      ]
+    }
   }
 ];

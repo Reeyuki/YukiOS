@@ -39,7 +39,8 @@ function serveStaticDev() {
             svg: "image/svg+xml",
             ico: "image/x-icon",
             js: "application/javascript",
-            css: "text/css"
+            css: "text/css",
+            wasm: "application/wasm"
           };
           res.setHeader("Content-Type", mimes[ext] || "application/octet-stream");
           res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");

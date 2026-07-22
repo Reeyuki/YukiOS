@@ -14,6 +14,7 @@ import { cmdHyprctl } from "./hyprctlCommand.js";
 import { processManager } from "../services/ProcessManager.js";
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "./about.js";
+import { CDN_BASES } from "../shared/assetResolver.js";
 
 export class TerminalApp extends BaseApp {
   constructor(os) {
@@ -59,6 +60,8 @@ export class TerminalApp extends BaseApp {
     this._nodeFallbackWarned = false;
     this.registerDefaultCommands();
     this.win = null;
+    this.lavatActive = false;
+    this._lavatCleanup = null;
   }
 
   open(opts) {
@@ -110,6 +113,11 @@ export class TerminalApp extends BaseApp {
       this.terminalInput.style.height = "auto";
       this.terminalInput.style.height = this.terminalInput.scrollHeight + "px";
     });
+
+    if (opts?.autoCommand) {
+      this.terminalInput.value = opts.autoCommand;
+      requestAnimationFrame(() => this.runEnteredCommand());
+    }
   }
 
   setupSessionListener() {
@@ -457,6 +465,7 @@ export class TerminalApp extends BaseApp {
   }
 
   snapshotActiveTab() {
+    if (this.lavatActive) this._stopLavat();
     const tab = this.tabs.find((t) => t.id === this.activeTabId);
     if (!tab) return;
     tab.currentPath = [...this.currentPath];
@@ -1253,7 +1262,70 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("resizeactive", (args) => this.cmdResizeactive(args));
     this.registerCommand("cyclenext", (args) => this.cmdCyclenext(args));
     this.registerCommand("killactive", () => this.cmdKillactive());
+    this.registerCommand("lavat", (args) => this.cmdLavat(args));
     processManager.init();
+  }
+
+  async cmdLavat(args) {
+    if (this.lavatActive) {
+      await this.print("lavat is already running. Press q or Esc inside the lava lamp to exit.");
+      return;
+    }
+
+    this.lavatActive = true;
+
+    const lavatArgs = args.length > 0 ? args.join(" ") : "-c green -G";
+
+    this.terminalOutput.style.display = "none";
+    this.terminalInputLine.style.display = "none";
+
+    const lavatContainer = document.createElement("div");
+    lavatContainer.id = "lavat-container";
+    lavatContainer.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;";
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "lavat-iframe";
+    iframe.style.cssText = "width:100%;height:100%;border:none;background:#000;";
+    iframe.src = CDN_BASES.MAIN + "/static/apps/lavat/lavat.html?args=" + encodeURIComponent(lavatArgs);
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+
+    lavatContainer.appendChild(iframe);
+    this.terminalContent.appendChild(lavatContainer);
+
+    this._lavatCleanup = () => {
+      this.terminalOutput.style.display = "";
+      this.terminalInputLine.style.display = "";
+      const container = document.getElementById("lavat-container");
+      if (container) container.remove();
+      this.lavatActive = false;
+    };
+
+    const messageHandler = (e) => {
+      if (e.data?.type === "lavat-exit" && this.lavatActive) {
+        this._stopLavat();
+      }
+    };
+    window.addEventListener("message", messageHandler);
+    this._lavatCleanup = (() => {
+      const cleanup = this._lavatCleanup;
+      return () => {
+        window.removeEventListener("message", messageHandler);
+        cleanup();
+      };
+    })();
+
+    iframe.addEventListener("load", () => {
+      iframe.contentWindow?.focus();
+    });
+  }
+
+  _stopLavat() {
+    if (!this.lavatActive) return;
+    if (this._lavatCleanup) {
+      this._lavatCleanup();
+      this._lavatCleanup = null;
+    }
+    this.terminalInput.focus();
   }
 
   cmdClear() {
@@ -3517,5 +3589,9 @@ export class TerminalApp extends BaseApp {
     if (!win) return;
     os.window.removeFromTaskbar(win.id);
     win.remove();
+  }
+
+  onClose(winId) {
+    if (this.lavatActive) this._stopLavat();
   }
 }
