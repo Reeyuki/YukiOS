@@ -22,17 +22,14 @@ applications running alongside each other.
 
 Its built entirely in vanilla javascript/typescript without any frameworks.
 
-![Login page](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/login.png)
-![Steam interface](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png)
-![Start menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)
-![Mac OS mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png)
-![Steam overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)
-![Tiling](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)
-![Tiling 2](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling-2.png)
-![Btop, Lavat & cmatrix ported to web](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png)
-![Music1](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/audio1.png)
-![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)
-![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)
+## Screenshots
+
+| | |
+|---|---|
+| ![Mac Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png) | ![Steam](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png) |
+| ![Start Menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png) | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png) |
+| ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png) | ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png) |
+| ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png) |
 
 # Desktop Experience
 
