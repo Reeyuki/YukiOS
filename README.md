@@ -30,7 +30,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 | ![Start Menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png) | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png) |
 | ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png) | ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png) |
 | ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png) |
-
+| ![3D Os Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/3d.png) |
 # Desktop Experience
 
 - Draggable, resizable, minimizable, maximizable windows
