@@ -4,9 +4,8 @@ const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
 const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
 const ENDPOINT = ENDPOINT_BASE + "/analytics";
 const hostname = window.location.hostname;
-const ANALYTICS_DISABLED = () => {
+const ANALYTICS_DISABLED = () =>
   os.storage.get(StorageKeys.analyticsDisabled) === "true";
-};
 const FLUSH_INTERVAL_MS = 30000;
 const MAX_QUEUE_SIZE = 15;
 
@@ -172,7 +171,7 @@ export function getCachedPlayCounts() {
 }
 
 export async function fetchLiveStats() {
-  if (ANALYTICS_DISABLED) return null;
+  if (ANALYTICS_DISABLED()) return null;
   const now = Date.now();
   if (cachedLiveStats && now - liveStatsCacheTime < LIVE_STATS_TTL_MS) return cachedLiveStats;
   if (liveStatsPromise) return liveStatsPromise;
