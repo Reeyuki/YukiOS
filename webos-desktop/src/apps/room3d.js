@@ -1,5 +1,5 @@
 import "../styles/room3d.css";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 import { gameBridge } from "../game-bridge/GameBridge.js";
 import { RoomRenderer } from "../3d/RoomRenderer.js";
 import { FPSControls } from "../3d/FPSControls.js";
@@ -147,6 +147,9 @@ export class Room3DApp extends BaseApp {
       <div class="room3d-hint" id="room3d-hint">
         <span class="room3d-hint-key">G</span> Sort  <span class="room3d-hint-key">Tab</span> Edit  <span class="room3d-hint-key">N</span> Day/Night
       </div>
+      <div class="room3d-launch-hint" id="room3d-launch-hint">
+        <span class="room3d-hint-key">F</span> Launch
+      </div>
       <div class="room3d-wastebin-hint" id="room3d-wastebin-hint">
         <span class="room3d-hint-key">E</span> Trash
       </div>
@@ -161,6 +164,7 @@ export class Room3DApp extends BaseApp {
     this.crosshairEl = root.querySelector("#room3d-crosshair");
     this.hintEl = root.querySelector("#room3d-hint");
     this.wastebinHintEl = root.querySelector("#room3d-wastebin-hint");
+    this.launchHintEl = root.querySelector("#room3d-launch-hint");
 
     this.renderer = new RoomRenderer(container);
     await this.renderer.init();
@@ -566,6 +570,10 @@ export class Room3DApp extends BaseApp {
       this.interaction.updateWastebinProximity(this.renderer.camera);
       if (this.wastebinHintEl) {
         this.wastebinHintEl.classList.toggle("room3d-wastebin-hint--visible", this.interaction.nearWastebin);
+      }
+      if (this.launchHintEl) {
+        const showLaunch = !(this.gameState && this.gameState.active) && this.interaction.povGrabbedCase;
+        this.launchHintEl.classList.toggle("room3d-launch-hint--visible", showLaunch);
       }
       if (this.audio && this.controls && this.controls.isLocked) {
         const moving =
@@ -1083,10 +1091,7 @@ export class Room3DApp extends BaseApp {
           if (hits.length > 0 && hits[0].uv && hits[0].distance < RoomInteraction.INTERACT_DIST) {
             const result = this.renderer.hologramRenderer.getItemAtUV(hits[0].uv.x, hits[0].uv.y);
             if (result && result.type === "app") {
-              if (this.audio) this.audio.playHoloClick();
-              if (this.systemOnExit) this.systemOnExit();
-              else this.closeRoom();
-              os.app.launch(result.appId);
+              this.launchGameAndExit(result.appId);
               return;
             }
             if (result && result.type === "nav") {
@@ -1110,6 +1115,16 @@ export class Room3DApp extends BaseApp {
         if (this.renderer && this.renderer.toggleDayNight) {
           this.renderer.toggleDayNight();
           if (this.audio) this.audio.playDayNight();
+        }
+        return;
+      }
+      if ((e.code === "KeyF" || e.key === "f") && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        if (this.interaction) {
+          const gameId = this.interaction.launchFocusedGame();
+          if (gameId) {
+            this.launchGameAndExit(gameId);
+          }
         }
         return;
       }
@@ -1382,6 +1397,33 @@ export class Room3DApp extends BaseApp {
     };
   }
 
+  launchGameAndExit(gameId) {
+    if (this.audio) this.audio.playHoloClick();
+    const appId = gameId;
+    os.app.launch(gameId);
+
+    if (!os.storage.get(StorageKeys.room3dReturnHintShown)) {
+      os.storage.set(StorageKeys.room3dReturnHintShown, true);
+      setTimeout(() => {
+        os.notify.send("3D Room", "You can launch the 3D Room app from desktop shortcut to return back.");
+      }, 1500);
+    }
+
+    setTimeout(() => {
+      const win =
+        document.querySelector(`[data-appId="${appId}"]`) ||
+        document.getElementById(`${appId}-win`) ||
+        document.getElementById(appId);
+      if (win) {
+        win.classList.add("snapping");
+        win.offsetHeight;
+        this.wm.applySnap(win, "maximize");
+      }
+    }, 600);
+    if (this.systemOnExit) this.systemOnExit();
+    else this.closeRoom();
+  }
+
   setupInteractionCallbacks() {
     this.controls.onBeforeLock = (event) => {
       if (this.editorManager && this.editorManager.isEditActive()) {
@@ -1433,9 +1475,7 @@ export class Room3DApp extends BaseApp {
           const result = holo.handleClick(uv.x, uv.y);
           if (result && result.action === "navigate") return;
           if (result && result.action === "launch") {
-            if (this.systemOnExit) this.systemOnExit();
-            else this.closeRoom();
-            os.app.launch(result.appId);
+            this.launchGameAndExit(result.appId);
             return;
           }
         }
@@ -1686,6 +1726,7 @@ export class Room3DApp extends BaseApp {
     this.systemOverlay = null;
     this.crosshairEl = null;
     this.wastebinHintEl = null;
+    this.launchHintEl = null;
   }
 
   exitSystemMode() {

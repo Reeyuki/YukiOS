@@ -183,7 +183,7 @@ export class RoomInteraction {
           this.grabBall();
         } else {
           const gameCase = this.gameCases.find((b) => b.mesh === mesh);
-          if (gameCase && this.shelfManager && this.shelfManager.isCaseShelved(gameCase) && this.onLaunchGame) {
+          if (gameCase && this.onLaunchGame) {
             this.onLaunchGame(gameCase.gameId);
           } else {
             this.grabBook(mesh);
@@ -538,6 +538,23 @@ export class RoomInteraction {
     }
     gameCase.grabbed = false;
     this.povGrabbedCase = null;
+  }
+
+  launchFocusedGame() {
+    if (this.povGrabbedCase) {
+      return this.povGrabbedCase.gameId;
+    }
+    if (!this.raycaster || !this.renderer || !this.renderer.camera) return null;
+    const camera = this.renderer.camera;
+    this.raycaster.setFromCamera(new this.THREE.Vector2(0, 0), camera);
+    const meshes = this.gameCases.filter((b) => !b.grabbed && b !== this.povGrabbedCase).map((b) => b.mesh);
+    const intersects = this.raycaster.intersectObjects(meshes);
+    if (intersects.length > 0 && intersects[0].distance < RoomInteraction.INTERACT_DIST) {
+      const mesh = intersects[0].object;
+      const gameCase = this.gameCases.find((b) => b.mesh === mesh);
+      if (gameCase) return gameCase.gameId;
+    }
+    return null;
   }
 
   grabBall() {

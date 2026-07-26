@@ -110,3 +110,23 @@
   font-weight: 500;
   color: var(--text-secondary, rgba(255, 255, 255, 0.6));
 }
+
+.room3d-launch-hint {
+  position: absolute;
+  bottom: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 13px;
+  color: rgba(180, 220, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room3d-launch-hint--visible {
+  opacity: 1;
+}

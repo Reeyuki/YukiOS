@@ -232,5 +232,6 @@ export const StorageKeys = {
   room3dFloorColor: "yukiOS_room3d_floor_color",
   room3dFurniturePositions: "yukiOS_room3d_furniture_positions",
   room3dActiveDecorations: "yukiOS_room3d_active_decorations",
-  room3dSettings: "yukiOS_room3d_settings"
+  room3dSettings: "yukiOS_room3d_settings",
+  room3dReturnHintShown: "yukiOS_room3d_return_hint_shown"
 };
