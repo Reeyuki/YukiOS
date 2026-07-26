@@ -2,7 +2,7 @@ import { HIGHLIGHTED_GAMES } from "./games.js";
 import { SteamDataManager } from "./games.js";
 import { popularityMap } from "./games.js";
 import { SteamSettings } from "./steam.js";
-import { lazyImg, observeLazyImages } from "./games.js";
+import { lazyImg, observeLazyImages, getCdnBase } from "./games.js";
 import { fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { $, $$ } from "../shared/domUtils.js";
 import { shouldEnableAds, injectAdsterraAd } from "../ads.js";
@@ -330,7 +330,7 @@ export class GameRenderer {
               .map(
                 (item) => `
               <div class="news-card">
-                <img src="${item.image}" />
+                <img src="${item.image}" onerror="this.src='${getCdnBase()}/static/icons/steam.webp'" />
                 <div class="news-info">
                   <div class="news-title">${item.title}</div>
                   <div class="news-date">${item.date}</div>

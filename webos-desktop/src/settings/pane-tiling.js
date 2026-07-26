@@ -1,8 +1,19 @@
 import { StorageKeys, os } from "../framework.js";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import { getRangeSliderValue, bindRangeSlider, renderRangeSlider } from "../shared/rangeSlider.js";
-import { getSelectMenuValue, bindSelectMenu } from "../shared/selectMenu.js";
+import { getSelectMenuValue, bindSelectMenu, renderSelectMenu } from "../shared/selectMenu.js";
 import { BusEvents } from "../core/EventBus.js";
+
+const EASING_PRESETS = [
+  { value: "cubic-bezier(0.16, 1, 0.3, 1)", label: "easeOutExpo", desc: "Smooth deceleration (default)" },
+  { value: "cubic-bezier(0, 0.55, 0.45, 1)", label: "easeOutCirc", desc: "Circular deceleration" },
+  { value: "cubic-bezier(0.33, 1, 0.68, 1)", label: "easeOutCubic", desc: "Snappy deceleration" },
+  { value: "cubic-bezier(0.25, 1, 0.5, 1)", label: "easeOutQuart", desc: "Pronounced deceleration" },
+  { value: "cubic-bezier(0.65, 0, 0.35, 1)", label: "easeInOutCubic", desc: "Smooth in and out" },
+  { value: "cubic-bezier(0.85, 0, 0.15, 1)", label: "easeInOutCirc", desc: "Gentle ease in and out" },
+  { value: "cubic-bezier(0.34, 1.56, 0.64, 1)", label: "easeOutBack", desc: "Slight overshoot" },
+  { value: "cubic-bezier(0, 0, 1, 1)", label: "linear", desc: "No easing" }
+];
 
 function getConfigVal(key, dflt) {
   const cfg = os.tiling.getEffectiveConfig();
@@ -39,6 +50,8 @@ export function renderTilingSettings() {
   const borderRadius = getConfigVal("border_radius", 4);
   const resizeDelta = getConfigVal("resize_delta", 0.05);
   const animDuration = getConfigVal("animation_duration", 200);
+  const animEasing = getConfigVal("animation_easing", "cubic-bezier(0.16, 1, 0.3, 1)");
+  const layout = getConfigVal("layout", "bsp");
   const mouseResize = getConfigVal("mouse_resize", true);
   const wsDelay = getConfigVal("workspace_switch_delay", 320);
   const resizeDebounce = getConfigVal("resize_debounce", 150);
@@ -130,7 +143,7 @@ export function renderTilingSettings() {
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Enable Rofi</span>
-            <span class="settings-label-desc">Enable the rofi-style app launcher overlay</span>
+            <span class="settings-label-desc">Enable the rofi overlay (Alt+D) with Apps, Run, Window, and Calc modes</span>
           </div>
           <label class="settings-toggle">
             <input type="checkbox" id="settingsTilingRofiEnabled" ${rofiEnabled ? "checked" : ""}/>
@@ -155,6 +168,21 @@ export function renderTilingSettings() {
 
       <div class="settings-card" id="sc-tiling-layout">
         <div class="settings-card-header"><i class="fas fa-th-large"></i> Layout</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Layout Type</span>
+            <span class="settings-label-desc">BSP splits windows recursively; Master-Stack keeps a primary region with a side stack</span>
+          </div>
+          ${renderSelectMenu(
+            "settingsTilingLayout",
+            [
+              { value: "bsp", label: "BSP", desc: "Binary Space Partition" },
+              { value: "master-stack", label: "Master-Stack", desc: "Master with side stack" }
+            ],
+            layout,
+            "layout-select"
+          )}
+        </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Inner Gap</span>
@@ -218,6 +246,20 @@ export function renderTilingSettings() {
           </div>
           ${rs("settingsTilingAnimDuration", animDuration, 0, 500, 25)}
         </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Animation Easing</span>
+            <span class="settings-label-desc">Timing curve for layout transitions</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;width:200px">
+            ${renderSelectMenu("settingsTilingAnimEasing", EASING_PRESETS, animEasing, "easing-select")}
+            <div class="easing-preview" id="settingsTilingEasingPreview">
+              <div class="easing-preview-track">
+                <div class="easing-preview-ball" id="easing-preview-ball"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="settings-card" id="sc-tiling-performance">
@@ -257,15 +299,29 @@ export function bindTilingCategory(win, save, settings) {
     splitRatio: () => getRangeSliderValue("settingsTilingSplitRatio", win),
     resizeDelta: () => getRangeSliderValue("settingsTilingResizeDelta", win),
     mouseResize: $("#settingsTilingMouseResize", win),
+    layout: () => getSelectMenuValue("settingsTilingLayout", win),
     borderWidth: () => getRangeSliderValue("settingsTilingBorderWidth", win),
     borderRadius: () => getRangeSliderValue("settingsTilingBorderRadius", win),
     animDuration: () => getRangeSliderValue("settingsTilingAnimDuration", win),
+    animEasing: () => getSelectMenuValue("settingsTilingAnimEasing", win),
     wsDelay: () => getRangeSliderValue("settingsTilingWsDelay", win),
     resizeDebounce: () => getRangeSliderValue("settingsTilingResizeDebounce", win)
   };
 
+  const updateEasingPreview = (easing) => {
+    const ball = $("#easing-preview-ball", win);
+    if (ball) {
+      ball.style.setProperty("--easing", easing);
+      ball.classList.remove("easing-preview-anim");
+      void ball.offsetWidth;
+      ball.classList.add("easing-preview-anim");
+    }
+  };
+
   const saveTiling = () => {
+    const easing = els.animEasing();
     os.tiling.updateConfig({
+      layout: els.layout() || "bsp",
       gaps: {
         inner: Number(els.innerGap()),
         outer: Number(els.outerGap())
@@ -275,6 +331,7 @@ export function bindTilingCategory(win, save, settings) {
       border_radius: Number(els.borderRadius()),
       resize_delta: Number(els.resizeDelta()),
       animation_duration: Number(els.animDuration()),
+      animation_easing: easing,
       mouse_resize: els.mouseResize?.checked ?? true,
       workspace_switch_delay: Number(els.wsDelay()),
       resize_debounce: Number(els.resizeDebounce())
@@ -296,6 +353,18 @@ export function bindTilingCategory(win, save, settings) {
     os.events.emit(BusEvents.SETTINGS_CHANGED, { tiling: true });
     save();
   };
+
+  const animEasing = els.animEasing();
+  if (animEasing) updateEasingPreview(animEasing);
+
+  const easingSelect = $("#settingsTilingAnimEasing", win);
+  if (easingSelect) {
+    bindEvent(easingSelect, "change", () => {
+      const val = getSelectMenuValue("settingsTilingAnimEasing", win);
+      if (val) updateEasingPreview(val);
+      saveTiling();
+    });
+  }
 
   const inputs = win.querySelectorAll("#pane-tiling input, #pane-tiling .select-menu, #pane-tiling .range-slider");
   inputs.forEach((el) => {

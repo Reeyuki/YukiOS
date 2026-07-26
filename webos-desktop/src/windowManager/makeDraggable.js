@@ -157,7 +157,7 @@ export function windowMakeDraggable(win, wm) {
 
   const isDesktopStretchScrollDisabled = () => {
     try {
-      return os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
+      return os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false";
     } catch {
       return false;
     }

@@ -92,9 +92,9 @@ jobs:
               pnpm install --frozen-lockfile
               pnpm build:single
 
-              HTML_FILE="$(find dist -type f -name '*.html' | head -n 1)"
+              HTML_FILE="dist/index.html"
 
-              if [ -n "$HTML_FILE" ] && [ -f "$HTML_FILE" ]; then
+              if [ -f "$HTML_FILE" ]; then
 
                 SHA="${GITHUB_SHA::7}"
                 SUBJECT="${{ github.event.head_commit.message }}"
@@ -183,9 +183,9 @@ jobs:
             pnpm install --frozen-lockfile
             pnpm build:single
 
-            HTML_FILE="$(find dist -type f -name '*.html' | head -n 1)"
+            HTML_FILE="dist/index.html"
 
-            if [ -n "$HTML_FILE" ] && [ -f "$HTML_FILE" ]; then
+            if [ -f "$HTML_FILE" ]; then
               SHA="${GITHUB_SHA::7}"
               PAYLOAD=$(jq -n \
                 --arg sha "$SHA" \

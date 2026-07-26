@@ -1,6 +1,6 @@
 import * as CANNON from "cannon-es";
 
-export class BookPhysics {
+export class GameCasePhysics {
   constructor(bounds, colliders) {
     this.bounds = bounds;
     this.colliders = colliders || [];
@@ -94,36 +94,50 @@ export class BookPhysics {
     this.world.removeBody(body);
   }
 
-  update(books, delta) {
-    for (const book of books) {
-      if (!book.grabbed) continue;
-      if (book.body.type !== CANNON.Body.KINEMATIC) {
-        book.body.type = CANNON.Body.KINEMATIC;
-        book.body.velocity.set(0, 0, 0);
-        book.body.angularVelocity.set(0, 0, 0);
+  update(gameCases, delta, ballBody) {
+    for (const gameCase of gameCases) {
+      if (!gameCase.grabbed) continue;
+      if (gameCase.body.type !== CANNON.Body.KINEMATIC) {
+        gameCase.body.type = CANNON.Body.KINEMATIC;
+        gameCase.body.velocity.set(0, 0, 0);
+        gameCase.body.angularVelocity.set(0, 0, 0);
+        gameCase.body.allowSleep = false;
+        gameCase.body.wakeUp();
       }
-      book.body.position.set(book.mesh.position.x, book.mesh.position.y, book.mesh.position.z);
-      book.body.quaternion.set(
-        book.mesh.quaternion.x,
-        book.mesh.quaternion.y,
-        book.mesh.quaternion.z,
-        book.mesh.quaternion.w
+      gameCase.body.position.set(gameCase.mesh.position.x, gameCase.mesh.position.y, gameCase.mesh.position.z);
+      gameCase.body.quaternion.set(
+        gameCase.mesh.quaternion.x,
+        gameCase.mesh.quaternion.y,
+        gameCase.mesh.quaternion.z,
+        gameCase.mesh.quaternion.w
       );
     }
 
     const stepped = Math.min(delta, 0.033);
-    this.world.step(1 / 120, stepped, 8);
 
-    for (const book of books) {
-      if (book.grabbed) continue;
-      book.mesh.position.set(book.body.position.x, book.body.position.y, book.body.position.z);
-      book.mesh.quaternion.set(
-        book.body.quaternion.x,
-        book.body.quaternion.y,
-        book.body.quaternion.z,
-        book.body.quaternion.w
+    let anyAwake = ballBody && ballBody.sleepState === 0;
+    if (!anyAwake) {
+      for (const gameCase of gameCases) {
+        if (gameCase.grabbed || (gameCase.body && gameCase.body.sleepState === 0)) {
+          anyAwake = true;
+          break;
+        }
+      }
+    }
+    if (anyAwake) {
+      this.world.step(1 / 120, stepped, 4);
+    }
+
+    for (const gameCase of gameCases) {
+      if (gameCase.grabbed) continue;
+      gameCase.mesh.position.set(gameCase.body.position.x, gameCase.body.position.y, gameCase.body.position.z);
+      gameCase.mesh.quaternion.set(
+        gameCase.body.quaternion.x,
+        gameCase.body.quaternion.y,
+        gameCase.body.quaternion.z,
+        gameCase.body.quaternion.w
       );
-      book.pos.copy(book.mesh.position);
+      gameCase.pos.copy(gameCase.mesh.position);
     }
   }
 

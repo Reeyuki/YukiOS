@@ -331,7 +331,12 @@ function calculateLayout(root, x, y, w, h, gaps) {
   return results;
 }
 
+function createState() {
+  return null;
+}
+
 export const TilingLayoutEngine = {
+  createState,
   createLeaf,
   createInternal,
   isLeaf,

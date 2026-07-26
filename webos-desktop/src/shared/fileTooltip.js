@@ -95,7 +95,7 @@ function showTooltip(cx, cy, dirPath, name) {
 async function loadSize(dirPath, name, rowEl) {
   try {
     const meta = await os.fs.getMetadata(dirPath, name);
-    const text = meta.size != null ? formatSize(meta.size) : "Unknown";
+    const text = meta.size != null ? formatSize(meta.size) : "4 KB";
     const label = rowEl.querySelector(".ft-label");
     rowEl.textContent = "";
     if (label) rowEl.appendChild(label);
@@ -104,7 +104,7 @@ async function loadSize(dirPath, name, rowEl) {
     const label = rowEl.querySelector(".ft-label");
     rowEl.textContent = "";
     if (label) rowEl.appendChild(label);
-    rowEl.appendChild(document.createTextNode(" Unknown"));
+    rowEl.appendChild(document.createTextNode(" 4 KB"));
   }
 }
 

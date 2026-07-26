@@ -1,5 +1,5 @@
-import { appMap } from "../games/gamesList.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { getGameList } from "./GameCaseManager.js";
 
 const COLS = 4;
 const ROWS = 5;
@@ -20,15 +20,9 @@ function hashId(id) {
   return Math.abs(h);
 }
 
-function getAllGames() {
-  return Object.entries(appMap)
-    .filter(([, g]) => g.type !== "system" && g.title)
-    .map(([id, g]) => ({ id, title: g.title, icon: g.icon }));
-}
-
 export class WallDisplay {
-  constructor(bookManager, onSpawn, onRecover, THREE, scene, interactiveObjects) {
-    this.bookManager = bookManager;
+  constructor(gameCaseManager, onSpawn, onRecover, THREE, scene, interactiveObjects) {
+    this.gameCaseManager = gameCaseManager;
     this.onSpawn = onSpawn;
     this.onRecover = onRecover;
     this.THREE = THREE;
@@ -67,10 +61,10 @@ export class WallDisplay {
   }
 
   buildItems() {
-    const data = this.bookManager.getCatalogueData();
+    const data = this.gameCaseManager.getCatalogueData();
     const trashedIds = new Set(data.trashed);
     const spawnedIds = new Set(data.spawned.map((g) => g.id));
-    const allGames = getAllGames();
+    const allGames = getGameList();
 
     this.items = [];
     for (const game of allGames) {
@@ -93,40 +87,56 @@ export class WallDisplay {
   buildGroup() {
     const T = this.THREE;
     this.group = new T.Group();
-    this.group.position.set(3.78, 1.5, 0);
-    this.group.rotation.y = -Math.PI / 2;
+    this.group.position.set(3.7, 1.5, 3.8);
+    this.group.rotation.y = Math.PI;
 
     const boardW = 2.2;
     const boardH = 2.8;
+
     const boardMat = new T.MeshStandardMaterial({
-      color: 0x0c0c1a,
-      roughness: 0.8,
-      metalness: 0.3,
-      emissive: 0x1a0a2a,
-      emissiveIntensity: 0.1,
+      color: 0x0e0e1e,
+      roughness: 0.6,
+      metalness: 0.2,
+      emissive: 0x14142a,
+      emissiveIntensity: 0.25,
       side: T.DoubleSide
     });
     const board = new T.Mesh(new T.PlaneGeometry(boardW, boardH), boardMat);
     board.userData.title = "Game Collection";
     this.group.add(board);
 
-    const borderMat = new T.MeshBasicMaterial({
-      color: 0x6633cc,
+    const borderColor = 0x334466;
+    const borderOpacity = 0.7;
+    const bt = 0.04;
+    const bMat = new T.MeshBasicMaterial({
+      color: borderColor,
       transparent: true,
-      opacity: 0.25,
+      opacity: borderOpacity,
       side: T.DoubleSide
     });
-    const border = new T.Mesh(new T.PlaneGeometry(boardW + 0.04, boardH + 0.04), borderMat);
-    border.position.z = 0.001;
-    border.userData.title = "Game Collection";
-    this.group.add(border);
+
+    const top = new T.Mesh(new T.PlaneGeometry(boardW + bt * 2, bt), bMat);
+    top.position.set(0, boardH / 2 + bt / 2, 0.001);
+    this.group.add(top);
+
+    const bottom = new T.Mesh(new T.PlaneGeometry(boardW + bt * 2, bt), bMat);
+    bottom.position.set(0, -boardH / 2 - bt / 2, 0.001);
+    this.group.add(bottom);
+
+    const left = new T.Mesh(new T.PlaneGeometry(bt, boardH), bMat);
+    left.position.set(-boardW / 2 - bt / 2, 0, 0.001);
+    this.group.add(left);
+
+    const right = new T.Mesh(new T.PlaneGeometry(bt, boardH), bMat);
+    right.position.set(boardW / 2 + bt / 2, 0, 0.001);
+    this.group.add(right);
 
     const titleMat = new T.MeshBasicMaterial({ transparent: true, opacity: 0.9, side: T.DoubleSide });
     const titleCanvas = document.createElement("canvas");
     titleCanvas.width = 256;
     titleCanvas.height = 40;
     const tctx = titleCanvas.getContext("2d");
-    tctx.fillStyle = "#a066ff";
+    tctx.fillStyle = "#00ddff";
     tctx.font = "bold 18px monospace";
     tctx.textAlign = "center";
     tctx.textBaseline = "middle";
@@ -134,7 +144,7 @@ export class WallDisplay {
     const titleTex = new T.CanvasTexture(titleCanvas);
     titleMat.map = titleTex;
     const titleMesh = new T.Mesh(new T.PlaneGeometry(0.8, 0.12), titleMat);
-    titleMesh.position.set(0, 1.25, 0.01);
+    titleMesh.position.set(0, 1.25, 0.002);
     this.group.add(titleMesh);
 
     this.buildCloseButton();
@@ -154,7 +164,7 @@ export class WallDisplay {
       side: T.DoubleSide
     });
     const mesh = new T.Mesh(new T.PlaneGeometry(0.1, 0.1), mat);
-    mesh.position.set(0.97, 1.3, 0.01);
+    mesh.position.set(0.97, 1.3, 0.005);
     mesh.userData.objectId = "wallClose";
     mesh.userData.title = "Close";
     mesh.userData.interactive = true;
@@ -187,7 +197,7 @@ export class WallDisplay {
         side: T.DoubleSide
       });
       const mesh = new T.Mesh(new T.PlaneGeometry(tabW, tabH), mat);
-      mesh.position.set(startX + i * (tabW + 0.04), 1.08, 0.01);
+      mesh.position.set(startX + i * (tabW + 0.04), 1.08, 0.005);
       mesh.userData.objectId = "wallTab_" + TAB_IDS[i];
       mesh.userData.tabId = TAB_IDS[i];
       mesh.userData.title = TAB_IDS[i].charAt(0).toUpperCase() + TAB_IDS[i].slice(1);
@@ -207,7 +217,7 @@ export class WallDisplay {
       const isActive = mesh.userData.tabId === this.tab;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (isActive) {
-        ctx.fillStyle = "#a066ff";
+        ctx.fillStyle = "#00ddff";
         ctx.font = "bold 13px sans-serif";
       } else {
         ctx.fillStyle = "rgba(255,255,255,0.4)";
@@ -217,7 +227,7 @@ export class WallDisplay {
       ctx.textBaseline = "middle";
       ctx.fillText(mesh.userData.tabId.charAt(0).toUpperCase() + mesh.userData.tabId.slice(1), 64, 18);
       if (isActive) {
-        ctx.fillStyle = "#a066ff";
+        ctx.fillStyle = "#00ddff";
         ctx.fillRect(20, canvas.height - 3, canvas.width - 40, 2);
       }
       mesh.material.map.needsUpdate = true;
@@ -229,13 +239,13 @@ export class WallDisplay {
     const T = this.THREE;
 
     const prevMat = new T.MeshBasicMaterial({
-      color: 0x8844ff,
+      color: 0x00ddff,
       transparent: true,
       opacity: 0.5,
       side: T.DoubleSide
     });
     const prev = new T.Mesh(new T.PlaneGeometry(0.12, 0.12), prevMat);
-    prev.position.set(-0.6, -1.2, 0.01);
+    prev.position.set(-0.6, -1.2, 0.005);
     prev.userData.objectId = "wallPagePrev";
     prev.userData.title = "Previous Page";
     prev.userData.interactive = true;
@@ -243,13 +253,13 @@ export class WallDisplay {
     this.pageButtons.push(prev);
 
     const nextMat = new T.MeshBasicMaterial({
-      color: 0x8844ff,
+      color: 0x00ddff,
       transparent: true,
       opacity: 0.5,
       side: T.DoubleSide
     });
     const next = new T.Mesh(new T.PlaneGeometry(0.12, 0.12), nextMat);
-    next.position.set(0.6, -1.2, 0.01);
+    next.position.set(0.6, -1.2, 0.005);
     next.userData.objectId = "wallPageNext";
     next.userData.title = "Next Page";
     next.userData.interactive = true;
@@ -270,13 +280,13 @@ export class WallDisplay {
   buildRecoverAllButton() {
     const T = this.THREE;
     const mat = new T.MeshBasicMaterial({
-      color: 0x6633cc,
+      color: 0xffcc00,
       transparent: true,
       opacity: 0.0,
       side: T.DoubleSide
     });
     const mesh = new T.Mesh(new T.PlaneGeometry(0.32, 0.1), mat);
-    mesh.position.set(0.0, -1.2, 0.01);
+    mesh.position.set(0.0, -1.2, 0.005);
     mesh.userData.objectId = "wallRecoverAll";
     mesh.userData.title = "Recover All";
     mesh.userData.interactive = true;
@@ -344,7 +354,7 @@ export class WallDisplay {
       });
       const geo = new T.BoxGeometry(CARD_W, CARD_H, CARD_D);
       const mesh = new T.Mesh(geo, mat);
-      mesh.position.set(lx, ly, 0.015);
+      mesh.position.set(lx, ly, 0.01);
       mesh.userData.objectId = "wallCard_" + game.id;
       mesh.userData.gameId = game.id;
       mesh.userData.gameStatus = game.status;
@@ -379,7 +389,7 @@ export class WallDisplay {
       bc.width = 32;
       bc.height = 32;
       const bctx = bc.getContext("2d");
-      bctx.fillStyle = "#8844ff";
+      bctx.fillStyle = "#00ddff";
       bctx.font = "bold 18px sans-serif";
       bctx.textAlign = "center";
       bctx.textBaseline = "middle";

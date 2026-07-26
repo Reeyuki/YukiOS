@@ -1257,8 +1257,46 @@ export function renderNetworkSettings(s) {
           <input type="text" id="settingsCustomWispUrl" class="settings-input" value="${isCustomWisp ? currentWisp : ""}" placeholder="wss://your-wisp-server.com/" style="width: 300px; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;" />
         </div>
       </div>
+
+      <div class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-exchange-alt"></i> Transport Protocol</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Transport Protocol</span>
+            <span class="settings-label-desc">Choose the proxy transport for Scramjet browser</span>
+          </div>
+          <div class="transport-pills" id="settingsBrowserTransport">
+            ${renderTransportPills(s.browserTransport || "epoxy", "settingsTransport")}
+          </div>
+        </div>
+      </div>
     </div>
   `;
+}
+
+function renderTransportPills(current, name) {
+  const types = {
+    epoxy: { name: "Epoxy (Wisp)", desc: "Default WebSocket-based transport" },
+    libcurl: { name: "libcurl (Wisp)", desc: "Alternative WebSocket-based transport" },
+    bare: { name: "Bare Server", desc: "HTTP-based proxy transport" }
+  };
+  return Object.entries(types)
+    .map(function (entry) {
+      var key = entry[0],
+        t = entry[1];
+      return (
+        '<span class="settings-option-pill' +
+        (key === current ? " active" : "") +
+        '" data-transport="' +
+        key +
+        '" data-tooltip="' +
+        t.desc +
+        '">' +
+        t.name +
+        "</span>"
+      );
+    })
+    .join("");
 }
 export function renderAudioSettings(s) {
   const vol = Math.round((s.soundEnabled ? s.masterVolume : audioMixer().masterVolume) * 100);

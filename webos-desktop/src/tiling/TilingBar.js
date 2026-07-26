@@ -56,7 +56,7 @@ export class TilingBar {
     this.el.id = "tiling-bar";
     this.el.innerHTML = `
       <div class="tiling-bar-section tiling-bar-left">
-        <button class="tiling-rofi-trigger" id="tiling-rofi-trigger" title="Search apps (Super+D)">
+        <button class="tiling-rofi-trigger" id="tiling-rofi-trigger" title="Search (Alt+D, Tab to switch modes)">
           <i class="fas fa-search"></i>
         </button>
         <div class="tiling-ws-pills" id="tiling-ws-pills"></div>

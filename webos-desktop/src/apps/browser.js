@@ -1,5 +1,6 @@
 import "../styles/scramjet.css";
 import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BusEvents } from "../core/EventBus.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 import { PROXIES } from "../proxies.js";
 
@@ -76,7 +77,14 @@ export class BrowserApp extends BaseApp {
 
     const isIncognito = state.isIncognito || false;
     const incognitoParam = isIncognito ? "?incognito=true" : "";
-    iframe.src = window.location.origin + "/scram/index.html" + incognitoParam;
+    const transportType = os.storage.get(StorageKeys.browserTransport) || "epoxy";
+    iframe.src =
+      window.location.origin +
+      "/scram/index.html" +
+      incognitoParam +
+      (incognitoParam ? "&" : "?") +
+      "transport=" +
+      transportType;
 
     const header = element.querySelector(".window-header");
     if (header) {
@@ -97,7 +105,9 @@ export class BrowserApp extends BaseApp {
       });
       const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
       const history = os.storage.get(StorageKeys.browserHistory) || [];
-      iframe.contentWindow.postMessage({ type: "scram:init", vars, bookmarks, history }, "*");
+      const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+      const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
+      iframe.contentWindow.postMessage({ type: "scram:init", vars, bookmarks, history, wispUrl, transport }, "*");
     };
 
     const msgHandler = (e) => {
@@ -145,6 +155,9 @@ export class BrowserApp extends BaseApp {
         if (this.torEnabled && data.url) {
           this.loadWithTor(data.url);
         }
+      } else if (data.type === "scram:proxyConfigChange") {
+        if (data.wispUrl) os.storage.set(StorageKeys.wispServer, data.wispUrl);
+        if (data.transport) os.storage.set(StorageKeys.browserTransport, data.transport);
       }
     };
     this.msgHandler = msgHandler;
@@ -155,6 +168,11 @@ export class BrowserApp extends BaseApp {
       this.trySetupIframe(iframe, element);
       if (state.openUrl) this.navigateToUrl(iframe, state.openUrl);
     });
+
+    this._settingsChangedHandler = () => {
+      this.sendDataToIframe();
+    };
+    os.events.on(BusEvents.SETTINGS_CHANGED, this._settingsChangedHandler);
   }
 
   trySetupIframe(iframe, element) {
@@ -248,7 +266,7 @@ export class BrowserApp extends BaseApp {
     wobbleStart(element);
     const wasSnapped = !!element.dataset.snapZone;
     if (wasSnapped) this.wm.unsnap(element);
-    const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
+    const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false";
     if (disableStretch) {
       if (getComputedStyle(element).position !== "fixed") {
         const rect = element.getBoundingClientRect();
@@ -315,19 +333,17 @@ export class BrowserApp extends BaseApp {
 
     const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
     const history = os.storage.get(StorageKeys.browserHistory) || [];
+    const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+    const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
 
-    this.iframe.contentWindow.postMessage(
-      {
-        type: "scram:init",
-        vars,
-        bookmarks,
-        history
-      },
-      "*"
-    );
+    this.iframe.contentWindow.postMessage({ type: "scram:init", vars, bookmarks, history, wispUrl, transport }, "*");
   }
 
   cleanupScramjet() {
+    if (this._settingsChangedHandler) {
+      os.events.off(BusEvents.SETTINGS_CHANGED, this._settingsChangedHandler);
+      this._settingsChangedHandler = null;
+    }
     if (this.msgHandler) {
       window.removeEventListener("message", this.msgHandler);
       this.msgHandler = null;

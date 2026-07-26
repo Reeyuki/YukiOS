@@ -237,8 +237,9 @@ export class FPSControls {
     if (!this.isGrounded) {
       this.velocityY += this.gravity * delta;
       this.camera.position.y += this.velocityY * delta;
-      if (this.camera.position.y <= 0) {
-        this.camera.position.y = 0;
+      const feetY = this.camera.position.y - (this.keys.crouch ? this.crouchHeight : this.normalHeight);
+      if (feetY <= 0) {
+        this.camera.position.y = this.keys.crouch ? this.crouchHeight : this.normalHeight;
         this.velocityY = 0;
         this.isGrounded = true;
       }

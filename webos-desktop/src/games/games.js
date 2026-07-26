@@ -9,6 +9,7 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 import { $, $$ } from "../shared/domUtils.js";
+import { STEAM_NEWS_ITEMS } from "./steamNewsData.js";
 
 import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
@@ -447,14 +448,10 @@ class GameWindowRenderer {
     this.archiveGamesCache = [];
     this.hasRendered = false;
     this.ctrlFBound = false;
-    this.newsItems = [
-      {
-        image: `${getCdnBase()}/static/icons/steam.webp`,
-        title: "Steam App Added",
-        date: "May 1, 2026",
-        excerpt: "The Steam app is now available in YukiOS."
-      }
-    ];
+    this.newsItems =
+      STEAM_NEWS_ITEMS.length > 0
+        ? STEAM_NEWS_ITEMS
+        : [{ image: `${getCdnBase()}/static/icons/steam.webp`, title: "Steam App Added", date: "May 1, 2026" }];
     this.imgObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

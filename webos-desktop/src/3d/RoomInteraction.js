@@ -1,6 +1,8 @@
 import * as CANNON from "cannon-es";
 
 export class RoomInteraction {
+  static INTERACT_DIST = 3;
+
   constructor(renderer, controls) {
     this.renderer = renderer;
     this.controls = controls;
@@ -10,12 +12,12 @@ export class RoomInteraction {
     this.prefixCallbacks = [];
     this.THREE = null;
     this.canvas = null;
-    this.books = [];
-    this.grabbedBook = null;
+    this.gameCases = [];
+    this.grabbedCase = null;
     this.grabPlane = null;
     this.grabOffset = null;
     this.lastGrabPos = null;
-    this.povGrabbedBook = null;
+    this.povGrabbedCase = null;
 
     this.onCatalogOpen = null;
     this.onTrashRequest = null;
@@ -28,14 +30,34 @@ export class RoomInteraction {
     this.grabbedBallMesh = null;
     this.onLaunchGame = null;
     this.furnitureManager = null;
+    this.gameCaseManager = null;
+    this.gameState = null;
+    this.onCasePlaced = null;
+    this.editorManager = null;
+    this.seatedChair = null;
+    this.seatedSavedPos = null;
+    this.seatedSavedYaw = null;
+    this.seatedSavedPitch = null;
+    this.audio = null;
+    this.onHoverChange = null;
+    this.hoverTarget = null;
+    this.wailaTitle = null;
+    this.hoverMeshes = [];
+    this.hoverMeshesDirty = true;
+    this.cachedBookMeshes = [];
+    this._planeNormal = null;
+    this._intersectPoint = null;
+    this.leftHandMesh = null;
+    this.rightHandMesh = null;
   }
 
-  async init() {
-    const THREE = await import("three");
+  async init(THREE) {
     this.THREE = THREE;
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
     this.grabPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this._planeNormal = new THREE.Vector3(0, 1, 0);
+    this._intersectPoint = new THREE.Vector3();
 
     this.canvas = this.renderer.renderer.domElement;
     this.canvas.addEventListener("mousemove", (e) => this.onHover(e));
@@ -44,12 +66,59 @@ export class RoomInteraction {
     this.controls.onBeforeLock = (event) => this.onBeforeLock(event);
   }
 
-  setBooks(books) {
-    this.books = books;
+  setGameCases(gameCases) {
+    this.gameCases = gameCases;
+  }
+
+  _makeKinematic(body) {
+    body.type = CANNON.Body.KINEMATIC;
+    body.velocity.set(0, 0, 0);
+    body.angularVelocity.set(0, 0, 0);
+    body.allowSleep = false;
+    body.wakeUp();
+  }
+
+  _makeDynamic(body, dynamicMass) {
+    body.type = CANNON.Body.DYNAMIC;
+    if (dynamicMass) {
+      body.mass = dynamicMass;
+    }
+    body.updateMassProperties();
+    body.allowSleep = true;
+    body.wakeUp();
+  }
+
+  _applyThrowVelocity(body, velocity, spin) {
+    body.velocity.set(velocity.x, velocity.y, velocity.z);
+    if (spin) {
+      body.angularVelocity.set(spin.x, spin.y, spin.z);
+    }
+  }
+
+  updateWAILA(camera) {
+    if (this.renderer) this.renderer.hologramFrozen = false;
+    this.renderer.collectWAILAMeshes();
+    this.raycaster.setFromCamera(new this.THREE.Vector2(0, 0), camera);
+    const wailaMeshes = this.renderer.wailaMeshes;
+    if (!wailaMeshes || wailaMeshes.length === 0) {
+      this.wailaTitle = null;
+      return;
+    }
+    const hits = this.raycaster.intersectObjects(wailaMeshes, true);
+    const closeHit = hits.find((h) => h.distance < RoomInteraction.INTERACT_DIST);
+    if (closeHit) {
+      let obj = closeHit.object;
+      while (obj && !obj.userData.title) {
+        obj = obj.parent;
+      }
+      this.wailaTitle = obj ? obj.userData.title || null : null;
+    } else {
+      this.wailaTitle = null;
+    }
   }
 
   getBookMeshes() {
-    const meshes = this.books.filter((b) => !b.grabbed && b !== this.povGrabbedBook).map((b) => b.mesh);
+    const meshes = this.gameCases.filter((b) => !b.grabbed && b !== this.povGrabbedCase).map((b) => b.mesh);
     if (this.ballMesh && !this.ballGrabbed && !this.grabbedBallMesh) {
       meshes.push(this.ballMesh);
     }
@@ -73,16 +142,17 @@ export class RoomInteraction {
   }
 
   onBeforeLock(event) {
+    if (this.editorManager && this.editorManager.isEditActive()) return false;
     this.updateMouse(event);
     this.raycaster.setFromCamera(this.mouse, this.renderer.camera);
 
-    if (this.grabbedBook || this.grabbedBallMesh) {
+    if (this.grabbedCase || this.grabbedBallMesh) {
       if (this.grabbedBallMesh) this.releaseBall();
       else this.releaseBook();
       return true;
     }
 
-    if (this.povGrabbedBook) {
+    if (this.povGrabbedCase) {
       return true;
     }
 
@@ -94,11 +164,11 @@ export class RoomInteraction {
         if (hitObj.userData.isFurniture && this.furnitureManager) {
           const item = this.furnitureManager.findByMesh(hitObj);
           if (item) {
-            this.furnitureManager.grabFurniture(item);
+            this.furnitureManager.povGrab(item);
             return true;
           }
         }
-        this._lastIntersect = intersects[0];
+        this.lastIntersect = intersects[0];
         this.dispatch(hitObj);
         return true;
       }
@@ -112,9 +182,9 @@ export class RoomInteraction {
         if (mesh === this.ballMesh) {
           this.grabBall();
         } else {
-          const book = this.books.find((b) => b.mesh === mesh);
-          if (book && this.shelfManager && this.shelfManager.isBookShelved(book) && this.onLaunchGame) {
-            this.onLaunchGame(book.gameId);
+          const gameCase = this.gameCases.find((b) => b.mesh === mesh);
+          if (gameCase && this.shelfManager && this.shelfManager.isCaseShelved(gameCase) && this.onLaunchGame) {
+            this.onLaunchGame(gameCase.gameId);
           } else {
             this.grabBook(mesh);
           }
@@ -127,69 +197,72 @@ export class RoomInteraction {
   }
 
   grabBook(mesh) {
-    const book = this.books.find((b) => b.mesh === mesh);
-    if (!book) return;
+    const gameCase = this.gameCases.find((b) => b.mesh === mesh);
+    if (!gameCase) return;
 
     if (this.shelfManager) {
-      this.shelfManager.popBookFromSlot(book);
+      this.shelfManager.popCaseFromSlot(gameCase);
     }
 
-    book.grabbed = true;
-    book.body.type = CANNON.Body.KINEMATIC;
-    book.body.velocity.set(0, 0, 0);
-    book.body.angularVelocity.set(0, 0, 0);
-    book.body.allowSleep = false;
-    book.body.wakeUp();
-    this.grabbedBook = book;
+    if (this.audio) this.audio.playBookGrab();
+    gameCase.grabbed = true;
+    this._makeKinematic(gameCase.body);
+    this.grabbedCase = gameCase;
 
-    this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -book.mesh.position.y);
+    this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -gameCase.mesh.position.y);
 
     const intersectPoint = new this.THREE.Vector3();
     const hit = this.raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
     if (hit) {
-      this.grabOffset = new this.THREE.Vector3().copy(book.mesh.position).sub(intersectPoint);
+      this.grabOffset = new this.THREE.Vector3().copy(gameCase.mesh.position).sub(intersectPoint);
     } else {
       this.grabOffset = new this.THREE.Vector3(0, 0, 0);
     }
 
-    this.lastGrabPos = book.mesh.position.clone();
+    this.lastGrabPos = gameCase.mesh.position.clone();
   }
 
   releaseBook() {
-    if (this.grabbedBook) {
-      const book = this.grabbedBook;
+    if (this.grabbedCase) {
+      const gameCase = this.grabbedCase;
 
-      if (this.shelfManager && !book.isBall) {
-        const slot = this.shelfManager.getNearestEmptySlot(book.mesh.position);
+      if (this.shelfManager && !gameCase.isBall) {
+        const slot = this.shelfManager.getNearestEmptySlot(gameCase.mesh.position);
         if (slot) {
-          this.shelfManager.shelveBook(book, slot);
-          this.grabbedBook = null;
+          const isCorrect = this.shelfManager.isCorrectShelf(gameCase, slot);
+          this.shelfManager.shelveCase(gameCase, slot);
+          if (this.audio) this.audio.playBookShelve();
+          if (this.gameState && this.gameState.active) {
+            this.shelfManager.flashSlot(slot, isCorrect);
+            if (isCorrect) {
+              this.gameState.placeGameCaseCorrectly(gameCase.gameId);
+              if (this.audio) this.audio.playCorrect();
+            } else {
+              this.gameState.placeGameCaseWrongly(gameCase.gameId);
+              if (this.audio) this.audio.playWrong();
+            }
+            if (this.onCasePlaced) this.onCasePlaced(gameCase, isCorrect);
+          }
+          this.grabbedCase = null;
           this.grabOffset = null;
           return;
         }
       }
 
-      const body = book.body;
-      body.type = CANNON.Body.DYNAMIC;
-      if (book.dynamicMass) {
-        body.mass = book.dynamicMass;
-      }
-      body.updateMassProperties();
-      body.allowSleep = true;
-      body.wakeUp();
+      this._makeDynamic(gameCase.body, gameCase.dynamicMass);
       if (this.lastGrabPos) {
-        const throwVel = new this.THREE.Vector3().copy(book.pos).sub(this.lastGrabPos);
-        body.velocity.set(throwVel.x, Math.max(throwVel.y, 0), throwVel.z);
+        const throwVel = new this.THREE.Vector3().copy(gameCase.pos).sub(this.lastGrabPos);
+        gameCase.body.velocity.set(throwVel.x, Math.max(throwVel.y, 0), throwVel.z);
         const spin = new this.THREE.Vector3(
           (Math.random() - 0.5) * 1.5,
           (Math.random() - 0.5) * 1.5,
           (Math.random() - 0.5) * 1.5
         );
-        body.angularVelocity.set(spin.x, spin.y, spin.z);
+        gameCase.body.angularVelocity.set(spin.x, spin.y, spin.z);
       }
-      book.grabbed = false;
+      gameCase.grabbed = false;
     }
-    this.grabbedBook = null;
+    this.grabbedCase = null;
     this.grabOffset = null;
   }
 
@@ -198,29 +271,29 @@ export class RoomInteraction {
       this.updateBallDrag();
       return;
     }
-    if (!this.grabbedBook || !this.grabOffset) return;
+    if (!this.grabbedCase || !this.grabOffset) return;
 
     this.raycaster.setFromCamera(this.mouse, this.renderer.camera);
 
-    this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -this.grabbedBook.pos.y);
+    this.grabPlane.set(this._planeNormal, -this.grabbedCase.pos.y);
 
-    const intersectPoint = new this.THREE.Vector3();
+    const intersectPoint = this._intersectPoint;
     const hit = this.raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
     if (!hit) return;
 
-    this.lastGrabPos.copy(this.grabbedBook.pos);
+    this.lastGrabPos.copy(this.grabbedCase.pos);
 
-    this.grabbedBook.mesh.position.copy(intersectPoint).add(this.grabOffset);
+    this.grabbedCase.mesh.position.copy(intersectPoint).add(this.grabOffset);
 
     const b = this.renderer.bounds;
-    const sx = this.grabbedBook.size.x / 2;
-    const sy = this.grabbedBook.size.y / 2;
-    const sz = this.grabbedBook.size.z / 2;
-    this.grabbedBook.mesh.position.x = Math.max(b.minX + sx, Math.min(b.maxX - sx, this.grabbedBook.mesh.position.x));
-    this.grabbedBook.mesh.position.z = Math.max(b.minZ + sz, Math.min(b.maxZ - sz, this.grabbedBook.mesh.position.z));
-    this.grabbedBook.mesh.position.y = Math.max(sy, Math.min(3 - sy, this.grabbedBook.mesh.position.y));
+    const sx = this.grabbedCase.size.x / 2;
+    const sy = this.grabbedCase.size.y / 2;
+    const sz = this.grabbedCase.size.z / 2;
+    this.grabbedCase.mesh.position.x = Math.max(b.minX + sx, Math.min(b.maxX - sx, this.grabbedCase.mesh.position.x));
+    this.grabbedCase.mesh.position.z = Math.max(b.minZ + sz, Math.min(b.maxZ - sz, this.grabbedCase.mesh.position.z));
+    this.grabbedCase.mesh.position.y = Math.max(sy, Math.min(3 - sy, this.grabbedCase.mesh.position.y));
 
-    this.grabbedBook.pos.copy(this.grabbedBook.mesh.position);
+    this.grabbedCase.pos.copy(this.grabbedCase.mesh.position);
   }
 
   updateBallDrag() {
@@ -229,9 +302,9 @@ export class RoomInteraction {
     this.raycaster.setFromCamera(this.mouse, this.renderer.camera);
 
     const y = this.grabbedBallMesh.position.y;
-    this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -y);
+    this.grabPlane.set(this._planeNormal, -y);
 
-    const intersectPoint = new this.THREE.Vector3();
+    const intersectPoint = this._intersectPoint;
     const hit = this.raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
     if (!hit) return;
 
@@ -252,18 +325,109 @@ export class RoomInteraction {
     }
   }
 
-  handleEKey(camera) {
+  findNearestChair(camera) {
+    if (!this.furnitureManager) return null;
+    let best = null;
+    let bestDist = 1.5;
+    for (const item of this.furnitureManager.items.values()) {
+      if (!item.id.startsWith("wooden-chair")) continue;
+      const dx = camera.position.x - item.mesh.position.x;
+      const dz = camera.position.z - item.mesh.position.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = item;
+      }
+    }
+    return best;
+  }
+
+  sitOnChair(camera, controls) {
+    const chair = this.findNearestChair(camera);
+    if (!chair) return false;
+    if (this.audio) this.audio.playSit();
+    this.seatedChair = chair;
+    this.seatedSavedPos = camera.position.clone();
+    this.seatedSavedYaw = controls.yaw;
+    this.seatedSavedPitch = controls.pitch;
+    const chairPos = chair.mesh.position;
+    const forward = new this.THREE.Vector3(0, 0, 1);
+    forward.applyQuaternion(chair.mesh.quaternion);
+    const sitPos = new this.THREE.Vector3(
+      chairPos.x + forward.x * 0.05,
+      chairPos.y + 1.65,
+      chairPos.z + forward.z * 0.05
+    );
+    const lookTarget = sitPos.clone().add(forward.clone().multiplyScalar(3));
+    controls.animateCamera(sitPos, lookTarget, 0.5);
+    return true;
+  }
+
+  standFromChair(controls) {
+    if (!this.seatedChair) return;
+    if (this.audio) this.audio.playStand();
+    const chair = this.seatedChair;
+    const chairPos = chair.mesh.position;
+    const forward = new this.THREE.Vector3(0, 0, 1);
+    forward.applyQuaternion(chair.mesh.quaternion);
+    const fwd = new this.THREE.Vector3(0, 0, -1);
+    fwd.x = -Math.sin(this.seatedSavedYaw) * Math.cos(this.seatedSavedPitch);
+    fwd.y = Math.sin(this.seatedSavedPitch);
+    fwd.z = -Math.cos(this.seatedSavedYaw) * Math.cos(this.seatedSavedPitch);
+    const lookAtTarget = this.seatedSavedPos.clone().add(fwd.multiplyScalar(10));
+    this.seatedChair = null;
+    controls.animateCamera(this.seatedSavedPos, lookAtTarget, 0.4, () => {
+      controls.yaw = this.seatedSavedYaw;
+      controls.pitch = this.seatedSavedPitch;
+      const V = this.THREE.Vector3;
+      const Q = this.THREE.Quaternion;
+      const qx = new Q();
+      const qy = new Q();
+      qx.setFromAxisAngle(new V(1, 0, 0), controls.pitch);
+      qy.setFromAxisAngle(new V(0, 1, 0), controls.yaw);
+      controls.camera.quaternion.copy(qy.multiply(qx));
+      controls.lock();
+    });
+    this.seatedSavedPos = null;
+    this.seatedSavedYaw = null;
+    this.seatedSavedPitch = null;
+  }
+
+  isSeated() {
+    return this.seatedChair !== null;
+  }
+
+  handleEKey(camera, controls) {
+    if (this.editorManager && this.editorManager.isEditActive()) return false;
     if (!this.raycaster) return false;
-    if (this.povGrabbedBook) {
-      if (!this.povGrabbedBook.isBall && this.nearWastebin && this.onTrashRequest) {
-        this.onTrashRequest(this.povGrabbedBook);
+
+    if (this.seatedChair) {
+      this.standFromChair(controls);
+      return true;
+    }
+    if (this.povGrabbedCase) {
+      if (!this.povGrabbedCase.isBall && this.nearWastebin && this.onTrashRequest) {
+        this.onTrashRequest(this.povGrabbedCase);
         return true;
       }
-      if (!this.povGrabbedBook.isBall && this.shelfManager && this.nearShelf) {
-        const slot = this.shelfManager.getNearestEmptySlot(this.povGrabbedBook.mesh.position);
+      if (!this.povGrabbedCase.isBall && this.shelfManager && this.nearShelf) {
+        const slot = this.shelfManager.getNearestEmptySlot(this.povGrabbedCase.mesh.position);
         if (slot) {
-          this.shelfManager.shelveBook(this.povGrabbedBook, slot);
-          this.povGrabbedBook = null;
+          const isCorrect = this.shelfManager.isCorrectShelf(this.povGrabbedCase, slot);
+          this.shelfManager.shelveCase(this.povGrabbedCase, slot);
+          if (this.audio) this.audio.playBookShelve();
+          if (this.gameState && this.gameState.active) {
+            this.shelfManager.flashSlot(slot, isCorrect);
+            if (isCorrect) {
+              this.gameState.placeGameCaseCorrectly(this.povGrabbedCase.gameId);
+              if (this.audio) this.audio.playCorrect();
+            } else {
+              this.gameState.placeGameCaseWrongly(this.povGrabbedCase.gameId);
+              if (this.audio) this.audio.playWrong();
+            }
+            if (this.onCasePlaced) this.onCasePlaced(this.povGrabbedCase, isCorrect);
+          }
+          this.povGrabbedCase = null;
           return true;
         }
       }
@@ -271,44 +435,40 @@ export class RoomInteraction {
       return true;
     }
 
-    if (this.grabbedBook) {
+    if (this.grabbedCase) {
       this.releaseBook();
     }
 
     if (this.grabbedBallMesh) {
-      const body = this.ballBody;
-      body.type = CANNON.Body.DYNAMIC;
-      body.updateMassProperties();
-      body.allowSleep = true;
-      body.wakeUp();
+      this._makeDynamic(this.ballBody);
       const fwd = new this.THREE.Vector3(0, 0, -1);
       fwd.applyQuaternion(camera.quaternion);
       fwd.multiplyScalar(12);
-      body.velocity.set(fwd.x, fwd.y, fwd.z);
+      this._applyThrowVelocity(this.ballBody, fwd);
       this.ballGrabbed = false;
       this.grabbedBallMesh = null;
       return true;
     }
 
-    if (this.furnitureManager && this.furnitureManager.grabbed) {
-      this.furnitureManager.releaseFurniture();
+    if (this.furnitureManager && this.furnitureManager.povGrabbedItem) {
+      this.furnitureManager.releasePovGrab();
+      if (this.audio) this.audio.playFurnitureRelease();
       return true;
     }
 
-    if (this.controls.isLocked) {
-      this.mouse.set(0, 0);
-    }
+    this.mouse.set(0, 0);
     this.raycaster.setFromCamera(this.mouse, camera);
 
     const objects = this.renderer.getInteractiveObjects();
     if (objects.length > 0) {
       const intersects = this.raycaster.intersectObjects(objects);
-      if (intersects.length > 0) {
+      if (intersects.length > 0 && intersects[0].distance < RoomInteraction.INTERACT_DIST) {
         const obj = intersects[0].object;
         if (obj.userData.isFurniture && this.furnitureManager) {
           const item = this.furnitureManager.findByMesh(obj);
           if (item) {
-            this.furnitureManager.grabFurniture(item);
+            this.furnitureManager.povGrab(item);
+            if (this.audio) this.audio.playFurnitureGrab();
             return true;
           }
         }
@@ -323,11 +483,15 @@ export class RoomInteraction {
       }
     }
 
+    if (this.findNearestChair(camera)) {
+      return this.sitOnChair(camera, this.controls);
+    }
+
     const bookMeshes = this.getBookMeshes();
     if (bookMeshes.length === 0) return false;
 
     const intersects = this.raycaster.intersectObjects(bookMeshes);
-    if (intersects.length === 0) return false;
+    if (intersects.length === 0 || intersects[0].distance >= RoomInteraction.INTERACT_DIST) return false;
 
     const mesh = intersects[0].object;
 
@@ -342,58 +506,45 @@ export class RoomInteraction {
       return true;
     }
 
-    const book = this.books.find((b) => b.mesh === mesh);
-    if (!book) return false;
+    const gameCase = this.gameCases.find((b) => b.mesh === mesh);
+    if (!gameCase) return false;
 
-    this.povGrabBook(book);
+    this.povGrabCase(gameCase);
     return true;
   }
 
-  povGrabBook(book) {
-    if (this.shelfManager && this.shelfManager.isBookShelved(book)) {
-      this.shelfManager.popBookFromSlot(book);
+  povGrabCase(gameCase) {
+    if (this.shelfManager && this.shelfManager.isCaseShelved(gameCase)) {
+      this.shelfManager.popCaseFromSlot(gameCase);
     }
 
-    book.grabbed = true;
-    book.body.type = CANNON.Body.KINEMATIC;
-    book.body.velocity.set(0, 0, 0);
-    book.body.angularVelocity.set(0, 0, 0);
-    book.body.allowSleep = false;
-    book.body.wakeUp();
-    this.povGrabbedBook = book;
+    gameCase.grabbed = true;
+    this._makeKinematic(gameCase.body);
+    if (this.audio) this.audio.playBookGrabPOV();
+    this.povGrabbedCase = gameCase;
   }
 
   releasePOVGrab(camera) {
-    if (!this.povGrabbedBook) return;
-    const book = this.povGrabbedBook;
-    const body = book.body;
-    body.type = CANNON.Body.DYNAMIC;
-    if (book.dynamicMass) {
-      body.mass = book.dynamicMass;
-    }
-    body.updateMassProperties();
-    body.allowSleep = true;
-    body.wakeUp();
+    if (!this.povGrabbedCase) return;
+    if (this.audio) this.audio.playReleasePOV();
+    const gameCase = this.povGrabbedCase;
+    this._makeDynamic(gameCase.body, gameCase.dynamicMass);
     if (camera && this.THREE) {
       const fwd = new this.THREE.Vector3(0, 0, -1);
       fwd.applyQuaternion(camera.quaternion);
-      const speed = book.isBall ? 12 : 5;
+      const speed = gameCase.isBall ? 12 : 5;
       fwd.multiplyScalar(speed);
-      body.velocity.set(fwd.x, fwd.y, fwd.z);
+      gameCase.body.velocity.set(fwd.x, fwd.y, fwd.z);
     }
-    book.grabbed = false;
-    this.povGrabbedBook = null;
+    gameCase.grabbed = false;
+    this.povGrabbedCase = null;
   }
 
   grabBall() {
     if (!this.ballMesh) return;
-
+    if (this.audio) this.audio.playBallGrab();
     this.ballGrabbed = true;
-    this.ballBody.type = CANNON.Body.KINEMATIC;
-    this.ballBody.velocity.set(0, 0, 0);
-    this.ballBody.angularVelocity.set(0, 0, 0);
-    this.ballBody.allowSleep = false;
-    this.ballBody.wakeUp();
+    this._makeKinematic(this.ballBody);
     this.grabbedBallMesh = this.ballMesh;
 
     this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -this.ballMesh.position.y);
@@ -411,14 +562,11 @@ export class RoomInteraction {
 
   releaseBall() {
     if (!this.grabbedBallMesh) return;
-    const body = this.ballBody;
-    body.type = CANNON.Body.DYNAMIC;
-    body.updateMassProperties();
-    body.allowSleep = true;
-    body.wakeUp();
+    if (this.audio) this.audio.playBallThrow();
+    this._makeDynamic(this.ballBody);
     if (this.lastGrabPos) {
       const throwVel = new this.THREE.Vector3().copy(this.ballMesh.position).sub(this.lastGrabPos);
-      body.velocity.set(throwVel.x * 3, Math.max(throwVel.y * 3, 2), throwVel.z * 3);
+      this.ballBody.velocity.set(throwVel.x * 3, Math.max(throwVel.y * 3, 2), throwVel.z * 3);
     }
     this.ballGrabbed = false;
     this.grabbedBallMesh = null;
@@ -431,6 +579,11 @@ export class RoomInteraction {
     this.grabbedBallMesh = null;
   }
 
+  setHandMeshes(leftHand, rightHand) {
+    this.leftHandMesh = leftHand;
+    this.rightHandMesh = rightHand;
+  }
+
   setShelfManager(shelfManager) {
     this.shelfManager = shelfManager;
   }
@@ -439,8 +592,28 @@ export class RoomInteraction {
     this.furnitureManager = fm;
   }
 
+  setGameCaseManager(bm) {
+    this.gameCaseManager = bm;
+  }
+
+  setGameState(gs) {
+    this.gameState = gs;
+  }
+
+  setEditorManager(editorManager) {
+    this.editorManager = editorManager;
+  }
+
+  setAudio(audio) {
+    this.audio = audio;
+  }
+
   updateEGrabbed(camera) {
-    if (this.povGrabbedBook) {
+    if (this.furnitureManager && this.furnitureManager.povGrabbedItem) {
+      this.furnitureManager.updatePovGrabbed(camera);
+      return;
+    }
+    if (this.povGrabbedCase) {
       const forward = new this.THREE.Vector3(0, 0, -1);
       forward.applyQuaternion(camera.quaternion);
 
@@ -448,9 +621,15 @@ export class RoomInteraction {
       const targetPos = camera.position.clone().add(forward.multiplyScalar(distance));
       targetPos.y += 0.15;
 
-      this.povGrabbedBook.mesh.position.copy(targetPos);
-      this.povGrabbedBook.pos.copy(targetPos);
-      this.povGrabbedBook.mesh.quaternion.copy(camera.quaternion);
+      this.povGrabbedCase.mesh.position.copy(targetPos);
+      this.povGrabbedCase.pos.copy(targetPos);
+      this.povGrabbedCase.mesh.quaternion.copy(camera.quaternion);
+
+      if (this.rightHandMesh) {
+        const handPos = camera.position.clone().add(forward.clone().multiplyScalar(distance * 0.85));
+        handPos.y += 0.1;
+        this.rightHandMesh.position.copy(handPos);
+      }
     } else if (this.grabbedBallMesh) {
       const forward = new this.THREE.Vector3(0, 0, -1);
       forward.applyQuaternion(camera.quaternion);
@@ -463,16 +642,26 @@ export class RoomInteraction {
       if (this.ballBody) {
         this.ballBody.position.set(targetPos.x, targetPos.y, targetPos.z);
       }
+
+      if (this.rightHandMesh) {
+        const handPos = camera.position.clone().add(forward.clone().multiplyScalar(distance * 0.85));
+        handPos.y += 0.1;
+        this.rightHandMesh.position.copy(handPos);
+      }
     }
   }
 
   isEGrabbed() {
-    return this.povGrabbedBook !== null || this.grabbedBallMesh !== null;
+    return (
+      this.povGrabbedCase !== null ||
+      this.grabbedBallMesh !== null ||
+      (this.furnitureManager && this.furnitureManager.povGrabbedItem !== null)
+    );
   }
 
   updateWastebinProximity(camera) {
     this.nearShelf = false;
-    if (!this.povGrabbedBook || this.povGrabbedBook.isBall) {
+    if (!this.povGrabbedCase || this.povGrabbedCase.isBall) {
       this.nearWastebin = false;
       return;
     }
@@ -485,7 +674,7 @@ export class RoomInteraction {
     }
 
     if (this.shelfManager) {
-      const slot = this.shelfManager.getNearestEmptySlot(this.povGrabbedBook.mesh.position);
+      const slot = this.shelfManager.getNearestEmptySlot(this.povGrabbedCase.mesh.position);
       this.nearShelf = slot !== null;
     }
   }
@@ -500,8 +689,10 @@ export class RoomInteraction {
   }
 
   onHover(event) {
-    if (this.grabbedBook || this.povGrabbedBook || this.grabbedBallMesh) {
-      if (!this.povGrabbedBook) {
+    if (this.renderer) this.renderer.hologramFrozen = false;
+    if (this.editorManager && this.editorManager.isEditActive()) return;
+    if (this.grabbedCase || this.povGrabbedCase || this.grabbedBallMesh) {
+      if (!this.povGrabbedCase) {
         this.canvas.style.cursor = "default";
       }
       return;
@@ -513,20 +704,21 @@ export class RoomInteraction {
     }
     this.raycaster.setFromCamera(this.mouse, this.renderer.camera);
 
+    const bookMeshes = this.getBookMeshes();
+    const objects = this.renderer.getInteractiveObjects();
+    const allMeshes = this.renderer.roomObjects;
+    const shelfMeshes = this.shelfManager ? this.shelfManager.shelfMeshes || [] : [];
+    const everything = [...bookMeshes, ...objects, ...allMeshes, ...shelfMeshes];
+
     const holoScreen = this.renderer.monitorScreen;
     const holoRenderer = this.renderer.hologramRenderer;
     if (holoScreen && holoRenderer) {
       const holoHits = this.raycaster.intersectObject(holoScreen);
-      if (holoHits.length > 0 && holoHits[0].uv) {
+      if (holoHits.length > 0 && holoHits[0].uv && holoHits[0].distance < RoomInteraction.INTERACT_DIST) {
         const holoDist = holoHits[0].distance;
         let occluded = false;
-        const bookMeshes = this.getBookMeshes();
-        const objects = this.renderer.getInteractiveObjects();
-        const allMeshes = this.renderer.roomObjects;
-        const shelfMeshes = this.shelfManager ? this.shelfManager.shelfMeshes || [] : [];
-        const blockers = [...bookMeshes, ...objects, ...allMeshes, ...shelfMeshes];
-        if (blockers.length > 0) {
-          const blockerHits = this.raycaster.intersectObjects(blockers);
+        if (everything.length > 0) {
+          const blockerHits = this.raycaster.intersectObjects(everything);
           if (blockerHits.length > 0 && blockerHits[0].distance < holoDist) {
             occluded = true;
           }
@@ -534,6 +726,7 @@ export class RoomInteraction {
         if (!occluded) {
           const item = holoRenderer.getItemAtUV(holoHits[0].uv.x, holoHits[0].uv.y);
           if (item) {
+            if (this.renderer) this.renderer.hologramFrozen = true;
             if (!this.controls.isLocked) this.canvas.style.cursor = "pointer";
             return;
           }
@@ -541,35 +734,47 @@ export class RoomInteraction {
       }
     }
 
-    const bookMeshes = this.getBookMeshes();
-    const objects = this.renderer.getInteractiveObjects();
-    const allMeshes = this.renderer.roomObjects;
-    const shelfMeshes = this.shelfManager ? this.shelfManager.shelfMeshes || [] : [];
-    const everything = [...bookMeshes, ...objects, ...allMeshes, ...shelfMeshes];
-
     let found = false;
 
     if (everything.length > 0) {
       const intersects = this.raycaster.intersectObjects(everything);
       if (intersects.length > 0) {
         const hit = intersects[0].object;
-        const isBook = hit !== this.ballMesh && hit.userData.isBook;
-        const hitBook = isBook ? this.books.find((b) => b.mesh === hit) : null;
+        const isCase = hit !== this.ballMesh && hit.userData.isCase;
+        const hitCase = isCase ? this.gameCases.find((b) => b.mesh === hit) : null;
 
         if (hit === this.ballMesh) {
           if (!this.controls.isLocked) this.canvas.style.cursor = "grab";
-        } else if (isBook && hitBook) {
+        } else if (isCase && hitCase) {
           if (!this.controls.isLocked) this.canvas.style.cursor = "grab";
         } else {
           if (!this.controls.isLocked) this.canvas.style.cursor = hit.userData.interactive ? "pointer" : "default";
         }
 
         found = true;
+        if (this.onHoverChange) {
+          const target =
+            hit === this.ballMesh
+              ? "ball"
+              : isCase && hitCase
+                ? "case"
+                : hit.userData.interactive
+                  ? "interactive"
+                  : "object";
+          if (target !== this.hoverTarget) {
+            this.hoverTarget = target;
+            this.onHoverChange(target);
+          }
+        }
       }
     }
 
     if (!found) {
       if (!this.controls.isLocked) this.canvas.style.cursor = "default";
+      if (this.onHoverChange && this.hoverTarget !== null) {
+        this.hoverTarget = null;
+        this.onHoverChange(null);
+      }
     }
   }
 
@@ -590,13 +795,15 @@ export class RoomInteraction {
   destroy() {
     this.callbacks.clear();
     this.prefixCallbacks = [];
-    this.books = [];
-    this.grabbedBook = null;
-    this.povGrabbedBook = null;
+    this.gameCases = [];
+    this.grabbedCase = null;
+    this.povGrabbedCase = null;
     this.ballMesh = null;
     this.ballBody = null;
     this.grabbedBallMesh = null;
     this.shelfManager = null;
+    this.gameCaseManager = null;
+    this.gameState = null;
     this.raycaster = null;
     this.mouse = null;
   }

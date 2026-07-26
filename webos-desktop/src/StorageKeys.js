@@ -153,7 +153,7 @@ export const StorageKeys = {
   robloxPlayed: "yukiOS_roblox_played",
   desktopSortMode: "yukiOS_desktop_sort_mode",
   desktopAutoSort: "yukiOS_desktop_auto_sort",
-  widgetsState: "yukiOS_widgets_state",
+  widgetsState: "yukiOS_widgetsstate",
   lastVersionCheck: "yukiOS_last_version_check",
   lastKnownRemoteVersion: "yukiOS_last_known_remote_version",
   wallpaperEngineFavorites: "yukiOS_wallpaper_engine_favorites",
@@ -221,12 +221,16 @@ export const StorageKeys = {
   tilingRofiEnabled: "yukiOS_tiling_rofi_enabled",
   tilingRofiMaxResults: "yukiOS_tiling_rofi_max_results",
   tilingRofiWidth: "yukiOS_tiling_rofi_width",
+  tilingRofiRecentApps: "yukiOS_recently_used_apps",
+  tilingRofiRunHistory: "yukiOS_tiling_rofi_run_history",
   tilingKeybindHintHidden: "yukiOS_tiling_keybind_hint_hidden",
+  browserTransport: "yukiOS_browser_transport",
   friendsLiveActivity: "yukiOS_friends_live_activity",
   room3dBookPositions: "yukiOS_room3d_book_positions",
   room3dBallPosition: "yukiOS_room3d_ball_position",
   room3dWallColor: "yukiOS_room3d_wall_color",
   room3dFloorColor: "yukiOS_room3d_floor_color",
   room3dFurniturePositions: "yukiOS_room3d_furniture_positions",
-  room3dActiveDecorations: "yukiOS_room3d_active_decorations"
+  room3dActiveDecorations: "yukiOS_room3d_active_decorations",
+  room3dSettings: "yukiOS_room3d_settings"
 };

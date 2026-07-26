@@ -53,6 +53,8 @@ self.addEventListener("message", (event) => {
   var data = event.data;
   if (data.type === "config" && data.wispurl) {
     wispConfig.wispurl = data.wispurl;
+    wispConfig.transportType = data.transportType || "epoxy";
+    wispConfig.bareurl = data.bareurl || null;
     if (resolveConfigReady) {
       resolveConfigReady();
       resolveConfigReady = null;
@@ -103,10 +105,21 @@ self.addEventListener("message", (event) => {
 setTimeout(() => {
   if (!wispConfig.wispurl && resolveConfigReady) {
     wispConfig.wispurl = "wss://dash.goip.de/wisp/";
+    wispConfig.transportType = "epoxy";
     resolveConfigReady();
     resolveConfigReady = null;
   }
 }, 1000);
+
+const TRANSPORT_MODULES = {
+  epoxy: "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
+  libcurl: "/scram/libcurl-wrapper.mjs"
+};
+
+function getTransportConfig(transportType) {
+  const url = TRANSPORT_MODULES[transportType] || TRANSPORT_MODULES.epoxy;
+  return [url, [{ wisp: wispConfig.wispurl }]];
+}
 
 scramjet.addEventListener("request", async (e) => {
   if (adblockReady && adblock.enabled) {
@@ -124,10 +137,17 @@ scramjet.addEventListener("request", async (e) => {
       await configReadyPromise;
       if (!wispConfig.wispurl) return new Response("WISP URL missing", { status: 500 });
       const connection = new BareMux.BareMuxConnection(basePath + "bareworker.js");
-      await connection.setTransport(
-        "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
-        [{ wisp: wispConfig.wispurl }]
-      );
+      const [transportUrl, transportArgs] = getTransportConfig(wispConfig.transportType);
+      try {
+        await connection.setTransport(transportUrl, transportArgs);
+      } catch (err) {
+        try {
+          await connection.setTransport(
+            "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
+            [{ wisp: wispConfig.wispurl }]
+          );
+        } catch {}
+      }
       scramjet.client = connection;
     }
 

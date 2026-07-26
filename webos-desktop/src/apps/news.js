@@ -5,6 +5,75 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 26, 2026",
+    sections: [
+      {
+        icon: "fa-cube",
+        title: "3D Room",
+        items: [
+          [
+            "fa-hand",
+            "Grab and Move Objects",
+            "Pick up game cases, furniture, and the rainbow ball by clicking or pressing E. Throw them, shelve them, or toss them in the bin."
+          ],
+          ["fa-chair", "Sit Anywhere", "Walk up to any chair and press E to sit down with a smooth camera transition."],
+          [
+            "fa-list",
+            "Book-Shelving Minigame",
+            "Sort game cases by genre on the correct shelves for points, combos, and a live score overlay."
+          ],
+          [
+            "fa-pencil",
+            "In-Room Editor",
+            "Place and arrange furniture with undo/redo support using the built-in editor mode."
+          ],
+          [
+            "fa-volume-high",
+            "Ambient Sounds",
+            "Footsteps, grab and release noises, shelving thuds, and chair creaks make the room feel alive."
+          ]
+        ]
+      },
+      {
+        icon: "fa-wrench",
+        title: "Fixes & Polish",
+        items: [
+          [
+            "fa-bolt",
+            "Physics Cleanup",
+            "Grabbing, releasing, and throwing objects all use the same physics logic now — no more inconsistent behavior."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 23, 2026",
+    sections: [
+      {
+        icon: "fa-magnifying-glass",
+        title: "Rofi Launcher Overhaul",
+        items: [
+          [
+            "fa-th-large",
+            "Four Modes",
+            "Switch between Apps, Run, Windows, and Calc modes with Tab. Each mode has its own search and behavior."
+          ],
+          [
+            "fa-terminal",
+            "Run Commands",
+            "Execute terminal commands, launch apps, or open URLs directly from the rofi overlay with persistent history."
+          ],
+          [
+            "fa-window-restore",
+            "Window Switcher",
+            "Browse and focus any open window with fuzzy search, including minimized windows."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 23, 2026",
     sections: [
       {
@@ -1398,7 +1467,7 @@ export class NewsApp extends BaseApp {
       <div class="news-update">
         <div class="news-update-head">
           <div class="news-date">${update.date}</div>
-          <div class="news-label">YukiOS Update</div>
+          <div class="news-label">${update.label || "YukiOS Update"}</div>
         </div>
         ${renderSections(update.sections)}
       </div>

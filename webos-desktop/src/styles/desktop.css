@@ -239,6 +239,20 @@
   }
 }
 
+@keyframes wa-slide-in-growth {
+  from {
+    opacity: 0;
+    transform: perspective(300px) scale(0.5) rotateY(-20deg);
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: perspective(300px) scale(1) rotateY(0deg);
+  }
+}
+
 @keyframes wa-fade-out {
   from {
     opacity: 1;

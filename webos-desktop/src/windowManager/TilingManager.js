@@ -1,5 +1,6 @@
 import "../styles/tiling.css";
 import { TilingLayoutEngine as Engine } from "./TilingLayoutEngine.js";
+import { MasterStackEngine } from "./MasterStackEngine.js";
 import { bus, BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 import { TilingBar } from "../tiling/TilingBar.js";
@@ -23,6 +24,7 @@ export class TilingManager {
     return {
       enabled: false,
       gaps: { inner: 6, outer: 6, outerBottom: 0 },
+      layout: "bsp",
       split_ratio: 0.5,
       border_width: 3,
       border_radius: 8,
@@ -46,6 +48,7 @@ export class TilingManager {
         inner: g.inner ?? d.gaps.inner,
         outer: g.outer ?? d.gaps.outer
       },
+      layout: c.layout ?? d.layout,
       split_ratio: c.split_ratio ?? d.split_ratio,
       border_width: c.border_width ?? d.border_width,
       border_radius: c.border_radius ?? d.border_radius,
@@ -57,6 +60,10 @@ export class TilingManager {
       workspace_switch_delay: c.workspace_switch_delay ?? d.workspace_switch_delay,
       resize_debounce: c.resize_debounce ?? d.resize_debounce
     };
+  }
+
+  getLayoutEngine() {
+    return this.getEffectiveConfig().layout === "master-stack" ? MasterStackEngine : Engine;
   }
 
   getTransition() {
@@ -114,11 +121,13 @@ export class TilingManager {
       this.enabled = true;
       this.config.enabled = true;
       document.body.classList.add("tiling-active");
+      this.applyLayoutTypeClass();
       this.tilingBar.show();
     } else {
       this.enabled = this.config.enabled === true;
       if (this.enabled) {
         document.body.classList.add("tiling-active");
+        this.applyLayoutTypeClass();
         this.tilingBar.show();
       }
     }
@@ -179,12 +188,14 @@ export class TilingManager {
 
     if (this.enabled) {
       document.body.classList.add("tiling-active");
+      this.applyLayoutTypeClass();
       this.rebuildTreeForCurrentWorkspace();
       this.applyLayoutToAllWindows();
       this.tilingBar.show();
       os.notify.send("Tiling", "Tiling mode enabled", { icon: "fas fa-th-large" });
     } else {
       document.body.classList.remove("tiling-active");
+      document.body.classList.remove("tiling-layout-master-stack");
       this.restoreAllWindows();
       this.trees.clear();
       this.tilingBar.hide();
@@ -217,7 +228,8 @@ export class TilingManager {
 
   rebuildTreeForWorkspace(wsId) {
     const wins = this.getOpenWindowsForWorkspace(wsId);
-    let tree = null;
+    const engine = this.getLayoutEngine();
+    let tree = engine.createState ? engine.createState() : null;
 
     console.log(`[Tiling] Rebuilding tree for workspace ${wsId} with ${wins.length} windows`);
     for (const winId of wins) {
@@ -225,7 +237,7 @@ export class TilingManager {
       if (!win) continue;
       const entry = this.wm.openWindows.get(winId);
       if (entry && entry.record && entry.record.floating) continue;
-      tree = Engine.insert(tree, winId, null);
+      tree = engine.insert(tree, winId, null);
     }
 
     this.setTreeForWorkspace(wsId, tree);
@@ -276,12 +288,26 @@ export class TilingManager {
   }
 
   updateConfig(changes) {
+    const oldLayout = this.getEffectiveConfig().layout;
     Object.assign(this.config, changes);
     if (changes.gaps) Object.assign(this.config.gaps, changes.gaps);
     this.applyCssVars();
-    if (this.enabled) this.applyLayoutToAllWindows();
+    this.applyLayoutTypeClass();
+    if (this.enabled) {
+      const newLayout = this.getEffectiveConfig().layout;
+      if (newLayout !== oldLayout) {
+        this.trees.clear();
+        this.rebuildTreeForCurrentWorkspace();
+      }
+      this.applyLayoutToAllWindows();
+    }
     os.fs.write(CONFIG_PATH, JSON.stringify(this.config, null, 2)).catch(() => {});
     this.configString = JSON.stringify(this.config);
+  }
+
+  applyLayoutTypeClass() {
+    const layout = this.getEffectiveConfig().layout;
+    document.body.classList.toggle("tiling-layout-master-stack", layout === "master-stack");
   }
 
   applyLayoutToAllWindows() {
@@ -289,13 +315,14 @@ export class TilingManager {
     const tree = this.getTreeForWorkspace(wsId);
     if (!tree) return;
 
-    const wins = Engine.getLeafWindows(tree);
+    const engine = this.getLayoutEngine();
+    const wins = engine.getLeafWindows(tree);
     if (wins.length === 0) return;
 
     const { x, y, w, h } = this.getLayoutRect();
     const cfg = this.getEffectiveConfig();
     const gaps = cfg.gaps;
-    const rects = Engine.calculateLayout(tree, x, y, w, h, gaps);
+    const rects = engine.calculateLayout(tree, x, y, w, h, gaps);
 
     for (const rect of rects) {
       const win = document.getElementById(rect.winId);
@@ -336,13 +363,14 @@ export class TilingManager {
     const tree = this.getTreeForWorkspace(wsId);
     if (!tree) return;
 
-    const node = Engine.findNodeByWinId(tree, winId);
+    const engine = this.getLayoutEngine();
+    const node = engine.findNodeByWinId(tree, winId);
     if (!node) return;
 
     const { x, y, w, h } = this.getLayoutRect();
     const cfg = this.getEffectiveConfig();
     const gaps = cfg.gaps;
-    const rects = Engine.calculateLayout(tree, x, y, w, h, gaps);
+    const rects = engine.calculateLayout(tree, x, y, w, h, gaps);
 
     const rect = rects.find((r) => r.winId === winId);
     if (!rect) return;
@@ -431,12 +459,13 @@ export class TilingManager {
       entry.record.tilePosition = win.style.position || getComputedStyle(win).position;
     }
 
+    const engine = this.getLayoutEngine();
     let tree = this.getTreeForWorkspace(wsId);
-    const alreadyInTree = tree && Engine.findNodeByWinId(tree, winId);
+    const alreadyInTree = tree && engine.findNodeByWinId(tree, winId);
     if (!alreadyInTree) {
       const cursorWinId = this.getWindowAtCursor();
       const focusedWinId = cursorWinId || this.getFocusedTiledWinId();
-      tree = Engine.insert(tree, winId, focusedWinId);
+      tree = engine.insert(tree, winId, focusedWinId);
       this.setTreeForWorkspace(wsId, tree);
     }
     this.applyLayoutToAllWindows();
@@ -453,7 +482,8 @@ export class TilingManager {
       entry.record.tiled = false;
     }
 
-    tree = Engine.remove(tree, winId);
+    const engine = this.getLayoutEngine();
+    tree = engine.remove(tree, winId);
     this.setTreeForWorkspace(wsId, tree);
     this.applyLayoutToAllWindows();
   }
@@ -471,7 +501,8 @@ export class TilingManager {
       entry.record.tiled = true;
     }
 
-    Engine.swapWindows(tree, draggedWinId, targetWinId);
+    const engine = this.getLayoutEngine();
+    engine.swapWindows(tree, draggedWinId, targetWinId);
     this.applyLayoutToAllWindows();
   }
 
@@ -481,10 +512,11 @@ export class TilingManager {
     let tree = this.getTreeForWorkspace(wsId);
     if (!tree) return;
 
-    tree = Engine.remove(tree, winId);
+    const engine = this.getLayoutEngine();
+    tree = engine.remove(tree, winId);
     this.setTreeForWorkspace(wsId, tree);
 
-    const leafCount = tree ? Engine.countLeaves(tree) : 0;
+    const leafCount = tree ? engine.countLeaves(tree) : 0;
     if (leafCount === 0) {
       this.setTreeForWorkspace(wsId, null);
       return;
@@ -518,7 +550,8 @@ export class TilingManager {
     const focusedWinId = focusedWin?.record?.tiled ? focusedWin.record.id : null;
     if (!focusedWinId) return;
 
-    const neighbor = Engine.getDirectionalNeighbor(tree, focusedWinId, direction);
+    const engine = this.getLayoutEngine();
+    const neighbor = engine.getDirectionalNeighbor(tree, focusedWinId, direction);
     if (!neighbor || !neighbor.winId) return;
 
     const win = document.getElementById(neighbor.winId);
@@ -537,10 +570,11 @@ export class TilingManager {
     const focusedWinId = this.getFocusedTiledWinId();
     if (!focusedWinId) return;
 
-    const neighbor = Engine.getDirectionalNeighbor(tree, focusedWinId, direction);
+    const engine = this.getLayoutEngine();
+    const neighbor = engine.getDirectionalNeighbor(tree, focusedWinId, direction);
     if (!neighbor || !neighbor.winId) return;
 
-    Engine.swapWindows(tree, focusedWinId, neighbor.winId);
+    engine.swapWindows(tree, focusedWinId, neighbor.winId);
     this.applyLayoutToAllWindows();
   }
 
@@ -553,7 +587,8 @@ export class TilingManager {
     const focusedWinId = this.getFocusedTiledWinId();
     if (!focusedWinId) return;
 
-    Engine.resizeSplit(tree, focusedWinId, direction, this.getEffectiveConfig().resize_delta);
+    const engine = this.getLayoutEngine();
+    engine.resizeSplit(tree, focusedWinId, direction, this.getEffectiveConfig().resize_delta);
     this.applyLayoutToAllWindows();
   }
 
@@ -609,10 +644,11 @@ export class TilingManager {
     const win = document.getElementById(focusedWinId);
     if (!win) return;
 
+    const engine = this.getLayoutEngine();
     if (entry.record.floating) {
       entry.record.floating = false;
       entry.record.tiled = true;
-      let newTree = Engine.insert(tree, focusedWinId, null);
+      let newTree = engine.insert(tree, focusedWinId, null);
       this.setTreeForWorkspace(wsId, newTree);
       this.applyLayoutToAllWindows();
       delete win.dataset.tiled;
@@ -626,7 +662,7 @@ export class TilingManager {
         height: entry.record.height
       };
 
-      let newTree = Engine.remove(tree, focusedWinId);
+      let newTree = engine.remove(tree, focusedWinId);
       this.setTreeForWorkspace(wsId, newTree);
 
       const geom = entry.record.tileGeometry;
@@ -679,7 +715,8 @@ export class TilingManager {
     const tree = this.getTreeForWorkspace(wsId);
     if (!tree) return;
 
-    const windows = Engine.getLeafWindows(tree);
+    const engine = this.getLayoutEngine();
+    const windows = engine.getLeafWindows(tree);
     if (windows.length < 2) return;
 
     const focusedWinId = this.getFocusedTiledWinId();
@@ -708,7 +745,14 @@ export class TilingManager {
     const focusedWinId = this.getFocusedTiledWinId();
     if (!focusedWinId) return;
 
-    const node = Engine.findNodeByWinId(tree, focusedWinId);
+    const engine = this.getLayoutEngine();
+    if (tree.type === "master-stack") {
+      tree.orientation = tree.orientation === "horizontal" ? "vertical" : "horizontal";
+      this.applyLayoutToAllWindows();
+      return;
+    }
+
+    const node = engine.findNodeByWinId(tree, focusedWinId);
     if (!node || !node.parent) return;
 
     const parent = node.parent;
@@ -749,15 +793,16 @@ export class TilingManager {
       target = wsManager.workspaces.find((ws) => ws.id === targetId);
     }
 
+    const engine = this.getLayoutEngine();
     const currentWsId = this.getActiveWorkspaceId();
     let currentTree = this.getTreeForWorkspace(currentWsId);
     if (currentTree) {
-      currentTree = Engine.remove(currentTree, focusedWinId);
+      currentTree = engine.remove(currentTree, focusedWinId);
       this.setTreeForWorkspace(currentWsId, currentTree);
     }
 
     let targetTree = this.getTreeForWorkspace(target.id);
-    targetTree = Engine.insert(targetTree, focusedWinId);
+    targetTree = engine.insert(targetTree, focusedWinId);
     this.setTreeForWorkspace(target.id, targetTree);
 
     wsManager.moveWindowTo(focusedWinId, target.id);

@@ -1,8 +1,26 @@
 import * as CANNON from "cannon-es";
+import { GENRES } from "./GameState.js";
 
-const SHELF_Y_LEVELS = [0.5, 1.1, 1.7];
-const SLOTS_PER_SHELF = 10;
-const SHELF_X = -3.47;
+const SHELF_Y_LEVELS = [0.5, 1.25, 2.0];
+const SHELF_WIDTH = 0.55;
+const SHELF_DEPTH = 0.5;
+const SHELF_HEIGHT = 2.5;
+const PLANK_THICKNESS = 0.03;
+const SLOT_Z_OFFSET = 0.12;
+
+const ALL_GENRES = ["horror", "strategy", "casual", "puzzle", "action", "adventure", "simulation", "rpg", "platformer"];
+
+const SHELF_POSITIONS = [
+  { x: -4.5, z: -2.8, genre: "horror" },
+  { x: -4.5, z: -1.4, genre: "strategy" },
+  { x: -4.5, z: 0, genre: "casual" },
+  { x: -4.5, z: 1.4, genre: "puzzle" },
+  { x: -4.5, z: 2.8, genre: "action" },
+  { x: 4.5, z: -2.8, genre: "adventure" },
+  { x: 4.5, z: -1.4, genre: "simulation" },
+  { x: 4.5, z: 0, genre: "rpg" },
+  { x: 4.5, z: 1.4, genre: "platformer" }
+];
 
 function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
@@ -15,7 +33,152 @@ export class ShelfManager {
     this.physicsWorld = physicsWorld;
     this.slots = [];
     this.shelfMeshes = [];
-    this.animatingBooks = [];
+    this.animatingCases = [];
+    this.gameMode = false;
+    this.shelfCategories = {};
+    this.labelMeshes = [];
+    this.categoryGlowMeshes = [];
+    this.shelfData = [];
+  }
+
+  setGameMode(enabled) {
+    this.gameMode = enabled;
+    if (enabled) {
+      this.createLabels();
+    } else {
+      this.clearLabels();
+    }
+  }
+
+  getShelfCategory(slot) {
+    if (!this.gameMode) return null;
+    return slot.genre || null;
+  }
+
+  isCorrectShelf(gameCase, slot) {
+    if (!this.gameMode) return true;
+    const gameCaseGenre = gameCase.genre || "casual";
+    return gameCaseGenre === slot.genre;
+  }
+
+  createLabels() {
+    const T = this.THREE;
+
+    for (const shelf of this.shelfData) {
+      const category = shelf.genre;
+      const genreInfo = GENRES[category];
+      const colorHex = genreInfo ? genreInfo.color : 0x44cc88;
+      const r = (colorHex >> 16) & 0xff;
+      const g = (colorHex >> 8) & 0xff;
+      const b2 = colorHex & 0xff;
+      const colorStr = `rgb(${r}, ${g}, ${b2})`;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 256;
+      canvas.height = 64;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+      ctx.fillRect(0, 0, 256, 64);
+      ctx.fillStyle = colorStr;
+      ctx.font = "bold 24px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(genreInfo ? genreInfo.label : category, 128, 32);
+
+      const tex = new T.CanvasTexture(canvas);
+      tex.needsUpdate = true;
+      const mat = new T.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        opacity: 0.85,
+        side: T.DoubleSide
+      });
+      const labelGeo = new T.PlaneGeometry(0.4, 0.1);
+      const labelMesh = new T.Mesh(labelGeo, mat);
+      const labelX = shelf.x < 0 ? shelf.x + SHELF_WIDTH / 2 + 0.005 : shelf.x - SHELF_WIDTH / 2 - 0.005;
+      labelMesh.position.set(labelX, SHELF_Y_LEVELS[2] + 0.3, shelf.z);
+      labelMesh.rotation.y = shelf.x < 0 ? Math.PI / 2 : -Math.PI / 2;
+      labelMesh.userData.isLabel = true;
+      this.scene.add(labelMesh);
+      this.labelMeshes.push(labelMesh);
+
+      const glowGeo = new T.PlaneGeometry(0.38, 0.09);
+      const glowMat = new T.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0,
+        side: T.DoubleSide
+      });
+      const glowMesh = new T.Mesh(glowGeo, glowMat);
+      glowMesh.position.set(labelX, SHELF_Y_LEVELS[2] + 0.3, shelf.z);
+      glowMesh.rotation.y = shelf.x < 0 ? Math.PI / 2 : -Math.PI / 2;
+      glowMesh.userData.isGlow = true;
+      this.scene.add(glowMesh);
+      this.categoryGlowMeshes.push(glowMesh);
+    }
+  }
+
+  highlightCategory(genre, duration) {
+    if (!this.gameMode) return;
+    for (let i = 0; i < this.shelfData.length; i++) {
+      if (this.shelfData[i].genre === genre) {
+        this.categoryGlowMeshes[i].material.opacity = 0.6;
+        setTimeout(() => {
+          if (this.categoryGlowMeshes[i]) this.categoryGlowMeshes[i].material.opacity = 0;
+        }, duration);
+      }
+    }
+  }
+
+  flashSlot(slot, correct) {
+    if (!this.gameMode) return;
+    const color = correct ? 0x44ff88 : 0xff4444;
+    const T = this.THREE;
+    const flashGeo = new T.PlaneGeometry(0.35, 0.42);
+    const flashMat = new T.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.7,
+      side: T.DoubleSide
+    });
+    const flashMesh = new T.Mesh(flashGeo, flashMat);
+    flashMesh.position.copy(slot.position);
+    flashMesh.position.x += 0.02;
+    flashMesh.rotation.y = slot.position.x < 0 ? Math.PI / 2 : -Math.PI / 2;
+    this.scene.add(flashMesh);
+
+    let elapsed = 0;
+    const animate = () => {
+      elapsed += 0.016;
+      flashMat.opacity = Math.max(0, 0.7 * (1 - elapsed / 1.2));
+      if (elapsed < 1.2) {
+        requestAnimationFrame(animate);
+      } else {
+        this.scene.remove(flashMesh);
+        flashGeo.dispose();
+        flashMat.dispose();
+      }
+    };
+    requestAnimationFrame(animate);
+  }
+
+  clearLabels() {
+    for (const mesh of this.labelMeshes) {
+      this.scene.remove(mesh);
+      if (mesh.material.map) mesh.material.map.dispose();
+      mesh.material.dispose();
+      mesh.geometry.dispose();
+    }
+    this.labelMeshes = [];
+    for (const mesh of this.categoryGlowMeshes) {
+      this.scene.remove(mesh);
+      if (mesh.material.map) mesh.material.map.dispose();
+      mesh.material.dispose();
+      mesh.geometry.dispose();
+    }
+    this.categoryGlowMeshes = [];
+    this.shelfCategories = {};
   }
 
   build(savedShelves) {
@@ -33,45 +196,70 @@ export class ShelfManager {
       metalness: 0
     });
 
-    const back = new T.Mesh(new T.BoxGeometry(0.05, 2.4, 4.4), darkWoodMat);
-    back.position.set(-3.75, 1.2, 0);
-    back.userData.title = "Bookshelf";
-    this.scene.add(back);
-    this.shelfMeshes.push(back);
+    for (let s = 0; s < ALL_GENRES.length; s++) {
+      const genre = ALL_GENRES[s];
+      const sp = SHELF_POSITIONS[s];
+      const sx = sp.x;
+      const sz = sp.z;
 
-    for (const zSign of [-1, 1]) {
-      const side = new T.Mesh(new T.BoxGeometry(0.3, 2.4, 0.05), woodMat);
-      side.position.set(-3.6, 1.2, zSign * 2.2);
-      side.userData.title = "Bookshelf";
-      this.scene.add(side);
-      this.shelfMeshes.push(side);
-    }
+      const back = new T.Mesh(new T.BoxGeometry(0.05, SHELF_HEIGHT, SHELF_DEPTH), darkWoodMat);
+      back.position.set(sx, SHELF_HEIGHT / 2, sz);
+      back.userData.title = genre + " Shelf";
+      this.scene.add(back);
+      this.shelfMeshes.push(back);
 
-    for (const y of SHELF_Y_LEVELS) {
-      const plank = new T.Mesh(new T.BoxGeometry(0.3, 0.03, 4.2), woodMat);
-      plank.position.set(-3.6, y, 0);
-      plank.userData.title = "Bookshelf";
-      this.scene.add(plank);
-      this.shelfMeshes.push(plank);
+      for (const zSign of [-1, 1]) {
+        const side = new T.Mesh(new T.BoxGeometry(SHELF_WIDTH, SHELF_HEIGHT, 0.05), woodMat);
+        side.position.set(sx, SHELF_HEIGHT / 2, sz + (zSign * SHELF_DEPTH) / 2);
+        side.userData.title = genre + " Shelf";
+        this.scene.add(side);
+        this.shelfMeshes.push(side);
 
-      const body = new CANNON.Body({ mass: 0 });
-      body.addShape(new CANNON.Box(new CANNON.Vec3(0.15, 0.015, 2.1)));
-      body.position.set(-3.6, y, 0);
-      this.physicsWorld.addBody(body);
-    }
-
-    for (const shelfY of SHELF_Y_LEVELS) {
-      for (let i = 0; i < SLOTS_PER_SHELF; i++) {
-        const t = SLOTS_PER_SHELF > 1 ? i / (SLOTS_PER_SHELF - 1) : 0.5;
-        const z = -1.87 + t * 3.74;
-        this.slots.push({
-          position: new T.Vector3(SHELF_X, shelfY + 0.21, z),
-          occupied: false,
-          book: null,
-          shelfY,
-          index: this.slots.length
-        });
+        const sideBody = new CANNON.Body({ mass: 0 });
+        sideBody.addShape(new CANNON.Box(new CANNON.Vec3(SHELF_WIDTH / 2, SHELF_HEIGHT / 2, 0.025)));
+        sideBody.position.set(sx, SHELF_HEIGHT / 2, sz + (zSign * SHELF_DEPTH) / 2);
+        this.physicsWorld.addBody(sideBody);
       }
+
+      const backBody = new CANNON.Body({ mass: 0 });
+      backBody.addShape(new CANNON.Box(new CANNON.Vec3(0.025, SHELF_HEIGHT / 2, SHELF_DEPTH / 2)));
+      backBody.position.set(sx, SHELF_HEIGHT / 2, sz);
+      this.physicsWorld.addBody(backBody);
+
+      for (const y of SHELF_Y_LEVELS) {
+        const plank = new T.Mesh(new T.BoxGeometry(SHELF_WIDTH, PLANK_THICKNESS, SHELF_DEPTH), woodMat);
+        plank.position.set(sx, y, sz);
+        plank.userData.title = genre + " Shelf";
+        this.scene.add(plank);
+        this.shelfMeshes.push(plank);
+
+        const body = new CANNON.Body({ mass: 0 });
+        body.addShape(new CANNON.Box(new CANNON.Vec3(SHELF_WIDTH / 2, PLANK_THICKNESS / 2, SHELF_DEPTH / 2)));
+        body.position.set(sx, y, sz);
+        this.physicsWorld.addBody(body);
+      }
+
+      const innerEdge = sx < 0 ? sx + SHELF_WIDTH / 2 : sx - SHELF_WIDTH / 2;
+      const slotXs =
+        sx < 0
+          ? [innerEdge - 0.02, innerEdge - 0.08, innerEdge - 0.14]
+          : [innerEdge + 0.02, innerEdge + 0.08, innerEdge + 0.14];
+
+      for (const shelfY of SHELF_Y_LEVELS) {
+        for (const slotX of slotXs) {
+          this.slots.push({
+            position: new T.Vector3(slotX, shelfY + 0.22, sz),
+            occupied: false,
+            gameCase: null,
+            shelfY,
+            index: this.slots.length,
+            genre: genre,
+            shelfIndex: s
+          });
+        }
+      }
+
+      this.shelfData.push({ x: sx, z: sz, genre: genre });
     }
   }
 
@@ -89,15 +277,15 @@ export class ShelfManager {
     return bestDist < 0.5 ? best : null;
   }
 
-  getSlotByBook(book) {
+  getSlotByCase(gameCase) {
     for (const slot of this.slots) {
-      if (slot.book === book) return slot;
+      if (slot.gameCase === gameCase) return slot;
     }
     return null;
   }
 
-  isBookShelved(book) {
-    return this.getSlotByBook(book) !== null;
+  isCaseShelved(gameCase) {
+    return this.getSlotByCase(gameCase) !== null;
   }
 
   getSlotByIndex(index) {
@@ -107,75 +295,83 @@ export class ShelfManager {
   getShelfAssignments() {
     const assignments = {};
     for (const slot of this.slots) {
-      if (slot.occupied && slot.book) {
-        assignments[slot.book.gameId] = slot.index;
+      if (slot.occupied && slot.gameCase) {
+        assignments[slot.gameCase.gameId] = slot.index;
       }
     }
     return assignments;
   }
 
-  shelveBook(book, slot) {
+  shelveCase(gameCase, slot) {
     slot.occupied = true;
-    slot.book = book;
+    slot.gameCase = gameCase;
 
     const quat = new this.THREE.Quaternion();
     quat.setFromAxisAngle(new this.THREE.Vector3(0, 1, 0), Math.PI / 2);
 
-    this.animatingBooks.push({
-      book,
+    this.animatingCases.push({
+      gameCase,
       slot,
-      startPos: book.mesh.position.clone(),
-      startQuat: book.mesh.quaternion.clone(),
+      startPos: gameCase.mesh.position.clone(),
+      startQuat: gameCase.mesh.quaternion.clone(),
       targetPos: slot.position.clone(),
       targetQuat: quat,
       progress: 0,
       duration: 0.35
     });
 
-    book.grabbed = false;
-    book.body.type = CANNON.Body.KINEMATIC;
+    gameCase.grabbed = false;
+    gameCase.body.type = CANNON.Body.KINEMATIC;
   }
 
-  popBookFromSlot(book) {
-    const slot = this.getSlotByBook(book);
+  popCaseFromSlot(gameCase) {
+    const slot = this.getSlotByCase(gameCase);
     if (!slot) return false;
     slot.occupied = false;
-    slot.book = null;
-    book.body.type = CANNON.Body.DYNAMIC;
-    book.body.updateMassProperties();
-    book.body.allowSleep = true;
-    book.body.wakeUp();
+    slot.gameCase = null;
+    gameCase.body.type = CANNON.Body.DYNAMIC;
+    if (gameCase.dynamicMass) {
+      gameCase.body.mass = gameCase.dynamicMass;
+    }
+    gameCase.body.updateMassProperties();
+    gameCase.body.allowSleep = true;
+    gameCase.body.wakeUp();
     return true;
   }
 
   update(delta) {
-    for (let i = this.animatingBooks.length - 1; i >= 0; i--) {
-      const anim = this.animatingBooks[i];
+    for (let i = this.animatingCases.length - 1; i >= 0; i--) {
+      const anim = this.animatingCases[i];
       anim.progress += delta / anim.duration;
 
       if (anim.progress >= 1) {
-        anim.book.mesh.position.copy(anim.targetPos);
-        anim.book.mesh.quaternion.copy(anim.targetQuat);
-        anim.book.mesh.position.copy(anim.targetPos);
-        anim.book.body.position.set(anim.targetPos.x, anim.targetPos.y, anim.targetPos.z);
-        anim.book.body.quaternion.set(anim.targetQuat.x, anim.targetQuat.y, anim.targetQuat.z, anim.targetQuat.w);
-        this.animatingBooks.splice(i, 1);
+        anim.gameCase.mesh.position.copy(anim.targetPos);
+        anim.gameCase.mesh.quaternion.copy(anim.targetQuat);
+        anim.gameCase.mesh.position.copy(anim.targetPos);
+        anim.gameCase.body.position.set(anim.targetPos.x, anim.targetPos.y, anim.targetPos.z);
+        anim.gameCase.body.quaternion.set(anim.targetQuat.x, anim.targetQuat.y, anim.targetQuat.z, anim.targetQuat.w);
+        this.animatingCases.splice(i, 1);
       } else {
         const t = easeOutCubic(anim.progress);
-        anim.book.mesh.position.lerpVectors(anim.startPos, anim.targetPos, t);
-        anim.book.mesh.quaternion.slerpQuaternions(anim.startQuat, anim.targetQuat, t);
-        anim.book.pos.copy(anim.book.mesh.position);
-        anim.book.body.position.set(anim.book.mesh.position.x, anim.book.mesh.position.y, anim.book.mesh.position.z);
+        anim.gameCase.mesh.position.lerpVectors(anim.startPos, anim.targetPos, t);
+        anim.gameCase.mesh.quaternion.slerpQuaternions(anim.startQuat, anim.targetQuat, t);
+        anim.gameCase.pos.copy(anim.gameCase.mesh.position);
+        anim.gameCase.body.position.set(
+          anim.gameCase.mesh.position.x,
+          anim.gameCase.mesh.position.y,
+          anim.gameCase.mesh.position.z
+        );
       }
     }
   }
 
   destroy() {
+    this.clearLabels();
     for (const mesh of this.shelfMeshes) {
       this.scene.remove(mesh);
     }
     this.shelfMeshes = [];
     this.slots = [];
-    this.animatingBooks = [];
+    this.animatingCases = [];
   }
 }

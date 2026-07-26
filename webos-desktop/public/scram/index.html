@@ -2683,6 +2683,15 @@
         { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
       ];
 
+      const TRANSPORT_TYPES = {
+        epoxy: { name: "Epoxy (Wisp)", desc: "Default WebSocket-based transport" },
+        libcurl: { name: "libcurl (Wisp)", desc: "Alternative WebSocket-based transport" }
+      };
+      const DEFAULT_TRANSPORT = "epoxy";
+
+      let hostWispUrl = null;
+      let hostTransport = null;
+
       const SEARCH_ENGINES = {
         brave: { name: "Brave", url: "https://search.brave.com/search?q=", regionParam: "lang" },
         google: { name: "Google", url: "https://www.google.com/search?q=", regionParam: "hl" },
@@ -2834,6 +2843,14 @@
           }
           if (Array.isArray(data.history)) {
             history = data.history;
+          }
+          if (data.wispUrl) {
+            hostWispUrl = data.wispUrl;
+            localStorage.setItem("proxServer", data.wispUrl);
+          }
+          if (data.transport) {
+            hostTransport = data.transport;
+            localStorage.setItem("proxTransport", data.transport);
           }
         }
         if (data.type === "scram:torMode") {
@@ -3007,25 +3024,34 @@
           const reg = await navigator.serviceWorker.register(basePath + "sw.js", { scope: basePath });
           await navigator.serviceWorker.ready;
 
-          const wispUrl = localStorage.getItem("proxServer") || DEFAULT_WISP;
+          const wispUrl = hostWispUrl || localStorage.getItem("proxServer") || DEFAULT_WISP;
+          const transportType = hostTransport || localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT;
           const sw = reg.active || navigator.serviceWorker.controller;
 
-          if (sw) sw.postMessage({ type: "config", wispurl: wispUrl });
+          if (sw) sw.postMessage({ type: "config", wispurl: wispUrl, transportType: transportType });
 
           if (navigator.serviceWorker.controller && navigator.serviceWorker.controller !== sw) {
             navigator.serviceWorker.controller.postMessage({
               type: "config",
-              wispurl: wispUrl
+              wispurl: wispUrl,
+              transportType: transportType
             });
           }
 
           reg.update();
 
           window.bareMuxConnection = new BareMux.BareMuxConnection(basePath + "bareworker.js");
-          await window.bareMuxConnection.setTransport(
-            "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
-            [{ wisp: wispUrl }]
-          );
+          if (transportType === "libcurl") {
+            await window.bareMuxConnection.setTransport(
+              "/scram/libcurl-wrapper.mjs",
+              [{ wisp: wispUrl }]
+            );
+          } else {
+            await window.bareMuxConnection.setTransport(
+              "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
+              [{ wisp: wispUrl }]
+            );
+          }
         }
 
         initializeBrowser();
@@ -4438,6 +4464,10 @@
                 '<button class="settings-icon-btn" id="yuki-save-custom-wisp" data-tooltip="Add this custom proxy server to the list"><i class="fa-solid fa-plus"></i></button>' +
               '</div>' +
             '</div>' +
+            '<div style="margin-top:16px;">' +
+              '<div style="margin-bottom:10px;font-size:14px;color:var(--text-dim);font-weight:500;">Transport Protocol</div>' +
+              '<div class="settings-option-group" id="yuki-transport-selector"></div>' +
+            '</div>' +
             '<div class="settings-server-hint">Lower ping = faster browsing</div>' +
           '</div>' +
 
@@ -4563,6 +4593,7 @@
         showYukiSettingsSection("nav");
 
         renderYukiServerList();
+        renderTransportSection("yuki-transport-selector");
         renderYukiCustomSearchEngines();
         renderYukiDarkExclusions();
 
@@ -4992,6 +5023,10 @@
                   <button class="settings-icon-btn" id="save-custom-wisp" data-tooltip="Add this custom proxy server to the list"><i class="fa-solid fa-plus"></i></button>
                 </div>
               </div>
+              <div style="margin-top:16px;">
+                <div style="margin-bottom:10px;font-size:14px;color:var(--text-dim);font-weight:500;">Transport Protocol</div>
+                <div class="settings-option-group" id="transport-selector"></div>
+              </div>
               <div class="settings-server-hint">Lower ping = faster browsing</div>
             </div>
 
@@ -5007,6 +5042,7 @@
 
         setTimeout(() => {
           renderServerList();
+          renderTransportSection();
           renderCustomSearchEngines();
           renderDarkExclusions();
 
@@ -5152,6 +5188,27 @@
         }
       }
 
+      function renderTransportSection(containerId) {
+        const container = document.getElementById(containerId || "transport-selector");
+        if (!container) return;
+        const current = localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT;
+        container.innerHTML = Object.entries(TRANSPORT_TYPES).map(function (entry) {
+          var key = entry[0], t = entry[1];
+          return '<span class="settings-option-pill' + (key === current ? " active" : "") + '" data-transport="' + key + '" data-tooltip="' + t.desc + '">' + t.name + '</span>';
+        }).join("");
+        container.querySelectorAll("[data-transport]").forEach(function (el) {
+            el.addEventListener("click", function () {
+              var key = el.dataset.transport;
+              localStorage.setItem("proxTransport", key);
+              hostTransport = key;
+              if (isEmbedded) sendToParent({ type: "scram:proxyConfigChange", transport: key });
+              container.querySelectorAll("[data-transport]").forEach(function (p) { p.classList.remove("active"); });
+              el.classList.add("active");
+              setTimeout(function () { location.reload(); }, 300);
+            });
+        });
+      }
+
       function renderServerList() {
         const list = document.getElementById("server-list");
         list.innerHTML = "";
@@ -5262,6 +5319,8 @@
       function setWisp(url) {
         const oldUrl = localStorage.getItem("proxServer");
         localStorage.setItem("proxServer", url);
+        hostWispUrl = url;
+        if (isEmbedded) sendToParent({ type: "scram:proxyConfigChange", wispUrl: url });
 
         if (typeof Notify !== "undefined" && oldUrl !== url) {
           const serverName = [...WISP_SERVERS, ...getStoredWisps()].find((s) => s.url === url)?.name || "Custom Server";
@@ -5271,7 +5330,8 @@
         if (navigator.serviceWorker.controller) {
           navigator.serviceWorker.controller.postMessage({
             type: "config",
-            wispurl: url
+            wispurl: url,
+            transportType: localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT
           });
         }
 

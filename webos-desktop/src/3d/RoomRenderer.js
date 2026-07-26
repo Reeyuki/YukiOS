@@ -2,6 +2,9 @@ import { HologramRenderer } from "./HologramRenderer.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { Reflector } from "three/examples/jsm/objects/Reflector.js";
+import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
+import { CDN_BASES } from "../shared/assetResolver.js";
 
 export class RoomRenderer {
   constructor(container) {
@@ -17,13 +20,14 @@ export class RoomRenderer {
     this.roomObjects = [];
     this.interactiveObjects = [];
     this.allMeshes = [];
-    this.bounds = { minX: -4, maxX: 4, minZ: -4, maxZ: 4 };
+    this.bounds = { minX: -5, maxX: 5, minZ: -4, maxZ: 4 };
     this.running = false;
     this.monitorScreen = null;
     this.monitorCaptureTimer = null;
     this.hologramRenderer = null;
     this.navArrowMeshes = [];
     this.curtainGeos = [];
+    this.wailaMeshes = [];
     this.dustMesh = null;
     this.dustPositions = null;
     this.dustVelocities = null;
@@ -31,7 +35,11 @@ export class RoomRenderer {
     this.hologramTime = 0;
     this.hologramGroup = null;
     this.hologramBaseY = 0;
+    this.hologramFrozen = false;
+    this.chairGroup = null;
     this.glowStripLight = null;
+    this.hdriEnvMap = null;
+    this.isDay = false;
   }
 
   async init() {
@@ -42,12 +50,13 @@ export class RoomRenderer {
     const h = this.container.clientHeight;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0e0618);
-    this.scene.fog = new THREE.Fog(0x0e0618, 10, 22);
+    this.scene.background = new THREE.Color(0x0a0a18);
+    this.scene.fog = new THREE.Fog(0x0a0a18, 10, 22);
 
     this.camera = new THREE.PerspectiveCamera(70, w / h, 0.1, 100);
     this.camera.position.set(0, 1.6, 2.5);
     this.camera.lookAt(0, 1.2, 0);
+    this.scene.add(this.camera);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setSize(w, h);
@@ -63,39 +72,47 @@ export class RoomRenderer {
     const renderPass = new RenderPass(this.scene, this.camera);
     this.composer.addPass(renderPass);
 
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.4, 0.2, 0.1);
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(w / 2, h / 2), 0.4, 0.2, 0.1);
     this.composer.addPass(this.bloomPass);
 
     this.clock = new THREE.Clock();
 
     this.buildRoom();
     this.setupLighting();
-    this.buildSkybox();
+    const skyPromise = this.buildSkybox();
+    this.buildMirror();
+    this.buildPlayerBody();
+    this.buildPlayerShadow();
+    this.toggleDayNight();
+    this.toggleDayNight();
+    await skyPromise;
 
+    this.collectWAILAMeshes();
     this.running = true;
     this.animate();
   }
 
   buildRoom() {
-    const T = this.THREE;
+    const THREE = this.THREE;
 
     this.wallMat = new THREE.MeshStandardMaterial({
-      color: 0x3d2840,
+      color: 0x16162a,
       roughness: 0.75,
       metalness: 0.05,
-      side: T.DoubleSide
+      side: THREE.DoubleSide
     });
 
     this.wallMeshes = [];
 
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), this.wallMat);
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 8), this.wallMat);
     ceiling.rotation.x = Math.PI / 2;
     ceiling.position.set(0, 3, 0);
     this.scene.add(ceiling);
     this.registerObject(ceiling, "Room");
     this.wallMeshes.push(ceiling);
+    this.ceilingMesh = ceiling;
 
-    const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(8, 3), this.wallMat);
+    const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 3), this.wallMat);
     frontWall.position.set(0, 1.5, -4);
     this.scene.add(frontWall);
     this.registerObject(frontWall, "Room");
@@ -103,24 +120,24 @@ export class RoomRenderer {
 
     const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(8, 3), this.wallMat);
     leftWall.rotation.y = Math.PI / 2;
-    leftWall.position.set(-4, 1.5, 0);
+    leftWall.position.set(-5, 1.5, 0);
     this.scene.add(leftWall);
     this.registerObject(leftWall, "Room");
     this.wallMeshes.push(leftWall);
 
     const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(8, 3), this.wallMat);
     rightWall.rotation.y = -Math.PI / 2;
-    rightWall.position.set(4, 1.5, 0);
+    rightWall.position.set(5, 1.5, 0);
     this.scene.add(rightWall);
     this.registerObject(rightWall, "Room");
     this.wallMeshes.push(rightWall);
 
     const backWallShape = new THREE.Shape();
-    backWallShape.moveTo(-4, 0);
-    backWallShape.lineTo(4, 0);
-    backWallShape.lineTo(4, 3);
-    backWallShape.lineTo(-4, 3);
-    backWallShape.lineTo(-4, 0);
+    backWallShape.moveTo(-5, 0);
+    backWallShape.lineTo(5, 0);
+    backWallShape.lineTo(5, 3);
+    backWallShape.lineTo(-5, 3);
+    backWallShape.lineTo(-5, 0);
 
     const winHalfW = 0.6;
     const winHalfH = 0.5;
@@ -141,11 +158,11 @@ export class RoomRenderer {
     this.wallMeshes.push(backWall);
 
     this.floorMat = new THREE.MeshStandardMaterial({
-      color: 0x1e1018,
+      color: 0x0a0a14,
       roughness: 0.75,
       metalness: 0.15
     });
-    this.floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), this.floorMat);
+    this.floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 8), this.floorMat);
     this.floorMesh.rotation.x = -Math.PI / 2;
     this.floorMesh.position.y = 0.01;
     this.floorMesh.receiveShadow = true;
@@ -184,10 +201,10 @@ export class RoomRenderer {
     this.hologramBaseY = 0.82;
 
     const projectorMat = new THREE.MeshStandardMaterial({
-      color: 0x222233,
+      color: 0x1a1a2e,
       metalness: 0.9,
       roughness: 0.2,
-      emissive: 0x4422aa,
+      emissive: 0x00ccff,
       emissiveIntensity: 0.15
     });
 
@@ -196,37 +213,20 @@ export class RoomRenderer {
     projectorBase.castShadow = true;
     hologramGroup.add(projectorBase);
 
-    const projectorRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.13, 0.008, 8, 16),
-      new THREE.MeshStandardMaterial({
-        color: 0x8844ff,
-        emissive: 0x8844ff,
-        emissiveIntensity: 0.3,
-        metalness: 0.8,
-        roughness: 0.2
-      })
-    );
-    projectorRing.position.y = 0.065;
-    projectorRing.rotation.x = Math.PI / 2;
-    hologramGroup.add(projectorRing);
-
-    const hologramScreenMat = new THREE.MeshStandardMaterial({
-      color: 0x8844ff,
-      emissive: 0x8844ff,
-      emissiveIntensity: 0.04,
+    const hologramScreenMat = new THREE.MeshBasicMaterial({
+      color: 0x00bbff,
       transparent: true,
       opacity: 0.88,
-      side: THREE.DoubleSide,
-      roughness: 0.1,
-      metalness: 0
+      side: THREE.DoubleSide
     });
     const holoScreen = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.2), hologramScreenMat);
     holoScreen.position.set(0, 0.8, 0);
     hologramGroup.add(holoScreen);
     this.monitorScreen = holoScreen;
+    holoScreen.userData.title = "Hologram";
 
     const glowMat = new THREE.MeshBasicMaterial({
-      color: 0x8844ff,
+      color: 0x00ccff,
       transparent: true,
       opacity: 0.08,
       side: THREE.DoubleSide,
@@ -238,7 +238,7 @@ export class RoomRenderer {
     hologramGroup.add(glowPlane);
 
     const borderMat = new THREE.MeshBasicMaterial({
-      color: 0x8844ff,
+      color: 0x00ccff,
       transparent: true,
       opacity: 0.2,
       side: THREE.DoubleSide,
@@ -247,7 +247,7 @@ export class RoomRenderer {
     const borderGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(1.8, 1.2));
     const borderLine = new THREE.LineSegments(
       borderGeo,
-      new THREE.LineBasicMaterial({ color: 0x8844ff, transparent: true, opacity: 0.15, depthWrite: false })
+      new THREE.LineBasicMaterial({ color: 0x00ccff, transparent: true, opacity: 0.15, depthWrite: false })
     );
     borderLine.position.set(0, 0.8, 0);
     hologramGroup.add(borderLine);
@@ -258,7 +258,7 @@ export class RoomRenderer {
       [-0.9, -0.6, 0],
       [0.9, -0.6, 0]
     ];
-    const dotMat = new THREE.MeshBasicMaterial({ color: 0xaa66ff });
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0x00ddff });
     for (const cd of cornerDots) {
       const dot = new THREE.Mesh(new THREE.SphereGeometry(0.012, 6, 6), dotMat);
       dot.position.set(cd[0], cd[1], cd[2]);
@@ -275,11 +275,11 @@ export class RoomRenderer {
         c.width = 30;
         c.height = 30;
         const cx = c.getContext("2d");
-        cx.fillStyle = "rgba(136,68,255,0.15)";
+        cx.fillStyle = "rgba(0,204,255,0.15)";
         cx.beginPath();
         cx.arc(15, 15, 14, 0, Math.PI * 2);
         cx.fill();
-        cx.fillStyle = "rgba(200,180,255,0.55)";
+        cx.fillStyle = "rgba(0,204,255,0.55)";
         cx.beginPath();
         if (d === "prev") {
           cx.moveTo(20, 8);
@@ -303,6 +303,7 @@ export class RoomRenderer {
         m.userData.interactive = true;
         hologramGroup.add(m);
         this.interactiveObjects.push(m);
+        m.userData.title = "Navigate";
         this.navArrowMeshes.push(m);
       });
     }
@@ -354,13 +355,12 @@ export class RoomRenderer {
     this.buildWastebin();
     this.buildWallArt();
     this.buildLamp();
-    this.buildLightShaft();
     this.buildDustParticles();
     this.buildCornerAO();
     this.buildRugPattern();
     this.buildColorButton();
 
-    this.bounds = { minX: -3.8, maxX: 3.8, minZ: -3.8, maxZ: 3.8 };
+    this.bounds = { minX: -4.8, maxX: 4.8, minZ: -3.8, maxZ: 3.8 };
 
     this.colliders = [
       {
@@ -380,7 +380,7 @@ export class RoomRenderer {
 
   buildChair() {
     const T = this.THREE;
-    const fabricMat = new T.MeshStandardMaterial({ color: 0x1a0e1e, roughness: 0.85, metalness: 0 });
+    const fabricMat = new T.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.85, metalness: 0 });
     const metalMat = new T.MeshStandardMaterial({ color: 0x222222, metalness: 0.7, roughness: 0.3 });
     const wheelMat = new T.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.4 });
 
@@ -439,7 +439,13 @@ export class RoomRenderer {
     backSupport.rotation.x = 0.3;
     group.add(backSupport);
 
+    group.traverse((child) => {
+      if (child.isMesh) {
+        child.userData.title = "Chair";
+      }
+    });
     this.scene.add(group);
+    this.chairGroup = group;
   }
 
   buildKeyboard() {
@@ -483,7 +489,7 @@ export class RoomRenderer {
   buildCoffeeCup() {
     const T = this.THREE;
     const bodyMat = new T.MeshStandardMaterial({
-      color: 0x1a0e22,
+      color: 0x14142a,
       roughness: 0.4,
       metalness: 0.1
     });
@@ -496,7 +502,7 @@ export class RoomRenderer {
     this.registerObject(body, "Coffee Cup");
 
     const handleMat = new T.MeshStandardMaterial({
-      color: 0x1a0e22,
+      color: 0x14142a,
       roughness: 0.4,
       metalness: 0.1
     });
@@ -510,8 +516,8 @@ export class RoomRenderer {
     this.registerObject(handle, "Coffee Cup Handle");
 
     const liquidMat = new T.MeshStandardMaterial({
-      color: 0x8844ff,
-      emissive: 0x6633cc,
+      color: 0xff3388,
+      emissive: 0xff2266,
       transparent: true,
       opacity: 0.8,
       roughness: 0.1,
@@ -527,7 +533,7 @@ export class RoomRenderer {
     this.registerObject(liquid, "Coffee Liquid");
 
     const steamMat = new T.MeshBasicMaterial({
-      color: 0x8844ff,
+      color: 0xff3388,
       transparent: true,
       opacity: 0.1,
       side: T.DoubleSide,
@@ -540,6 +546,7 @@ export class RoomRenderer {
       steam.position.set(-0.55 + (i - 1) * 0.025, 0.81 + 0.09 + i * 0.02, -0.55);
       steam.rotation.x = (i - 1) * 0.1;
       steam.rotation.z = (i - 1) * 0.1;
+      steam.userData.title = "Steam";
       this.scene.add(steam);
     }
   }
@@ -566,7 +573,7 @@ export class RoomRenderer {
     const T = this.THREE;
     const metalMat = new T.MeshStandardMaterial({ color: 0x333333, metalness: 0.7, roughness: 0.3 });
     const glassMat = new T.MeshStandardMaterial({
-      color: 0x442244,
+      color: 0x1a1a30,
       transparent: true,
       opacity: 0.25,
       roughness: 0.1,
@@ -576,37 +583,37 @@ export class RoomRenderer {
 
     const mount = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 0.02, 8), metalMat);
     mount.position.set(0, 2.99, -0.5);
+    mount.userData.title = "Ceiling Light";
     this.scene.add(mount);
 
     const cord = new T.Mesh(new T.CylinderGeometry(0.005, 0.005, 0.25, 4), metalMat);
     cord.position.set(0, 2.87, -0.5);
+    cord.userData.title = "Ceiling Light";
     this.scene.add(cord);
 
     const shade = new T.Mesh(new T.CylinderGeometry(0.12, 0.18, 0.15, 8, 1, true), glassMat);
     shade.position.set(0, 2.73, -0.5);
+    shade.userData.title = "Ceiling Light";
     this.scene.add(shade);
 
     const rimMat = new T.MeshStandardMaterial({ color: 0x444444, metalness: 0.8, roughness: 0.2 });
     const rim = new T.Mesh(new T.TorusGeometry(0.15, 0.006, 6, 16), rimMat);
     rim.position.set(0, 2.66, -0.5);
     rim.rotation.x = Math.PI / 2;
+    rim.userData.title = "Ceiling Light";
     this.scene.add(rim);
 
-    const bulb = new T.Mesh(new T.SphereGeometry(0.035, 8, 8), new T.MeshBasicMaterial({ color: 0xffbb77 }));
+    const bulb = new T.Mesh(new T.SphereGeometry(0.035, 8, 8), new T.MeshBasicMaterial({ color: 0x00ddff }));
     bulb.position.set(0, 2.7, -0.5);
+    bulb.userData.title = "Ceiling Light";
     this.scene.add(bulb);
 
-    const glowMat = new T.MeshBasicMaterial({ color: 0x8844ff, transparent: true, opacity: 0.1, side: T.DoubleSide });
-    const glow = new T.Mesh(new T.PlaneGeometry(0.3, 0.3), glowMat);
-    glow.position.set(0, 2.65, -0.5);
-    this.scene.add(glow);
-
-    this.ceilingLight = new T.SpotLight(0x8844ff, 0.6, 4, Math.PI / 4, 0.5, 1.5);
+    this.ceilingLight = new T.SpotLight(0x00ddff, 0.45, 4, Math.PI / 4, 0.5, 1.5);
     this.ceilingLight.target.position.set(0, 0, -0.5);
     this.scene.add(this.ceilingLight.target);
     this.ceilingLight.castShadow = true;
-    this.ceilingLight.shadow.mapSize.width = 512;
-    this.ceilingLight.shadow.mapSize.height = 512;
+    this.ceilingLight.shadow.mapSize.width = 256;
+    this.ceilingLight.shadow.mapSize.height = 256;
     this.ceilingLight.shadow.bias = -0.002;
     this.ceilingLight.position.set(0, 2.65, -0.5);
     this.scene.add(this.ceilingLight);
@@ -616,7 +623,7 @@ export class RoomRenderer {
     const T = this.THREE;
 
     const fabricMat = new T.MeshStandardMaterial({
-      color: 0x1a0a2a,
+      color: 0x14142a,
       roughness: 0.95,
       metalness: 0,
       side: T.DoubleSide
@@ -644,11 +651,13 @@ export class RoomRenderer {
       const mesh = new T.Mesh(geo, fabricMat);
       mesh.position.set(xSign * 0.45, 1.4, 3.93);
       this.scene.add(mesh);
+      mesh.userData.title = "Curtain";
       this.curtainGeos.push({ geo, origPositions: Float32Array.from(geo.attributes.position.array) });
 
       const tieMat = new T.MeshStandardMaterial({ color: 0x222222, metalness: 0.6, roughness: 0.3 });
       const tie = new T.Mesh(new T.TorusGeometry(0.03, 0.004, 6, 8), tieMat);
       tie.position.set(xSign * 0.45, 1.1, 3.95);
+      tie.userData.title = "Curtain Tie";
       this.scene.add(tie);
     }
 
@@ -660,186 +669,51 @@ export class RoomRenderer {
     const rod = new T.Mesh(new T.CylinderGeometry(0.015, 0.015, 1.0, 6), rodMat);
     rod.rotation.z = Math.PI / 2;
     rod.position.set(0, 2.04, 3.94);
+    rod.userData.title = "Curtain Rod";
     this.scene.add(rod);
 
     const finialMat = new T.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.2 });
     for (const sx of [-1, 1]) {
       const finial = new T.Mesh(new T.SphereGeometry(0.022, 6, 6), finialMat);
       finial.position.set(sx * 0.52, 2.04, 3.94);
+      finial.userData.title = "Curtain Finial";
       this.scene.add(finial);
     }
   }
 
-  buildSkybox() {
+  async buildSkybox() {
     const T = this.THREE;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 512;
-    const ctx = canvas.getContext("2d");
+    this.scene.background = new T.Color(0x0a0a18);
 
-    const grad = ctx.createLinearGradient(0, 0, 0, 512);
-    grad.addColorStop(0, "#020008");
-    grad.addColorStop(0.15, "#060010");
-    grad.addColorStop(0.35, "#0a0218");
-    grad.addColorStop(0.55, "#120520");
-    grad.addColorStop(0.75, "#0e0318");
-    grad.addColorStop(1, "#050108");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1024, 512);
+    try {
+      const loader = new EXRLoader();
+      const texture = await loader.loadAsync(CDN_BASES.MAIN + "/webos-desktop/public/skybox/cosmic.exr");
 
-    const cx = 750;
-    const cy = 90;
+      const pmremGenerator = new T.PMREMGenerator(this.renderer);
+      pmremGenerator.compileEquirectangularShader();
+      this.hdriEnvMap = pmremGenerator.fromEquirectangular(texture).texture;
+      pmremGenerator.dispose();
 
-    const outerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 100);
-    outerGlow.addColorStop(0, "rgba(120,20,20,0.1)");
-    outerGlow.addColorStop(0.4, "rgba(80,10,15,0.06)");
-    outerGlow.addColorStop(1, "rgba(30,0,5,0)");
-    ctx.fillStyle = outerGlow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 100, 0, Math.PI * 2);
-    ctx.fill();
-
-    const midGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 50);
-    midGlow.addColorStop(0, "rgba(180,40,30,0.25)");
-    midGlow.addColorStop(0.5, "rgba(120,20,15,0.1)");
-    midGlow.addColorStop(1, "rgba(60,5,5,0)");
-    ctx.fillStyle = midGlow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 50, 0, Math.PI * 2);
-    ctx.fill();
-
-    const moonGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 16);
-    moonGrad.addColorStop(0, "rgba(200,160,140,0.95)");
-    moonGrad.addColorStop(0.6, "rgba(170,80,60,0.9)");
-    moonGrad.addColorStop(1, "rgba(120,30,20,0.8)");
-    ctx.fillStyle = moonGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 16, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "rgba(80,10,10,0.6)";
-    ctx.beginPath();
-    ctx.arc(cx + 4, cy - 3, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx - 6, cy + 5, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx + 2, cy + 7, 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "rgba(60,10,15,0.12)";
-    ctx.beginPath();
-    ctx.ellipse(350, 100, 160, 14, 0.05, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(50,5,10,0.08)";
-    ctx.beginPath();
-    ctx.ellipse(700, 140, 130, 10, -0.15, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(40,5,10,0.06)";
-    ctx.beginPath();
-    ctx.ellipse(150, 170, 100, 8, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    const horizonY = 400;
-    ctx.fillStyle = "#030106";
-    ctx.beginPath();
-    ctx.moveTo(0, horizonY + 50);
-    for (let x = 0; x <= 1024; x += 20) {
-      const peak = horizonY + 40 + Math.sin(x * 0.007) * 35 + Math.sin(x * 0.019 + 2) * 18 + Math.sin(x * 0.04 + 5) * 8;
-      ctx.lineTo(x, peak);
+      this.scene.background = this.hdriEnvMap;
+      this.scene.environment = this.hdriEnvMap;
+    } catch (e) {
+      console.warn("HDRI skybox failed to load, using fallback:", e);
     }
-    ctx.lineTo(1024, 512);
-    ctx.lineTo(0, 512);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.fillStyle = "#020105";
-    ctx.beginPath();
-    ctx.moveTo(0, horizonY + 65);
-    for (let x = 0; x <= 1024; x += 16) {
-      const peak = horizonY + 55 + Math.sin(x * 0.013 + 1) * 22 + Math.sin(x * 0.033 + 3) * 12;
-      ctx.lineTo(x, peak);
-    }
-    ctx.lineTo(1024, 512);
-    ctx.lineTo(0, 512);
-    ctx.closePath();
-    ctx.fill();
-
-    const drawDeadTree = (tx, ty, height, lean) => {
-      ctx.strokeStyle = "#020105";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(tx, ty);
-      ctx.quadraticCurveTo(tx + lean * 0.3, ty - height * 0.4, tx + lean, ty - height);
-      ctx.stroke();
-
-      const branchCount = 2 + Math.floor(Math.random() * 3);
-      for (let b = 0; b < branchCount; b++) {
-        const by = ty - height * (0.35 + b * 0.18);
-        const bx = tx + lean * (0.3 + b * 0.15);
-        const bLen = 8 + Math.random() * 15;
-        const bDir = b % 2 === 0 ? 1 : -1;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(bx, by);
-        ctx.quadraticCurveTo(bx + bDir * bLen * 0.6, by - bLen * 0.5, bx + bDir * bLen, by - bLen * 0.8);
-        ctx.stroke();
-
-        if (Math.random() > 0.5) {
-          const subLen = bLen * 0.5;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(bx + bDir * bLen * 0.6, by - bLen * 0.5);
-          ctx.lineTo(bx + bDir * bLen * 0.6 + bDir * subLen, by - bLen * 0.5 - subLen * 0.6);
-          ctx.stroke();
-        }
-      }
-    };
-
-    for (let i = 0; i < 8; i++) {
-      const tx = 60 + i * 130 + Math.floor(Math.random() * 40);
-      const ty = horizonY + 42 + Math.sin(tx * 0.007) * 35;
-      const th = 30 + Math.random() * 40;
-      const lean = (Math.random() - 0.5) * 12;
-      drawDeadTree(tx, ty, th, lean);
-    }
-
-    for (let i = 0; i < 4; i++) {
-      const tx = 180 + i * 220 + Math.floor(Math.random() * 60);
-      const ty = horizonY + 56 + Math.sin(tx * 0.013 + 1) * 22;
-      const th = 18 + Math.random() * 22;
-      const lean = (Math.random() - 0.5) * 8;
-      drawDeadTree(tx, ty, th, lean);
-    }
-
-    const texture = new T.CanvasTexture(canvas);
-
-    const skyMat = new T.MeshBasicMaterial({
-      map: texture,
-      side: T.BackSide,
-      fog: false
-    });
-
-    const skybox = new T.Mesh(new T.SphereGeometry(22, 32, 32), skyMat);
-    skybox.position.set(0, 1.5, 0);
-    this.scene.add(skybox);
   }
 
   buildDoor() {
     const T = this.THREE;
     const doorMat = new T.MeshStandardMaterial({ color: 0x3d2b1f, roughness: 0.8 });
-    const handleMat = new T.MeshStandardMaterial({ color: 0xccaaff, metalness: 0.8, roughness: 0.2 });
+    const handleMat = new T.MeshStandardMaterial({ color: 0x556677, metalness: 0.8, roughness: 0.2 });
 
     const door = new T.Mesh(new T.BoxGeometry(0.05, 2.0, 0.8), doorMat);
-    door.position.set(-3.97, 1.0, 1.5);
+    door.position.set(-4.97, 1.0, 1.5);
     this.scene.add(door);
     this.registerObject(door, "Door");
 
     const handle = new T.Mesh(new T.SphereGeometry(0.035, 8, 8), handleMat);
-    handle.position.set(-3.97, 1.0, 1.9);
+    handle.position.set(-4.97, 1.0, 1.9);
     this.registerObject(handle, "Door Handle", true);
     handle.userData.tooltip = "Locked";
     this.scene.add(handle);
@@ -877,13 +751,13 @@ export class RoomRenderer {
 
   buildBaseboards() {
     const T = this.THREE;
-    const mat = new T.MeshStandardMaterial({ color: 0x2a1a1e, roughness: 0.6, metalness: 0.1 });
+    const mat = new T.MeshStandardMaterial({ color: 0x121226, roughness: 0.6, metalness: 0.1 });
     const h = 0.08;
 
     const walls = [
-      { pos: [0, h / 2, -3.96], rot: [0, 0, 0], w: 8 },
-      { pos: [-3.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 8 },
-      { pos: [3.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 8 }
+      { pos: [0, h / 2, -3.96], rot: [0, 0, 0], w: 10 },
+      { pos: [-4.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 10 },
+      { pos: [4.96, h / 2, 0], rot: [0, Math.PI / 2, 0], w: 10 }
     ];
     for (const w of walls) {
       const mesh = new T.Mesh(new T.BoxGeometry(w.w, h, 0.02), mat);
@@ -892,12 +766,12 @@ export class RoomRenderer {
       this.scene.add(mesh);
     }
 
-    const crown = new T.MeshStandardMaterial({ color: 0x2a1a1e, roughness: 0.5, metalness: 0.05 });
+    const crown = new T.MeshStandardMaterial({ color: 0x121226, roughness: 0.5, metalness: 0.05 });
     const ch = 0.06;
     const crownWalls = [
-      { pos: [0, 2.97, -3.96], w: 8 },
-      { pos: [-3.96, 2.97, 0], w: 8, ry: Math.PI / 2 },
-      { pos: [3.96, 2.97, 0], w: 8, ry: Math.PI / 2 }
+      { pos: [0, 2.97, -3.96], w: 10 },
+      { pos: [-4.96, 2.97, 0], w: 10, ry: Math.PI / 2 },
+      { pos: [4.96, 2.97, 0], w: 10, ry: Math.PI / 2 }
     ];
     for (const w of crownWalls) {
       const mesh = new T.Mesh(new T.BoxGeometry(w.w, ch, 0.03), crown);
@@ -924,7 +798,7 @@ export class RoomRenderer {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 192);
 
-    ctx.strokeStyle = "rgba(100,40,60,0.15)";
+    ctx.strokeStyle = "rgba(0,180,255,0.15)";
     ctx.lineWidth = 1;
     for (let i = 0; i < 20; i++) {
       ctx.beginPath();
@@ -940,12 +814,12 @@ export class RoomRenderer {
       ctx.stroke();
     }
 
-    ctx.fillStyle = "rgba(120,30,40,0.2)";
+    ctx.fillStyle = "rgba(0,200,255,0.2)";
     ctx.beginPath();
     ctx.ellipse(128, 100, 40, 30, 0.3, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "rgba(80,20,30,0.15)";
+    ctx.fillStyle = "rgba(0,150,220,0.15)";
     ctx.beginPath();
     ctx.ellipse(100, 80, 25, 20, -0.5, 0, Math.PI * 2);
     ctx.fill();
@@ -958,7 +832,7 @@ export class RoomRenderer {
     this.scene.add(art);
     this.registerObject(art, "Wall Painting");
 
-    const frameMat = new T.MeshStandardMaterial({ color: 0x1a1018, roughness: 0.5, metalness: 0.2 });
+    const frameMat = new T.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.5, metalness: 0.2 });
     const fw = 0.74;
     const fh = 0.54;
     const fd = 0.025;
@@ -972,6 +846,7 @@ export class RoomRenderer {
     for (const p of frameParts) {
       const m = new T.Mesh(new T.BoxGeometry(p.w, p.h, fd), frameMat);
       m.position.set(p.x, p.y, p.z);
+      m.userData.title = "Painting Frame";
       this.scene.add(m);
     }
   }
@@ -980,7 +855,7 @@ export class RoomRenderer {
     const T = this.THREE;
     const poleMat = new T.MeshStandardMaterial({ color: 0x222222, metalness: 0.7, roughness: 0.3 });
     const shadeMat = new T.MeshStandardMaterial({
-      color: 0x3a1a28,
+      color: 0x222238,
       roughness: 0.9,
       metalness: 0,
       side: T.DoubleSide
@@ -988,10 +863,12 @@ export class RoomRenderer {
 
     const base = new T.Mesh(new T.CylinderGeometry(0.1, 0.12, 0.02, 12), poleMat);
     base.position.set(0.85, 0.81, -1.0);
+    base.userData.title = "Desk Lamp Base";
     this.scene.add(base);
 
     const pole = new T.Mesh(new T.CylinderGeometry(0.012, 0.012, 0.35, 6), poleMat);
     pole.position.set(0.85, 0.99, -1.0);
+    pole.userData.title = "Desk Lamp Pole";
     this.scene.add(pole);
 
     const shade = new T.Mesh(new T.CylinderGeometry(0.08, 0.12, 0.12, 8, 1, true), shadeMat);
@@ -1000,11 +877,12 @@ export class RoomRenderer {
     this.registerObject(shade, "Desk Lamp", true);
     shade.userData.tooltip = "Click to toggle lamp";
 
-    this.lampBulb = new T.Mesh(new T.SphereGeometry(0.03, 8, 8), new T.MeshBasicMaterial({ color: 0xffcc88 }));
+    this.lampBulb = new T.Mesh(new T.SphereGeometry(0.03, 8, 8), new T.MeshBasicMaterial({ color: 0xffcc44 }));
     this.lampBulb.position.set(0.85, 1.13, -1.0);
+    this.lampBulb.userData.title = "Desk Lamp Bulb";
     this.scene.add(this.lampBulb);
 
-    this.lampLight = new T.PointLight(0xffaa66, 1.2, 3, 2);
+    this.lampLight = new T.PointLight(0xffcc44, 0.5, 3, 2);
     this.lampLight.position.set(0.85, 1.15, -1.0);
     this.scene.add(this.lampLight);
 
@@ -1014,8 +892,8 @@ export class RoomRenderer {
   toggleLamp() {
     this.lampOn = !this.lampOn;
     if (this.lampOn) {
-      this.lampLight.intensity = 1.2;
-      this.lampBulb.material.color.setHex(0xffcc88);
+      this.lampLight.intensity = 0.8;
+      this.lampBulb.material.color.setHex(0xffcc44);
     } else {
       this.lampLight.intensity = 0;
       this.lampBulb.material.color.setHex(0x221100);
@@ -1033,54 +911,13 @@ export class RoomRenderer {
       this.floorMat.color.setHex(hex);
     }
   }
-
-  buildLightShaft() {
-    const T = this.THREE;
-    const count = 6;
-    const group = new T.Group();
-    group.position.set(0, 1.2, 3.3);
-    group.rotation.x = -0.3;
-    group.rotation.y = Math.PI;
-
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI;
-      const plane = new T.Mesh(
-        new T.PlaneGeometry(1.3, 2.6),
-        new T.MeshBasicMaterial({
-          color: 0xaa5544,
-          transparent: true,
-          opacity: 0.025,
-          side: T.DoubleSide,
-          depthWrite: false,
-          blending: T.AdditiveBlending
-        })
-      );
-      plane.rotation.z = angle;
-      group.add(plane);
-    }
-
-    const glowMat = new T.MeshBasicMaterial({
-      color: 0xcc6644,
-      transparent: true,
-      opacity: 0.04,
-      side: T.DoubleSide,
-      depthWrite: false,
-      blending: T.AdditiveBlending
-    });
-    const glow = new T.Mesh(new T.PlaneGeometry(1.6, 2.8), glowMat);
-    glow.position.set(0, 0, 0.15);
-    group.add(glow);
-
-    this.scene.add(group);
-  }
-
   buildDustParticles() {
     const T = this.THREE;
     const count = 200;
     const positions = new Float32Array(count * 3);
     const velocities = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 7;
+      positions[i * 3] = (Math.random() - 0.5) * 9;
       positions[i * 3 + 1] = Math.random() * 2.8;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 7;
       velocities[i * 3] = 0.3 + Math.random() * 0.4;
@@ -1091,7 +928,7 @@ export class RoomRenderer {
     this.dustVelocities = velocities;
     const geo = new T.CircleGeometry(0.015, 4);
     const mat = new T.MeshBasicMaterial({
-      color: 0xccaaaa,
+      color: 0x88ccdd,
       transparent: true,
       opacity: 0.35,
       depthWrite: false,
@@ -1119,15 +956,16 @@ export class RoomRenderer {
     });
 
     const corners = [
-      { pos: [-3.98, 1.5, -3.98], ry: Math.PI / 4 },
-      { pos: [3.98, 1.5, -3.98], ry: -Math.PI / 4 },
-      { pos: [-3.98, 1.5, 3.98], ry: -Math.PI / 4 },
-      { pos: [3.98, 1.5, 3.98], ry: Math.PI / 4 }
+      { pos: [-4.98, 1.5, -3.98], ry: Math.PI / 4 },
+      { pos: [4.98, 1.5, -3.98], ry: -Math.PI / 4 },
+      { pos: [-4.98, 1.5, 3.98], ry: -Math.PI / 4 },
+      { pos: [4.98, 1.5, 3.98], ry: Math.PI / 4 }
     ];
     for (const c of corners) {
       const plane = new T.Mesh(new T.PlaneGeometry(0.6, 3), aoMat);
       plane.position.set(...c.pos);
       plane.rotation.y = c.ry;
+      plane.userData.title = "Ambient Occlusion";
       this.scene.add(plane);
     }
 
@@ -1139,14 +977,15 @@ export class RoomRenderer {
       depthWrite: false
     });
     const baseWalls = [
-      { pos: [0, 0.15, -3.98], w: 8 },
-      { pos: [-3.98, 0.15, 0], w: 8, ry: Math.PI / 2 },
-      { pos: [3.98, 0.15, 0], w: 8, ry: Math.PI / 2 }
+      { pos: [0, 0.15, -3.98], w: 10 },
+      { pos: [-4.98, 0.15, 0], w: 10, ry: Math.PI / 2 },
+      { pos: [4.98, 0.15, 0], w: 10, ry: Math.PI / 2 }
     ];
     for (const b of baseWalls) {
       const strip = new T.Mesh(new T.PlaneGeometry(b.w, 0.3), baseAOMat);
       strip.position.set(...b.pos);
       if (b.ry) strip.rotation.y = b.ry;
+      strip.userData.title = "Ambient Occlusion";
       this.scene.add(strip);
     }
   }
@@ -1161,7 +1000,7 @@ export class RoomRenderer {
     ctx.fillStyle = "#1a0a28";
     ctx.fillRect(0, 0, 256, 170);
 
-    ctx.strokeStyle = "rgba(80,30,60,0.25)";
+    ctx.strokeStyle = "rgba(0,150,255,0.25)";
     ctx.lineWidth = 1;
     const cx = 128,
       cy = 85;
@@ -1171,7 +1010,7 @@ export class RoomRenderer {
       ctx.stroke();
     }
 
-    ctx.strokeStyle = "rgba(60,20,50,0.2)";
+    ctx.strokeStyle = "rgba(0,100,200,0.2)";
     ctx.lineWidth = 0.5;
     for (let i = 0; i < 40; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -1182,7 +1021,7 @@ export class RoomRenderer {
       ctx.stroke();
     }
 
-    ctx.strokeStyle = "rgba(100,40,70,0.15)";
+    ctx.strokeStyle = "rgba(0,180,255,0.15)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.ellipse(cx, cy, 55, 35, 0, 0, Math.PI * 2);
@@ -1203,7 +1042,7 @@ export class RoomRenderer {
   buildGlowStrip() {
     const T = this.THREE;
     const glowMat = new T.MeshBasicMaterial({
-      color: 0x8844ff,
+      color: 0xffcc00,
       transparent: true,
       opacity: 0.5
     });
@@ -1212,7 +1051,7 @@ export class RoomRenderer {
     this.scene.add(glow);
     this.registerObject(glow, "Glow Strip");
 
-    this.glowStripLight = new T.PointLight(0x8844ff, 0.25, 1.5, 1);
+    this.glowStripLight = new T.PointLight(0x00ddff, 0.25, 1.5, 1);
     this.glowStripLight.position.set(0, 0.08, -0.55);
     this.scene.add(this.glowStripLight);
   }
@@ -1240,7 +1079,7 @@ export class RoomRenderer {
       map: tex,
       roughness: 0.3,
       metalness: 0.05,
-      emissive: 0x8844ff,
+      emissive: 0xffcc00,
       emissiveIntensity: 0.08
     });
     const btn = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.018, 16), mat);
@@ -1250,28 +1089,135 @@ export class RoomRenderer {
     this.registerObject(btn, "ColorPicker", true);
   }
 
-  setupLighting() {
+  buildMirror() {
     const T = this.THREE;
 
-    this.hemiLight = new THREE.HemisphereLight(0x3a1830, 0x0a0410, 0.4);
+    const mirrorH = 2.8;
+    const mirrorW = 0.8;
+    const mirrorGeo = new T.PlaneGeometry(mirrorW, mirrorH);
+    const reflector = new Reflector(mirrorGeo, {
+      color: 0x7f7f7f,
+      textureWidth: 512,
+      textureHeight: 512,
+      clipBias: 0.003
+    });
+    reflector.position.set(1.8, 1.5, 3.97);
+    reflector.rotation.y = Math.PI;
+    reflector.userData.title = "Mirror";
+    this.scene.add(reflector);
+    this.mirrorMesh = reflector;
+
+    const origOnBeforeRender = reflector.onBeforeRender;
+    const _camDir = new T.Vector3();
+    const _dirToMirror = new T.Vector3();
+    reflector.onBeforeRender = function (renderer, scene, camera) {
+      camera.getWorldDirection(_camDir);
+      _dirToMirror.subVectors(reflector.position, camera.position).normalize();
+      if (_camDir.angleTo(_dirToMirror) > 0.9) return;
+      origOnBeforeRender.call(this, renderer, scene, camera);
+    };
+
+    const frameMat = new T.MeshStandardMaterial({ color: 0x222222, metalness: 0.6, roughness: 0.3 });
+    const mz = 3.97;
+    const hh = mirrorH / 2;
+    const hw = mirrorW / 2;
+    const barW = 0.03;
+    const ovlap = 0.015;
+    for (const [dx, dy, sx, sy] of [
+      [0, hh + ovlap, mirrorW + barW * 2, barW],
+      [0, -(hh + ovlap), mirrorW + barW * 2, barW],
+      [-(hw + ovlap), 0, barW, mirrorH + barW * 2],
+      [hw + ovlap, 0, barW, mirrorH + barW * 2]
+    ]) {
+      const f = new T.Mesh(new T.BoxGeometry(sx, sy, 0.03), frameMat);
+      f.position.set(1.8 + dx, 1.5 + dy, mz - 0.02);
+      this.scene.add(f);
+    }
+  }
+
+  buildPlayerBody() {
+    const T = this.THREE;
+
+    const skinMat = new T.MeshStandardMaterial({
+      color: 0xf5d0b0,
+      roughness: 0.6,
+      metalness: 0.0
+    });
+    const clothMat = new T.MeshStandardMaterial({
+      color: 0x2a1a3a,
+      roughness: 0.8,
+      metalness: 0.0
+    });
+
+    this.bodyGroup = new T.Group();
+
+    const torso = new T.Mesh(new T.CylinderGeometry(0.28, 0.32, 0.55, 8), clothMat);
+    torso.position.set(0, -0.85, -0.12);
+    this.bodyGroup.add(torso);
+
+    const neck = new T.Mesh(new T.CylinderGeometry(0.08, 0.1, 0.08, 8), skinMat);
+    neck.position.set(0, -0.55, -0.12);
+    this.bodyGroup.add(neck);
+
+    this.leftArm = new T.Mesh(new T.CylinderGeometry(0.035, 0.04, 0.4, 6), skinMat);
+    this.leftArm.position.set(-0.3, -0.65, -0.1);
+    this.leftArm.rotation.z = 0.25;
+    this.leftArm.rotation.x = 0.2;
+    this.bodyGroup.add(this.leftArm);
+
+    this.rightArm = new T.Mesh(new T.CylinderGeometry(0.035, 0.04, 0.4, 6), skinMat);
+    this.rightArm.position.set(0.3, -0.65, -0.1);
+    this.rightArm.rotation.z = -0.25;
+    this.rightArm.rotation.x = 0.2;
+    this.bodyGroup.add(this.rightArm);
+
+    this.leftHand = new T.Mesh(new T.SphereGeometry(0.04, 6, 6), skinMat);
+    this.leftHand.position.set(-0.3, -0.88, -0.1);
+    this.bodyGroup.add(this.leftHand);
+
+    this.rightHand = new T.Mesh(new T.SphereGeometry(0.04, 6, 6), skinMat);
+    this.rightHand.position.set(0.3, -0.88, -0.1);
+    this.bodyGroup.add(this.rightHand);
+
+    this.camera.add(this.bodyGroup);
+  }
+
+  buildPlayerShadow() {
+    const T = this.THREE;
+    const shadowMat = new T.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.25,
+      depthWrite: false
+    });
+    this.playerShadow = new T.Mesh(new T.CircleGeometry(0.35, 12), shadowMat);
+    this.playerShadow.rotation.x = -Math.PI / 2;
+    this.playerShadow.position.y = 0.02;
+    this.scene.add(this.playerShadow);
+  }
+
+  setupLighting() {
+    const THREE = this.THREE;
+
+    this.hemiLight = new THREE.HemisphereLight(0x1a1a2e, 0x0a0a14, 0.3);
     this.scene.add(this.hemiLight);
 
-    this.ambientLight = new THREE.AmbientLight(0x200c18, 0.45);
+    this.ambientLight = new THREE.AmbientLight(0x10101e, 0.3);
     this.scene.add(this.ambientLight);
 
-    this.keyLight = new THREE.DirectionalLight(0x6a3858, 0.6);
+    this.keyLight = new THREE.DirectionalLight(0xcc8844, 0.3);
     this.keyLight.position.set(1, 5, 4);
     this.keyLight.castShadow = true;
-    this.keyLight.shadow.mapSize.width = 512;
-    this.keyLight.shadow.mapSize.height = 512;
+    this.keyLight.shadow.mapSize.width = 256;
+    this.keyLight.shadow.mapSize.height = 256;
     this.keyLight.shadow.bias = -0.001;
     this.scene.add(this.keyLight);
 
-    this.fillLight = new THREE.DirectionalLight(0x4a1840, 0.25);
+    this.fillLight = new THREE.DirectionalLight(0x224466, 0.15);
     this.fillLight.position.set(-3, 2, -2);
     this.scene.add(this.fillLight);
 
-    this.moonSpot = new THREE.SpotLight(0xaa5544, 3.0, 10, 0.45, 0.6, 1.2);
+    this.moonSpot = new THREE.SpotLight(0x4488aa, 3.0, 10, 0.45, 0.6, 1.2);
     this.moonSpot.position.set(0, 2.2, 5.5);
     this.moonSpot.target.position.set(0, 0.5, -1);
     this.moonSpot.castShadow = true;
@@ -1281,11 +1227,11 @@ export class RoomRenderer {
     this.scene.add(this.moonSpot);
     this.scene.add(this.moonSpot.target);
 
-    this.moonBeam = new THREE.PointLight(0x663328, 0.8, 8, 1.5);
+    this.moonBeam = new THREE.PointLight(0x336688, 0.8, 8, 1.5);
     this.moonBeam.position.set(0, 1.5, 2);
     this.scene.add(this.moonBeam);
 
-    this.windowGlow = new THREE.PointLight(0x552030, 0.4, 5, 2);
+    this.windowGlow = new THREE.PointLight(0x4488aa, 0.4, 5, 2);
     this.windowGlow.position.set(0, 1.5, 3.5);
     this.scene.add(this.windowGlow);
 
@@ -1294,42 +1240,43 @@ export class RoomRenderer {
 
   toggleDayNight() {
     this.isDay = !this.isDay;
+    const T = this.THREE;
     if (this.isDay) {
-      this.hemiLight.color.setHex(0x87ceeb);
-      this.hemiLight.groundColor.setHex(0x554433);
+      this.hemiLight.color.setHex(0x88bbdd);
+      this.hemiLight.groundColor.setHex(0x446688);
       this.hemiLight.intensity = 0.5;
-      this.ambientLight.color.setHex(0x6060a0);
-      this.ambientLight.intensity = 0.55;
-      this.keyLight.color.setHex(0xffeecc);
-      this.keyLight.intensity = 1.0;
-      this.fillLight.color.setHex(0x8899ff);
-      this.fillLight.intensity = 0.35;
+      this.ambientLight.color.setHex(0x557799);
+      this.ambientLight.intensity = 0.35;
+      this.keyLight.color.setHex(0xffddaa);
+      this.keyLight.intensity = 0.6;
+      this.fillLight.color.setHex(0x88aacc);
+      this.fillLight.intensity = 0.25;
       this.moonSpot.intensity = 0.1;
       this.moonBeam.intensity = 0;
-      this.windowGlow.color.setHex(0xaaccee);
-      this.windowGlow.intensity = 0.5;
-      if (this.scene) {
-        this.scene.background.setHex(0x2a1840);
-        this.scene.fog.color.setHex(0x2a1840);
-      }
-      this.renderer.toneMappingExposure = 1.5;
-    } else {
-      this.hemiLight.color.setHex(0x3a1830);
-      this.hemiLight.groundColor.setHex(0x0a0410);
-      this.hemiLight.intensity = 0.4;
-      this.ambientLight.color.setHex(0x200c18);
-      this.ambientLight.intensity = 0.45;
-      this.keyLight.color.setHex(0x6a3858);
-      this.keyLight.intensity = 0.6;
-      this.fillLight.color.setHex(0x4a1840);
-      this.fillLight.intensity = 0.25;
-      this.moonSpot.intensity = 3.0;
-      this.moonBeam.intensity = 0.8;
-      this.windowGlow.color.setHex(0x552030);
+      this.windowGlow.color.setHex(0x88bbdd);
       this.windowGlow.intensity = 0.4;
       if (this.scene) {
-        this.scene.background.setHex(0x0e0618);
-        this.scene.fog.color.setHex(0x0e0618);
+        this.scene.background = new T.Color(0x4a6a8a);
+        this.scene.fog.color.setHex(0x4a6a8a);
+      }
+      this.renderer.toneMappingExposure = 1.2;
+    } else {
+      this.hemiLight.color.setHex(0x1a1a2e);
+      this.hemiLight.groundColor.setHex(0x0a0a14);
+      this.hemiLight.intensity = 0.3;
+      this.ambientLight.color.setHex(0x10101e);
+      this.ambientLight.intensity = 0.3;
+      this.keyLight.color.setHex(0xcc8844);
+      this.keyLight.intensity = 0.3;
+      this.fillLight.color.setHex(0x224466);
+      this.fillLight.intensity = 0.15;
+      this.moonSpot.intensity = 3.0;
+      this.moonBeam.intensity = 0.8;
+      this.windowGlow.color.setHex(0x4488aa);
+      this.windowGlow.intensity = 0.4;
+      if (this.scene) {
+        this.scene.background = this.hdriEnvMap || new T.Color(0x0a0a18);
+        this.scene.fog.color.setHex(0x0a0a18);
       }
       this.renderer.toneMappingExposure = 1.2;
     }
@@ -1337,24 +1284,23 @@ export class RoomRenderer {
 
   enableMonitorCapture(os) {
     if (!this.monitorScreen) return;
-    const T = this.THREE;
+    const THREE = this.THREE;
 
     this.hologramRenderer = new HologramRenderer();
     const canvas = this.hologramRenderer.canvas;
 
-    const texture = new T.CanvasTexture(canvas);
-    texture.minFilter = T.LinearFilter;
-    texture.magFilter = T.LinearFilter;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
+    texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
-    this.monitorScreen.material = new T.MeshStandardMaterial({
+    this.monitorScreen.material = new THREE.MeshBasicMaterial({
       map: texture,
-      emissive: 0x8844ff,
-      emissiveIntensity: 0.04,
+      color: 0x6688aa,
       transparent: true,
       opacity: 0.88,
-      side: THREE.DoubleSide,
-      roughness: 0.1,
-      metalness: 0
+      side: THREE.DoubleSide
     });
 
     this.hologramRenderer.onDraw = () => {
@@ -1388,10 +1334,18 @@ export class RoomRenderer {
       hook(delta);
     }
 
-    this.hologramTime += delta;
     if (this.hologramGroup) {
-      const floatOffset = Math.sin(this.hologramTime * 0.8) * 0.04;
-      this.hologramGroup.position.y = this.hologramBaseY + floatOffset;
+      if (!this.hologramFrozen) {
+        this.hologramTime += delta;
+        const floatOffset = Math.sin(this.hologramTime * 0.8) * 0.04;
+        this.hologramGroup.position.y = this.hologramBaseY + floatOffset;
+      }
+    }
+
+    if (this.playerShadow && this.camera) {
+      const cp = this.camera.position;
+      this.playerShadow.position.x = cp.x;
+      this.playerShadow.position.z = cp.z;
     }
 
     this.composer.render();
@@ -1442,8 +1396,93 @@ export class RoomRenderer {
     return this.interactiveObjects;
   }
 
+  collectWAILAMeshes() {
+    this.wailaMeshes = [];
+    this.scene.traverse((child) => {
+      if (
+        child.isMesh &&
+        child.userData.title &&
+        child.userData.objectId !== "room" &&
+        child.userData.objectId !== "floor" &&
+        !child.userData.title.startsWith("Hologram") &&
+        !child.userData.title.startsWith("Ambient Occlusion")
+      ) {
+        this.wailaMeshes.push(child);
+      }
+    });
+  }
+
+  toggleCeiling(visible) {
+    if (this.ceilingMesh) {
+      this.ceilingMesh.visible = visible;
+    }
+    if (this.ceilingLight) {
+      this.ceilingLight.visible = visible;
+    }
+  }
+
   getColliders() {
     return this.colliders;
+  }
+
+  setBloomEnabled(enabled) {
+    this.bloomPass.enabled = enabled;
+  }
+
+  setShadowsEnabled(enabled) {
+    this.renderer.shadowMap.enabled = enabled;
+    if (!enabled) {
+      this.renderer.shadowMap.needsUpdate = true;
+    }
+  }
+
+  setQuality(level) {
+    if (level === "low") return;
+
+    const isHigh = level === "high";
+    this.bloomPass.strength = 0.4;
+    this.bloomPass.radius = 0.2;
+    this.bloomPass.threshold = 0.1;
+    this.renderer.shadowMap.type = isHigh ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+    this.renderer.toneMappingExposure = isHigh ? 1.5 : 1.2;
+    this.renderer.setPixelRatio(isHigh ? Math.min(window.devicePixelRatio, 2) : Math.min(window.devicePixelRatio, 1.5));
+    this.resize();
+
+    if (this.keyLight) {
+      this.keyLight.shadow.mapSize.width = isHigh ? 2048 : 256;
+      this.keyLight.shadow.mapSize.height = isHigh ? 2048 : 256;
+      this.keyLight.shadow.camera.near = 0.5;
+      this.keyLight.shadow.camera.far = isHigh ? 8 : 15;
+      this.keyLight.shadow.camera.left = -4;
+      this.keyLight.shadow.camera.right = 4;
+      this.keyLight.shadow.camera.top = 4;
+      this.keyLight.shadow.camera.bottom = -4;
+      this.keyLight.shadow.normalBias = isHigh ? 0.02 : 0;
+      if (this.keyLight.shadow.map) this.keyLight.shadow.map.dispose();
+      this.keyLight.shadow.map = null;
+    }
+    if (this.ceilingLight) {
+      this.ceilingLight.shadow.mapSize.width = isHigh ? 2048 : 256;
+      this.ceilingLight.shadow.mapSize.height = isHigh ? 2048 : 256;
+      this.ceilingLight.shadow.camera.near = 0.5;
+      this.ceilingLight.shadow.camera.far = isHigh ? 5 : 8;
+      this.ceilingLight.shadow.camera.fov = isHigh ? 60 : 90;
+      this.ceilingLight.shadow.normalBias = isHigh ? 0.02 : 0;
+      if (this.ceilingLight.shadow.map) this.ceilingLight.shadow.map.dispose();
+      this.ceilingLight.shadow.map = null;
+    }
+    if (this.moonSpot) {
+      this.moonSpot.shadow.mapSize.width = isHigh ? 4096 : 512;
+      this.moonSpot.shadow.mapSize.height = isHigh ? 4096 : 512;
+      this.moonSpot.shadow.camera.near = 0.5;
+      this.moonSpot.shadow.camera.far = isHigh ? 8 : 15;
+      this.moonSpot.shadow.camera.fov = isHigh ? 30 : 45;
+      this.moonSpot.shadow.normalBias = isHigh ? 0.02 : 0;
+      if (this.moonSpot.shadow.map) this.moonSpot.shadow.map.dispose();
+      this.moonSpot.shadow.map = null;
+    }
+
+    this.renderer.shadowMap.needsUpdate = true;
   }
 
   destroy() {
@@ -1476,5 +1515,15 @@ export class RoomRenderer {
     this.clock = null;
     this.monitorScreen = null;
     this.allMeshes = [];
+    if (this.mirrorMesh) {
+      this.scene.remove(this.mirrorMesh);
+      const rt = this.mirrorMesh.getRenderTarget();
+      if (rt) rt.dispose();
+      this.mirrorMesh.material.dispose();
+      this.mirrorMesh.geometry.dispose();
+      this.mirrorMesh = null;
+    }
+    this.bodyGroup = null;
+    this.playerShadow = null;
   }
 }

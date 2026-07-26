@@ -1,3 +1,17 @@
+.room3d-editor-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.room3d-editor-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .room3d-root {
   position: relative;
   width: 100%;
@@ -38,4 +52,61 @@
 
 .room3d-crosshair--visible {
   opacity: 1;
+}
+
+.room3d-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room3d-hint--visible {
+  opacity: 1;
+}
+
+.room3d-wastebin-hint {
+  position: absolute;
+  bottom: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 13px;
+  color: rgba(255, 120, 120, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room3d-wastebin-hint--visible {
+  opacity: 1;
+}
+
+.room3d-hint-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--r-sm, 4px);
+  background: var(--surface-2, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+  border-bottom-width: 2px;
+  font-size: 12px;
+  font-family: var(--font-ui, sans-serif);
+  font-weight: 500;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
 }

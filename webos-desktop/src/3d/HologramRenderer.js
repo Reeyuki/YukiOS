@@ -3,9 +3,10 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 export class HologramRenderer {
   constructor() {
     this.canvas = document.createElement("canvas");
-    this.canvas.width = 800;
-    this.canvas.height = 500;
+    this.canvas.width = 1600;
+    this.canvas.height = 1000;
     this.ctx = this.canvas.getContext("2d");
+    this.pixelScale = 2;
 
     this.allItems = [];
     this.pageItems = [];
@@ -32,6 +33,7 @@ export class HologramRenderer {
     this.nextBtnBounds = null;
     this.dotBounds = [];
     this.onDraw = null;
+    this.dirty = true;
   }
 
   start(os) {
@@ -71,6 +73,7 @@ export class HologramRenderer {
       if (img.naturalWidth > 0 && img.naturalHeight > 0) {
         const bitmap = await createImageBitmap(img);
         this.iconBitmaps.set(icon, bitmap);
+        this.markDirty();
       }
     } catch (e) {
       /* icon failed to load, stay as fallback */
@@ -103,18 +106,27 @@ export class HologramRenderer {
       return (a.title || "").localeCompare(b.title || "");
     });
     this.totalPages = Math.max(1, Math.ceil(this.allItems.length / this.itemsPerPage));
+    this.markDirty();
   }
 
   goToPage(page) {
     this.currentPage = Math.max(0, Math.min(page, this.totalPages - 1));
     const start = this.currentPage * this.itemsPerPage;
     this.pageItems = this.allItems.slice(start, start + this.itemsPerPage);
+    this.markDirty();
+  }
+
+  markDirty() {
+    this.dirty = true;
   }
 
   update() {
     if (!this.running) return;
     this.ticker++;
-    this.draw();
+    if (this.dirty) {
+      this.dirty = false;
+      this.draw();
+    }
   }
 
   draw() {
@@ -122,20 +134,17 @@ export class HologramRenderer {
     const W = 800,
       H = 500;
 
+    ctx.setTransform(this.pixelScale, 0, 0, this.pixelScale, 0, 0);
+
     const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, "#0e0618");
-    grad.addColorStop(0.4, "#140a22");
-    grad.addColorStop(0.7, "#10081a");
-    grad.addColorStop(1, "#080310");
+    grad.addColorStop(0, "#0a0a18");
+    grad.addColorStop(0.4, "#0e0e20");
+    grad.addColorStop(0.7, "#080818");
+    grad.addColorStop(1, "#060610");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = "rgba(136,68,255,0.012)";
-    for (let y = 0; y < H; y += 3) {
-      ctx.fillRect(0, y, W, 1);
-    }
-
-    ctx.fillStyle = "rgba(200,180,255,0.55)";
+    ctx.fillStyle = "rgba(0,220,255,0.6)";
     ctx.font = "12px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
@@ -143,14 +152,6 @@ export class HologramRenderer {
 
     this.drawGrid(ctx, W, H);
     this.drawNavigation(ctx, W, H);
-
-    if (this.ticker % 12 === 0) {
-      ctx.fillStyle = `rgba(255,255,255,${0.002 + Math.random() * 0.005})`;
-      ctx.fillRect(0, 0, W, H);
-    }
-
-    ctx.fillStyle = "rgba(136,68,255,0.02)";
-    ctx.fillRect(W * 0.5 - 100 + Math.sin(this.ticker * 0.04) * 30, 0, 200, H);
 
     if (this.onDraw) this.onDraw();
   }
@@ -166,14 +167,14 @@ export class HologramRenderer {
       const ix = cx - iconSize / 2;
       const iy = cy;
 
-      ctx.shadowColor = "rgba(136,68,255,0.18)";
+      ctx.shadowColor = "rgba(0,220,255,0.15)";
       ctx.shadowBlur = 14;
-      ctx.fillStyle = "rgba(14,7,22,0.88)";
+      ctx.fillStyle = "rgba(8,8,20,0.88)";
       this.roundRect(ctx, ix, iy, iconSize, iconSize, 10);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      ctx.strokeStyle = "rgba(136,68,255,0.2)";
+      ctx.strokeStyle = "rgba(0,220,255,0.2)";
       ctx.lineWidth = 0.5;
       this.roundRect(ctx, ix, iy, iconSize, iconSize, 10);
       ctx.stroke();
@@ -227,7 +228,7 @@ export class HologramRenderer {
     this.prevBtnBounds = null;
     this.nextBtnBounds = null;
 
-    ctx.fillStyle = "rgba(200,180,255,0.6)";
+    ctx.fillStyle = "rgba(0,220,255,0.5)";
     ctx.font = "12px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -245,7 +246,7 @@ export class HologramRenderer {
 
       const proxim = Math.abs(pageIdx - this.currentPage);
       const bright = proxim === 0 ? 0.4 : Math.max(0.05, 0.25 - proxim * 0.04);
-      ctx.fillStyle = `rgba(136,68,255,${bright})`;
+      ctx.fillStyle = `rgba(255,204,0,${bright})`;
       ctx.beginPath();
       ctx.arc(dx, dotY, proxim === 0 ? 3 : 2, 0, Math.PI * 2);
       ctx.fill();

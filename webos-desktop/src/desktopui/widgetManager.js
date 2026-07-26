@@ -1,8 +1,7 @@
 import "../styles/widgets.css";
 import { makeDraggable } from "../shared/dragUtils.js";
-import { os } from "../framework.js";
+import { os, StorageKeys } from "../framework.js";
 
-const STORAGE_WIDGETS = "yukiOS_widgetsstate";
 const WIDGET_Z_BASE = 100;
 
 export class WidgetBase {
@@ -316,11 +315,11 @@ export class WidgetManager {
   saveState() {
     const states = [];
     this.widgets.forEach((w) => states.push(w.saveState()));
-    os.storage.set(STORAGE_WIDGETS, states);
+    os.storage.set(StorageKeys.widgetsState, states);
   }
 
   loadAll() {
-    const saved = os.storage.get(STORAGE_WIDGETS);
+    const saved = os.storage.get(StorageKeys.widgetsState);
     if (!saved || !Array.isArray(saved)) return;
     saved.forEach((state) => {
       const Klass = this.widgetClasses.get(state.type);

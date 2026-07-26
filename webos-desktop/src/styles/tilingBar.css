@@ -131,8 +131,6 @@ body.tiling-active #tiling-bar {
   transform: scale(1.05);
 }
 
-/* ── Dedicated tray modules (audio, network, power, system) ──*/
-
 .tiling-tray-dedicated {
   display: flex;
   align-items: center;
@@ -162,8 +160,6 @@ body.tiling-active #tiling-bar {
 .tiling-tray-dedicated .tray-icon-btn i {
   font-size: 13px;
 }
-
-/* ── Battery states ──*/
 
 .tiling-tray-dedicated.power {
   padding: 0 6px;
@@ -211,8 +207,6 @@ body.tiling-active #tiling-bar {
   }
 }
 
-/* ── Volume states ──*/
-
 .tiling-tray-dedicated.audio.muted {
   color: #ef4444;
 }
@@ -224,8 +218,6 @@ body.tiling-active #tiling-bar {
 .tiling-tray-dedicated.audio.high {
   color: var(--tiling-bar-text);
 }
-
-/* ── Network states ──*/
 
 .tiling-tray-dedicated.network.disconnected {
   opacity: 0.35;
@@ -241,8 +233,6 @@ body.tiling-active #tiling-bar {
     opacity: 0.6;
   }
 }
-
-/* ── Generic tray items ──*/
 
 .tiling-tray-items {
   display: flex;
@@ -268,8 +258,6 @@ body.tiling-active #tiling-bar {
   font-size: 13px;
 }
 
-/* ── Clock ──*/
-
 .tiling-bar-clock {
   display: flex;
   align-items: center;
@@ -293,8 +281,6 @@ body.tiling-active #tiling-bar {
   font-size: 11px;
 }
 
-/* ── Now Playing ──*/
-
 .tiling-now-playing {
   font-size: 11px;
   color: var(--tiling-bar-text-secondary);
@@ -310,8 +296,6 @@ body.tiling-active #tiling-bar {
 .tiling-now-playing.active {
   opacity: 1;
 }
-
-/* ── Calendar Popup ──*/
 
 .tiling-calendar-popup {
   display: flex;
@@ -435,8 +419,6 @@ body.tiling-active #tiling-bar {
   font-weight: 500;
   color: var(--tiling-bar-text-secondary);
 }
-
-/* ── Rofi ──*/
 
 #tiling-rofi-overlay {
   display: none;
@@ -609,7 +591,76 @@ body.tiling-active #tiling-bar {
   display: block;
 }
 
-/* ── Keybind Hint Button ──*/
+.rofi-mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tiling-bar-text);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.rofi-mode-indicator:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rofi-mode-indicator i {
+  font-size: 12px !important;
+  color: var(--brand, #a78bfa);
+}
+
+#tiling-rofi-overlay.rofi-mode-run {
+  border-color: rgba(80, 200, 120, 0.25);
+}
+
+#tiling-rofi-overlay.rofi-mode-window {
+  border-color: rgba(100, 150, 255, 0.25);
+}
+
+#tiling-rofi-overlay.rofi-mode-calc {
+  border-color: rgba(255, 180, 80, 0.25);
+}
+
+.rofi-calc-preview {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 20px;
+  font-family: var(--font-mono, monospace);
+  min-height: 24px;
+}
+
+.rofi-calc-equals {
+  color: var(--tiling-bar-text-secondary);
+  font-weight: 300;
+  font-size: 18px;
+}
+
+.rofi-calc-result {
+  color: var(--brand, #a78bfa);
+  font-weight: 600;
+}
+
+.rofi-calc-error {
+  color: var(--error, #ef4444);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.rofi-item i.fa-history {
+  font-size: 18px;
+  color: var(--tiling-bar-text-secondary);
+  background: transparent;
+}
 
 .tiling-keybind-hint {
   display: flex;
@@ -638,8 +689,6 @@ body.tiling-active #tiling-bar {
 .tiling-keybind-hint i {
   font-size: 13px;
 }
-
-/* ── Keybind Overlay ──*/
 
 #tiling-keybind-overlay {
   display: none;

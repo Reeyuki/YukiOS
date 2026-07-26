@@ -14,18 +14,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1rem;
+  padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
   border-radius: 14px;
-  border: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+  border: 1px solid color-mix(in oklch, var(--brand) 25%, var(--border));
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--brand) 20%, rgba(255, 255, 255, 0.06)),
-    rgba(255, 255, 255, 0.03)
+    color-mix(in oklch, var(--brand) 18%, rgba(255, 255, 255, 0.08)),
+    rgba(255, 255, 255, 0.04)
   );
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.28),
-    0 0 0 3px color-mix(in oklch, var(--brand) 12%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 .news-hero-left {
@@ -43,12 +41,13 @@
   place-items: center;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--brand), var(--brand-hover));
-  box-shadow: 0 10px 24px var(--brand-glow);
+  border: 1px solid color-mix(in oklch, var(--brand) 45%, rgba(255, 255, 255, 0.15));
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--brand) 35%, transparent);
 }
 
 .news-hero-icon i {
-  font-size: 1.2rem;
-  color: rgba(0, 0, 0, 0.85);
+  font-size: 1.3rem;
+  color: #fff;
 }
 
 .news-hero-title {

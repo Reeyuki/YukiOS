@@ -5,7 +5,7 @@ You are working under webos-desktop directory. when src is mentioned it means we
 ## Hard Rules
 
 - Never run `npm/pnpm format` or `npm/pnpm bf`
-- Never add comments, docstrings, or `/* */` blocks in CSS, JS, or HTML other than "JSDoc" for complex functions
+- Never add comments — anywhere. Not in JS, not in HTML, not in CSS. Not even section dividers like `/* ---- Nav ---- */`. The existing codebase may have them, but you must not add new ones. Zero exceptions. JSDoc-style doc comments are only allowed for complex functions with non-obvious signatures.
 - Never spawn a browser for testing
 - Before finalizing any code changes, run `pnpm build:dev` in `webos-desktop/`. A change that breaks the build is
   incomplete.
@@ -532,99 +532,65 @@ export const APP_MANIFESTS = [
 ];
 ```
 
-## Adding a New Declarative App
+## Adding a New App
 
-Follow these steps to add a new app using the declarative framework with the centralized manifest system:
+Follow these steps to create a new app. Apps extend `BaseApp` and build their UI imperatively in the `open()` method.
 
 ### 1. Create App File
 
-Create `src/apps/myApp.js` with CSS import:
+Create `src/apps/myApp.js`:
 
 ```javascript
 import "../styles/myApp.css";
-import { BaseApp } from "../core/BaseApp.js";
-import { PersistenceTypes } from "../AppSchema.js";
+import { BaseApp, os } from "../framework.js";
 
 export class MyApp extends BaseApp {
   constructor(services) {
     super(services);
+    this.openWindows = new Set();
   }
 
-  getDeclarativeSchema(opts) {
-    return {
-      id: "my-app",
-      name: "My App",
-      icon: "fas fa-star",
-      windows: [
-        {
-          id: "my-app-window",
-          title: "My App",
-          size: ["500px", "400px"],
-          icon: "fas fa-star",
-          ui: {
-            type: "element",
-            tag: "div",
-            props: {
-              className: "my-app-container"
-            },
-            children: [
-              {
-                type: "element",
-                tag: "button",
-                props: {
-                  textContent: "Click Me"
-                },
-                events: {
-                  click: {
-                    type: "custom:myAction",
-                    stopPropagation: true
-                  }
-                }
-              }
-            ]
-          },
-          events: {
-            window: {
-              keydown: {
-                type: "custom:handleKeydown",
-                stopPropagation: false
-              }
-            }
-          }
-        }
-      ],
-      state: {
-        initial: {
-          count: 0
-        },
-        persistence: PersistenceTypes.MEMORY
-      },
-      actions: {
-        myAction: (payload, event, element, state) => {
-          state.count += 1;
-        },
-        handleKeydown: (payload, event, element, state) => {
-          if (event.key === "Enter") {
-            // Handle enter key
-          }
-        }
-      },
-      onMount: (win, state, actionExecutor) => {
-        // Optional initialization logic
-      }
-    };
+  open(opts = {}) {
+    const winId = "my-app";
+    if (this.openWindows.has(winId)) return;
+
+    const win = os.window.create(winId, "My App", "500px", "400px", {
+      icon: "fas fa-star"
+    });
+
+    win.innerHTML = `
+      <div class="my-app-root">
+        <p>Hello from My App!</p>
+      </div>
+    `;
+
+    this.openWindows.add(winId);
+    this.win = win;
+
+    win.addEventListener("remove", () => {
+      this.openWindows.delete(winId);
+    });
   }
 
-  onClose(winId) {}
+  onClose(winId) {
+    this.openWindows.delete(winId);
+  }
 }
 ```
+
+**Key patterns:**
+- `open()` creates the window via `os.window.create()` — returns the window div
+- Use `addEventListener()` for events, not declarative syntax
+- Track open windows with `this.openWindows` (a Set) to prevent duplicates or manage instances
+- The `remove` event on the window element is the cleanup hook for per-window state
+- `onClose(winId)` is called by the system when a window closes
 
 ### 2. Add CSS Styling
 
 Create `src/styles/myApp.css` with YukiOS styling:
 
 ```css
-.my-app-container {
+.my-app-root {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -634,32 +600,43 @@ Create `src/styles/myApp.css` with YukiOS styling:
 }
 ```
 
-**Important:** Import the CSS at the top of your app file (as shown in step 1). Do not add `<link>` tags to
-`index.html`.
+**Important:** Import the CSS at the top of your app file (as shown in step 1). Do not add `<link>` tags to `index.html`.
 
 ### 3. Add Entry to AppManifest.js
 
 Add manifest entry to `src/registry/AppManifest.js`:
 
 ```javascript
-import { ClippyAnimation } from "../ai/clippy.js";
-
 export const APP_MANIFESTS = [
   // ... existing entries
   {
     serviceKey: "myApp",
-    enhanced: true,
     type: "system",
     title: "My App",
     icon: "fas fa-star",
     launchType: "instance",
     windowIdPatterns: ["my-app"],
     category: "office",
-    clippy: { message: "Your app description here.", animation: ClippyAnimation.Show },
     description: "Brief description under 15 words for the app guide."
   }
 ];
 ```
+
+**Manifest fields:**
+- `serviceKey` — Maps to the key in `APP_CLASS_MAP` in AppLoader.js
+- `type` — Always `"system"` for native apps
+- `title` — Display name
+- `icon` — Font Awesome class (e.g. `"fas fa-star"`) or CDN URL
+- `launchType` — `"instance"` for native apps, `"iframe"`/`"remote"` for web apps, `"steam"` for games
+- `windowIdPatterns` — Identifies window IDs for session restoration
+- `category` — Grouping: `"system"`, `"office"`, `"internet"`, `"games"`, `"graphics"`, `"development"`, `"media"`, `"help"`, `"utilities"`
+- `clippy` (optional) — `{ message, animation }` for Clippy assistant
+- `description` (optional) — App description for the guide
+- `isHeavy` (optional) — Mark as resource-intensive
+- `targetUrl` (optional) — URL for web apps loaded in scramjet
+- `trayOptions` (optional) — `{ contextMenuItems, onClick, onQuit }`
+- `excludeFromInstalledApps` (optional) — Hide from Installed Apps list
+- `persistContentState` (optional) — Enable session content persistence
 
 ### 4. Add to AppLoader.js
 
@@ -684,46 +661,66 @@ cd webos-desktop && pnpm build:dev
 
 ---
 
-## Declarative Apps Framework
+## App Architecture
 
-Apps must define structure declaratively via `getDeclarativeSchema(opts)` instead of imperative code.
+### BaseApp Interface
 
+All apps extend `BaseApp` (`src/core/BaseApp.ts`). The base class provides:
+
+| Method | Purpose |
+|--------|---------|
+| `open(opts?)` | Create the app window — **must override** (throws by default) |
+| `onClose(winId)` | Lifecycle hook when a window closes |
+| `isSingletonOpen(winId)` | Check if a window already exists and focus it |
+| `notify(title, message, type?, duration?, icon?, appSource?)` | Send a notification scoped to this app |
+| `registerTray(winId, icon, label, options)` | Register with system tray |
+| `unregisterTray(winId)` | Remove from system tray |
+| `sendToTray(winId)` | Hide window + taskbar to tray |
+| `restoreFromTray(winId)` | Restore window from tray |
+| `getSnapshot(winId)` | Return state for session persistence |
+| `restoreSnapshot(winId, data)` | Restore state from session |
+
+**Constructor receives:** The `os` bridge object (or services container). Apps store references to `this.wm` (WindowManager), `this.fs` (FileSystemManager), `this.bus` (EventBus), `this.notifications` (NotificationCenter) for direct use without `os.*` bridge.
+
+### App Lifecycle
+
+1. **Definition** — App class created in `src/apps/`
+2. **Registration** — Class added to `APP_CLASS_MAP` in `AppLoader.js` and metadata to `APP_MANIFESTS` in `src/registry/AppManifest.js`
+3. **Instantiation** — `loadApps(services)` in `AppLoader.js` creates one singleton instance per app class and registers it via `os.app.register(key, instance)`
+4. **Launch** — `AppLauncher.launch(appId)` retrieves the singleton and calls `instance.open(appExtra)`
+5. **Open** — `open()` creates a window via `os.window.create()`, builds UI, binds events
+6. **Close** — `onClose(winId)` is called; the window element fires a `remove` event for cleanup
+
+### Singleton Pattern
+
+**Apps are singletons:** one instance per class, created at startup. The same instance's `open()` is called each time the user launches the app. Multi-window apps (like Notepad) generate unique window IDs per call. Single-window apps use `isSingletonOpen()` or a Set to prevent duplicates.
+
+### Actual App Patterns
+
+Three common patterns in the codebase:
+
+**Singleton (one window at a time):**
 ```javascript
-getDeclarativeSchema(opts) {
-  return {
-    id: "my-app",
-    name: "My App",
-    icon: "fas fa-star",
-    windows: [{
-      id: "my-app",
-      title: "My App",
-      size: ["400px", "300px"],
-      icon: "fas fa-star",
-      iconColor: "#4f9eff",
-      ui: "<div>App UI</div>",
-      events: {
-        "#my-button": {
-          click: { type: "custom:myAction", stopPropagation: true }
-        }
-      }
-    }],
-    state: {
-      initial: { value: 0 },
-      persistence: "memory"
-    },
-    actions: {
-      myAction: (payload, event, element, state) => {
-        state.value += 1;
-      }
-    },
-    onMount: "initMyApp"
-  };
+async open(opts) {
+  if (await this.isSingletonOpen("my-app-win")) return;
+  const win = os.window.create("my-app-win", "My App", "400px", "300px", { icon: "fas fa-star" });
+  win.innerHTML = this.buildUI();
+  // ... bind events
 }
 ```
 
-**Runtime components** (in `src/runtime/`): `StateManager.js`, `AppRenderer.js`, `EventBinder.js`, `ActionExecutor.js`,
-`DeclarativeApp.js`, `UIComponents.js`, `ServiceActions.js`, `AppSchema.js` (re-exports `PersistenceTypes` from
-`src/AppSchema.js`).
+**Multi-instance (many windows):**
+```javascript
+open(opts = {}) {
+  const winId = `myapp-${Date.now()}`;
+  const win = os.window.create(winId, "My App", "500px", "400px", { icon: "fas fa-star" });
+  this.instances.set(winId, { /* per-window state */ });
+  win.addEventListener("remove", () => this.instances.delete(winId));
+}
+```
+
+**Web app (URL-based):**
+Add an entry to `APP_MANIFESTS` with `targetUrl`, `launchType: "instance"`, and `windowSize`. No class needed — the system creates a `ScramjetBaseApp` wrapper automatically.
 
 ---
 

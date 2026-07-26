@@ -1625,3 +1625,46 @@ html[data-theme-mode="light"] .sysinfo-row:hover {
 html[data-theme-mode="light"] .sysinfo-row {
   border-bottom: 1px solid var(--glass-border) !important;
 }
+
+.easing-preview {
+  width: 100%;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  padding: 0 4px;
+}
+
+.easing-preview-track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.easing-preview-ball {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--brand, #a78bfa);
+  position: absolute;
+  left: 0;
+}
+
+.easing-preview-ball.easing-preview-anim {
+  animation: easing-bounce 1.2s var(--easing, ease-out) infinite alternate;
+}
+
+@keyframes easing-bounce {
+  from {
+    left: 0;
+  }
+  to {
+    left: calc(100% - 12px);
+  }
+}
+
+.easing-select {
+  width: 100%;
+}

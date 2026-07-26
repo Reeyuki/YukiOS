@@ -296,7 +296,7 @@ export class WindowManager {
 
     let disableDesktopStretchScroll = false;
     try {
-      disableDesktopStretchScroll = os.storage.get(StorageKeys.disableDesktopStretchScroll) === "true";
+      disableDesktopStretchScroll = os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false";
     } catch {}
 
     let finalW = vw;

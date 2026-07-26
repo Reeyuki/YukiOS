@@ -1,5 +1,3 @@
-import * as CANNON from "cannon-es";
-
 export class FurnitureManager {
   constructor(THREE, scene, renderer, interaction, onSave) {
     this.THREE = THREE;
@@ -9,9 +7,7 @@ export class FurnitureManager {
     this.onSave = onSave;
 
     this.items = new Map();
-    this.grabbed = null;
-    this.grabPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    this.grabOffset = null;
+    this.povGrabbedItem = null;
   }
 
   registerFurniture(id, mesh, defaultPos, options = {}) {
@@ -41,50 +37,32 @@ export class FurnitureManager {
     return null;
   }
 
-  grabFurniture(item) {
+  povGrab(item) {
     if (!item) return;
-    this.grabbed = item;
-
-    const y = item.mesh.position.y + item.options.yOffset;
-    this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -y);
-
-    const intersectPoint = new this.THREE.Vector3();
-    const hit = this.interaction.raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
-    if (hit) {
-      this.grabOffset = new this.THREE.Vector3().copy(item.mesh.position).sub(intersectPoint);
-    } else {
-      this.grabOffset = new this.THREE.Vector3(0, 0, 0);
-    }
+    this.povGrabbedItem = item;
   }
 
-  releaseFurniture() {
-    if (!this.grabbed) return;
-    this.grabbed.currentPos.copy(this.grabbed.mesh.position);
-    this.grabbed = null;
-    this.grabOffset = null;
+  releasePovGrab() {
+    if (!this.povGrabbedItem) return null;
+    const item = this.povGrabbedItem;
+    item.currentPos.copy(item.mesh.position);
+    this.povGrabbedItem = null;
     if (this.onSave) {
       this.onSave(this.getPositions());
     }
+    return item;
   }
 
-  updateGrabbed(camera, raycaster, THREE) {
-    if (!this.grabbed || !this.grabOffset) return;
+  updatePovGrabbed(camera) {
+    if (!this.povGrabbedItem) return;
+    const forward = new this.THREE.Vector3(0, 0, -1);
+    forward.applyQuaternion(camera.quaternion);
 
-    raycaster.setFromCamera(this.interaction.mouse, camera);
+    const distance = 0.9;
+    const targetPos = camera.position.clone().add(forward.multiplyScalar(distance));
+    targetPos.y = Math.max(0.5, targetPos.y);
 
-    const y = this.grabbed.mesh.position.y + this.grabbed.options.yOffset;
-    this.grabPlane.set(new THREE.Vector3(0, 1, 0), -y);
-
-    const intersectPoint = new THREE.Vector3();
-    const hit = raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
-    if (!hit) return;
-
-    this.grabbed.mesh.position.copy(intersectPoint).add(this.grabOffset);
-
-    const b = this.renderer.bounds;
-    const half = (typeof this.grabbed.options.size === "number" ? this.grabbed.options.size : 0.5) / 2;
-    this.grabbed.mesh.position.x = Math.max(b.minX + half, Math.min(b.maxX - half, this.grabbed.mesh.position.x));
-    this.grabbed.mesh.position.z = Math.max(b.minZ + half, Math.min(b.maxZ - half, this.grabbed.mesh.position.z));
+    this.povGrabbedItem.mesh.position.copy(targetPos);
   }
 
   getPositions() {
@@ -116,8 +94,55 @@ export class FurnitureManager {
       this.scene.remove(item.mesh);
     }
     this.items.clear();
-    this.grabbed = null;
-    this.grabOffset = null;
+    this.povGrabbedItem = null;
     this.onSave = null;
+  }
+
+  spawnFurniture(id, mesh, position, options = {}) {
+    const existing = this.items.get(id);
+    if (existing) {
+      this.scene.remove(existing.mesh);
+    }
+    const item = {
+      id,
+      mesh,
+      defaultPos: position.clone ? position.clone() : new this.THREE.Vector3(position.x, position.y, position.z),
+      currentPos: position.clone ? position.clone() : new this.THREE.Vector3(position.x, position.y, position.z),
+      options: {
+        label: options.label || id,
+        yOffset: options.yOffset || 0,
+        size: options.size || 0.5
+      }
+    };
+    mesh.position.copy(position);
+    this.items.set(id, item);
+    this.scene.add(mesh);
+    return item;
+  }
+
+  deleteFurniture(id) {
+    const item = this.items.get(id);
+    if (!item) return;
+    this.scene.remove(item.mesh);
+    if (item.mesh.geometry) item.mesh.geometry.dispose();
+    if (item.mesh.material) {
+      if (Array.isArray(item.mesh.material)) {
+        for (const mat of item.mesh.material) mat.dispose();
+      } else {
+        item.mesh.material.dispose();
+      }
+    }
+    this.items.delete(id);
+    if (this.povGrabbedItem && this.povGrabbedItem.id === id) {
+      this.povGrabbedItem = null;
+    }
+    if (this.onSave) this.onSave(this.getPositions());
+  }
+
+  findByName(name) {
+    for (const item of this.items.values()) {
+      if (item.options.label === name) return item;
+    }
+    return null;
   }
 }

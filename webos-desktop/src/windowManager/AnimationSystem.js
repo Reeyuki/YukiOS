@@ -12,7 +12,8 @@ export const OPEN_ANIMATIONS = {
   elasticBounce: "elasticBounce",
   blurReveal: "blurReveal",
   perspective3D: "perspective3D",
-  cornerUnfold: "cornerUnfold"
+  cornerUnfold: "cornerUnfold",
+  slideInGrowth: "slideInGrowth"
 };
 
 export const CLOSE_ANIMATIONS = {
@@ -219,6 +220,12 @@ function getOpenKeyframes(animType, win, isRestoring = false) {
       return [
         { opacity: 0, transform: "scale(0) rotate(-45deg)", transformOrigin: "top left" },
         { opacity: 1, transform: "scale(1) rotate(0deg)", transformOrigin: "top left" }
+      ];
+    case OPEN_ANIMATIONS.slideInGrowth:
+      const targetW = win.style.width ? parseFloat(win.style.width) : win.offsetWidth;
+      return [
+        { opacity: 0, transform: "perspective(300px) scale(0.5) rotateY(-20deg)", width: "0px" },
+        { opacity: 1, transform: "perspective(300px) scale(1) rotateY(0deg)", width: `${targetW}px`, offset: 1 }
       ];
     default:
       return [{ opacity: 0 }, { opacity: 1 }];

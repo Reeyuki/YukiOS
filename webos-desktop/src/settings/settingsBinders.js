@@ -1007,6 +1007,22 @@ export function bindNetworkCategory(win, save, settings, showSaved) {
       }
     });
   }
+
+  const transportContainer = $("#settingsBrowserTransport", win);
+  if (transportContainer) {
+    transportContainer.querySelectorAll("[data-transport]").forEach(function (el) {
+      bindEvent(el, "click", function () {
+        const key = el.dataset.transport;
+        transportContainer.querySelectorAll("[data-transport]").forEach(function (p) {
+          p.classList.remove("active");
+        });
+        el.classList.add("active");
+        settings.browserTransport = key;
+        os.storage.set(StorageKeys.browserTransport, key);
+        showSaved();
+      });
+    });
+  }
 }
 
 export function bindAudioCategory(win, settings, showSaved) {
