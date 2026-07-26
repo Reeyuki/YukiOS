@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { execSync } from "child_process";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, rmSync } from "fs";
 import { resolve, join } from "path";
 
 const commitHash = (() => {
@@ -150,6 +150,18 @@ function staticCdnRewrite() {
   };
 }
 
+function removeCosmicFolder() {
+  return {
+    name: "remove-cosmic-folder",
+    closeBundle() {
+      const cosmicPath = resolve(outDir, "skybox/cosmic.exr");
+      if (existsSync(cosmicPath)) {
+        rmSync(cosmicPath, { force: true });
+      }
+    }
+  };
+}
+
 const plugins = [
   nodePolyfills({
     include: ["buffer", "process", "stream", "path", "util", "timers"],
@@ -189,6 +201,7 @@ if (isVisualize) {
   });
 }
 plugins.push(staticCdnRewrite());
+plugins.push(removeCosmicFolder());
 
 export default defineConfig({
   base: isSingleFile ? "./" : "/",
