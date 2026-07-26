@@ -198,7 +198,7 @@ export class Room3DApp extends BaseApp {
       audio: { masterVolume: 0.4, ui: true, footstep: true, ambient: true },
       gameplay: { genreHints: true, timer: true },
       editor: { snap: false, snapSize: 0.25 },
-      graphics: { quality: "high", bloom: true, shadows: true, dust: true, curtainSway: true }
+      graphics: { quality: "medium", bloom: true, shadows: true, dust: true, curtainSway: true }
     };
     this.roomSettings = { ...DEFAULT_ROOM_SETTINGS, ...rmStore.get("settings", {}) };
     for (const k of Object.keys(DEFAULT_ROOM_SETTINGS)) {
@@ -258,8 +258,8 @@ export class Room3DApp extends BaseApp {
     this.gameCaseManager.ballBody = this.rainbowBall.body;
     this.interaction.setBallMesh(this.rainbowBall.mesh, this.rainbowBall.body);
 
-    if (this.renderer.leftHand && this.renderer.rightHand) {
-      this.interaction.setHandMeshes(this.renderer.leftHand, this.renderer.rightHand);
+    if (this.renderer.player && this.renderer.player.leftHand && this.renderer.player.rightHand) {
+      this.interaction.setHandMeshes(this.renderer.player.leftHand, this.renderer.player.rightHand);
     }
 
     this.shelfManager = new ShelfManager(THREE, this.renderer.scene, this.gameCaseManager.physics.world);
@@ -923,7 +923,7 @@ export class Room3DApp extends BaseApp {
           break;
         }
         case "settings_graphics_quality": {
-          const order = ["low", "medium", "high"];
+          const order = ["low", "medium", "high", "ultra"];
           const cur = order.indexOf(this.roomSettings.graphics.quality);
           const next = (cur + 1) % order.length;
           const quality = order[next];

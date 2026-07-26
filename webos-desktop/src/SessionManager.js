@@ -721,7 +721,9 @@ export class SessionManager {
     }
     this.addToUserHistory(this.currentSession);
 
-    await os.fs.setSession(name);
+    if (this.selectedSession !== "Yuki 3D Desktop") {
+      await os.fs.setSession(name);
+    }
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
     liveActivityManager.init();

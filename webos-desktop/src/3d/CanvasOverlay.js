@@ -952,7 +952,7 @@ export class CanvasOverlay {
         const qBtnW = 80,
           qBtnH = 24;
         const qx = colRight - qBtnW;
-        const qualityLabels = { low: "Low", medium: "Medium", high: "High" };
+        const qualityLabels = { low: "Low", medium: "Medium", high: "High", ultra: "Ultra (Demanding)" };
         const qText = qualityLabels[s.graphics.quality] || "Medium";
         this.roundRect(ctx, qx, y + 4, qBtnW, qBtnH, 8);
         ctx.fillStyle = "rgba(255,255,255,0.08)";

@@ -202,8 +202,8 @@ export class WallDisplay {
       mesh.userData.tabId = TAB_IDS[i];
       mesh.userData.title = TAB_IDS[i].charAt(0).toUpperCase() + TAB_IDS[i].slice(1);
       mesh.userData.interactive = true;
-      mesh.userData._tabMat = mat;
-      mesh.userData._tabCanvas = canvas;
+      mesh.userData.tabMat = mat;
+      mesh.userData.tabCanvas = canvas;
       this.group.add(mesh);
       this.tabButtons.push(mesh);
     }
@@ -212,7 +212,7 @@ export class WallDisplay {
 
   updateTabHighlight() {
     for (const mesh of this.tabButtons) {
-      const canvas = mesh.userData._tabCanvas;
+      const canvas = mesh.userData.tabCanvas;
       const ctx = canvas.getContext("2d");
       const isActive = mesh.userData.tabId === this.tab;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -290,7 +290,7 @@ export class WallDisplay {
     mesh.userData.objectId = "wallRecoverAll";
     mesh.userData.title = "Recover All";
     mesh.userData.interactive = true;
-    mesh.userData._mat = mat;
+    mesh.userData.mat = mat;
     this.group.add(mesh);
     this.recoverAllBtn = mesh;
     this.updateRecoverAllButton();

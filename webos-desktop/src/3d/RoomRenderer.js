@@ -5,6 +5,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { Reflector } from "three/examples/jsm/objects/Reflector.js";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
+import { PlayerBody } from "./PlayerBody.js";
 
 export class RoomRenderer {
   constructor(container) {
@@ -40,6 +41,7 @@ export class RoomRenderer {
     this.glowStripLight = null;
     this.hdriEnvMap = null;
     this.isDay = false;
+    this.quality = null;
   }
 
   async init() {
@@ -76,16 +78,21 @@ export class RoomRenderer {
     this.composer.addPass(this.bloomPass);
 
     this.clock = new THREE.Clock();
+    this.mirrorRes = 512;
 
     this.buildRoom();
+
     this.setupLighting();
+
     const skyPromise = this.buildSkybox();
+
     this.buildMirror();
-    this.buildPlayerBody();
-    this.buildPlayerShadow();
+
+    this.player = new PlayerBody(THREE, this.scene, this.camera);
+    this.player.build();
+
     this.toggleDayNight();
     this.toggleDayNight();
-    await skyPromise;
 
     this.collectWAILAMeshes();
     this.running = true;
@@ -1091,14 +1098,15 @@ export class RoomRenderer {
 
   buildMirror() {
     const T = this.THREE;
+    const res = this.mirrorRes || 512;
 
     const mirrorH = 2.8;
     const mirrorW = 0.8;
     const mirrorGeo = new T.PlaneGeometry(mirrorW, mirrorH);
     const reflector = new Reflector(mirrorGeo, {
       color: 0x7f7f7f,
-      textureWidth: 512,
-      textureHeight: 512,
+      textureWidth: res,
+      textureHeight: res,
       clipBias: 0.003
     });
     reflector.position.set(1.8, 1.5, 3.97);
@@ -1108,12 +1116,12 @@ export class RoomRenderer {
     this.mirrorMesh = reflector;
 
     const origOnBeforeRender = reflector.onBeforeRender;
-    const _camDir = new T.Vector3();
-    const _dirToMirror = new T.Vector3();
+    const camDir = new T.Vector3();
+    const dirToMirror = new T.Vector3();
     reflector.onBeforeRender = function (renderer, scene, camera) {
-      camera.getWorldDirection(_camDir);
-      _dirToMirror.subVectors(reflector.position, camera.position).normalize();
-      if (_camDir.angleTo(_dirToMirror) > 0.9) return;
+      camera.getWorldDirection(camDir);
+      dirToMirror.subVectors(reflector.position, camera.position).normalize();
+      if (camDir.angleTo(dirToMirror) > 0.9) return;
       origOnBeforeRender.call(this, renderer, scene, camera);
     };
 
@@ -1133,67 +1141,6 @@ export class RoomRenderer {
       f.position.set(1.8 + dx, 1.5 + dy, mz - 0.02);
       this.scene.add(f);
     }
-  }
-
-  buildPlayerBody() {
-    const T = this.THREE;
-
-    const skinMat = new T.MeshStandardMaterial({
-      color: 0xf5d0b0,
-      roughness: 0.6,
-      metalness: 0.0
-    });
-    const clothMat = new T.MeshStandardMaterial({
-      color: 0x2a1a3a,
-      roughness: 0.8,
-      metalness: 0.0
-    });
-
-    this.bodyGroup = new T.Group();
-
-    const torso = new T.Mesh(new T.CylinderGeometry(0.28, 0.32, 0.55, 8), clothMat);
-    torso.position.set(0, -0.85, -0.12);
-    this.bodyGroup.add(torso);
-
-    const neck = new T.Mesh(new T.CylinderGeometry(0.08, 0.1, 0.08, 8), skinMat);
-    neck.position.set(0, -0.55, -0.12);
-    this.bodyGroup.add(neck);
-
-    this.leftArm = new T.Mesh(new T.CylinderGeometry(0.035, 0.04, 0.4, 6), skinMat);
-    this.leftArm.position.set(-0.3, -0.65, -0.1);
-    this.leftArm.rotation.z = 0.25;
-    this.leftArm.rotation.x = 0.2;
-    this.bodyGroup.add(this.leftArm);
-
-    this.rightArm = new T.Mesh(new T.CylinderGeometry(0.035, 0.04, 0.4, 6), skinMat);
-    this.rightArm.position.set(0.3, -0.65, -0.1);
-    this.rightArm.rotation.z = -0.25;
-    this.rightArm.rotation.x = 0.2;
-    this.bodyGroup.add(this.rightArm);
-
-    this.leftHand = new T.Mesh(new T.SphereGeometry(0.04, 6, 6), skinMat);
-    this.leftHand.position.set(-0.3, -0.88, -0.1);
-    this.bodyGroup.add(this.leftHand);
-
-    this.rightHand = new T.Mesh(new T.SphereGeometry(0.04, 6, 6), skinMat);
-    this.rightHand.position.set(0.3, -0.88, -0.1);
-    this.bodyGroup.add(this.rightHand);
-
-    this.camera.add(this.bodyGroup);
-  }
-
-  buildPlayerShadow() {
-    const T = this.THREE;
-    const shadowMat = new T.MeshBasicMaterial({
-      color: 0x000000,
-      transparent: true,
-      opacity: 0.25,
-      depthWrite: false
-    });
-    this.playerShadow = new T.Mesh(new T.CircleGeometry(0.35, 12), shadowMat);
-    this.playerShadow.rotation.x = -Math.PI / 2;
-    this.playerShadow.position.y = 0.02;
-    this.scene.add(this.playerShadow);
   }
 
   setupLighting() {
@@ -1282,11 +1229,24 @@ export class RoomRenderer {
     }
   }
 
+  rebuildMirror() {
+    if (this.mirrorMesh) {
+      this.scene.remove(this.mirrorMesh);
+      const rt = this.mirrorMesh.getRenderTarget();
+      if (rt) rt.dispose();
+      this.mirrorMesh.material.dispose();
+      this.mirrorMesh.geometry.dispose();
+      this.mirrorMesh = null;
+    }
+    this.buildMirror();
+  }
+
   enableMonitorCapture(os) {
     if (!this.monitorScreen) return;
     const THREE = this.THREE;
 
-    this.hologramRenderer = new HologramRenderer();
+    const ps = this.quality === "ultra" ? 3 : 2;
+    this.hologramRenderer = new HologramRenderer(ps);
     const canvas = this.hologramRenderer.canvas;
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -1295,13 +1255,14 @@ export class RoomRenderer {
     texture.generateMipmaps = true;
     texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
-    this.monitorScreen.material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshBasicMaterial({
       map: texture,
       color: 0x6688aa,
       transparent: true,
       opacity: 0.88,
       side: THREE.DoubleSide
     });
+    this.monitorScreen.material = material;
 
     this.hologramRenderer.onDraw = () => {
       texture.needsUpdate = true;
@@ -1330,6 +1291,8 @@ export class RoomRenderer {
 
     const delta = this.clock.getDelta();
 
+    if (this.player) this.player.update();
+
     for (const hook of this.updateHooks) {
       hook(delta);
     }
@@ -1340,12 +1303,6 @@ export class RoomRenderer {
         const floatOffset = Math.sin(this.hologramTime * 0.8) * 0.04;
         this.hologramGroup.position.y = this.hologramBaseY + floatOffset;
       }
-    }
-
-    if (this.playerShadow && this.camera) {
-      const cp = this.camera.position;
-      this.playerShadow.position.x = cp.x;
-      this.playerShadow.position.z = cp.z;
     }
 
     this.composer.render();
@@ -1437,52 +1394,63 @@ export class RoomRenderer {
   }
 
   setQuality(level) {
-    if (level === "low") return;
+    const isUltra = level === "ultra";
+    const isHigh = level === "high" || isUltra;
+    const isLow = level === "low";
 
-    const isHigh = level === "high";
-    this.bloomPass.strength = 0.4;
-    this.bloomPass.radius = 0.2;
-    this.bloomPass.threshold = 0.1;
-    this.renderer.shadowMap.type = isHigh ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
-    this.renderer.toneMappingExposure = isHigh ? 1.5 : 1.2;
-    this.renderer.setPixelRatio(isHigh ? Math.min(window.devicePixelRatio, 2) : Math.min(window.devicePixelRatio, 1.5));
+    if (this.monitorScreen) {
+      this.monitorScreen.material.color.setHex(isUltra ? 0x557799 : isHigh ? 0x5a7799 : 0x6688aa);
+    }
+    const mirrorRes = isLow ? 256 : isUltra ? 2048 : isHigh ? 1024 : 512;
+    if (mirrorRes !== this.mirrorRes) {
+      this.mirrorRes = mirrorRes;
+      this.rebuildMirror();
+    }
+    this.bloomPass.strength = isUltra ? 0.5 : 0.4;
+    this.bloomPass.radius = isUltra ? 0.25 : 0.2;
+    this.bloomPass.threshold = isUltra ? 0.08 : 0.1;
+    this.renderer.shadowMap.type = isLow ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+    this.renderer.toneMappingExposure = isLow ? 1.5 : isUltra ? 1.6 : isHigh ? 1.5 : 1.2;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isLow ? 1 : 2));
     this.resize();
 
+    const shadowRes = isLow ? 128 : isUltra ? 4096 : isHigh ? 2048 : 256;
     if (this.keyLight) {
-      this.keyLight.shadow.mapSize.width = isHigh ? 2048 : 256;
-      this.keyLight.shadow.mapSize.height = isHigh ? 2048 : 256;
-      this.keyLight.shadow.camera.near = 0.5;
-      this.keyLight.shadow.camera.far = isHigh ? 8 : 15;
+      this.keyLight.shadow.mapSize.width = shadowRes;
+      this.keyLight.shadow.mapSize.height = shadowRes;
+      this.keyLight.shadow.camera.near = 0.2;
+      this.keyLight.shadow.camera.far = isLow ? 15 : isUltra ? 6 : isHigh ? 8 : 15;
       this.keyLight.shadow.camera.left = -4;
       this.keyLight.shadow.camera.right = 4;
       this.keyLight.shadow.camera.top = 4;
       this.keyLight.shadow.camera.bottom = -4;
-      this.keyLight.shadow.normalBias = isHigh ? 0.02 : 0;
+      this.keyLight.shadow.normalBias = isLow ? 0 : isUltra ? 0.03 : isHigh ? 0.02 : 0;
       if (this.keyLight.shadow.map) this.keyLight.shadow.map.dispose();
       this.keyLight.shadow.map = null;
     }
     if (this.ceilingLight) {
-      this.ceilingLight.shadow.mapSize.width = isHigh ? 2048 : 256;
-      this.ceilingLight.shadow.mapSize.height = isHigh ? 2048 : 256;
-      this.ceilingLight.shadow.camera.near = 0.5;
-      this.ceilingLight.shadow.camera.far = isHigh ? 5 : 8;
-      this.ceilingLight.shadow.camera.fov = isHigh ? 60 : 90;
-      this.ceilingLight.shadow.normalBias = isHigh ? 0.02 : 0;
+      this.ceilingLight.shadow.mapSize.width = shadowRes;
+      this.ceilingLight.shadow.mapSize.height = shadowRes;
+      this.ceilingLight.shadow.camera.near = 0.2;
+      this.ceilingLight.shadow.camera.far = isLow ? 10 : isUltra ? 4 : isHigh ? 5 : 8;
+      this.ceilingLight.shadow.camera.fov = isLow ? 90 : isUltra ? 50 : isHigh ? 60 : 90;
+      this.ceilingLight.shadow.normalBias = isLow ? 0 : isUltra ? 0.03 : isHigh ? 0.02 : 0;
       if (this.ceilingLight.shadow.map) this.ceilingLight.shadow.map.dispose();
       this.ceilingLight.shadow.map = null;
     }
     if (this.moonSpot) {
-      this.moonSpot.shadow.mapSize.width = isHigh ? 4096 : 512;
-      this.moonSpot.shadow.mapSize.height = isHigh ? 4096 : 512;
-      this.moonSpot.shadow.camera.near = 0.5;
-      this.moonSpot.shadow.camera.far = isHigh ? 8 : 15;
-      this.moonSpot.shadow.camera.fov = isHigh ? 30 : 45;
-      this.moonSpot.shadow.normalBias = isHigh ? 0.02 : 0;
+      this.moonSpot.shadow.mapSize.width = isLow ? 256 : isUltra ? 8192 : isHigh ? 4096 : 512;
+      this.moonSpot.shadow.mapSize.height = isLow ? 256 : isUltra ? 8192 : isHigh ? 4096 : 512;
+      this.moonSpot.shadow.camera.near = 0.2;
+      this.moonSpot.shadow.camera.far = isLow ? 15 : isUltra ? 6 : isHigh ? 8 : 15;
+      this.moonSpot.shadow.camera.fov = isLow ? 45 : isUltra ? 25 : isHigh ? 30 : 45;
+      this.moonSpot.shadow.normalBias = isLow ? 0 : isUltra ? 0.03 : isHigh ? 0.02 : 0;
       if (this.moonSpot.shadow.map) this.moonSpot.shadow.map.dispose();
       this.moonSpot.shadow.map = null;
     }
 
     this.renderer.shadowMap.needsUpdate = true;
+    this.quality = level;
   }
 
   destroy() {
@@ -1523,7 +1491,7 @@ export class RoomRenderer {
       this.mirrorMesh.geometry.dispose();
       this.mirrorMesh = null;
     }
-    this.bodyGroup = null;
-    this.playerShadow = null;
+    if (this.player) this.player.destroy();
+    this.player = null;
   }
 }

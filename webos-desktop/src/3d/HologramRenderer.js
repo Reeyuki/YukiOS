@@ -1,20 +1,20 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
 export class HologramRenderer {
-  constructor() {
+  constructor(pixelScale = 2) {
+    this.pixelScale = pixelScale;
     this.canvas = document.createElement("canvas");
-    this.canvas.width = 1600;
-    this.canvas.height = 1000;
+    this.canvas.width = 800 * pixelScale;
+    this.canvas.height = 500 * pixelScale;
     this.ctx = this.canvas.getContext("2d");
-    this.pixelScale = 2;
 
     this.allItems = [];
     this.pageItems = [];
     this.currentPage = 0;
     this.totalPages = 0;
-    this.itemsPerPage = 15;
-    this.cols = 5;
-    this.rows = 3;
+    this.itemsPerPage = 30;
+    this.cols = 6;
+    this.rows = 5;
 
     this.ticker = 0;
     this.intervalId = null;
@@ -23,11 +23,11 @@ export class HologramRenderer {
     this.iconBitmaps = new Map();
     this.iconLoadAttempted = new Set();
 
-    this.gridStartX = 32;
-    this.gridStartY = 32;
-    this.gridCellW = 150;
-    this.gridCellH = 145;
-    this.iconSize = 80;
+    this.gridStartX = 82;
+    this.gridStartY = 16;
+    this.gridCellW = 106;
+    this.gridCellH = 86;
+    this.iconSize = 68;
 
     this.prevBtnBounds = null;
     this.nextBtnBounds = null;
@@ -99,7 +99,7 @@ export class HologramRenderer {
     const entries = Object.entries(allApps || {});
     this.allItems = entries
       .filter(([, item]) => item && item.title)
-      .map(([key, item]) => ({ ...item, _appId: item.serviceKey || key }));
+      .map(([key, item]) => ({ ...item, appId: item.serviceKey || key }));
     this.allItems.sort((a, b) => {
       if (a.type === "game" && b.type !== "game") return -1;
       if (a.type !== "game" && b.type === "game") return 1;
@@ -144,7 +144,7 @@ export class HologramRenderer {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = "rgba(0,220,255,0.6)";
+    ctx.fillStyle = "rgba(0,220,255,0.45)";
     ctx.font = "12px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
@@ -158,31 +158,32 @@ export class HologramRenderer {
 
   drawGrid(ctx, W, H) {
     const { gridStartX, gridStartY, gridCellW, gridCellH, iconSize, cols, pageItems } = this;
+    const r = Math.round(iconSize * 0.125);
 
     pageItems.forEach((item, idx) => {
       const col = idx % cols;
       const row = Math.floor(idx / cols);
       const cx = gridStartX + col * gridCellW + gridCellW / 2;
-      const cy = gridStartY + row * gridCellH + 8;
+      const cy = gridStartY + row * gridCellH + 6;
       const ix = cx - iconSize / 2;
       const iy = cy;
 
-      ctx.shadowColor = "rgba(0,220,255,0.15)";
-      ctx.shadowBlur = 14;
-      ctx.fillStyle = "rgba(8,8,20,0.88)";
-      this.roundRect(ctx, ix, iy, iconSize, iconSize, 10);
+      ctx.shadowColor = "rgba(0,220,255,0.08)";
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = "rgba(8,8,20,0.75)";
+      this.roundRect(ctx, ix, iy, iconSize, iconSize, r);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      ctx.strokeStyle = "rgba(0,220,255,0.2)";
+      ctx.strokeStyle = "rgba(0,220,255,0.12)";
       ctx.lineWidth = 0.5;
-      this.roundRect(ctx, ix, iy, iconSize, iconSize, 10);
+      this.roundRect(ctx, ix, iy, iconSize, iconSize, r);
       ctx.stroke();
 
       const bitmap = this.iconBitmaps.get(item.icon);
       if (bitmap) {
         ctx.save();
-        this.roundRect(ctx, ix + 2, iy + 2, iconSize - 4, iconSize - 4, 9);
+        this.roundRect(ctx, ix + 2, iy + 2, iconSize - 4, iconSize - 4, r - 1);
         ctx.clip();
         ctx.drawImage(bitmap, ix + 4, iy + 4, iconSize - 8, iconSize - 8);
         ctx.restore();
@@ -193,26 +194,26 @@ export class HologramRenderer {
         ctx.fill();
 
         ctx.fillStyle = "rgba(255,255,255,0.6)";
-        ctx.font = "bold 30px monospace";
+        ctx.font = "bold 20px monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText((item.title || "?")[0].toUpperCase(), cx, iy + iconSize / 2 + 1);
       }
 
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = "11px sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.font = "10px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       const label = (item.title || "").slice(0, 20);
-      ctx.fillText(label, cx, iy + iconSize + 5);
+      ctx.fillText(label, cx, iy + iconSize + 4);
 
-      item._bounds = { x: ix, y: iy, w: iconSize, h: iconSize + 18 };
+      item.bounds = { x: ix, y: iy, w: iconSize, h: iconSize + 14 };
     });
   }
 
   getIconColor(item) {
     const hue = this.stringToHue(item.icon || item.title);
-    return `hsl(${hue}, 60%, 30%)`;
+    return `hsl(${hue}, 40%, 22%)`;
   }
 
   stringToHue(str) {
@@ -228,7 +229,7 @@ export class HologramRenderer {
     this.prevBtnBounds = null;
     this.nextBtnBounds = null;
 
-    ctx.fillStyle = "rgba(0,220,255,0.5)";
+    ctx.fillStyle = "rgba(0,220,255,0.35)";
     ctx.font = "12px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -269,8 +270,8 @@ export class HologramRenderer {
       }
     }
     for (const item of this.pageItems) {
-      if (item._bounds && this.pointInRect(cx, cy, item._bounds)) {
-        return { type: "app", appId: item._appId, title: item.title };
+      if (item.bounds && this.pointInRect(cx, cy, item.bounds)) {
+        return { type: "app", appId: item.appId, title: item.title };
       }
     }
     return null;

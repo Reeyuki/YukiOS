@@ -45,8 +45,8 @@ export class RoomInteraction {
     this.hoverMeshes = [];
     this.hoverMeshesDirty = true;
     this.cachedBookMeshes = [];
-    this._planeNormal = null;
-    this._intersectPoint = null;
+    this.planeNormal = null;
+    this.intersectPoint = null;
     this.leftHandMesh = null;
     this.rightHandMesh = null;
   }
@@ -56,8 +56,8 @@ export class RoomInteraction {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
     this.grabPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    this._planeNormal = new THREE.Vector3(0, 1, 0);
-    this._intersectPoint = new THREE.Vector3();
+    this.planeNormal = new THREE.Vector3(0, 1, 0);
+    this.intersectPoint = new THREE.Vector3();
 
     this.canvas = this.renderer.renderer.domElement;
     this.canvas.addEventListener("mousemove", (e) => this.onHover(e));
@@ -70,7 +70,7 @@ export class RoomInteraction {
     this.gameCases = gameCases;
   }
 
-  _makeKinematic(body) {
+  makeKinematic(body) {
     body.type = CANNON.Body.KINEMATIC;
     body.velocity.set(0, 0, 0);
     body.angularVelocity.set(0, 0, 0);
@@ -78,7 +78,7 @@ export class RoomInteraction {
     body.wakeUp();
   }
 
-  _makeDynamic(body, dynamicMass) {
+  makeDynamic(body, dynamicMass) {
     body.type = CANNON.Body.DYNAMIC;
     if (dynamicMass) {
       body.mass = dynamicMass;
@@ -88,7 +88,7 @@ export class RoomInteraction {
     body.wakeUp();
   }
 
-  _applyThrowVelocity(body, velocity, spin) {
+  applyThrowVelocity(body, velocity, spin) {
     body.velocity.set(velocity.x, velocity.y, velocity.z);
     if (spin) {
       body.angularVelocity.set(spin.x, spin.y, spin.z);
@@ -206,7 +206,7 @@ export class RoomInteraction {
 
     if (this.audio) this.audio.playBookGrab();
     gameCase.grabbed = true;
-    this._makeKinematic(gameCase.body);
+    this.makeKinematic(gameCase.body);
     this.grabbedCase = gameCase;
 
     this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -gameCase.mesh.position.y);
@@ -249,7 +249,7 @@ export class RoomInteraction {
         }
       }
 
-      this._makeDynamic(gameCase.body, gameCase.dynamicMass);
+      this.makeDynamic(gameCase.body, gameCase.dynamicMass);
       if (this.lastGrabPos) {
         const throwVel = new this.THREE.Vector3().copy(gameCase.pos).sub(this.lastGrabPos);
         gameCase.body.velocity.set(throwVel.x, Math.max(throwVel.y, 0), throwVel.z);
@@ -275,9 +275,9 @@ export class RoomInteraction {
 
     this.raycaster.setFromCamera(this.mouse, this.renderer.camera);
 
-    this.grabPlane.set(this._planeNormal, -this.grabbedCase.pos.y);
+    this.grabPlane.set(this.planeNormal, -this.grabbedCase.pos.y);
 
-    const intersectPoint = this._intersectPoint;
+    const intersectPoint = this.intersectPoint;
     const hit = this.raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
     if (!hit) return;
 
@@ -302,9 +302,9 @@ export class RoomInteraction {
     this.raycaster.setFromCamera(this.mouse, this.renderer.camera);
 
     const y = this.grabbedBallMesh.position.y;
-    this.grabPlane.set(this._planeNormal, -y);
+    this.grabPlane.set(this.planeNormal, -y);
 
-    const intersectPoint = this._intersectPoint;
+    const intersectPoint = this.intersectPoint;
     const hit = this.raycaster.ray.intersectPlane(this.grabPlane, intersectPoint);
     if (!hit) return;
 
@@ -428,6 +428,7 @@ export class RoomInteraction {
             if (this.onCasePlaced) this.onCasePlaced(this.povGrabbedCase, isCorrect);
           }
           this.povGrabbedCase = null;
+          this.resetArm(this.renderer.player.rightArm);
           return true;
         }
       }
@@ -440,13 +441,14 @@ export class RoomInteraction {
     }
 
     if (this.grabbedBallMesh) {
-      this._makeDynamic(this.ballBody);
+      this.makeDynamic(this.ballBody);
       const fwd = new this.THREE.Vector3(0, 0, -1);
       fwd.applyQuaternion(camera.quaternion);
       fwd.multiplyScalar(12);
-      this._applyThrowVelocity(this.ballBody, fwd);
+      this.applyThrowVelocity(this.ballBody, fwd);
       this.ballGrabbed = false;
       this.grabbedBallMesh = null;
+      this.resetArm(this.renderer.player.rightArm);
       return true;
     }
 
@@ -519,7 +521,7 @@ export class RoomInteraction {
     }
 
     gameCase.grabbed = true;
-    this._makeKinematic(gameCase.body);
+    this.makeKinematic(gameCase.body);
     if (this.audio) this.audio.playBookGrabPOV();
     this.povGrabbedCase = gameCase;
   }
@@ -528,7 +530,7 @@ export class RoomInteraction {
     if (!this.povGrabbedCase) return;
     if (this.audio) this.audio.playReleasePOV();
     const gameCase = this.povGrabbedCase;
-    this._makeDynamic(gameCase.body, gameCase.dynamicMass);
+    this.makeDynamic(gameCase.body, gameCase.dynamicMass);
     if (camera && this.THREE) {
       const fwd = new this.THREE.Vector3(0, 0, -1);
       fwd.applyQuaternion(camera.quaternion);
@@ -538,6 +540,7 @@ export class RoomInteraction {
     }
     gameCase.grabbed = false;
     this.povGrabbedCase = null;
+    this.resetArm(this.renderer.player.rightArm);
   }
 
   launchFocusedGame() {
@@ -561,7 +564,7 @@ export class RoomInteraction {
     if (!this.ballMesh) return;
     if (this.audio) this.audio.playBallGrab();
     this.ballGrabbed = true;
-    this._makeKinematic(this.ballBody);
+    this.makeKinematic(this.ballBody);
     this.grabbedBallMesh = this.ballMesh;
 
     this.grabPlane.set(new this.THREE.Vector3(0, 1, 0), -this.ballMesh.position.y);
@@ -580,7 +583,7 @@ export class RoomInteraction {
   releaseBall() {
     if (!this.grabbedBallMesh) return;
     if (this.audio) this.audio.playBallThrow();
-    this._makeDynamic(this.ballBody);
+    this.makeDynamic(this.ballBody);
     if (this.lastGrabPos) {
       const throwVel = new this.THREE.Vector3().copy(this.ballMesh.position).sub(this.lastGrabPos);
       this.ballBody.velocity.set(throwVel.x * 3, Math.max(throwVel.y * 3, 2), throwVel.z * 3);
@@ -637,15 +640,21 @@ export class RoomInteraction {
       const distance = 0.9;
       const targetPos = camera.position.clone().add(forward.multiplyScalar(distance));
       targetPos.y += 0.15;
+      const caseBottom = 0.42;
+      const heldPos = targetPos.clone();
+      heldPos.y -= caseBottom;
 
-      this.povGrabbedCase.mesh.position.copy(targetPos);
-      this.povGrabbedCase.pos.copy(targetPos);
+      this.povGrabbedCase.mesh.position.copy(heldPos);
+      this.povGrabbedCase.pos.copy(heldPos);
       this.povGrabbedCase.mesh.quaternion.copy(camera.quaternion);
 
       if (this.rightHandMesh) {
         const handPos = camera.position.clone().add(forward.clone().multiplyScalar(distance * 0.85));
         handPos.y += 0.1;
+        handPos.y -= caseBottom;
+        this.renderer.player.worldToLocal(handPos);
         this.rightHandMesh.position.copy(handPos);
+        this.poseArm(this.renderer.player.rightArm, this.renderer.player.baseShoulderR, handPos);
       }
     } else if (this.grabbedBallMesh) {
       const forward = new this.THREE.Vector3(0, 0, -1);
@@ -663,9 +672,34 @@ export class RoomInteraction {
       if (this.rightHandMesh) {
         const handPos = camera.position.clone().add(forward.clone().multiplyScalar(distance * 0.85));
         handPos.y += 0.1;
+        this.renderer.player.worldToLocal(handPos);
         this.rightHandMesh.position.copy(handPos);
+        this.poseArm(this.renderer.player.rightArm, this.renderer.player.baseShoulderR, handPos);
       }
     }
+  }
+
+  poseArm(armMesh, shoulderBase, handLocalPos) {
+    if (!armMesh) return;
+    const T = this.THREE;
+    const dir = handLocalPos.clone().sub(shoulderBase);
+    const distance = dir.length();
+    if (distance < 0.01) return;
+    dir.normalize();
+
+    const mid = shoulderBase.clone().add(handLocalPos).multiplyScalar(0.5);
+    armMesh.position.copy(mid);
+
+    const up = new T.Vector3(0, 1, 0);
+    const quat = new T.Quaternion().setFromUnitVectors(up, dir);
+    armMesh.quaternion.copy(quat);
+    armMesh.scale.y = distance / 0.48;
+  }
+
+  resetArm(armMesh) {
+    if (!armMesh) return;
+    armMesh.quaternion.identity();
+    armMesh.scale.set(1, 1, 1);
   }
 
   isEGrabbed() {
