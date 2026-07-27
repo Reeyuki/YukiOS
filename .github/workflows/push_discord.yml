@@ -128,7 +128,7 @@ jobs:
                 echo "No HTML build output found, skipping upload"
               fi
 
-              cd ../..
+              cd ..
 
               if [ -f webos-desktop/dist.zip ]; then
                 TAG="${{ steps.version.outputs.tag }}"
