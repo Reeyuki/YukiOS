@@ -14,6 +14,7 @@ import {
   looksLikeHtml,
   isCdnGhUrl,
   isCdnHostname,
+  isJsdelivrGhUrl,
   getCurrentCdnRepoBase,
   resolveGhUrl
 } from "./shared/assetResolver.js";
@@ -361,13 +362,20 @@ export class AppLauncher {
     } catch (e) {}
   }
 
-  openRemoteApp(appUrl: string): void {
+  async openRemoteApp(appUrl: string): Promise<void> {
     const isStaticallyGh = isCdnGhUrl(window.location.href);
     if (isStaticallyGh && typeof appUrl === "string" && appUrl.startsWith("/")) {
       appUrl = `${STATICALLY_BASE}${appUrl}`;
     }
     sendLaunchAnalytics(appUrl);
-    window.open(appUrl, "blank", "noopener,noreferrer");
+    if (typeof appUrl === "string" && isJsdelivrGhUrl(appUrl)) {
+      try {
+        const blobUrl = await fetchHtmlAsBlobUrl(appUrl);
+        window.open(blobUrl, "_blank", "noopener,noreferrer");
+        return;
+      } catch {}
+    }
+    window.open(appUrl, "_blank", "noopener,noreferrer");
   }
 
   async openYukiDevToolsApp(extra: Record<string, any> = {}): Promise<void> {

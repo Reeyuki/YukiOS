@@ -10,7 +10,6 @@ import { getAppRegistry } from "../appRegistry.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 import { $, $$ } from "../shared/domUtils.js";
 import { STEAM_NEWS_ITEMS } from "./steamNewsData.js";
-
 import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;

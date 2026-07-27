@@ -126,6 +126,7 @@ export class GameLauncher {
 
     const placeholder = document.createElement("div");
     placeholder.id = "archive-section-placeholder";
+    placeholder.style.minHeight = "36px";
     placeholder.innerHTML = `
       <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
         <i class="fas fa-spinner fa-spin" style="font-size: 10px; color: var(--text-secondary);"></i>

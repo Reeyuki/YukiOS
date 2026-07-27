@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://static.cloudflareinsights.com" />
 
     <link
       rel="preload"
@@ -17,32 +19,38 @@
       media="print"
       onload="this.media = 'all'"
     />
-    <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2fef78db02bd4ab593e4a78cc531c0bd"}'></script><!-- End Cloudflare Web Analytics -->
+    <script
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "2fef78db02bd4ab593e4a78cc531c0bd"}'
+    ></script>
+    <!-- End Cloudflare Web Analytics -->
     <base href="./" />
 
-    <title>YukiOS</title>
+    <title>YukiOS - Free Desktop Environment in Your Browser, No Install Needed</title>
 
     <meta
       name="description"
-      content="YukiOS is a browser-based desktop environment with 80+ built-in apps, a virtual filesystem, windowed multitasking, a command palette, and persistent storage — all running directly in your browser."
+      content="YukiOS is a free browser-based desktop environment with a tiling window manager, macOS-style interface, 2900 games, a terminal with Python &amp; Git, emulators for DOS/Flash/x86/3DS, and 80+ apps - no sign-up or download required."
     />
 
-    <meta property="og:title" content="YukiOS – Browser-Based Desktop Environment with Apps & Productivity Tools" />
+    <meta property="og:title" content="YukiOS - Free Desktop Environment in Your Browser, No Download Needed" />
 
     <meta
       property="og:description"
-      content="Experience a complete browser desktop environment with windowed apps, file management, notifications, settings, a command palette, and persistent storage powered entirely by web technologies."
+      content="Turn your browser into a full desktop OS with YukiOS. Tiling window manager, Mac desktop mode, 2900 free games, Python/Node terminal, DOS/Flash/x86 emulators, 80+ apps - all in one browser tab."
     />
 
-    <meta name="twitter:title" content="YukiOS – Browser-Based Desktop Environment with Apps & Productivity Tools" />
-
-    <meta
-      name="twitter:description"
-      content="YukiOS transforms your browser into a full desktop environment with windowed multitasking, virtual storage, 80+ built-in apps, customization, productivity tools, and persistent storage."
-    />
+    <meta name="twitter:title" content="YukiOS - Free Desktop Environment in Your Browser, No Install Needed" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png" />
+    <meta property="og:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/mac.png" />
+    <meta property="og:image:width" content="1920" />
+    <meta property="og:image:height" content="1080" />
+    <meta
+      property="og:image:alt"
+      content="YukiOS browser-based desktop environment showing windowed multitasking with apps, taskbar, and start menu"
+    />
     <meta property="og:site_name" content="YukiOS" />
     <meta property="og:url" content="https://yukios.netlify.app" />
     <meta property="og:locale" content="en_US" />
@@ -50,9 +58,13 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:description"
-      content="YukiOS is a browser desktop environment with windowed multitasking, 80+ apps, a virtual filesystem, terminal, code editor, and persistent storage — no downloads required."
+      content="Browser desktop OS with tiling WM, Mac mode, 2900 games, Python/Node terminal, emulators for DOS/Flash/x86/3DS, themes, wallpapers, PWA support, and 80+ apps - completely free and no download."
     />
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png" />
+    <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/mac.png" />
+    <meta
+      name="twitter:image:alt"
+      content="YukiOS browser-based desktop environment showing windowed multitasking with apps, taskbar, and start menu"
+    />
 
     <meta name="application-name" content="YukiOS" />
     <meta name="theme-color" content="#1e1e1e" />
@@ -76,7 +88,8 @@
         "@type": "SoftwareApplication",
         "name": "YukiOS",
         "applicationCategory": "WebApplication",
-        "operatingSystem": "Web Browser",
+        "applicationSubCategory": "DesktopEnvironment",
+        "operatingSystem": "Web Browser (Chrome, Firefox, Edge, Safari)",
         "url": "https://yukios.netlify.app",
         "description": "YukiOS is a browser-based desktop operating system with windowed multitasking, a virtual filesystem, 80+ built-in applications, and persistent storage.",
         "featureList": [
@@ -84,16 +97,28 @@
           "Virtual filesystem with persistent storage",
           "80+ built-in applications",
           "Browser-based code editor",
-          "Integrated terminal",
+          "Integrated terminal with Python and Node.js REPLs",
           "Desktop notifications",
           "Command palette",
-          "PWA support",
+          "PWA support with offline caching",
           "Custom wallpapers and themes",
-          "User profiles and session management"
+          "User profiles and session management",
+          "Emulators: Flash, DOS, x86, 3DS",
+          "Window tiling manager"
         ],
+        "screenshot": "https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/mac.png",
+        "image": "https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/steam.png",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "applicationSuite": "YukiOS",
+        "genre": ["Desktop Environment", "Web Application", "Productivity"],
         "publisher": {
           "@type": "Organization",
-          "name": "YukiOS"
+          "name": "YukiOS",
+          "url": "https://github.com/Reeyuki/YukiOS"
         }
       }
     </script>
@@ -118,9 +143,14 @@
   </head>
 
   <body>
+    <h1
+      style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap"
+    >
+      YukiOS - Free Browser-Based Desktop Environment
+    </h1>
     <div id="selection-box"></div>
 
-    <div id="desktop" class="desktop">
+    <div id="desktop" class="desktop" role="presentation">
       <div id="start-menu" class="start-menu">
         <div class="start-sidebar">
           <div class="start-user">

@@ -19,7 +19,7 @@ const capabilities = [
   {
     tag: "PLAY",
     title: "Games Library",
-    desc: "3700+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
+    desc: "2900+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
   },
   {
     tag: "APPS",

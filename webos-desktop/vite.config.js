@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteSingleFile } from "vite-plugin-singlefile";
-import { execSync } from "child_process";
+import { execSync, spawnSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, rmSync } from "fs";
 import { resolve, join } from "path";
 
@@ -162,6 +162,21 @@ function removeCosmicFolder() {
   };
 }
 
+function pageGenerator() {
+  return {
+    name: "page-generator",
+    closeBundle() {
+      const result = spawnSync("node", ["scripts/generateSitemap.js"], {
+        cwd: __dirname,
+        stdio: "inherit"
+      });
+      if (result.status !== 0) {
+        throw new Error("Page generation failed");
+      }
+    }
+  };
+}
+
 const plugins = [
   nodePolyfills({
     include: ["buffer", "process", "stream", "path", "util", "timers"],
@@ -202,6 +217,7 @@ if (isVisualize) {
 }
 plugins.push(staticCdnRewrite());
 plugins.push(removeCosmicFolder());
+plugins.push(pageGenerator());
 
 export default defineConfig({
   base: isSingleFile ? "./" : "/",
@@ -227,7 +243,7 @@ export default defineConfig({
     cssCodeSplit: !isSingleFile,
     modulePreload: !isDevBuild,
     reportCompressedSize: !isDevBuild,
-    assetsInlineLimit: isSingleFile ? 100000000 : 4096,
+    assetsInlineLimit: 100000,
     rollupOptions: {
       treeshake: !isDevBuild,
       external: isSingleFile ? ["three", /^three\/.*/, "7z-wasm", "archive-wasm", "clippyjs", /^clippyjs\/.*/] : [],

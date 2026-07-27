@@ -38,7 +38,7 @@ const SYSTEM_CAPABILITIES = [
   {
     tag: "PLAY",
     title: "Games Library",
-    desc: "3700+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
+    desc: "2900+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
   },
   {
     tag: "APPS",
@@ -424,7 +424,7 @@ export class YukiOsGuideApp extends BaseApp {
           </div>
           <div class="guide-hero-content">
             <h1>YukiOS ${SYSTEM_INFO.version}</h1>
-            <p>${apps.length}+ apps, 3700+ games - your desktop, in your browser</p>
+            <p>${apps.length}+ apps, 2900+ games - your desktop, in your browser</p>
             <div class="guide-hero-meta">
               <span class="hero-tag"><i class="fas fa-code"></i> ${SYSTEM_INFO.runtime}</span>
               <span class="hero-tag"><i class="fas fa-database"></i> ${SYSTEM_INFO.persistence}</span>
@@ -440,7 +440,7 @@ export class YukiOsGuideApp extends BaseApp {
           </div>
           <div class="stat-card">
             <i class="fas fa-gamepad"></i>
-            <div class="stat-value">3700+</div>
+            <div class="stat-value">2900+</div>
             <div class="stat-label">Games</div>
           </div>
           <div class="stat-card">
@@ -530,7 +530,7 @@ export class YukiOsGuideApp extends BaseApp {
               <i class="fas fa-gamepad"></i>
               <div>
                 <strong>Games Hub</strong>
-                <p>Browse 3700+ games via Steam integration or direct launch</p>
+                <p>Browse 2900+ games via Steam integration or direct launch</p>
               </div>
             </div>
             <div class="quick-start-item">

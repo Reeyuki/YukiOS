@@ -137,6 +137,22 @@ export class SessionManager {
   }
 
   async showLogin() {
+    const seoOverlay = document.getElementById("seo-overlay");
+    if (seoOverlay && !seoOverlay.classList.contains("hidden")) {
+      return new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (seoOverlay.classList.contains("hidden")) {
+            observer.disconnect();
+            this.startLogin().then(resolve);
+          }
+        });
+        observer.observe(seoOverlay, { attributes: true, attributeFilter: ["class"] });
+      });
+    }
+    return this.startLogin();
+  }
+
+  async startLogin() {
     const lastLaunch = os.storage.get(StorageKeys.lastLaunchTime);
     const now = Date.now();
     os.storage.set(StorageKeys.lastLaunchTime, now.toString());
@@ -279,6 +295,8 @@ export class SessionManager {
             <div class="session-option" data-value="3d">Yuki 3D Desktop</div>
           </div>
         </div>
+
+        <a href="/features.html" class="session-features-link">Explore Features</a>
       </div>
 
       <div class="avatar-edit-modal" id="avatar-edit-modal" style="display: none;">

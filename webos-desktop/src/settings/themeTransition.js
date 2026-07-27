@@ -14,7 +14,7 @@ export function animateThemeChange(changeFn) {
 
   styleEl = document.createElement("style");
   styleEl.id = "yukios-theme-transition";
-  styleEl.textContent = `html, html *, :root, :root * {
+  styleEl.textContent = `:root * {
       transition: background ${TRANSITION_DURATION}ms ease,
                   background-color ${TRANSITION_DURATION}ms ease,
                   color ${TRANSITION_DURATION}ms ease,
@@ -23,9 +23,9 @@ export function animateThemeChange(changeFn) {
     }`;
   document.head.appendChild(styleEl);
 
-  document.documentElement.getBoundingClientRect();
-
-  changeFn();
+  requestAnimationFrame(() => {
+    changeFn();
+  });
 
   timer = setTimeout(() => {
     if (styleEl) {

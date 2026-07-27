@@ -1371,7 +1371,7 @@ export function renderAboutSettings() {
             </div>
           </div>
           <p style="margin:0;color:var(--text-primary);font-size:0.9em;line-height:1.5;opacity:0.75;">
-            A full desktop OS in your browser with emulators, tools, PWA support, virtual filesystem, and 3700+ games included.
+            A full desktop OS in your browser with emulators, tools, PWA support, virtual filesystem, and 2900+ games included.
           </p>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="color:var(--text-muted);font-size:0.78em;font-weight:500;">Build</span>

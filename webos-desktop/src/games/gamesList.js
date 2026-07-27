@@ -1030,7 +1030,7 @@ export const appMap = {
     type: "game",
     url: "https://itch.io/embed-upload/16780483?color=333333",
     icon: "/static/icons/voraxier.webp",
-    title: "Voraxier"
+    title: "Voraxoid"
   },
   thereIsNoGame: {
     type: "game",

@@ -191,7 +191,37 @@ async function start() {
   const swf = urlParams.get("swf") === "true";
   const steamParam = urlParams.get("steam");
 
-  if (steamParam) {
+  const pathMatch = window.location.pathname.match(/^\/(app|game)\/(.+)\.html$/);
+  const featureMatch = window.location.pathname.match(/^\/feature\/(.+)\.html$/);
+  const isFeatureIndex = window.location.pathname === "/features.html";
+
+  if (pathMatch) {
+    const id = pathMatch[2];
+    setTimeout(() => {
+      appLauncher.launch(id);
+    }, 0);
+  } else if (featureMatch) {
+    const FEATURE_APP_MAP = {
+      terminal: "terminalApp",
+      games: "steamApp",
+      tiling: null,
+      "mac-mode": null,
+      emulators: null,
+      "3d-room": "room3dApp",
+      "start-menu": null,
+      workspaces: null,
+      widgets: null,
+      "audio-mixer": null,
+      "user-accounts": null
+    };
+    const appId = FEATURE_APP_MAP[featureMatch[1]];
+    if (appId) {
+      setTimeout(() => {
+        appLauncher.launch(appId);
+      }, 0);
+    }
+  } else if (isFeatureIndex) {
+  } else if (steamParam) {
     setTimeout(() => {
       handleSteamUrlParam(appLauncher, windowManager);
     }, 0);

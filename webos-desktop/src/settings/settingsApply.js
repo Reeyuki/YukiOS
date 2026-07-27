@@ -36,33 +36,35 @@ export function applyTheme(theme, getCustomColors) {
     document.documentElement.setAttribute("data-theme-mode", LIGHT_THEMES.has(effective) ? "light" : "dark");
   });
 
-  let styleEl = document.getElementById("yukios-theme-override");
-  if (!styleEl) {
-    styleEl = document.createElement("style");
-    styleEl.id = "yukios-theme-override";
-    document.head.appendChild(styleEl);
-  }
+  requestAnimationFrame(() => {
+    let styleEl = document.getElementById("yukios-theme-override");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "yukios-theme-override";
+      document.head.appendChild(styleEl);
+    }
 
-  let customCSS = "";
-  if (effective === "light") {
-    customCSS = `:root { --window-bg-color: #f2f2f2; --text-color: #111; }`;
-  }
+    let customCSS = "";
+    if (effective === "light") {
+      customCSS = `:root { --window-bg-color: #f2f2f2; --text-color: #111; }`;
+    }
 
-  const themeColors = getThemeColors(effective);
-  if (themeColors) {
-    Object.entries(themeColors).forEach(([varName, value]) => {
-      customCSS += `:root { --${varName}: ${value}; }\n`;
-    });
-  } else {
-    const customColors = getCustomColors();
-    if (customColors) {
-      Object.entries(customColors).forEach(([varName, value]) => {
+    const themeColors = getThemeColors(effective);
+    if (themeColors) {
+      Object.entries(themeColors).forEach(([varName, value]) => {
         customCSS += `:root { --${varName}: ${value}; }\n`;
       });
+    } else {
+      const customColors = getCustomColors();
+      if (customColors) {
+        Object.entries(customColors).forEach(([varName, value]) => {
+          customCSS += `:root { --${varName}: ${value}; }\n`;
+        });
+      }
     }
-  }
 
-  styleEl.textContent = customCSS;
+    styleEl.textContent = customCSS;
+  });
 }
 
 export function applyWindowTransparency(value) {

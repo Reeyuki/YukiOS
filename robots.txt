@@ -6,6 +6,8 @@ Allow: /
 
 Sitemap: https://yukios.netlify.app/sitemap.xml
 
+Crawl-Delay: 10
+
 # If you do not want AI bots to crawl your site, remove the # from the following lines:
 #User-agent: AI2Bot
 #User-agent: Ai2Bot-Dolma

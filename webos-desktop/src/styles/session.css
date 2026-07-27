@@ -451,6 +451,22 @@
     color 0.15s;
 }
 
+.session-features-link {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s;
+  z-index: 10;
+}
+
+.session-features-link:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .session-option:hover {
   background: var(--glass-hover);
   color: var(--text-primary);

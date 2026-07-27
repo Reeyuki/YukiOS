@@ -340,7 +340,7 @@ export class GameRenderer {
               .join("")}
           </div>
         </div>
-        <div id="steam-sections-host"></div>
+        <div id="steam-sections-host" style="min-height:200px;content-visibility:auto"></div>
         ${showAds ? `<div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="ad-library-bottom"></div></div>` : ""}
       </div>
     `;

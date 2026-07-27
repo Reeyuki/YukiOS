@@ -22,7 +22,7 @@ export const FEATURE_DATA = {
     },
     {
       icon: "fas fa-gamepad",
-      title: "3700+ Games & Emulators",
+      title: "2900+ Games & Emulators",
       desc: "JS-DOS, V86, Ruffle Flash, Azahar 3DS, and retro console emulation",
       animation: "spin-card"
     },
@@ -126,7 +126,7 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-gamepad",
       title: "Steam Game Hub",
-      desc: "Browse 3700+ games with store pages"
+      desc: "Browse 2900+ games with store pages"
     },
     {
       icon: "fas fa-microchip",
@@ -979,7 +979,7 @@ Here's what you picked:
 - Notifications: ${this.userChoices.notifications ? "On" : "Off"}
 
 Quick tips to get going:
-• Click the Start Menu to find 80 apps and 3700+ games
+• Click the Start Menu to find 80 apps and 2900+ games
 • Right-click the desktop when you need quick options
 • Tweak anything later in the Settings app
 

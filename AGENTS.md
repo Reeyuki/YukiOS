@@ -341,7 +341,7 @@ management.
 
 ### gamesList - `gamesList.js`
 
-Registry of 3700+ games/apps. `appMap[appId]` contains `{ type, title, url, icon, action }`.
+Registry of 2900+ games/apps. `appMap[appId]` contains `{ type, title, url, icon, action }`.
 
 - Types: `"system"`, `"game"`, `"html"`, `"remote"`
 
