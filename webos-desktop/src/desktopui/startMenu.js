@@ -31,6 +31,7 @@ function getStartMenuEl() {
 }
 
 let descriptionTooltip = null;
+const fileContentCache = new Map();
 
 function showDescriptionTooltip(text, x, y) {
   if (descriptionTooltip) {
@@ -1007,16 +1008,29 @@ export function setupStartMenu(sessionManager) {
       const unmatched = recentFiles.filter(
         (f) => isTextFile(f.name) && !fileResults.some((r) => r.name === f.name && r.path === f.path)
       );
-      for (const f of unmatched) {
-        try {
-          const parts = f.path.split("/").filter(Boolean);
-          const data = await os.fs.read([...parts, f.name]);
+      const contentMatches = await Promise.all(
+        unmatched.map(async (f) => {
+          const cacheKey = f.path + "/" + f.name;
+          let data = fileContentCache.get(cacheKey);
+          if (data === undefined) {
+            try {
+              const parts = f.path.split("/").filter(Boolean);
+              data = await os.fs.read([...parts, f.name]);
+              fileContentCache.set(cacheKey, data);
+            } catch {
+              fileContentCache.set(cacheKey, null);
+              return null;
+            }
+          }
+          if (data == null) return null;
           const text = typeof data === "string" ? data : data?.toString?.() || "";
           if (text.toLowerCase().includes(q)) {
-            fileResults.push({ ...f, contentMatch: true });
+            return { ...f, contentMatch: true };
           }
-        } catch {}
-      }
+          return null;
+        })
+      );
+      fileResults.push(...contentMatches.filter(Boolean));
 
       const categoryOrder = ["core", "web", "games", "files"];
       const categoryLabels = { core: "Core Apps", web: "Web Apps", games: "Games", files: "Files" };

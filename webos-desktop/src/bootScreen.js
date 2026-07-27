@@ -36,7 +36,7 @@ export function showBootScreen() {
   div.innerHTML = `
     <div class="boot-container">
       <div class="boot-logo-wrap">
-        <img class="boot-logo" src="${logoImg}" alt="YukiOS" />
+        <img class="boot-logo" src="${logoImg}" alt="YukiOS" fetchpriority="high" />
         <div class="boot-brand">${lettersHTML}</div>
         <div class="boot-version">${versionStr}</div>
       </div>
@@ -149,7 +149,7 @@ export function runBootPreview(anim, onDone) {
   div.innerHTML = `
     <div class="boot-container">
       <div class="boot-logo-wrap">
-        <img class="boot-logo" src="${logoImg}" alt="YukiOS" />
+        <img class="boot-logo" src="${logoImg}" alt="YukiOS" fetchpriority="high" />
         <div class="boot-brand">${lettersHTML}</div>
       </div>
     </div>

@@ -14,12 +14,16 @@ export function animateThemeChange(changeFn) {
 
   styleEl = document.createElement("style");
   styleEl.id = "yukios-theme-transition";
-  styleEl.textContent = `:root * {
+  styleEl.textContent = `:root, .window, .window-header, .taskbar, .start-menu, .desktop,
+.desktop-context-menu, .taskbar-preview, .dialog-box,
+.dialog-overlay, .notification-toast, .context-menu,
+.taskbar-item, .desktop-icon, .start-menu-item, .start-grid,
+.settings-panel, .settings-sidebar {
       transition: background ${TRANSITION_DURATION}ms ease,
                   background-color ${TRANSITION_DURATION}ms ease,
                   color ${TRANSITION_DURATION}ms ease,
                   border-color ${TRANSITION_DURATION}ms ease,
-                  box-shadow ${TRANSITION_DURATION}ms ease !important;
+                  box-shadow ${TRANSITION_DURATION}ms ease;
     }`;
   document.head.appendChild(styleEl);
 

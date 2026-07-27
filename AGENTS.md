@@ -43,7 +43,7 @@ You are working under webos-desktop directory. when src is mentioned it means we
 - Never use variable or function names (or any naming convention) starting with `_` (underscore). All identifiers must
   use descriptive names without leading underscores.
 - When applying changes to multiple files (2+ files), delegate each file's changes to a separate sub-agent via the Task
-  tool so they can run in parallel. Do not edit multiple files sequentially in a single context.
+  tool so they can run in parallel and CONCURRENTLY is a must to requirement. Do not edit multiple files sequentially in a single context.
 
 ---
 

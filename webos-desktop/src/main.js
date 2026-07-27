@@ -43,7 +43,6 @@ import { trayManager } from "./tray/tray.js";
 import { MacControlCenter } from "./tray/macControlCenter.js";
 import { MenuBarManager } from "./menuBar/MenuBarManager.js";
 
-initializeMirrors(appMap);
 registerPWA();
 
 document.documentElement.removeAttribute("style");
@@ -148,6 +147,7 @@ async function start() {
   }
 
   await clipboardManager.init();
+  setTimeout(() => initializeMirrors(appMap), 100);
 
   document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
 

@@ -119,6 +119,9 @@ export class WindowManager {
       } else if (nowActive && wasActive) {
         this.macDock.onSettingsChanged();
       }
+      if (wasActive !== nowActive) {
+        this.updateWindowHeaderStyles();
+      }
     });
 
     setTimeout(() => {
@@ -464,6 +467,29 @@ export class WindowManager {
 
   toggleFullscreen(win: HTMLElement): void {
     this.windowStateManager.toggleFullscreen(win);
+  }
+
+  updateWindowHeaderStyles(): void {
+    const isMac = os.storage.get(StorageKeys.macOsControls) === "true";
+    this.openWindows.forEach((entry, winId) => {
+      const win = document.getElementById(winId);
+      if (!win) return;
+      const header = win.querySelector(".window-header");
+      if (!header) return;
+      const controls = header.querySelector(".window-controls");
+      if (!controls) return;
+      const hasExternal = !!controls.querySelector(".external-btn");
+      const showDownload = !!controls.querySelector(".download-btn");
+      header.classList.toggle("mac-header", isMac);
+      controls.outerHTML = this.utils.getWindowControls(
+        hasExternal ? "external" : null,
+        showDownload
+      );
+    });
+    this.openWindows.forEach((entry, winId) => {
+      const win = document.getElementById(winId);
+      if (win) this.setupWindowControls(win);
+    });
   }
 
   setupWindowControls(win: HTMLElement): void {

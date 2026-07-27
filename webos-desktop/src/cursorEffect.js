@@ -73,13 +73,17 @@ function handleWindowCreated() {
 
 export function init() {
   createContainer();
+  let cursorRafId = null;
   document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    if (active && container) {
+    if (!active || !container) return;
+    if (cursorRafId) return;
+    cursorRafId = requestAnimationFrame(() => {
+      cursorRafId = null;
       container.style.left = mouseX + X_OFFSET + "px";
       container.style.top = mouseY + Y_OFFSET + "px";
-    }
+    });
   });
   os.events.on(BusEvents.WINDOW_CREATED, handleWindowCreated);
 }

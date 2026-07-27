@@ -106,7 +106,7 @@ export class AppLauncher {
     this.launchedAppIds = this.loadLaunchedApps();
     this.appSessions = new Map();
     this.initSteamTracking();
-    initializeAppGrid();
+    requestIdleCallback(() => initializeAppGrid(), { timeout: 2000 });
 
     const currentNewsSig = getNewsContentSignature();
     const savedNewsSig = os.storage.get(StorageKeys.newsReadSignatureKey);

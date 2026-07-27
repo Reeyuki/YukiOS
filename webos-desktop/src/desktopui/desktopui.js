@@ -104,11 +104,11 @@ class PositionHelper {
     return this.buildOccupancySet(exclude).has(`${col},${row}`);
   }
 
-  nextFreeCell(col, row, exclude = null) {
+  nextFreeCell(col, row, exclude = null, occupied = null) {
     const { width, height, gap } = this.gridSize;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
-    const occupied = this.buildOccupancySet(exclude);
+    if (!occupied) occupied = this.buildOccupancySet(exclude);
     let c = col,
       r = row;
     while (occupied.has(`${c},${r}`)) {
@@ -135,13 +135,15 @@ class PositionHelper {
     const x = parseFloat(icon.style.left) || 0;
     const y = parseFloat(icon.style.top) || 0;
     const { col, row } = this.pixelsToCell(x, y);
-    const free = this.nextFreeCell(col, row, exclude || icon);
+    const occupied = this.buildOccupancySet(exclude || icon);
+    const free = this.nextFreeCell(col, row, exclude || icon, occupied);
     const { left, top } = this.cellToPixels(free.col, free.row);
     this.setPosition(icon, left, top);
   }
 
   placeAtCell(icon, col, row, exclude = null) {
-    const free = this.nextFreeCell(col, row, exclude || icon);
+    const occupied = this.buildOccupancySet(exclude || icon);
+    const free = this.nextFreeCell(col, row, exclude || icon, occupied);
     const { left, top } = this.cellToPixels(free.col, free.row);
     this.setPosition(icon, left, top);
   }
@@ -902,6 +904,9 @@ export class DesktopUI {
 
   setupInteractableSelection() {
     let selectionState = { startX: 0, startY: 0, isActive: false };
+    let selRafId = null;
+    let selLastX = 0,
+      selLastY = 0;
 
     const onMouseDown = (e) => {
       if (e.target !== this.desktop) return;
@@ -926,24 +931,30 @@ export class DesktopUI {
 
     const onMouseMove = (e) => {
       if (!selectionState.isActive) return;
+      selLastX = e.pageX;
+      selLastY = e.pageY;
       Object.assign(this.selectionBox.style, {
         width: `${Math.abs(e.pageX - selectionState.startX)}px`,
         height: `${Math.abs(e.pageY - selectionState.startY)}px`,
         left: `${Math.min(e.pageX, selectionState.startX)}px`,
         top: `${Math.min(e.pageY, selectionState.startY)}px`
       });
-      const boxRect = this.selectionBox.getBoundingClientRect();
-      document.querySelectorAll(".icon.selectable").forEach((icon) => {
-        if (icon.style.display === "none") return;
-        const r = icon.getBoundingClientRect();
-        const overlaps = !(
-          r.right < boxRect.left ||
-          r.left > boxRect.right ||
-          r.bottom < boxRect.top ||
-          r.top > boxRect.bottom
-        );
-        if (overlaps) this.selectionManager.add(icon);
-        else this.selectionManager.remove(icon);
+      if (selRafId) return;
+      selRafId = requestAnimationFrame(() => {
+        selRafId = null;
+        const boxRect = this.selectionBox.getBoundingClientRect();
+        document.querySelectorAll(".icon.selectable").forEach((icon) => {
+          if (icon.style.display === "none") return;
+          const r = icon.getBoundingClientRect();
+          const overlaps = !(
+            r.right < boxRect.left ||
+            r.left > boxRect.right ||
+            r.bottom < boxRect.top ||
+            r.top > boxRect.bottom
+          );
+          if (overlaps) this.selectionManager.add(icon);
+          else this.selectionManager.remove(icon);
+        });
       });
     };
 
@@ -1066,7 +1077,7 @@ window.addEventListener("resize", () => {
   resizeTimer = setTimeout(() => layoutIconsCall(), 150);
 });
 
-document.addEventListener("mouseup", () => {
+function resetIconDragState() {
   document.querySelectorAll(".icon.selectable").forEach((icon) => {
     const zIndex = parseInt(icon.style.zIndex);
     if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
@@ -1075,30 +1086,16 @@ document.addEventListener("mouseup", () => {
       icon.style.cursor = "";
     }
   });
-});
+}
+
+document.addEventListener("mouseup", resetIconDragState);
 
 document.addEventListener("click", (e) => {
   if (e.target.closest(".icon")) return;
-  document.querySelectorAll(".icon.selectable").forEach((icon) => {
-    const zIndex = parseInt(icon.style.zIndex);
-    if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
-      icon.style.zIndex = "";
-      icon.style.opacity = "";
-      icon.style.cursor = "";
-    }
-  });
+  resetIconDragState();
 });
 
-window.addEventListener("focus", () => {
-  document.querySelectorAll(".icon.selectable").forEach((icon) => {
-    const zIndex = parseInt(icon.style.zIndex);
-    if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
-      icon.style.zIndex = "";
-      icon.style.opacity = "";
-      icon.style.cursor = "";
-    }
-  });
-});
+window.addEventListener("focus", resetIconDragState);
 
 setInterval(() => {
   document.querySelectorAll(".icon.selectable").forEach((icon) => {

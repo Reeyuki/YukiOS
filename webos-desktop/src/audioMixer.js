@@ -77,6 +77,7 @@ class AudioMixer {
     const effectiveVolume = this.muted ? 0 : this.masterVolume * ch.volume;
     const win = document.getElementById(winId);
     if (!win) return;
+    if (!win.querySelector("iframe, audio, video, ruffle-player")) return;
 
     const iframes = win.querySelectorAll("iframe");
 
@@ -270,20 +271,23 @@ class AudioMixer {
     if (!this.iframeObservers) this.iframeObservers = new Map();
     if (this.iframeObservers.has(winId)) this.iframeObservers.get(winId).disconnect();
 
+    let observerTimer = null;
     const observer = new MutationObserver((mutations) => {
-      mutations.forEach((m) => {
-        m.addedNodes.forEach((node) => {
+      let hasIframe = false;
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
           if (node.tagName === "IFRAME") {
             applyOnLoad(node);
-            this.applyVolumeToWindow(winId);
-          } else if (node.querySelectorAll) {
-            node.querySelectorAll("iframe").forEach((iframe) => {
-              applyOnLoad(iframe);
-              this.applyVolumeToWindow(winId);
-            });
+            hasIframe = true;
+          } else if (node.querySelectorAll && node.querySelector("iframe")) {
+            node.querySelectorAll("iframe").forEach(applyOnLoad);
+            hasIframe = true;
           }
-        });
-      });
+        }
+      }
+      if (!hasIframe) return;
+      clearTimeout(observerTimer);
+      observerTimer = setTimeout(() => this.applyVolumeToWindow(winId), 50);
     });
 
     observer.observe(win, { childList: true, subtree: true });

@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { execSync, spawnSync } from "child_process";
-import { readFileSync, writeFileSync, existsSync, rmSync } from "fs";
-import { resolve, join } from "path";
+import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync } from "fs";
+import { resolve, join, dirname } from "path";
 
 const commitHash = (() => {
   try {
@@ -94,27 +94,53 @@ function steamNewsData() {
   return {
     name: "steam-news-data",
     async buildStart() {
+      const CACHE_FILE = resolve(process.cwd(), "node_modules/.cache/steam-news.json");
+      const CACHE_TTL = 60 * 60 * 1000;
       let allItems = [];
 
       try {
-        const results = await Promise.all(
-          FEEDS.map(async (feed) => {
-            try {
-              const resp = await fetch(feed.url);
-              if (!resp.ok) return [];
-              const xml = await resp.text();
-              return parseRssItems(xml);
-            } catch {
-              return [];
-            }
-          })
-        );
+        if (existsSync(CACHE_FILE)) {
+          const cached = JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
+          if (Date.now() - cached.timestamp < CACHE_TTL) {
+            console.log(`Using cached steam news (${cached.items.length} items)`);
+            allItems = cached.items;
+          } else {
+            console.log("Steam news cache expired, refetching...");
+          }
+        }
+      } catch {
+        console.log("Steam news cache invalid, refetching...");
+      }
 
-        allItems = results.flat();
+      if (allItems.length === 0) {
+        try {
+          const results = await Promise.all(
+            FEEDS.map(async (feed) => {
+              try {
+                const resp = await fetch(feed.url);
+                if (!resp.ok) return [];
+                const xml = await resp.text();
+                return parseRssItems(xml);
+              } catch {
+                return [];
+              }
+            })
+          );
 
-        console.log(`Fetched ${allItems.length} steam news items`);
-      } catch (err) {
-        console.error("Failed to fetch steam news:", err.message);
+          allItems = results.flat();
+
+          console.log(`Fetched ${allItems.length} steam news items`);
+        } catch (err) {
+          console.error("Failed to fetch steam news:", err.message);
+        }
+
+        try {
+          mkdirSync(dirname(CACHE_FILE), { recursive: true });
+          writeFileSync(CACHE_FILE, JSON.stringify({ timestamp: Date.now(), items: allItems }), "utf-8");
+          console.log("Steam news cache saved");
+        } catch (err) {
+          console.error("Failed to save steam news cache:", err.message);
+        }
       }
 
       const items = allItems.map((item) => ({

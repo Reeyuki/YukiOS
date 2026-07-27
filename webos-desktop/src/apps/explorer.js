@@ -1155,10 +1155,13 @@ export class ExplorerApp extends BaseApp {
         });
     });
 
+    let selRafId = null;
+    let selLastX = 0,
+      selLastY = 0;
     view.addEventListener("mousemove", (e) => {
       if (!selState.active) return;
-      const i = this.getInstance(winId);
-      if (!i) return;
+      selLastX = e.clientX;
+      selLastY = e.clientY;
       const rect = view.getBoundingClientRect();
       const curX = e.clientX - rect.left + view.scrollLeft;
       const curY = e.clientY - rect.top + view.scrollTop;
@@ -1170,40 +1173,47 @@ export class ExplorerApp extends BaseApp {
       const sb = view.querySelector(".explorer-selbox");
       if (sb) setStyle(sb, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
 
-      const boxRect = { left: x, top: y, right: x + w, bottom: y + h };
+      if (selRafId) return;
+      selRafId = requestAnimationFrame(() => {
+        selRafId = null;
+        const i = this.getInstance(winId);
+        if (!i) return;
+        const rafRect = view.getBoundingClientRect();
+        const boxRect = { left: x, top: y, right: x + w, bottom: y + h };
 
-      if (!e.ctrlKey) {
-        $$(".file-item.explorer-selected", view).forEach((el) => removeClass(el, "explorer-selected"));
-        i.selectedItems = new Set();
-      }
-
-      $$(".file-item", view).forEach((item) => {
-        const r = item.getBoundingClientRect();
-        const vr = view.getBoundingClientRect();
-        const ir = {
-          left: r.left - vr.left + view.scrollLeft,
-          top: r.top - vr.top + view.scrollTop,
-          right: r.right - vr.left + view.scrollLeft,
-          bottom: r.bottom - vr.top + view.scrollTop
-        };
-        const overlaps = !(
-          ir.right < boxRect.left ||
-          ir.left > boxRect.right ||
-          ir.bottom < boxRect.top ||
-          ir.top > boxRect.bottom
-        );
-        const name = item.querySelector("span")?.textContent;
-        if (!name) return;
-        if (overlaps) {
-          addClass(item, "explorer-selected");
-          i.selectedItems.add(name);
-        } else if (!e.ctrlKey) {
-          removeClass(item, "explorer-selected");
-          i.selectedItems.delete(name);
+        if (!e.ctrlKey) {
+          $$(".file-item.explorer-selected", view).forEach((el) => removeClass(el, "explorer-selected"));
+          i.selectedItems = new Set();
         }
-      });
 
-      this.updateStatusBar(i, i.cachedFolder);
+        $$(".file-item", view).forEach((item) => {
+          const r = item.getBoundingClientRect();
+          const vr = rafRect;
+          const ir = {
+            left: r.left - vr.left + view.scrollLeft,
+            top: r.top - vr.top + view.scrollTop,
+            right: r.right - vr.left + view.scrollLeft,
+            bottom: r.bottom - vr.top + view.scrollTop
+          };
+          const overlaps = !(
+            ir.right < boxRect.left ||
+            ir.left > boxRect.right ||
+            ir.bottom < boxRect.top ||
+            ir.top > boxRect.bottom
+          );
+          const name = item.querySelector("span")?.textContent;
+          if (!name) return;
+          if (overlaps) {
+            addClass(item, "explorer-selected");
+            i.selectedItems.add(name);
+          } else if (!e.ctrlKey) {
+            removeClass(item, "explorer-selected");
+            i.selectedItems.delete(name);
+          }
+        });
+
+        this.updateStatusBar(i, i.cachedFolder);
+      });
     });
 
     const endSel = () => {
@@ -1661,6 +1671,7 @@ export class ExplorerApp extends BaseApp {
       const startY = e.clientY;
       let ghost = null;
       let dragging = false;
+      let dragRafId = null;
 
       const onMouseMove = (ev) => {
         const dx = ev.clientX - startX;
@@ -1692,12 +1703,16 @@ export class ExplorerApp extends BaseApp {
           ghost.style.left = ev.clientX - 50 + "px";
           ghost.style.top = ev.clientY - 30 + "px";
 
-          const explorerWin = document.getElementById(inst.winId);
-          const overDesktop = !explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
-          ghost.style.borderColor = overDesktop ? "rgba(79,255,120,0.7)" : "rgba(79,158,255,0.55)";
-          ghost.style.boxShadow = overDesktop
-            ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
-            : "0 8px 32px rgba(0,0,0,0.5)";
+          if (dragRafId) return;
+          dragRafId = requestAnimationFrame(() => {
+            dragRafId = null;
+            const explorerWin = document.getElementById(inst.winId);
+            const overDesktop = !explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
+            ghost.style.borderColor = overDesktop ? "rgba(79,255,120,0.7)" : "rgba(79,158,255,0.55)";
+            ghost.style.boxShadow = overDesktop
+              ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
+              : "0 8px 32px rgba(0,0,0,0.5)";
+          });
         }
       };
 

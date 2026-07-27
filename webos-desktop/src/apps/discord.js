@@ -1,5 +1,5 @@
 import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
-import { os } from "../framework.js";
+import { os, StorageKeys } from "../framework.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class DiscordApp extends ScramjetBaseApp {

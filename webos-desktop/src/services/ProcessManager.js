@@ -62,10 +62,13 @@ class ProcessManager {
     if (!this.windowBirthTimes.has(winId)) this.windowBirthTimes.set(winId, now);
 
     const isMinimized = win.style.display === "none";
-    const hasIframe = !!$("iframe", win);
-    const hasVideo = !!$("video", win);
-    const hasCanvas = !!$("canvas", win);
-    const domNodes = $$("*", win).length;
+    const iframeEl = $("iframe", win);
+    const videoEl = $("video", win);
+    const canvasEl = $("canvas", win);
+    const hasIframe = !!iframeEl;
+    const hasVideo = !!videoEl;
+    const hasCanvas = !!canvasEl;
+    const domNodes = win.querySelectorAll("*").length;
     const prev = this.usageCache.get(winId) || { cpu: 0, mem: 0, domNodes };
     const domDelta = Math.abs(domNodes - prev.domNodes);
     const uptimeMins = (now - this.windowBirthTimes.get(winId)) / 60000;
@@ -118,7 +121,8 @@ class ProcessManager {
         const systemCpuSignal = frameStress * 0.5 + longTaskStress * 0.5;
         const isMinimized = win.style.display === "none";
         const domNodes = $$("*", win).length;
-        let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, $$(".window *").length);
+        const totalWindowNodes = $$(".window").reduce((s, w) => s + w.querySelectorAll("*").length, 0);
+        let cpuShare = isMinimized ? 0.05 : domNodes / Math.max(1, totalWindowNodes);
         if (!!$("iframe", win) && !isMinimized) cpuShare *= 2.2;
         if (!!$("video", win) && !isMinimized) cpuShare *= 1.8;
         if (!!$("canvas", win) && !isMinimized) cpuShare *= 1.5;

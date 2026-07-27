@@ -846,6 +846,8 @@ export class SessionManager {
 
     if (this.selectedSession === "Yuki Mac Desktop") {
       this.applyMacSettings();
+    } else {
+      this.disableMacSettings();
     }
 
     if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
@@ -894,6 +896,27 @@ export class SessionManager {
       taskbarWindows.style.justifyContent = isHorizontal ? "center" : "center";
     }
     this.loadSfProFonts();
+  }
+
+  disableMacSettings() {
+    document.documentElement.classList.remove("mac-mode");
+    os.storage.set(StorageKeys.macOsControls, "false");
+    os.storage.set(StorageKeys.dockEnabled, "false");
+    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
+    const currentTheme = os.storage.get(StorageKeys.theme);
+    if (currentTheme === "macos-fluent") {
+      os.storage.set(StorageKeys.theme, "yukios");
+      applyTheme("yukios", () => os.storage.get(StorageKeys.customColors) || null);
+    }
+    os.storage.set(StorageKeys.taskbarPosition, "bottom");
+    taskbarPositionManager.setPosition("bottom");
+    os.storage.set(StorageKeys.taskbarAlignment, "left");
+    const taskbarWindows = $("#taskbar-windows");
+    const taskbar = $("#taskbar");
+    if (taskbarWindows && taskbar) {
+      const isHorizontal = taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
+      taskbarWindows.style.justifyContent = isHorizontal ? "flex-start" : "center";
+    }
   }
 
   applyTilingSettings() {

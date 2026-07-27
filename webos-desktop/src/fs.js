@@ -885,33 +885,77 @@ export class FileSystemManager {
     const meta = await this.readMeta(dir);
     const result = {};
 
-    for (const name of entries) {
-      if (name === this.CONFIG.META_FILE) continue;
-      if (name === ".trash" && dir === this.CONFIG.ROOT) continue;
-      const full = this.paths.join(dir, name);
-      let stat;
-      try {
-        stat = await this.pStat(full);
-      } catch {
-        continue;
-      }
+    const filtered = entries.filter(
+      (n) => n !== this.CONFIG.META_FILE && !(n === ".trash" && dir === this.CONFIG.ROOT)
+    );
 
-      if (stat.isDirectory()) {
-        result[name] = {};
+    const statResults = await Promise.all(
+      filtered.map(async (name) => {
+        const full = this.paths.join(dir, name);
+        try {
+          const stat = await this.pStat(full);
+          return { name, full, stat };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const files = [];
+
+    for (const r of statResults) {
+      if (!r) continue;
+      if (r.stat.isDirectory()) {
+        result[r.name] = {};
       } else {
+        files.push(r);
+      }
+    }
+
+    if (files.length > 0) {
+      const fileResults = files.map(({ name, full, stat }) => {
         const kind = meta[name]?.kind ?? this.inferKind(name);
         const icon = resolveIconUrl(meta[name]?.icon) ?? "static/icons/file.webp";
         const faIcon = meta[name]?.faIcon ?? null;
         let fileSize = stat.size ?? meta[name]?.size ?? 0;
+        return { name, full, kind, icon, faIcon, fileSize };
+      });
 
-        if (fileSize === 0) {
-          const blob = await this.blobs.getBlobByFullPath(full).catch(() => null);
-          if (blob) {
-            fileSize = blob.size;
-          }
+      const zeroSizeFiles = fileResults.filter((f) => f.fileSize === 0);
+
+      if (zeroSizeFiles.length > 0) {
+        const blobSizes = await Promise.all(
+          zeroSizeFiles.map(async (f) => {
+            try {
+              const blob = await this.blobs.getBlobByFullPath(f.full);
+              return { name: f.name, size: blob?.size ?? 0 };
+            } catch {
+              return { name: f.name, size: 0 };
+            }
+          })
+        );
+
+        const sizeMap = {};
+        for (const s of blobSizes) {
+          sizeMap[s.name] = s.size;
         }
 
-        result[name] = { type: "file", kind, icon, faIcon, content: "", size: fileSize };
+        for (const f of fileResults) {
+          if (f.fileSize === 0 && sizeMap[f.name]) {
+            f.fileSize = sizeMap[f.name];
+          }
+        }
+      }
+
+      for (const f of fileResults) {
+        result[f.name] = {
+          type: "file",
+          kind: f.kind,
+          icon: f.icon,
+          faIcon: f.faIcon,
+          content: "",
+          size: f.fileSize
+        };
       }
     }
 

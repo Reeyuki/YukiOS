@@ -343,7 +343,7 @@ export class MacDock {
 
   triggerRecalc() {
     if (this.lastClientX != null) {
-      this.handleHover({ type: "mousemove", clientX: this.lastClientX, clientY: this.lastClientY });
+      this.processHover(this.lastClientX, this.lastClientY);
     }
   }
 
@@ -399,11 +399,24 @@ export class MacDock {
 
   handleHover(e) {
     if (!this.container) return;
-    const s = this.settings;
-    const items = [...this.container.querySelectorAll(".dock-item")];
-    const magnifyEnabled = s.dockMagnification;
+
+    if (e.type === "mousemove") {
+      this.hoverX = e.clientX;
+      this.hoverY = e.clientY;
+      if (this.hoverRafId) return;
+      this.hoverRafId = requestAnimationFrame(() => {
+        this.hoverRafId = null;
+        this.processHover(this.hoverX, this.hoverY);
+      });
+      return;
+    }
 
     if (e.type === "mouseleave") {
+      if (this.hoverRafId) {
+        cancelAnimationFrame(this.hoverRafId);
+        this.hoverRafId = null;
+      }
+      const items = [...this.container.querySelectorAll(".dock-item")];
       items.forEach((el) => {
         el.style.transform = "";
         const wrap = el.querySelector(".dock-icon-wrap");
@@ -415,8 +428,13 @@ export class MacDock {
       this.container.style.paddingBottom = "";
       this.lastClientX = null;
       this.lastClientY = null;
-      return;
     }
+  }
+
+  processHover(clientX, clientY) {
+    const s = this.settings;
+    const items = [...this.container.querySelectorAll(".dock-item")];
+    const magnifyEnabled = s.dockMagnification;
 
     if (!magnifyEnabled) {
       items.forEach((el) => {
@@ -431,12 +449,12 @@ export class MacDock {
       return;
     }
 
-    this.lastClientX = e.clientX;
-    this.lastClientY = e.clientY;
+    this.lastClientX = clientX;
+    this.lastClientY = clientY;
 
     const containerRect = this.container.getBoundingClientRect();
     const isHorizontal = s.dockPosition === "bottom";
-    const mousePos = isHorizontal ? e.clientX - containerRect.left : e.clientY - containerRect.top;
+    const mousePos = isHorizontal ? clientX - containerRect.left : clientY - containerRect.top;
 
     const affectRange = Math.max(1, Math.min(10, s.dockMagnifyRange));
     const magnifyAmount = Math.max(0.1, Math.min(3, s.dockMagnifyAmount));
@@ -459,6 +477,11 @@ export class MacDock {
       const dim = isHorizontal ? el.offsetWidth : el.offsetHeight;
       return (dim * (scale - 1)) / 2;
     });
+
+    const prefix = [0];
+    for (let i = 0; i < extras.length; i++) {
+      prefix.push(prefix[prefix.length - 1] + extras[i]);
+    }
 
     let maxStartExtra = 0;
     let maxEndExtra = 0;
@@ -485,9 +508,9 @@ export class MacDock {
 
       let push = 0;
       if (i < hoverIdx) {
-        for (let j = i + 1; j <= hoverIdx; j++) push -= extras[j];
+        push = prefix[i + 1] - prefix[hoverIdx + 1];
       } else if (i > hoverIdx) {
-        for (let j = hoverIdx; j < i; j++) push += extras[j];
+        push = prefix[i] - prefix[hoverIdx];
       }
 
       if (isHorizontal) {

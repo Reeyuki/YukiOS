@@ -2124,10 +2124,20 @@ export class OfficeApp extends BaseApp {
     const colCount = rows[0]?.querySelectorAll("td").length || 26;
     const rowIndex = rows.length;
     const tr = document.createElement("tr");
-    tr.innerHTML = `<th class="office-th-row">${rowIndex + 1}</th>`;
+    const th = document.createElement("th");
+    th.className = "office-th-row";
+    th.textContent = rowIndex + 1;
+    tr.appendChild(th);
+    const fragment = document.createDocumentFragment();
     for (let c = 0; c < colCount; c++) {
-      tr.innerHTML += `<td class="office-cell" contenteditable="true" data-row="${rowIndex}" data-col="${c}"></td>`;
+      const td = document.createElement("td");
+      td.className = "office-cell";
+      td.contentEditable = "true";
+      td.dataset.row = rowIndex;
+      td.dataset.col = c;
+      fragment.appendChild(td);
     }
+    tr.appendChild(fragment);
     tbody.appendChild(tr);
     os.notify.send("Row added");
   }

@@ -361,6 +361,7 @@ export class TaskbarSystem {
     const thumb = $(".taskbar-preview__thumb", preview);
     const clone = win.cloneNode(true);
     clone.removeAttribute("id");
+    ["left", "top", "right", "bottom", "z-index", "position"].forEach((p) => clone.style.removeProperty(p));
     clone.classList.add("taskbar-preview__winclone");
     $$("[id]", clone).forEach((n) => n.removeAttribute("id"));
     $$(".window-controls", clone).forEach((n) => n.remove());
@@ -377,13 +378,12 @@ export class TaskbarSystem {
           justifyContent: "center"
         }
       });
-
       const tempDiv = createElement("div");
       setHTML(tempDiv, this.manager.getWindowIconHtml(meta?.iconValue, meta?.color || "var(--text-primary)"));
-      const iconEl = tempDiv.firstElementChild;
-      if (iconEl) {
-        setStyle(iconEl, { fontSize: "48px", width: "48px", height: "48px", opacity: "0.7" });
-        placeholder.appendChild(iconEl);
+      const iconEl2 = tempDiv.firstElementChild;
+      if (iconEl2) {
+        setStyle(iconEl2, { fontSize: "48px", width: "48px", height: "48px", opacity: "0.7" });
+        placeholder.appendChild(iconEl2);
       }
       n.replaceWith(placeholder);
     });
@@ -411,7 +411,7 @@ export class TaskbarSystem {
     const innerH = 140;
     const scaleX = innerW / Math.max(1, winRect.width);
     const scaleY = innerH / Math.max(1, winRect.height);
-    const scale = Math.min(scaleX, scaleY);
+    const scale = Math.min(scaleX, scaleY) * 0.96;
     clone.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
     preview.addEventListener("mouseenter", () => {
@@ -470,7 +470,6 @@ export class TaskbarSystem {
     this.manager.workspaceManager?.unregisterWindow(winId);
     audioMixer().unregisterWindow(winId);
     os.events.emit(BusEvents.WINDOW_CLOSED, { winId });
-    this.renderPinnedItems();
 
     if (this.manager.openWindows.size === 0) {
       this.manager.resetToDefaultState();
