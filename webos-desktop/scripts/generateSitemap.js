@@ -11,14 +11,19 @@ function extractApps() {
   const content = readFileSync(resolve(ROOT, "src/registry/AppManifest.js"), "utf-8");
   const APP_CDN = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
   const entries = [];
-  let depth = 0, current = "", inEntry = false;
+  let depth = 0,
+    current = "",
+    inEntry = false;
   const arrayStart = content.indexOf("APP_MANIFESTS = [");
   if (arrayStart === -1) return entries;
 
   for (let i = arrayStart; i < content.length; i++) {
     const ch = content[i];
     if (ch === "{") {
-      if (depth === 0) { current = ""; inEntry = true; }
+      if (depth === 0) {
+        current = "";
+        inEntry = true;
+      }
       depth++;
     }
     if (inEntry) current += ch;
@@ -46,7 +51,8 @@ function extractApps() {
           icon = "fas fa-star";
         }
         if (key && title) entries.push({ key, title, description: description || "", icon });
-        inEntry = false; current = "";
+        inEntry = false;
+        current = "";
       }
     }
   }
@@ -67,6 +73,7 @@ function extractGames(gameDescs) {
     const titleM = rest.match(/title:\s*"([^"]+)"/);
     const urlM = rest.match(/url:\s*"([^"]+)"/);
     const swfM = rest.match(/swf:\s*"([^"]+)"/);
+    const htmlM = rest.match(/html:\s*"([^"]+)"/);
     const typeM = rest.match(/type:\s*"([^"]+)"/);
     const iconM = rest.match(/icon:\s*"([^"]+)"/);
     let icon = iconM ? iconM[1] : "";
@@ -76,11 +83,20 @@ function extractGames(gameDescs) {
     }
     const title = titleM ? titleM[1] : key;
     const desc = (gameDescs && gameDescs[key]) || "";
+    const type = typeM ? typeM[1] : "";
+    let gameUrl = "";
+    if (type === "swf" && swfM) {
+      gameUrl = swfM[1];
+    } else if (type === "html" && htmlM) {
+      gameUrl = htmlM[1];
+    } else if (urlM) {
+      gameUrl = urlM[1];
+    }
     entries.push({
       key,
       title,
-      url: urlM ? urlM[1] : (swfM ? swfM[1] : ""),
-      type: typeM ? typeM[1] : "",
+      url: gameUrl,
+      type,
       icon,
       genre: classifyGameGenre(title, desc)
     });
@@ -104,59 +120,171 @@ function extractGameDescriptions() {
 }
 
 async function fetchArchiveGames() {
-  const archiveBase = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7/archive/";
+  const archiveBase =
+    "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7/archive/";
   const url = `${archiveBase}games.json`;
-  
+
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      let data = "";
-      res.on("data", (chunk) => data += chunk);
-      res.on("end", () => {
-        try {
-          const parsed = JSON.parse(data);
-          const games = Array.isArray(parsed) ? parsed : parsed?.games || [];
-          const archiveGames = games.map((game) => {
-            const name = game.name || "";
-            const fullUrl = game.url?.startsWith("http") ? game.url : archiveBase + (game.url || "");
-            const thumb = game.thumbnail
-              ? game.thumbnail.startsWith("http")
-                ? game.thumbnail
-                : archiveBase.replace(/\/$/, "") + "/" + game.thumbnail.replace(/^\//, "")
-              : "";
-            const key = name.toLowerCase().replace(/[^a-z0-9]+/g, "");
-            return {
-              key,
-              title: name,
-              url: fullUrl,
-              icon: thumb,
-              genre: classifyGameGenre(name, ""),
-              isArchive: true
-            };
-          });
-          resolve(archiveGames);
-        } catch (e) {
-          console.error("Error parsing archive games:", e);
-          resolve([]);
-        }
+    https
+      .get(url, (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data);
+            const games = Array.isArray(parsed) ? parsed : parsed?.games || [];
+            const archiveGames = games.map((game) => {
+              const name = game.name || "";
+              const fullUrl = game.url?.startsWith("http") ? game.url : archiveBase + (game.url || "");
+              const thumb = game.thumbnail
+                ? game.thumbnail.startsWith("http")
+                  ? game.thumbnail
+                  : archiveBase.replace(/\/$/, "") + "/" + game.thumbnail.replace(/^\//, "")
+                : "";
+              const key = name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+              return {
+                key,
+                title: name,
+                url: fullUrl,
+                icon: thumb,
+                genre: classifyGameGenre(name, ""),
+                isArchive: true
+              };
+            });
+            resolve(archiveGames);
+          } catch (e) {
+            console.error("Error parsing archive games:", e);
+            resolve([]);
+          }
+        });
+      })
+      .on("error", (e) => {
+        console.error("Error fetching archive games:", e);
+        resolve([]);
       });
-    }).on("error", (e) => {
-      console.error("Error fetching archive games:", e);
-      resolve([]);
-    });
   });
 }
 
 const GENRE_KEYWORDS = {
-  Action: ["action", "combat", "battle", "invasion", "attack", "war", "warfare", "berserk", "rage", "smash", "punch", "kick", "slap", "duel", "strike", "assault"],
-  Adventure: ["adventure", "explor", "quest", "journey", "odyssey", "story", "narrative", "dialogue", "mystery", "detective", "investigation"],
-  Strategy: ["strategy", "tactical", "tactics", "defense", "tower", "tycoon", "management", "planning", "formation", "chess", "simulation"],
-  Puzzle: ["puzzle", "logic", "brain", "match", "riddle", "sliding", "memory", "pattern", "clue", "cryptic", "maze", "sokoban", "block", "pair", "solitaire"],
-  Simulation: ["simulation", "simulator", "farming", "cooking", "life sim", "tycoon", "management", "builder", "creation"],
-  RPG: ["rpg", "role-playing", "monster-collecting", "pokemon", "leveling", "stats", "experience", "fantasy", "magic", "spell", "dungeon", "inventory", "character progression"],
-  Horror: ["horror", "scary", "creepy", "haunted", "escape", "nightmare", "dark", "blood", "gore", "terror", "disturbing", "fnaf", "five nights", "animatronic", "surreal", "chase"],
+  Action: [
+    "action",
+    "combat",
+    "battle",
+    "invasion",
+    "attack",
+    "war",
+    "warfare",
+    "berserk",
+    "rage",
+    "smash",
+    "punch",
+    "kick",
+    "slap",
+    "duel",
+    "strike",
+    "assault"
+  ],
+  Adventure: [
+    "adventure",
+    "explor",
+    "quest",
+    "journey",
+    "odyssey",
+    "story",
+    "narrative",
+    "dialogue",
+    "mystery",
+    "detective",
+    "investigation"
+  ],
+  Strategy: [
+    "strategy",
+    "tactical",
+    "tactics",
+    "defense",
+    "tower",
+    "tycoon",
+    "management",
+    "planning",
+    "formation",
+    "chess",
+    "simulation"
+  ],
+  Puzzle: [
+    "puzzle",
+    "logic",
+    "brain",
+    "match",
+    "riddle",
+    "sliding",
+    "memory",
+    "pattern",
+    "clue",
+    "cryptic",
+    "maze",
+    "sokoban",
+    "block",
+    "pair",
+    "solitaire"
+  ],
+  Simulation: [
+    "simulation",
+    "simulator",
+    "farming",
+    "cooking",
+    "life sim",
+    "tycoon",
+    "management",
+    "builder",
+    "creation"
+  ],
+  RPG: [
+    "rpg",
+    "role-playing",
+    "monster-collecting",
+    "pokemon",
+    "leveling",
+    "stats",
+    "experience",
+    "fantasy",
+    "magic",
+    "spell",
+    "dungeon",
+    "inventory",
+    "character progression"
+  ],
+  Horror: [
+    "horror",
+    "scary",
+    "creepy",
+    "haunted",
+    "escape",
+    "nightmare",
+    "dark",
+    "blood",
+    "gore",
+    "terror",
+    "disturbing",
+    "fnaf",
+    "five nights",
+    "animatronic",
+    "surreal",
+    "chase"
+  ],
   Platformer: ["platform", "jump", "run", "runner", "leap", "climb", "side-scroll"],
   Shooter: ["shooter", "fps", "gun", "shoot", "bullet", "weapon", "rifle", "pistol", "sniper", "shotgun", "projectile"],
-  Sports: ["sports", "football", "soccer", "basketball", "baseball", "skateboard", "tennis", "golf", "bowling", "athlete"],
+  Sports: [
+    "sports",
+    "football",
+    "soccer",
+    "basketball",
+    "baseball",
+    "skateboard",
+    "tennis",
+    "golf",
+    "bowling",
+    "athlete"
+  ],
   Racing: ["race", "racing", "drive", "drift", "speed", "car", "vehicle", "motor", "bike", "bicycle", "boat"],
   Fighting: ["fight", "fighting", "combat", "martial arts", "punch", "wrestl", "brawler", "duel"],
   Casual: ["casual", "relax", "simple", "fun", "family", "whimsical", "charming", "cute", "chill"],
@@ -222,15 +350,23 @@ const H1_TEMPLATES = {
 };
 
 const DESC_SUFFIXES = {
-  Action: " Fast-paced action gameplay with no downloads required. Plays smoothly on Chromebook, school computers, and mobile devices.",
-  Adventure: " Embark on an adventure directly from your browser. No install needed. It works on any device with internet.",
-  Strategy: " Think and plan your way to victory. Free online strategy game with no downloads or sign-ups. Perfect for school and work breaks.",
-  Puzzle: " Train your brain with this free online puzzle game. No download needed. Works on Chromebook and school networks.",
-  Simulation: " Immerse yourself in this free simulation game running directly in your browser. No install or setup required.",
+  Action:
+    " Fast-paced action gameplay with no downloads required. Plays smoothly on Chromebook, school computers, and mobile devices.",
+  Adventure:
+    " Embark on an adventure directly from your browser. No install needed. It works on any device with internet.",
+  Strategy:
+    " Think and plan your way to victory. Free online strategy game with no downloads or sign-ups. Perfect for school and work breaks.",
+  Puzzle:
+    " Train your brain with this free online puzzle game. No download needed. Works on Chromebook and school networks.",
+  Simulation:
+    " Immerse yourself in this free simulation game running directly in your browser. No install or setup required.",
   RPG: " Dive into this free RPG adventure in your browser. No download or install needed. Your progress saves automatically.",
-  Horror: " Experience this free horror game in your browser. No downloads, just pure scares. Play with lights off for maximum effect.",
-  Platformer: " Run, jump, and explore in this free platformer game. No download needed. It plays in any browser instantly.",
-  Shooter: " Test your aim in this free shooter game for browsers. Zero downloads, zero lag. Works on school Chromebooks.",
+  Horror:
+    " Experience this free horror game in your browser. No downloads, just pure scares. Play with lights off for maximum effect.",
+  Platformer:
+    " Run, jump, and explore in this free platformer game. No download needed. It plays in any browser instantly.",
+  Shooter:
+    " Test your aim in this free shooter game for browsers. Zero downloads, zero lag. Works on school Chromebooks.",
   Sports: " Play this free sports game in your browser. No equipment, no downloads, just pure competitive fun.",
   Racing: " Hit the track in this free racing game. Play instantly in your browser with no downloads or installs.",
   Fighting: " Battle opponents in this free fighting game for browsers. No downloads required. Just pick up and play.",
@@ -247,60 +383,211 @@ const DESC_SUFFIXES = {
 };
 
 const SEO_PARAGRAPHS = {
-  Action: "This free action game runs entirely in your browser with no downloads or installations. It loads fast on school Chromebooks, home PCs, and tablets alike. The controls are responsive and designed for quick play sessions during breaks. No sign-up forms, no waiting. Just click play and jump straight into the action. Bookmark this page to come back anytime.",
-  Adventure: "This free browser adventure game requires no downloads or plug-ins. It works on every modern browser and operating system including Chrome OS, Windows, macOS, and Linux. The game saves your progress automatically so you can continue your journey across multiple sessions. Perfect for playing between classes or during downtime at home.",
-  Strategy: "Sharpen your tactical skills with this free strategy game that runs directly in your browser. There is no software to download, no account to create, and nothing to install. The game is fully playable on school and work networks. Its turn-based or real-time mechanics adapt to your pace, making it ideal for both quick decisions and deep planning sessions.",
-  Puzzle: "Challenge your mind with this free puzzle game that loads instantly in your browser with zero downloads. It works perfectly on Chromebooks, school computers, tablets, and phones. The difficulty scales naturally so both casual players and puzzle enthusiasts will find engaging content. No ads interrupt your flow. Just pure brain training.",
-  Simulation: "This free simulation game brings realistic mechanics to your browser without any downloads or installs. Manage resources, make decisions, and watch your creation evolve. All through a web browser on any device. It is fully compatible with Chrome OS, making it a great choice for school and educational settings.",
+  Action:
+    "This free action game runs entirely in your browser with no downloads or installations. It loads fast on school Chromebooks, home PCs, and tablets alike. The controls are responsive and designed for quick play sessions during breaks. No sign-up forms, no waiting. Just click play and jump straight into the action. Bookmark this page to come back anytime.",
+  Adventure:
+    "This free browser adventure game requires no downloads or plug-ins. It works on every modern browser and operating system including Chrome OS, Windows, macOS, and Linux. The game saves your progress automatically so you can continue your journey across multiple sessions. Perfect for playing between classes or during downtime at home.",
+  Strategy:
+    "Sharpen your tactical skills with this free strategy game that runs directly in your browser. There is no software to download, no account to create, and nothing to install. The game is fully playable on school and work networks. Its turn-based or real-time mechanics adapt to your pace, making it ideal for both quick decisions and deep planning sessions.",
+  Puzzle:
+    "Challenge your mind with this free puzzle game that loads instantly in your browser with zero downloads. It works perfectly on Chromebooks, school computers, tablets, and phones. The difficulty scales naturally so both casual players and puzzle enthusiasts will find engaging content. No ads interrupt your flow. Just pure brain training.",
+  Simulation:
+    "This free simulation game brings realistic mechanics to your browser without any downloads or installs. Manage resources, make decisions, and watch your creation evolve. All through a web browser on any device. It is fully compatible with Chrome OS, making it a great choice for school and educational settings.",
   RPG: "Jump into this free RPG adventure that runs entirely in your browser. No downloads, no launchers, no installs. The game features automatic cloud saving so your party, items, and progress are always waiting for you. Works on any device with a modern browser including school computers and tablets.",
-  Horror: "Experience spine-tingling terror with this free horror game designed for browsers. It requires zero downloads and runs on any device. The atmospheric audio and visuals are optimized for instant loading. Best played in full screen with headphones for maximum immersion. Works on school Chromebooks too.",
-  Platformer: "This free platformer game runs natively in your browser with no downloads or installs. Tight controls, responsive physics, and smooth frame rates make it feel like a native game. It works on any device including school Chromebooks, home desktops, and tablets. Jump in instantly. No account required.",
-  Shooter: "Test your reflexes with this free shooter game that runs entirely in your browser. Zero downloads, zero setup. Optimized for low latency on school and work networks. Mouse and keyboard controls are tight and responsive. Works on Chromebooks, Windows, macOS, and Linux.",
-  Sports: "Compete in this free sports game without leaving your browser. No downloads, no installs, no equipment needed. The game is optimized for fast loading on school networks and works great on Chromebooks. Challenge yourself to beat the high score or go head-to-head with friends.",
-  Racing: "Feel the speed with this free racing game that runs directly in your browser. No downloads required. Just click and drive. It works on any device from school Chromebooks to gaming PCs. Smooth frame rates and responsive controls give you a console-like experience for free.",
-  Fighting: "Step into the arena with this free fighting game built for browsers. No downloads, no installs, no accounts. Combos and special moves are easy to execute with keyboard controls. Works on school networks and plays great on Chromebooks and desktops alike.",
-  Casual: "Take a break with this free casual game that loads instantly in your browser. No downloads, no sign-ups, no stress. It is the perfect way to unwind between tasks at school or work. Plays on any device including Chromebooks, tablets, and phones.",
-  Sandbox: "Unleash your creativity with this free sandbox game running in your browser. No downloads, no limits, no accounts. Build, explore, and experiment freely. The game saves your world automatically. Works on Chromebooks and school networks without any restrictions.",
-  Survival: "Test your survival skills with this free browser survival game. No download, no install. Just you against the wilderness. Manage resources, craft tools, and build shelter all through your web browser. Works on school networks and Chromebooks for on-the-go survival action.",
-  Roguelike: "Every run is unique in this free roguelike game for browsers. No downloads, no installs, infinite replayability. Procedural generation ensures no two playthroughs are the same. Perfect for short sessions or extended runs. Works on any device.",
+  Horror:
+    "Experience spine-tingling terror with this free horror game designed for browsers. It requires zero downloads and runs on any device. The atmospheric audio and visuals are optimized for instant loading. Best played in full screen with headphones for maximum immersion. Works on school Chromebooks too.",
+  Platformer:
+    "This free platformer game runs natively in your browser with no downloads or installs. Tight controls, responsive physics, and smooth frame rates make it feel like a native game. It works on any device including school Chromebooks, home desktops, and tablets. Jump in instantly. No account required.",
+  Shooter:
+    "Test your reflexes with this free shooter game that runs entirely in your browser. Zero downloads, zero setup. Optimized for low latency on school and work networks. Mouse and keyboard controls are tight and responsive. Works on Chromebooks, Windows, macOS, and Linux.",
+  Sports:
+    "Compete in this free sports game without leaving your browser. No downloads, no installs, no equipment needed. The game is optimized for fast loading on school networks and works great on Chromebooks. Challenge yourself to beat the high score or go head-to-head with friends.",
+  Racing:
+    "Feel the speed with this free racing game that runs directly in your browser. No downloads required. Just click and drive. It works on any device from school Chromebooks to gaming PCs. Smooth frame rates and responsive controls give you a console-like experience for free.",
+  Fighting:
+    "Step into the arena with this free fighting game built for browsers. No downloads, no installs, no accounts. Combos and special moves are easy to execute with keyboard controls. Works on school networks and plays great on Chromebooks and desktops alike.",
+  Casual:
+    "Take a break with this free casual game that loads instantly in your browser. No downloads, no sign-ups, no stress. It is the perfect way to unwind between tasks at school or work. Plays on any device including Chromebooks, tablets, and phones.",
+  Sandbox:
+    "Unleash your creativity with this free sandbox game running in your browser. No downloads, no limits, no accounts. Build, explore, and experiment freely. The game saves your world automatically. Works on Chromebooks and school networks without any restrictions.",
+  Survival:
+    "Test your survival skills with this free browser survival game. No download, no install. Just you against the wilderness. Manage resources, craft tools, and build shelter all through your web browser. Works on school networks and Chromebooks for on-the-go survival action.",
+  Roguelike:
+    "Every run is unique in this free roguelike game for browsers. No downloads, no installs, infinite replayability. Procedural generation ensures no two playthroughs are the same. Perfect for short sessions or extended runs. Works on any device.",
   Card: "This free card game runs in your browser with zero downloads. Classic gameplay, crisp visuals, and instant loading. No account creation or sign-up needed. Works on school networks, Chromebooks, and all modern browsers. Just deal and play.",
-  Arcade: "This free retro arcade game brings classic coin-op fun to your browser without any downloads. It is completely unblocked and works on school networks, Chromebooks, and all devices. Simple one-button or keyboard controls make it instantly accessible. High scores are saved automatically for bragging rights.",
-  Educational: "Learn something new with this free educational game that runs in your browser. No downloads, no installs, no distraction. Just interactive learning. Designed for students and designed to work on school Chromebooks and networks. Knowledge checks are built right into the gameplay.",
+  Arcade:
+    "This free retro arcade game brings classic coin-op fun to your browser without any downloads. It is completely unblocked and works on school networks, Chromebooks, and all devices. Simple one-button or keyboard controls make it instantly accessible. High scores are saved automatically for bragging rights.",
+  Educational:
+    "Learn something new with this free educational game that runs in your browser. No downloads, no installs, no distraction. Just interactive learning. Designed for students and designed to work on school Chromebooks and networks. Knowledge checks are built right into the gameplay.",
   Idle: "Watch your progress unfold in this free idle clicker game for browsers. No downloads, no active grinding required. It runs in the background and saves automatically. Perfect for multitasking at school or work. Works on Chromebooks and all devices.",
-  Rhythm: "Tap to the beat with this free music rhythm game in your browser. No downloads, no installs. The audio and visuals are optimized for instant play on any device. Works on school Chromebooks with great performance. Feel the rhythm anywhere.",
-  Multiplayer: "Challenge real players online in this free multiplayer browser game. No downloads, no sign-up forms, just instant competitive fun. It works behind school firewalls and on Chromebooks. Quick matchmaking gets you into games fast. No account needed. Just click and play."
+  Rhythm:
+    "Tap to the beat with this free music rhythm game in your browser. No downloads, no installs. The audio and visuals are optimized for instant play on any device. Works on school Chromebooks with great performance. Feel the rhythm anywhere.",
+  Multiplayer:
+    "Challenge real players online in this free multiplayer browser game. No downloads, no sign-up forms, just instant competitive fun. It works behind school firewalls and on Chromebooks. Quick matchmaking gets you into games fast. No account needed. Just click and play."
 };
 
 const GENRE_PAGE_CONFIG = {
-  Action: { slug: "action", title: "Action Games - Play Free Online Browser Games No Download", h1: "Free Action Games Online", desc: "Play free action games in your browser with no downloads or sign-ups. Fast-paced combat, platformers, and shooters that run on any device including Chromebooks and school networks.", icon: "fas fa-crosshairs" },
-  Adventure: { slug: "adventure", title: "Adventure Games - Free Online Browser Games No Install", h1: "Free Adventure Games Online", desc: "Play free adventure games online in your browser. No downloads required. Explore worlds, solve puzzles, and complete quests on any device including Chromebooks.", icon: "fas fa-compass" },
-  Strategy: { slug: "strategy", title: "Strategy Games - Play Free Online Browser Games", h1: "Free Strategy Games Online", desc: "Play free strategy games in your browser with no downloads. Tactical battles, tower defense, and management sims that work on Chromebooks and school networks.", icon: "fas fa-chess" },
-  Puzzle: { slug: "puzzle", title: "Puzzle Games - Free Online Brain Games No Download", h1: "Free Puzzle Games Online", desc: "Play free puzzle games online in your browser. Brain teasers, logic puzzles, and matching games that work on Chromebooks with no downloads needed.", icon: "fas fa-puzzle-piece" },
-  Simulation: { slug: "simulation", title: "Simulation Games - Free Online Browser Simulators", h1: "Free Simulation Games Online", desc: "Play free simulation games in your browser. Life sims, farming, building, and management games that run on any device with no downloads.", icon: "fas fa-globe" },
-  RPG: { slug: "rpg", title: "RPG Games - Free Online Browser Role-Playing Games", h1: "Free RPG Games Online", desc: "Play free RPGs in your browser with no downloads. Fantasy adventures, character progression, and immersive stories that save automatically.", icon: "fas fa-dragon" },
-  Horror: { slug: "horror", title: "Horror Games - Free Scary Browser Games Online", h1: "Free Horror Games Online", desc: "Play free horror games in your browser. Scary experiences with atmospheric audio and visuals. No downloads needed. Works on school Chromebooks.", icon: "fas fa-ghost" },
-  Platformer: { slug: "platformer", title: "Platformer Games - Free Online Browser Platform Games", h1: "Free Platformer Games Online", desc: "Play free platformer games online in your browser. Run, jump, and explore through levels designed for instant browser play on any device.", icon: "fas fa-shoe-prints" },
-  Shooter: { slug: "shooter", title: "Shooter Games - Free Online Browser Shooting Games", h1: "Free Shooter Games Online", desc: "Play free shooter games in your browser with no downloads. FPS action, bullet hell, and aiming challenges that work on school Chromebooks.", icon: "fas fa-bullseye" },
-  Sports: { slug: "sports", title: "Sports Games - Free Online Browser Sports Games", h1: "Free Sports Games Online", desc: "Play free sports games online in your browser. Football, basketball, soccer, and more. No downloads or equipment needed.", icon: "fas fa-futbol" },
-  Racing: { slug: "racing", title: "Racing Games - Play Free Online Browser Racing Games", h1: "Free Racing Games Online", desc: "Play free racing games in your browser with no downloads. Drift, speed, and compete on any device including school Chromebooks.", icon: "fas fa-flag-checkered" },
-  Fighting: { slug: "fighting", title: "Fighting Games - Free Online Browser Fighting Games", h1: "Free Fighting Games Online", desc: "Play free fighting games online in your browser. Battle opponents with combos and special moves. No downloads needed. Works on any device.", icon: "fas fa-hand-fist" },
-  Casual: { slug: "casual", title: "Casual Games - Free Relaxing Browser Games Online", h1: "Free Casual Games Online", desc: "Play free casual games in your browser to relax and unwind. No downloads, no stress. Perfect for quick breaks on any device including Chromebooks.", icon: "fas fa-coffee" },
-  Sandbox: { slug: "sandbox", title: "Sandbox Games - Free Creative Browser Games Online", h1: "Free Sandbox Games Online", desc: "Play free sandbox games in your browser. Build, create, and explore without limits. No downloads needed. Works on school Chromebooks.", icon: "fas fa-cubes" },
-  Survival: { slug: "survival", title: "Survival Games - Free Online Browser Survival Games", h1: "Free Survival Games Online", desc: "Play free survival games in your browser. Gather resources, craft, and endure. No downloads. Works on Chromebooks and school networks.", icon: "fas fa-campground" },
-  Roguelike: { slug: "roguelike", title: "Roguelike Games - Free Online Browser Roguelikes", h1: "Free Roguelike Games Online", desc: "Play free roguelike games in your browser. Procedural runs, permadeath, and infinite replayability. No downloads needed. Works on any device.", icon: "fas fa-dice" },
-  Card: { slug: "card", title: "Card Games - Free Online Browser Card Games", h1: "Free Card Games Online", desc: "Play free card games online in your browser. Classic and modern card games with no downloads or sign-ups. Works on school networks.", icon: "fas fa-diamond" },
-  Arcade: { slug: "arcade", title: "Retro Arcade Games - Play Free Unblocked Browser Games", h1: "Free Retro Arcade Games Online", desc: "Play free retro arcade games in your browser. Classic coin-op action, unblocked for school and work. No downloads. Works on Chromebooks and any device.", icon: "fas fa-gamepad" },
-  Educational: { slug: "educational", title: "Educational Games - Free Learning Browser Games Online", h1: "Free Educational Games Online", desc: "Play free educational games in your browser. Learn math, science, and more through interactive gameplay. Perfect for students on Chromebooks.", icon: "fas fa-graduation-cap" },
-  Idle: { slug: "idle", title: "Idle Clicker Games - Free Online Browser Idle Games", h1: "Free Idle Games Online", desc: "Play free idle clicker games in your browser. Watch your progress grow with zero downloads. Perfect for multitasking on school Chromebooks.", icon: "fas fa-clock" },
-  Rhythm: { slug: "rhythm", title: "Rhythm Games - Free Online Music Browser Games", h1: "Free Rhythm Games Online", desc: "Play free music rhythm games online in your browser. Tap to the beat with no downloads needed. Works on Chromebooks and all devices.", icon: "fas fa-music" },
-  Multiplayer: { slug: "multiplayer", title: "Multiplayer Games - Free Online IO Browser Games", h1: "Free Multiplayer Games Online", desc: "Play free multiplayer games online in your browser. Compete against real players with no downloads or sign-ups. Works on school networks and Chromebooks.", icon: "fas fa-users" }
+  Action: {
+    slug: "action",
+    title: "Action Games - Play Free Online Browser Games No Download",
+    h1: "Free Action Games Online",
+    desc: "Play free action games in your browser with no downloads or sign-ups. Fast-paced combat, platformers, and shooters that run on any device including Chromebooks and school networks.",
+    icon: "fas fa-crosshairs"
+  },
+  Adventure: {
+    slug: "adventure",
+    title: "Adventure Games - Free Online Browser Games No Install",
+    h1: "Free Adventure Games Online",
+    desc: "Play free adventure games online in your browser. No downloads required. Explore worlds, solve puzzles, and complete quests on any device including Chromebooks.",
+    icon: "fas fa-compass"
+  },
+  Strategy: {
+    slug: "strategy",
+    title: "Strategy Games - Play Free Online Browser Games",
+    h1: "Free Strategy Games Online",
+    desc: "Play free strategy games in your browser with no downloads. Tactical battles, tower defense, and management sims that work on Chromebooks and school networks.",
+    icon: "fas fa-chess"
+  },
+  Puzzle: {
+    slug: "puzzle",
+    title: "Puzzle Games - Free Online Brain Games No Download",
+    h1: "Free Puzzle Games Online",
+    desc: "Play free puzzle games online in your browser. Brain teasers, logic puzzles, and matching games that work on Chromebooks with no downloads needed.",
+    icon: "fas fa-puzzle-piece"
+  },
+  Simulation: {
+    slug: "simulation",
+    title: "Simulation Games - Free Online Browser Simulators",
+    h1: "Free Simulation Games Online",
+    desc: "Play free simulation games in your browser. Life sims, farming, building, and management games that run on any device with no downloads.",
+    icon: "fas fa-globe"
+  },
+  RPG: {
+    slug: "rpg",
+    title: "RPG Games - Free Online Browser Role-Playing Games",
+    h1: "Free RPG Games Online",
+    desc: "Play free RPGs in your browser with no downloads. Fantasy adventures, character progression, and immersive stories that save automatically.",
+    icon: "fas fa-dragon"
+  },
+  Horror: {
+    slug: "horror",
+    title: "Horror Games - Free Scary Browser Games Online",
+    h1: "Free Horror Games Online",
+    desc: "Play free horror games in your browser. Scary experiences with atmospheric audio and visuals. No downloads needed. Works on school Chromebooks.",
+    icon: "fas fa-ghost"
+  },
+  Platformer: {
+    slug: "platformer",
+    title: "Platformer Games - Free Online Browser Platform Games",
+    h1: "Free Platformer Games Online",
+    desc: "Play free platformer games online in your browser. Run, jump, and explore through levels designed for instant browser play on any device.",
+    icon: "fas fa-shoe-prints"
+  },
+  Shooter: {
+    slug: "shooter",
+    title: "Shooter Games - Free Online Browser Shooting Games",
+    h1: "Free Shooter Games Online",
+    desc: "Play free shooter games in your browser with no downloads. FPS action, bullet hell, and aiming challenges that work on school Chromebooks.",
+    icon: "fas fa-bullseye"
+  },
+  Sports: {
+    slug: "sports",
+    title: "Sports Games - Free Online Browser Sports Games",
+    h1: "Free Sports Games Online",
+    desc: "Play free sports games online in your browser. Football, basketball, soccer, and more. No downloads or equipment needed.",
+    icon: "fas fa-futbol"
+  },
+  Racing: {
+    slug: "racing",
+    title: "Racing Games - Play Free Online Browser Racing Games",
+    h1: "Free Racing Games Online",
+    desc: "Play free racing games in your browser with no downloads. Drift, speed, and compete on any device including school Chromebooks.",
+    icon: "fas fa-flag-checkered"
+  },
+  Fighting: {
+    slug: "fighting",
+    title: "Fighting Games - Free Online Browser Fighting Games",
+    h1: "Free Fighting Games Online",
+    desc: "Play free fighting games online in your browser. Battle opponents with combos and special moves. No downloads needed. Works on any device.",
+    icon: "fas fa-hand-fist"
+  },
+  Casual: {
+    slug: "casual",
+    title: "Casual Games - Free Relaxing Browser Games Online",
+    h1: "Free Casual Games Online",
+    desc: "Play free casual games in your browser to relax and unwind. No downloads, no stress. Perfect for quick breaks on any device including Chromebooks.",
+    icon: "fas fa-coffee"
+  },
+  Sandbox: {
+    slug: "sandbox",
+    title: "Sandbox Games - Free Creative Browser Games Online",
+    h1: "Free Sandbox Games Online",
+    desc: "Play free sandbox games in your browser. Build, create, and explore without limits. No downloads needed. Works on school Chromebooks.",
+    icon: "fas fa-cubes"
+  },
+  Survival: {
+    slug: "survival",
+    title: "Survival Games - Free Online Browser Survival Games",
+    h1: "Free Survival Games Online",
+    desc: "Play free survival games in your browser. Gather resources, craft, and endure. No downloads. Works on Chromebooks and school networks.",
+    icon: "fas fa-campground"
+  },
+  Roguelike: {
+    slug: "roguelike",
+    title: "Roguelike Games - Free Online Browser Roguelikes",
+    h1: "Free Roguelike Games Online",
+    desc: "Play free roguelike games in your browser. Procedural runs, permadeath, and infinite replayability. No downloads needed. Works on any device.",
+    icon: "fas fa-dice"
+  },
+  Card: {
+    slug: "card",
+    title: "Card Games - Free Online Browser Card Games",
+    h1: "Free Card Games Online",
+    desc: "Play free card games online in your browser. Classic and modern card games with no downloads or sign-ups. Works on school networks.",
+    icon: "fas fa-diamond"
+  },
+  Arcade: {
+    slug: "arcade",
+    title: "Retro Arcade Games - Play Free Unblocked Browser Games",
+    h1: "Free Retro Arcade Games Online",
+    desc: "Play free retro arcade games in your browser. Classic coin-op action, unblocked for school and work. No downloads. Works on Chromebooks and any device.",
+    icon: "fas fa-gamepad"
+  },
+  Educational: {
+    slug: "educational",
+    title: "Educational Games - Free Learning Browser Games Online",
+    h1: "Free Educational Games Online",
+    desc: "Play free educational games in your browser. Learn math, science, and more through interactive gameplay. Perfect for students on Chromebooks.",
+    icon: "fas fa-graduation-cap"
+  },
+  Idle: {
+    slug: "idle",
+    title: "Idle Clicker Games - Free Online Browser Idle Games",
+    h1: "Free Idle Games Online",
+    desc: "Play free idle clicker games in your browser. Watch your progress grow with zero downloads. Perfect for multitasking on school Chromebooks.",
+    icon: "fas fa-clock"
+  },
+  Rhythm: {
+    slug: "rhythm",
+    title: "Rhythm Games - Free Online Music Browser Games",
+    h1: "Free Rhythm Games Online",
+    desc: "Play free music rhythm games online in your browser. Tap to the beat with no downloads needed. Works on Chromebooks and all devices.",
+    icon: "fas fa-music"
+  },
+  Multiplayer: {
+    slug: "multiplayer",
+    title: "Multiplayer Games - Free Online IO Browser Games",
+    h1: "Free Multiplayer Games Online",
+    desc: "Play free multiplayer games online in your browser. Compete against real players with no downloads or sign-ups. Works on school networks and Chromebooks.",
+    icon: "fas fa-users"
+  }
 };
 
 function classifyGameGenre(title, description) {
   const text = `${title} ${description || ""}`.toLowerCase();
   const matched = [];
   for (const [genre, keywords] of Object.entries(GENRE_KEYWORDS)) {
-    if (keywords.some(k => text.includes(k))) {
+    if (keywords.some((k) => text.includes(k))) {
       matched.push(genre);
     }
   }
@@ -312,72 +599,93 @@ const featurePages = [
     key: "index",
     rootFile: "features.html",
     title: "YukiOS Features - Desktop Environment in Your Browser",
-    description: "YukiOS is a full browser-based desktop environment with a tiling window manager, Mac desktop mode, 2900 free games, a terminal with Python and Git, retro emulators for DOS/Flash/x86/3DS, and 80+ built-in apps - all running directly in your browser with no installation."
+    description:
+      "YukiOS is a full browser-based desktop environment with a tiling window manager, Mac desktop mode, 2900 free games, a terminal with Python and Git, retro emulators for DOS/Flash/x86/3DS, and 80+ built-in apps - all running directly in your browser with no installation."
   },
   {
     key: "tiling",
     title: "Tiling Window Manager",
-    description: "Experience i3 and Hyprland-inspired tiling window management in your browser. Keyboard-driven BSP tiling with 9 workspaces, live config editing, gap control, split ratio, and floating window support - no downloads needed."
+    description:
+      "Experience i3 and Hyprland-inspired tiling window management in your browser. Keyboard-driven BSP tiling with 9 workspaces, live config editing, gap control, split ratio, and floating window support - no downloads needed."
   },
   {
     key: "mac-mode",
     title: "Mac Desktop Mode",
-    description: "Turn your browser into a macOS-style desktop environment. Full menu bar, animated Dock with fisheye effect, Control Center tray, Launchpad app grid, and traffic light window buttons - all running in the browser."
+    description:
+      "Turn your browser into a macOS-style desktop environment. Full menu bar, animated Dock with fisheye effect, Control Center tray, Launchpad app grid, and traffic light window buttons - all running in the browser."
   },
   {
     key: "terminal",
     title: "Browser Terminal with Python, Node & Git",
-    description: "Full Unix-like terminal in your browser with Python REPL via Pyodide, Node.js REPL via WebContainers, complete Git integration (clone, commit, push, pull), pipeline support, and 30+ built-in commands - no installation required."
+    description:
+      "Full Unix-like terminal in your browser with Python REPL via Pyodide, Node.js REPL via WebContainers, complete Git integration (clone, commit, push, pull), pipeline support, and 30+ built-in commands - no installation required."
   },
   {
     key: "emulators",
     title: "Browser Emulators - DOS, Flash, x86 & 3DS",
-    description: "Play classic games in your browser with built-in emulators for DOS via JsDos, Flash via Ruffle, x86 via Virtual86, and 3DS via Azahar. Features a Steam-like launcher with overlay, achievements, and playtime tracking."
+    description:
+      "Play classic games in your browser with built-in emulators for DOS via JsDos, Flash via Ruffle, x86 via Virtual86, and 3DS via Azahar. Features a Steam-like launcher with overlay, achievements, and playtime tracking."
   },
   {
     key: "games",
     title: "2900 Free Online Games - Play in Your Browser",
-    description: "Play 2900 free games instantly in your browser on YukiOS. From Minecraft and Geometry Dash to Balatro and Angry Birds - no downloads, no sign-ups, just click and play in a full desktop environment."
+    description:
+      "Play 2900 free games instantly in your browser on YukiOS. From Minecraft and Geometry Dash to Balatro and Angry Birds - no downloads, no sign-ups, just click and play in a full desktop environment."
   },
   {
     key: "3d-room",
     title: "3D Room - Interactive Game Library",
-    description: "Explore your game collection in a fully interactive first-person 3D room built with Three.js. Browse a holographic app launcher, arrange furniture in the editor, grab physics-based game cases off shelves, toggle day/night lighting, and launch any game directly from the room - all in the browser with WASD controls."
+    description:
+      "Explore your game collection in a fully interactive first-person 3D room built with Three.js. Browse a holographic app launcher, arrange furniture in the editor, grab physics-based game cases off shelves, toggle day/night lighting, and launch any game directly from the room - all in the browser with WASD controls."
   },
   {
     key: "start-menu",
     title: "Start Menu & App Grid",
-    description: "Fuzzy-search start menu with favorites, categories, recent apps, and customizable app grid. Navigate categories, star favorites, and launch anything with keyboard shortcuts - all with glassmorphism styling."
+    description:
+      "Fuzzy-search start menu with favorites, categories, recent apps, and customizable app grid. Navigate categories, star favorites, and launch anything with keyboard shortcuts - all with glassmorphism styling."
   },
   {
     key: "workspaces",
     title: "Multi-Workspace Desktop",
-    description: "Manage up to 9 independent workspaces with per-workspace window layouts, independent BSP tiling trees, and seamless switching via keyboard or tray. Each workspace preserves window positions, states, and focus order."
+    description:
+      "Manage up to 9 independent workspaces with per-workspace window layouts, independent BSP tiling trees, and seamless switching via keyboard or tray. Each workspace preserves window positions, states, and focus order."
   },
   {
     key: "widgets",
     title: "Desktop Widget System",
-    description: "Interactive desktop widgets for clock, weather, notes, calendar, todo lists, music controls, system monitor, battery, clipboard, YouTube embed, photo frame slideshow, and timer/stopwatch - all draggable and customizable."
+    description:
+      "Interactive desktop widgets for clock, weather, notes, calendar, todo lists, music controls, system monitor, battery, clipboard, YouTube embed, photo frame slideshow, and timer/stopwatch - all draggable and customizable."
   },
   {
     key: "audio-mixer",
     title: "Audio Mixer & System Sounds",
-    description: "Per-app volume control with live waveform visualizer, master volume and mute toggle, system sounds for common actions, and tray icon with scroll-to-adjust. Fine-tune every audio source independently."
+    description:
+      "Per-app volume control with live waveform visualizer, master volume and mute toggle, system sounds for common actions, and tray icon with scroll-to-adjust. Fine-tune every audio source independently."
   },
   {
     key: "user-accounts",
     title: "User Accounts & Multi-Profile",
-    description: "Create multiple user profiles with custom nicknames, avatars, and desktop configurations. Lock screen with idle timeout, session switching, and per-profile wallpaper and theme persistence."
+    description:
+      "Create multiple user profiles with custom nicknames, avatars, and desktop configurations. Lock screen with idle timeout, session switching, and per-profile wallpaper and theme persistence."
   }
 ];
 
 const GH = "https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github";
 const GAMES_CDN = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main";
 
-function resolveGameUrl(url) {
+function resolveGameUrl(url, type) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  const clean = url.startsWith("/") ? url.slice(1) : url;
+  let clean = url.startsWith("/") ? url.slice(1) : url;
+  clean = clean
+    .replace(/^static\//, "")
+    .replace(/^games\//, "")
+    .replace(/^static\/games\//, "");
+
+  if (type === "html") {
+    return `${GAMES_CDN}/html/${clean}`;
+  }
+
   return `${GAMES_CDN}/${clean}`;
 }
 
@@ -411,7 +719,9 @@ function buildSitemap(apps, games, gameDescs, featurePages) {
     return out.join("\n");
   };
   const lines = ['<?xml version="1.0" encoding="UTF-8"?>'];
-  lines.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">');
+  lines.push(
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'
+  );
   lines.push(entry(BASE, `${GH}/mac.png`, 1.0, "daily"));
   lines.push(entry(`${BASE}/apps.html`, `${GH}/mac.png`, 0.9, "weekly"));
   lines.push(entry(`${BASE}/games.html`, `${GH}/steam.png`, 0.9, "daily"));
@@ -430,7 +740,7 @@ function buildSitemap(apps, games, gameDescs, featurePages) {
   if (featurePages) {
     for (const f of featurePages) {
       if (f.rootFile) continue;
-      const img = galleryImages.find(i => i.featureKey === f.key);
+      const img = galleryImages.find((i) => i.featureKey === f.key);
       lines.push(entry(`${BASE}/feature/${f.key}.html`, img ? img.src : `${GH}/mac.png`, 0.6, "monthly"));
     }
   }
@@ -516,7 +826,7 @@ const landingStyle = `<style>
 </style>`;
 
 function makeLanding(title, desc, extraContent, imageUrl) {
-  const galleryImagesJson = JSON.stringify(galleryImages.map(g => g.src));
+  const galleryImagesJson = JSON.stringify(galleryImages.map((g) => g.src));
   const screenshot = `
 <section class="seo-screenshot">
   <div class="slideshow-container">
@@ -606,7 +916,10 @@ ${adSlotScript("landing-ad")}`;
 
 function generateBullets(description, minBullets) {
   if (minBullets == null) minBullets = 3;
-  const pts = description.split(/\.\s+/).filter(s => s.trim().length > 10).map(s => s.replace(/\.+$/, "").trim());
+  const pts = description
+    .split(/\.\s+/)
+    .filter((s) => s.trim().length > 10)
+    .map((s) => s.replace(/\.+$/, "").trim());
   const fallbacks = [
     "Available directly in your browser with no downloads or installation required",
     "Part of the YukiOS desktop environment with 80+ built-in applications and 2900 games",
@@ -660,15 +973,56 @@ injectAdsterraAd("${prefix}-2","${STORE_AD_KEY_2}",600,160,1000);
 </script>`;
 }
 
-function makeMinimalGamePage(title, desc, jsonld, canonicalUrl, gameUrl, extraContent, seoImage, gameIcon, seoTitle, seoDesc) {
+function makeMinimalGamePage(
+  title,
+  desc,
+  jsonld,
+  canonicalUrl,
+  gameUrl,
+  extraContent,
+  seoImage,
+  gameIcon,
+  seoTitle,
+  seoDesc,
+  gameType
+) {
   const st = seoTitle || `${title} - Play Online Free on YukiOS`;
   const sd = seoDesc || desc;
   const isSubwaySurfers = title.toLowerCase().includes("subway surfers");
   let finalGameIcon = gameIcon;
   if (isSubwaySurfers) {
-    const gameName = title.replace(/subway surfers/i, "").trim().toLowerCase().replace(/\s+/g, "");
+    const gameName = title
+      .replace(/subway surfers/i, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "");
     finalGameIcon = `https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/subwaySurfers/${gameName}.webp`;
   }
+
+  let gamePlayerHtml = "";
+  if (gameType === "swf") {
+    gamePlayerHtml = `
+<div id="player" style="width:100%;height:800px;background:black;"></div>
+<script src="https://unpkg.com/@ruffle-rs/ruffle/ruffle.js"></script>
+<script>
+(function(){
+  const ruffle = window.RufflePlayer.newest();
+  const player = ruffle.createPlayer();
+
+  player.style.width = "100%";
+  player.style.height = "100%";
+  player.style.display = "block";
+
+  document.getElementById("player").appendChild(player);
+  player.load("${escHtml(gameUrl)}");
+})();
+</script>`;
+  } else if (["gba", "psp", "nds", "megadrive", "genesis"].includes(gameType)) {
+    gamePlayerHtml = `<iframe id="game-iframe" src="${escHtml(gameUrl)}" allow="autoplay; fullscreen" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts" style="width:100%;height:100%;border:none;display:block;"></iframe>`;
+  } else {
+    gamePlayerHtml = `<iframe id="game-iframe" src="${escHtml(gameUrl)}" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" style="width:100%;height:100%;border:none;display:block;"></iframe>`;
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -797,7 +1151,7 @@ body{background:#0a0a14;color:#ccc;font-family:-apple-system,BlinkMacSystemFont,
   <div class="game-layout">
     <div class="game-main-content">
       <div class="game-iframe-container" id="game-container">
-        <iframe id="game-iframe" src="about:blank" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" data-game-url="${escHtml(gameUrl)}"></iframe>
+        ${gamePlayerHtml}
       </div>
       <div class="game-content-section seo-body">
         ${extraContent || ""}
@@ -858,10 +1212,13 @@ body{background:#0a0a14;color:#ccc;font-family:-apple-system,BlinkMacSystemFont,
 const CURRENT_GAME_KEY = "${escHtml(title)}";
 const CURRENT_GAME_URL = "${escHtml(gameUrl)}";
 const CURRENT_GAME_ICON = "${escHtml(finalGameIcon || "")}";
+const CURRENT_GAME_TYPE = "${escHtml(gameType || "")}";
 
 function loadGame() {
+  if (CURRENT_GAME_TYPE === "swf") return;
   var container = document.getElementById('game-container');
   var iframe = document.getElementById('game-iframe');
+  if (!container || !iframe) return;
   container.style.display = 'block';
   iframe.src = 'about:blank';
   fetchGameHtml(CURRENT_GAME_URL).then(function(blobUrl) {
@@ -1009,24 +1366,26 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
   const esc = escHtml;
   const imgS = imageSize || 72;
   const link = (k) => `/${itemType === "game" ? "class" : itemType}/${k}.html`;
-  const allGenres = itemType === "game" ? [...new Set(items.flatMap(i => i.genre || []))].sort() : [];
-  const cards = items.map(item => {
-    let iconHtml;
-    if (isFA(item.icon)) {
-      iconHtml = `<i class="${item.icon}" style="font-size:40px;color:#d97706"></i>`;
-    } else if (item.icon) {
-      iconHtml = `<img src="${item.icon}" alt="${esc(item.title)}" loading="lazy" style="width:${imgS}px;height:${imgS}px;object-fit:contain;border-radius:8px" />`;
-    } else {
-      iconHtml = `<i class="fas fa-star" style="font-size:40px;color:#d97706"></i>`;
-    }
-    const genreAttr = item.genre ? esc(item.genre.join(",")) : "";
-    return `<a href="${link(item.key)}" class="cat-card" data-genre="${genreAttr}" data-title="${esc(item.title).toLowerCase()}">${iconHtml}<span class="cat-label">${esc(item.title)}</span></a>`;
-  }).join("");
-  
+  const allGenres = itemType === "game" ? [...new Set(items.flatMap((i) => i.genre || []))].sort() : [];
+  const cards = items
+    .map((item) => {
+      let iconHtml;
+      if (isFA(item.icon)) {
+        iconHtml = `<i class="${item.icon}" style="font-size:40px;color:#d97706"></i>`;
+      } else if (item.icon) {
+        iconHtml = `<img src="${item.icon}" alt="${esc(item.title)}" loading="lazy" style="width:${imgS}px;height:${imgS}px;object-fit:contain;border-radius:8px" />`;
+      } else {
+        iconHtml = `<i class="fas fa-star" style="font-size:40px;color:#d97706"></i>`;
+      }
+      const genreAttr = item.genre ? esc(item.genre.join(",")) : "";
+      return `<a href="${link(item.key)}" class="cat-card" data-genre="${genreAttr}" data-title="${esc(item.title).toLowerCase()}">${iconHtml}<span class="cat-label">${esc(item.title)}</span></a>`;
+    })
+    .join("");
+
   let cardsWithAds = cards;
   if (itemType === "game") {
     const adSlot = `<div class="cat-ad">${adSlotHtml("catalog-ad")}</div>`;
-    const cardArray = items.map(item => {
+    const cardArray = items.map((item) => {
       let iconHtml;
       if (isFA(item.icon)) {
         iconHtml = `<i class="${item.icon}" style="font-size:40px;color:#d97706"></i>`;
@@ -1038,7 +1397,7 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
       const genreAttr = item.genre ? esc(item.genre.join(",")) : "";
       return `<a href="${link(item.key)}" class="cat-card" data-genre="${genreAttr}" data-title="${esc(item.title).toLowerCase()}">${iconHtml}<span class="cat-label">${esc(item.title)}</span></a>`;
     });
-    
+
     const adPositions = [12, 50];
     for (const pos of adPositions) {
       if (pos < cardArray.length) {
@@ -1051,10 +1410,12 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
   const wideGrid = imgS >= 150;
   const gridMin = wideGrid ? 220 : 140;
   const hasFilters = allGenres.length > 0;
-  const genreBtns = allGenres.map(g => {
-    const icon = GENRE_PAGE_CONFIG[g]?.icon || "fas fa-gamepad";
-    return `<button class="flt-btn" data-genre="${esc(g)}" onclick="toggleGenre('${esc(g)}')"><i class="${icon}"></i><span>${esc(g)}</span></button>`;
-  }).join("");
+  const genreBtns = allGenres
+    .map((g) => {
+      const icon = GENRE_PAGE_CONFIG[g]?.icon || "fas fa-gamepad";
+      return `<button class="flt-btn" data-genre="${esc(g)}" onclick="toggleGenre('${esc(g)}')"><i class="${icon}"></i><span>${esc(g)}</span></button>`;
+    })
+    .join("");
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1146,7 +1507,9 @@ body{background:#0a0a14;color:#ccc;font-family:-apple-system,BlinkMacSystemFont,
   <p>YukiOS - Free Browser-Based Desktop Environment</p>
   <div><a href="/features.html">Features</a> &middot; <a href="/">Home</a></div>
 </footer>
-${hasFilters ? `<script>
+${
+  hasFilters
+    ? `<script>
 var activeGenre=null;
 function toggleGenre(g){
   var btn=document.querySelector('.flt-btn[data-genre="'+g+'"]');
@@ -1191,7 +1554,9 @@ function filterCards(){
   });
   empty.classList.toggle('show',shown===0)
 }
-</script>` : ""}
+</script>`
+    : ""
+}
 ${adSlotScript("catalog-ad")}
 </body>
 </html>`;
@@ -1200,23 +1565,44 @@ function makeGenrePage(genre, genreGames, allGenreConfigs) {
   const config = GENRE_PAGE_CONFIG[genre];
   if (!config) return "";
   const esc = escHtml;
-  const cards = genreGames.map(g => {
-    const iconHtml = g.icon
-      ? `<img src="${esc(g.icon)}" alt="${esc(g.title)}" loading="lazy" class="gc-icon" />`
-      : `<div class="gc-icon-placeholder"></div>`;
-    return `<a href="/class/${g.key}.html" class="gc-card">
+  const cards = genreGames
+    .map((g) => {
+      const iconHtml = g.icon
+        ? `<img src="${esc(g.icon)}" alt="${esc(g.title)}" loading="lazy" class="gc-icon" />`
+        : `<div class="gc-icon-placeholder"></div>`;
+      return `<a href="/class/${g.key}.html" class="gc-card">
       ${iconHtml}
       <span class="gc-label">${esc(g.title)}</span>
-      <span class="gc-genres">${g.genre.map(gg => `<span class="gc-tag">${esc(gg)}</span>`).join("")}</span>
+      <span class="gc-genres">${g.genre.map((gg) => `<span class="gc-tag">${esc(gg)}</span>`).join("")}</span>
     </a>`;
-  }).join("");
+    })
+    .join("");
   const total = genreGames.length;
-  const otherGenres = Object.values(allGenreConfigs).filter(c => c.slug !== config.slug);
+  const otherGenres = Object.values(allGenreConfigs).filter((c) => c.slug !== config.slug);
   const otherLinksHtml = otherGenres.length
-    ? `<div class="gl-section"><h3>Browse More Game Genres</h3><div class="gl-links">${otherGenres.map(c => `<a href="/games/${c.slug}.html">${esc(c.h1)}</a>`).join("\n      ")}</div></div>`
+    ? `<div class="gl-section"><h3>Browse More Game Genres</h3><div class="gl-links">${otherGenres.map((c) => `<a href="/games/${c.slug}.html">${esc(c.h1)}</a>`).join("\n      ")}</div></div>`
     : "";
-  const jsonld = JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: config.title, description: config.desc, numberOfItems: total, itemListElement: genreGames.map((g, i) => ({ "@type": "ListItem", position: i + 1, url: `${BASE}/class/${g.key}.html` })) });
-  const breadcrumb = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "YukiOS", item: BASE }, { "@type": "ListItem", position: 2, name: "Games", item: `${BASE}/games.html` }, { "@type": "ListItem", position: 3, name: config.h1, item: `${BASE}/games/${config.slug}.html` }] });
+  const jsonld = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: config.title,
+    description: config.desc,
+    numberOfItems: total,
+    itemListElement: genreGames.map((g, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${BASE}/class/${g.key}.html`
+    }))
+  });
+  const breadcrumb = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
+      { "@type": "ListItem", position: 2, name: "Games", item: `${BASE}/games.html` },
+      { "@type": "ListItem", position: 3, name: config.h1, item: `${BASE}/games/${config.slug}.html` }
+    ]
+  });
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1293,7 +1679,6 @@ ${adSlotScript("genre-ad")}
 </html>`;
 }
 
-
 function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
   const outDir = resolve(ROOT, "dist");
 
@@ -1303,21 +1688,39 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
     const desc = a.description || `${a.title} - a built-in YukiOS app.`;
     const url = `${BASE}/app/${a.key}.html`;
     const jsonld = JSON.stringify([
-      { "@context": "https://schema.org", "@type": "SoftwareApplication", name: `${a.title} - YukiOS`, url, description: desc, operatingSystem: "Web Browser", applicationCategory: "WebApplication", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } },
-      { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
-        { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
-        { "@type": "ListItem", position: 2, name: "Apps", item: `${BASE}/features.html` },
-        { "@type": "ListItem", position: 3, name: a.title, item: url }
-      ]}
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: `${a.title} - YukiOS`,
+        url,
+        description: desc,
+        operatingSystem: "Web Browser",
+        applicationCategory: "WebApplication",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
+          { "@type": "ListItem", position: 2, name: "Apps", item: `${BASE}/features.html` },
+          { "@type": "ListItem", position: 3, name: a.title, item: url }
+        ]
+      }
     ]);
     const pts = generateBullets(a.description || "");
-    const bullets = pts.length ? `<h2>Features</h2><ul>${pts.map(s => `<li>${s}.</li>`).join("")}</ul>` : "";
+    const bullets = pts.length ? `<h2>Features</h2><ul>${pts.map((s) => `<li>${s}.</li>`).join("")}</ul>` : "";
     const appIdx = apps.indexOf(a);
     const nearby = [];
     for (let i = Math.max(0, appIdx - 2); i <= Math.min(apps.length - 1, appIdx + 2); i++) {
       if (i !== appIdx) nearby.push(apps[i]);
     }
-    const relatedApps = nearby.length ? `<p class="seo-more">More YukiOS apps: ${nearby.slice(0, 4).map(n => `<a href="/app/${n.key}.html">${n.title}</a>`).join(", ")}</p>` : "";
+    const relatedApps = nearby.length
+      ? `<p class="seo-more">More YukiOS apps: ${nearby
+          .slice(0, 4)
+          .map((n) => `<a href="/app/${n.key}.html">${n.title}</a>`)
+          .join(", ")}</p>`
+      : "";
     const extra = `${bullets}<p class="seo-cta">${a.title} is part of YukiOS - a free browser-based desktop environment with 80+ apps, 2900 games, and no downloads or sign-ups required. Launch it directly from the Start Menu or bookmark this page for quick access.</p>${relatedApps}`;
     const html = indexHtml
       .replace(/<title>[^<]*<\/title>/, `<title>${a.title} - YukiOS</title>`)
@@ -1330,7 +1733,10 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
       .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
       .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${GH}/mac.png" />`)
       .replace(/<meta name="twitter:image"[^>]*>/, `<meta name="twitter:image" content="${GH}/mac.png" />`)
-      .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, `<script type="application/ld+json">${jsonld}</script>`)
+      .replace(
+        /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+        `<script type="application/ld+json">${jsonld}</script>`
+      )
       .replace("<body>", `<body>${makeLanding(a.title, desc, extra, `${GH}/mac.png`)}`);
     writeFileSync(resolve(appDir, `${a.key}.html`), html, "utf-8");
   }
@@ -1341,7 +1747,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
     const desc = gameDescs[g.key]
       ? `Play ${g.title} in your browser on YukiOS - ${gameDescs[g.key]}`
       : `Play ${g.title} in your browser on YukiOS`;
-    const genre = g.genre && g.genre[0] || "Casual";
+    const genre = (g.genre && g.genre[0]) || "Casual";
     const titleTmpl = TITLE_TEMPLATES[genre] || TITLE_TEMPLATES.Casual;
     const h1Tmpl = H1_TEMPLATES[genre] || H1_TEMPLATES.Casual;
     const seoTitle = titleTmpl.replace(/\$\{title\}/g, g.title);
@@ -1349,62 +1755,97 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
     const seoDesc = desc + (DESC_SUFFIXES[genre] || "");
     const url = `${BASE}/class/${g.key}.html`;
     const jsonld = JSON.stringify([
-      { "@context": "https://schema.org", "@type": "VideoGame", name: seoTitle, url, description: seoDesc, operatingSystem: "Web Browser", applicationCategory: "Game", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } },
-      { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
-        { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
-        { "@type": "ListItem", position: 2, name: "Games", item: `${BASE}/games.html` },
-        { "@type": "ListItem", position: 3, name: g.title, item: url }
-      ]}
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        name: seoTitle,
+        url,
+        description: seoDesc,
+        operatingSystem: "Web Browser",
+        applicationCategory: "Game",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
+          { "@type": "ListItem", position: 2, name: "Games", item: `${BASE}/games.html` },
+          { "@type": "ListItem", position: 3, name: g.title, item: url }
+        ]
+      }
     ]);
     const raw = gameDescs[g.key] || `Play ${g.title} online for free in your browser.`;
     const pts = generateBullets(raw);
-    const bullets = pts.length ? `<h2>Game Features</h2><ul>${pts.map(s => `<li>${s}.</li>`).join("")}</ul>` : "";
-    
+    const bullets = pts.length ? `<h2>Game Features</h2><ul>${pts.map((s) => `<li>${s}.</li>`).join("")}</ul>` : "";
+
     function calculateSimilarity(game1, game2) {
       let score = 0;
       const genre1 = game1.genre || [];
       const genre2 = game2.genre || [];
-      const matchingGenres = genre1.filter(g => genre2.includes(g)).length;
+      const matchingGenres = genre1.filter((g) => genre2.includes(g)).length;
       score += matchingGenres * 10;
-      
+
       const name1 = game1.title.toLowerCase();
       const name2 = game2.title.toLowerCase();
       const words1 = name1.split(/\s+/);
       const words2 = name2.split(/\s+/);
-      const matchingWords = words1.filter(w => w.length > 2 && words2.includes(w)).length;
+      const matchingWords = words1.filter((w) => w.length > 2 && words2.includes(w)).length;
       score += matchingWords * 3;
-      
-      const commonChars = name1.split('').filter(c => name2.includes(c)).length;
+
+      const commonChars = name1.split("").filter((c) => name2.includes(c)).length;
       const maxLen = Math.max(name1.length, name2.length);
       score += (commonChars / maxLen) * 2;
-      
+
       return score;
     }
-    
-    const scored = games.filter(other => other.key !== g.key).map(other => ({
-      game: other,
-      score: calculateSimilarity(g, other)
-    })).sort((a, b) => b.score - a.score);
-    
-    const relatedGames = scored.length ? `
+
+    const scored = games
+      .filter((other) => other.key !== g.key)
+      .map((other) => ({
+        game: other,
+        score: calculateSimilarity(g, other)
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const relatedGames = scored.length
+      ? `
 <div class="you-may-like">
   <h2>You May Also Like</h2>
   <div class="you-may-like-grid">
-    ${scored.slice(0, 6).map(s => `
+    ${scored
+      .slice(0, 6)
+      .map(
+        (s) => `
       <a href="/class/${s.game.key}.html" class="you-may-like-card">
         ${s.game.icon ? `<img class="you-may-like-icon" src="${escHtml(s.game.icon)}" alt="${escHtml(s.game.title)} icon" loading="lazy" />` : `<div class="you-may-like-icon"></div>`}
         <div class="you-may-like-title">${escHtml(s.game.title)}</div>
-        <div class="you-may-like-genre">${s.game.genre && s.game.genre[0] || "Casual"}</div>
+        <div class="you-may-like-genre">${(s.game.genre && s.game.genre[0]) || "Casual"}</div>
       </a>
-    `).join("")}
+    `
+      )
+      .join("")}
   </div>
-</div>` : "";
+</div>`
+      : "";
     const seoPara = SEO_PARAGRAPHS[genre] || SEO_PARAGRAPHS.Casual;
     const howToPlay = `<h2>How to Play</h2><ul><li>Press the Play button above to start playing ${g.title} instantly in full screen.</li><li>Use keyboard (WASD or arrow keys) and mouse for most games.</li><li>Your progress and high scores are saved automatically between sessions.</li></ul>`;
     const platformFeatures = `<h2>Platform Features</h2><ul><li>Zero downloads or installations needed.</li><li>Works on Chromebooks, tablets, and mobile devices.</li><li>Fast loading times with optimized delivery.</li><li>Open source project. View and contribute on GitHub.</li><li>Fullscreen mode for immersive gameplay.</li><li>Mobile friendly with touch controls.</li><li>Works behind school and corporate network filters.</li><li>Regularly updated game library.</li></ul>`;
     const extra = `<p class="seo-cta">Play ${g.title} online for free in your browser on YukiOS. No downloads, no sign-ups, no installation required.</p>${bullets}<h2>About This Game</h2><p>${seoPara}</p>${howToPlay}${platformFeatures}${relatedGames}`;
-    const gameUrl = resolveGameUrl(g.url);
-    const html = makeMinimalGamePage(g.title, desc, jsonld, url, gameUrl, extra, `${GH}/steam.png`, g.icon, seoTitle, seoDesc);
+    const gameUrl = resolveGameUrl(g.url, g.type);
+    const html = makeMinimalGamePage(
+      g.title,
+      desc,
+      jsonld,
+      url,
+      gameUrl,
+      extra,
+      `${GH}/steam.png`,
+      g.icon,
+      seoTitle,
+      seoDesc,
+      g.type
+    );
     writeFileSync(resolve(classDir, `${g.key}.html`), html, "utf-8");
   }
 
@@ -1433,14 +1874,23 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
   for (const f of featurePages) {
     const filePath = f.rootFile ? f.rootFile : `feature/${f.key}.html`;
     const url = `${BASE}/${filePath}`;
-    const pts = f.description.split(/\.\s+/).filter(s => s.trim().length > 10).map(s => s.replace(/\.+$/, "").trim());
-    const bullets = pts.length ? `<h2>About This Feature</h2><ul>${pts.map(s => `<li>${s}.</li>`).join("")}</ul>` : "";
-    const related = featurePages.filter(p => p.key !== "index" && p.key !== f.key).slice(0, 4);
-    const relatedLinks = related.length ? `<p class="seo-more">Explore more: ${related.map(r => `<a href="/feature/${r.key}.html">${r.title}</a>`).join(", ")}</p>` : "";
-    const ogImage = (galleryImages.find(i => i.featureKey === f.key) || {}).src || `${GH}/mac.png`;
+    const pts = f.description
+      .split(/\.\s+/)
+      .filter((s) => s.trim().length > 10)
+      .map((s) => s.replace(/\.+$/, "").trim());
+    const bullets = pts.length
+      ? `<h2>About This Feature</h2><ul>${pts.map((s) => `<li>${s}.</li>`).join("")}</ul>`
+      : "";
+    const related = featurePages.filter((p) => p.key !== "index" && p.key !== f.key).slice(0, 4);
+    const relatedLinks = related.length
+      ? `<p class="seo-more">Explore more: ${related.map((r) => `<a href="/feature/${r.key}.html">${r.title}</a>`).join(", ")}</p>`
+      : "";
+    const ogImage = (galleryImages.find((i) => i.featureKey === f.key) || {}).src || `${GH}/mac.png`;
     let extra;
     if (f.rootFile) {
-      const featureTitleMap = Object.fromEntries(featurePages.filter(p => p.key !== "index").map(p => [p.key, p.title]));
+      const featureTitleMap = Object.fromEntries(
+        featurePages.filter((p) => p.key !== "index").map((p) => [p.key, p.title])
+      );
       const cards = galleryImages
         .map((img) => {
           const title = featureTitleMap[img.featureKey];
@@ -1583,23 +2033,52 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
       extra = `${bullets}<p class="seo-cta">${f.title} is part of YukiOS - a free browser-based desktop environment that runs entirely in your browser with no downloads or sign-ups needed.</p>${relatedLinks}`;
     }
     let jsonld;
-    const breadcrumbBase = { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
-      { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
-      { "@type": "ListItem", position: 2, name: "Features", item: `${BASE}/features.html` }
-    ]};
+    const breadcrumbBase = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
+        { "@type": "ListItem", position: 2, name: "Features", item: `${BASE}/features.html` }
+      ]
+    };
     if (f.rootFile) {
-      const items = featurePages.filter(p => p.key !== "index").map((p, i) => ({
-        "@type": "ListItem", position: i + 1, name: p.title, url: `${BASE}/${p.rootFile ? p.rootFile : "feature/" + p.key + ".html"}`
-      }));
+      const items = featurePages
+        .filter((p) => p.key !== "index")
+        .map((p, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: p.title,
+          url: `${BASE}/${p.rootFile ? p.rootFile : "feature/" + p.key + ".html"}`
+        }));
       jsonld = JSON.stringify([
-        { "@context": "https://schema.org", "@type": "WebPage", name: `${f.title} - YukiOS`, url, description: f.description, about: { "@type": "SoftwareApplication", name: "YukiOS" } },
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `${f.title} - YukiOS`,
+          url,
+          description: f.description,
+          about: { "@type": "SoftwareApplication", name: "YukiOS" }
+        },
         { "@type": "ItemList", name: "YukiOS Features", numberOfItems: items.length, itemListElement: items },
         breadcrumbBase
       ]);
     } else {
-      const breadcrumb = { ...breadcrumbBase, itemListElement: [...breadcrumbBase.itemListElement, { "@type": "ListItem", position: 3, name: f.title, item: url }] };
+      const breadcrumb = {
+        ...breadcrumbBase,
+        itemListElement: [
+          ...breadcrumbBase.itemListElement,
+          { "@type": "ListItem", position: 3, name: f.title, item: url }
+        ]
+      };
       jsonld = JSON.stringify([
-        { "@context": "https://schema.org", "@type": "WebPage", name: `${f.title} - YukiOS`, url, description: f.description, about: { "@type": "SoftwareApplication", name: "YukiOS" } },
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `${f.title} - YukiOS`,
+          url,
+          description: f.description,
+          about: { "@type": "SoftwareApplication", name: "YukiOS" }
+        },
         breadcrumb
       ]);
     }
@@ -1615,7 +2094,10 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
       .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
       .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${ogImage}" />`)
       .replace(/<meta name="twitter:image"[^>]*>/, `<meta name="twitter:image" content="${ogImage}" />`)
-      .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, `<script type="application/ld+json">${jsonld}</script>`)
+      .replace(
+        /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+        `<script type="application/ld+json">${jsonld}</script>`
+      )
       .replace("<body>", `<body>${landing}`);
     writeFileSync(resolve(f.rootFile ? outDir : featureDir, f.rootFile || `${f.key}.html`), html, "utf-8");
   }
@@ -1654,23 +2136,46 @@ const apps = extractApps();
 const gameDescs = extractGameDescriptions();
 const games = extractGames(gameDescs);
 
-console.log(`[generatePages] ${apps.length} apps, ${games.length} games, ${Object.keys(gameDescs).length} game descriptions, ${featurePages.length} feature pages`);
+console.log(
+  `[generatePages] ${apps.length} apps, ${games.length} games, ${Object.keys(gameDescs).length} game descriptions, ${featurePages.length} feature pages`
+);
 
 async function main() {
   const archiveGames = await fetchArchiveGames();
   console.log(`[generatePages] Fetched ${archiveGames.length} archive games`);
   const allGames = [...games, ...archiveGames];
-  
+
   const indexHtml = resolve(ROOT, "dist/index.html");
   try {
     const html = readFileSync(indexHtml, "utf-8");
     const { appCount, gameCount, genreCount, featureCount } = buildPages(apps, allGames, gameDescs, featurePages, html);
-    console.log(`[generatePages] ${appCount} app pages, ${gameCount} game pages, ${genreCount} genre pages, ${featureCount} feature pages, 404 page written`);
+    console.log(
+      `[generatePages] ${appCount} app pages, ${gameCount} game pages, ${genreCount} genre pages, ${featureCount} feature pages, 404 page written`
+    );
     const outDir = resolve(ROOT, "dist");
     writeFileSync(resolve(outDir, "sitemap.xml"), buildSitemap(apps, allGames, gameDescs, featurePages), "utf-8");
     console.log("[generatePages] sitemap.xml written");
-    writeFileSync(resolve(outDir, "apps.html"), makeCatalogPage("All YukiOS Apps - Browser Desktop Applications", `Browse ${apps.length} built-in apps in the YukiOS browser desktop environment. From terminal and calculator to office and development tools, all free and no downloads needed.`, apps, "app"), "utf-8");
-    writeFileSync(resolve(outDir, "games.html"), makeCatalogPage("All YukiOS Games - Play Free Online Browser Games", `Browse ${allGames.length} free online games in the YukiOS browser desktop environment. Play instantly with no downloads or sign-ups.`, allGames, "game", 200), "utf-8");
+    writeFileSync(
+      resolve(outDir, "apps.html"),
+      makeCatalogPage(
+        "All YukiOS Apps - Browser Desktop Applications",
+        `Browse ${apps.length} built-in apps in the YukiOS browser desktop environment. From terminal and calculator to office and development tools, all free and no downloads needed.`,
+        apps,
+        "app"
+      ),
+      "utf-8"
+    );
+    writeFileSync(
+      resolve(outDir, "games.html"),
+      makeCatalogPage(
+        "All YukiOS Games - Play Free Online Browser Games",
+        `Browse ${allGames.length} free online games in the YukiOS browser desktop environment. Play instantly with no downloads or sign-ups.`,
+        allGames,
+        "game",
+        200
+      ),
+      "utf-8"
+    );
     console.log(`[generatePages] apps.html and games.html catalog pages written`);
   } catch {
     console.log("[generatePages] dist/index.html not found - skipping page generation");
