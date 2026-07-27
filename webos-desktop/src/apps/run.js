@@ -12,10 +12,13 @@ export class RunApp extends BaseApp {
 
   registerGlobalShortcut() {
     document.addEventListener("keydown", (e) => {
-      if (KeybindManager.matches(e, "global.run") || KeybindManager.matches(e, "global.runMeta")) {
-        e.preventDefault();
-        this.open();
-      }
+      if (!KeybindManager.matches(e, "global.run") && !KeybindManager.matches(e, "global.runMeta")) return;
+      const seoOverlay = document.getElementById("seo-overlay");
+      if (seoOverlay && !seoOverlay.classList.contains("hidden")) return;
+      if (document.getElementById("session-overlay")) return;
+      if (document.getElementById("room3d-canvas")) return;
+      e.preventDefault();
+      this.open();
     });
   }
 

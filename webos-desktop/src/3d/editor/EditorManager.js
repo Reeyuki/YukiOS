@@ -384,6 +384,30 @@ export class EditorManager {
     return objects;
   }
 
+  cycleTransformMode() {
+    const current = this.transformControls ? this.transformControls.getMode() : "translate";
+    const next = current === "translate" ? "rotate" : "translate";
+    if (this.transformControls) {
+      this.transformControls.setMode(next);
+      if (next === "rotate") {
+        this.transformControls.setSpace("world");
+      } else {
+        this.transformControls.setSpace("world");
+      }
+    }
+    return next;
+  }
+
+  rotateSelected() {
+    if (!this.selected) return;
+    this.selected.rotation.y += Math.PI / 4;
+    this.takeSnapshot();
+    if (this.onSelectionChange) {
+      const pos = this.selected.position;
+      this.onSelectionChange(this.selected, this.selectedInfo);
+    }
+  }
+
   onDraggingChanged(event) {
     if (this.controls) {
       this.controls.enabled = !event.value;

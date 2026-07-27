@@ -154,7 +154,7 @@ export class Room3DApp extends BaseApp {
         <span class="room3d-hint-key">E</span> Trash
       </div>
       <div class="room3d-editor-hint" id="room3d-editor-hint">
-        <span class="room3d-hint-key">WASD</span> Move <span class="room3d-hint-key">Space</span> Ascend <span class="room3d-hint-key">C</span> Descend <span class="room3d-hint-key">G</span> Toggle Snap
+        <span class="room3d-hint-key">WASD</span> Move <span class="room3d-hint-key">Space</span> Ascend <span class="room3d-hint-key">C</span> Descend <span class="room3d-hint-key">G</span> Snap <span class="room3d-hint-key">R</span> Rotate <span class="room3d-hint-key">Ctrl</span> HoldSnap
       </div>
     `;
   }
@@ -165,6 +165,7 @@ export class Room3DApp extends BaseApp {
     this.hintEl = root.querySelector("#room3d-hint");
     this.wastebinHintEl = root.querySelector("#room3d-wastebin-hint");
     this.launchHintEl = root.querySelector("#room3d-launch-hint");
+    this.rotateHintEl = null;
 
     this.renderer = new RoomRenderer(container);
     await this.renderer.init();
@@ -188,6 +189,8 @@ export class Room3DApp extends BaseApp {
       }
     };
     this.controls.start(THREE);
+
+    this.ctrlHeld = false;
 
     this.audio = new SceneAudio();
     this.audio.setCameraGetter(() => this.renderer.camera);
@@ -1060,6 +1063,21 @@ export class Room3DApp extends BaseApp {
     };
 
     this.onKeyDownBound = (e) => {
+      if (e.key === "Control") {
+        this.ctrlHeld = true;
+        this.updateEditorSnap();
+        return;
+      }
+      if ((e.code === "KeyR" || e.key === "r" || e.code === "KeyE" || e.key === "e") && !e.ctrlKey && !e.metaKey) {
+        if (this.editorManager && this.editorManager.isEditActive()) {
+          e.preventDefault();
+          const mode = this.editorManager.cycleTransformMode();
+          this.editorUI.transformMode = mode;
+          this.editorUI.render();
+          if (this.audio) this.audio.playClick();
+          return;
+        }
+      }
       if (e.code === "F12" || e.key === "F12") {
         e.preventDefault();
         this.captureScreenshot();
@@ -1137,6 +1155,15 @@ export class Room3DApp extends BaseApp {
           this.editorManager.toggle();
           if (this.editorManager.isEditActive()) {
             this.hideHint();
+            if (this.renderer && this.renderer.player) {
+              this.renderer.player.group.visible = false;
+              this.renderer.player.shadowMesh.visible = false;
+            }
+          } else {
+            if (this.renderer && this.renderer.player) {
+              this.renderer.player.group.visible = true;
+              this.renderer.player.shadowMesh.visible = true;
+            }
           }
         }
         return;
@@ -1171,8 +1198,24 @@ export class Room3DApp extends BaseApp {
       }
     };
     document.addEventListener("keydown", this.onKeyDownBound);
+    this.onKeyUpBound = (e) => {
+      if (e.key === "Control") {
+        this.ctrlHeld = false;
+        this.updateEditorSnap();
+      }
+    };
+    document.addEventListener("keyup", this.onKeyUpBound);
     this.triggerRoomAchievement("room_explorer");
     this.showHint();
+  }
+
+  updateEditorSnap() {
+    if (!this.editorManager || !this.editorManager.transformControls) return;
+    if (this.ctrlHeld) {
+      this.editorManager.transformControls.translationSnap = this.editorManager.snapSize;
+    } else {
+      this.editorManager.transformControls.translationSnap = null;
+    }
   }
 
   registerNewDecorBuilders() {
@@ -1554,6 +1597,11 @@ export class Room3DApp extends BaseApp {
       document.removeEventListener("keydown", this.onKeyDownBound);
       this.onKeyDownBound = null;
     }
+    if (this.onKeyUpBound) {
+      document.removeEventListener("keyup", this.onKeyUpBound);
+      this.onKeyUpBound = null;
+    }
+    this.ctrlHeld = false;
     if (this.audio) {
       this.audio.dispose();
       this.audio = null;

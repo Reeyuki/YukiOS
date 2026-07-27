@@ -35,7 +35,7 @@ export function getAnalyticsBase(app) {
 }
 
 function loadQueue() {
-  if (ANALYTICS_DISABLED) return [];
+  if (ANALYTICS_DISABLED()) return [];
   try {
     return os.storage.get(ANALYTICS_QUEUE_KEY) || [];
   } catch {
@@ -44,7 +44,7 @@ function loadQueue() {
 }
 
 function saveQueue(q) {
-  if (ANALYTICS_DISABLED) return;
+  if (ANALYTICS_DISABLED()) return;
   os.storage.set(ANALYTICS_QUEUE_KEY, q);
 }
 
@@ -62,7 +62,7 @@ function sendBatch(events) {
 }
 
 function flushQueue() {
-  if (ANALYTICS_DISABLED) return;
+  if (ANALYTICS_DISABLED()) return;
   const queue = loadQueue();
   if (!queue.length) return;
   os.storage.remove(ANALYTICS_QUEUE_KEY);
@@ -78,7 +78,7 @@ function scheduleFlush() {
 }
 
 function queueEvent(event) {
-  if (ANALYTICS_DISABLED) return;
+  if (ANALYTICS_DISABLED()) return;
   const queue = loadQueue();
   queue.push(event);
   if (queue.length >= MAX_QUEUE_SIZE) {
@@ -95,7 +95,7 @@ function queueEvent(event) {
 }
 
 export function initAnalytics() {
-  if (ANALYTICS_DISABLED) return;
+  if (ANALYTICS_DISABLED()) return;
   pageLoadTime = Date.now();
   flushQueue();
   queueEvent({
@@ -111,7 +111,7 @@ export function initAnalytics() {
 }
 
 export function sendLaunchAnalytics(app) {
-  if (ANALYTICS_DISABLED) return;
+  if (ANALYTICS_DISABLED()) return;
   if (shouldExcludeFromAnalytics(app)) return;
   queueEvent({
     app,
@@ -122,7 +122,7 @@ export function sendLaunchAnalytics(app) {
 }
 
 export function recordUsage(winId) {
-  if (ANALYTICS_DISABLED) return;
+  if (ANALYTICS_DISABLED()) return;
   const start = Date.now();
   const win = document.getElementById(winId);
   if (!win) return;
@@ -144,7 +144,7 @@ export function recordUsage(winId) {
 }
 
 export async function fetchGamePlayCounts() {
-  if (ANALYTICS_DISABLED) {
+  if (ANALYTICS_DISABLED()) {
     console.error("Analytics disabled, skipping gameplay count fetch");
     return {};
   }

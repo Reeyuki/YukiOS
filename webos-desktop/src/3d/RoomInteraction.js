@@ -33,7 +33,6 @@ export class RoomInteraction {
     this.gameCaseManager = null;
     this.gameState = null;
     this.onCasePlaced = null;
-    this.editorManager = null;
     this.seatedChair = null;
     this.seatedSavedPos = null;
     this.seatedSavedYaw = null;

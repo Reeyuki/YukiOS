@@ -1,15 +1,15 @@
 const FA_ICONS = {
   "wooden-chair": "\uf6c0",
-  "wastebin": "\uf1f8",
-  "crate": "\uf466",
-  "barrel": "\uf0fc",
+  wastebin: "\uf1f8",
+  crate: "\uf466",
+  barrel: "\uf0fc",
   "small-table": "\uf0ce",
   "desk-plant": "\uf06c",
   "wall-poster": "\uf5aa",
   "wall-clock": "\uf017",
-  "painting": "\uf1fc",
+  painting: "\uf1fc",
   "floor-lamp": "\uf0eb",
-  "rug": "\uf7a4",
+  rug: "\uf7a4",
   "desk-cases": "\uf02d",
   "gold-trophy": "\uf091",
   "neon-sign": "\uf0e7"
@@ -162,7 +162,12 @@ function drawIconPoster(ctx, x, y, s, color) {
   ctx.strokeRect(cx - s * 0.3, cy - s * 0.32, s * 0.6, s * 0.64);
   ctx.globalAlpha = 0.3;
   const dotR = s * 0.03;
-  [[-s * 0.2, -s * 0.22], [s * 0.2, -s * 0.22], [-s * 0.2, s * 0.22], [s * 0.2, s * 0.22]].forEach(([dx, dy]) => {
+  [
+    [-s * 0.2, -s * 0.22],
+    [s * 0.2, -s * 0.22],
+    [-s * 0.2, s * 0.22],
+    [s * 0.2, s * 0.22]
+  ].forEach(([dx, dy]) => {
     ctx.beginPath();
     ctx.arc(cx + dx, cy + dy, dotR, 0, Math.PI * 2);
     ctx.fill();
@@ -334,16 +339,16 @@ function drawIconNeon(ctx, x, y, s, color) {
 
 const ICON_DRAWERS = {
   "wooden-chair": drawIconChair,
-  "wastebin": drawIconWastebin,
-  "crate": drawIconCrate,
-  "barrel": drawIconBarrel,
+  wastebin: drawIconWastebin,
+  crate: drawIconCrate,
+  barrel: drawIconBarrel,
   "small-table": drawIconTable,
   "desk-plant": drawIconSucculent,
   "wall-poster": drawIconPoster,
   "wall-clock": drawIconClock,
-  "painting": drawIconPainting,
+  painting: drawIconPainting,
   "floor-lamp": drawIconLamp,
-  "rug": drawIconRug,
+  rug: drawIconRug,
   "desk-cases": drawIconBooks,
   "gold-trophy": drawIconTrophy,
   "neon-sign": drawIconNeon
@@ -376,6 +381,7 @@ export class EditorUI {
     requestAnimationFrame(() => this.resize());
 
     this.snapEnabled = false;
+    this.transformMode = "translate";
     this.lockedItems = new Set();
 
     this.categories = [
@@ -385,9 +391,7 @@ export class EditorUI {
         subcategories: [
           {
             name: "Seating",
-            items: [
-              { id: "wooden-chair", name: "Wooden Chair", iconColor: "#8b5e3c", manager: "furniture" }
-            ]
+            items: [{ id: "wooden-chair", name: "Wooden Chair", iconColor: "#8b5e3c", manager: "furniture" }]
           },
           {
             name: "Storage",
@@ -399,9 +403,7 @@ export class EditorUI {
           },
           {
             name: "Surfaces",
-            items: [
-              { id: "small-table", name: "Small Table", iconColor: "#7a5530", manager: "furniture" }
-            ]
+            items: [{ id: "small-table", name: "Small Table", iconColor: "#7a5530", manager: "furniture" }]
           }
         ]
       },
@@ -411,9 +413,7 @@ export class EditorUI {
         subcategories: [
           {
             name: "Plants",
-            items: [
-              { id: "desk-plant", name: "Desk Succulent", iconColor: "#5abc6a", manager: "decor" }
-            ]
+            items: [{ id: "desk-plant", name: "Desk Succulent", iconColor: "#5abc6a", manager: "decor" }]
           },
           {
             name: "Wall Art",
@@ -432,9 +432,7 @@ export class EditorUI {
           },
           {
             name: "Desk",
-            items: [
-              { id: "desk-cases", name: "Game Cases on Desk", iconColor: "#ffcc00", manager: "decor" }
-            ]
+            items: [{ id: "desk-cases", name: "Game Cases on Desk", iconColor: "#ffcc00", manager: "decor" }]
           },
           {
             name: "Rewards",
@@ -644,6 +642,23 @@ export class EditorUI {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("SNAP", x + 20, 7 + 16);
+    ctx.textAlign = "start";
+
+    x += 54;
+    const isRotate = this.transformMode === "rotate";
+    const modeBg = isRotate ? "rgba(0, 220, 255, 0.18)" : "rgba(255,255,255,0.04)";
+    const modeBorder = isRotate ? "rgba(0, 220, 255, 0.5)" : "rgba(255,255,255,0.06)";
+    this.roundRect(ctx, x, 7, 56, 32, 4);
+    ctx.fillStyle = modeBg;
+    ctx.fill();
+    ctx.strokeStyle = modeBorder;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = isRotate ? "#00ddff" : "rgba(255,255,255,0.45)";
+    ctx.font = "bold 10px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(isRotate ? "ROTATE" : "MOVE", x + 28, 7 + 16);
     ctx.textAlign = "start";
 
     const exitW = 68;
