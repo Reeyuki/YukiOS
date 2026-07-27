@@ -825,6 +825,121 @@ const landingStyle = `<style>
 .seo-cta-card .cta-count{color:#d97706;font-size:1.6rem;font-weight:800;display:block;margin-bottom:4px}
 </style>`;
 
+function makeStandalonePage(title, desc, jsonld, canonicalUrl, ogImage, extraContent, launchUrl) {
+  const galleryImagesJson = JSON.stringify(galleryImages.map((g) => g.src));
+  const screenshot = `
+<section class="seo-screenshot">
+  <div class="slideshow-container">
+    <button class="slideshow-btn slideshow-btn-prev" onclick="changeSlide(-1)"><i class="fas fa-chevron-left"></i></button>
+    <div class="slideshow-wrapper">
+      <img id="slideshow-img" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
+      <div class="slideshow-dots" id="slideshow-dots"></div>
+    </div>
+    <button class="slideshow-btn slideshow-btn-next" onclick="changeSlide(1)"><i class="fas fa-chevron-right"></i></button>
+  </div>
+</section>
+<script>
+const slideshowImages = ${galleryImagesJson};
+let currentSlide = 0;
+let slideshowInterval;
+
+function showSlide(index) {
+  const img = document.getElementById('slideshow-img');
+  if (!img) return;
+  currentSlide = (index + slideshowImages.length) % slideshowImages.length;
+  img.src = slideshowImages[currentSlide];
+  updateDots();
+}
+
+function changeSlide(direction) {
+  showSlide(currentSlide + direction);
+  resetSlideshow();
+}
+
+function updateDots() {
+  const dotsContainer = document.getElementById('slideshow-dots');
+  if (!dotsContainer) return;
+  dotsContainer.innerHTML = '';
+  slideshowImages.forEach((_, index) => {
+    const dot = document.createElement('span');
+    dot.className = 'slideshow-dot' + (index === currentSlide ? ' active' : '');
+    dot.onclick = () => { showSlide(index); resetSlideshow(); };
+    dotsContainer.appendChild(dot);
+  });
+}
+
+function startSlideshow() {
+  slideshowInterval = setInterval(() => changeSlide(1), 5000);
+}
+
+function resetSlideshow() {
+  clearInterval(slideshowInterval);
+  startSlideshow();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateDots();
+  startSlideshow();
+});
+</script>`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${escHtml(title)} - YukiOS</title>
+<meta name="description" content="${escHtml(desc)}" />
+<meta property="og:title" content="${escHtml(title)} - YukiOS" />
+<meta property="og:description" content="${escHtml(desc)}" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="${escHtml(ogImage)}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${escHtml(title)} - YukiOS" />
+<meta name="twitter:description" content="${escHtml(desc)}" />
+<meta name="twitter:image" content="${escHtml(ogImage)}" />
+<link rel="canonical" href="${canonicalUrl}" />
+<script type="application/ld+json">${jsonld}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+${landingStyle}
+</head>
+<body>
+<div class="seo-overlay" role="main">
+  <header class="seo-header">
+    <a href="/" class="seo-brand"><em>Y</em>ukiOS</a>
+    <div class="seo-nav-links">
+      <a href="/features.html">Features</a>
+      <a href="/apps.html">Apps</a>
+      <a href="/games.html">Games</a>
+      <a href="https://github.com/Reeyuki/YukiOS">GitHub</a>
+    </div>
+  </header>
+  <main class="seo-main">
+    <section class="seo-hero">
+      <h1>${title}</h1>
+      <p>${desc}</p>
+      <a class="launch-btn" href="${launchUrl}">Launch YukiOS</a>
+    </section>
+    ${screenshot}
+    <section class="seo-content">
+      ${extraContent || ""}
+      <style>${AD_SLOT_STYLE}</style>
+      ${adSlotHtml("landing-ad")}
+    </section>
+  </main>
+  <footer class="seo-footer">
+    <p>YukiOS - Free Browser-Based Desktop Environment</p>
+    <div><a href="/features.html">Features</a> &middot; <a href="https://github.com/Reeyuki/YukiOS">GitHub</a> &middot; <a href="/">About</a></div>
+  </footer>
+</div>
+${adSlotScript("landing-ad")}
+</body>
+</html>`;
+}
+
 function makeLanding(title, desc, extraContent, imageUrl) {
   const galleryImagesJson = JSON.stringify(galleryImages.map((g) => g.src));
   const screenshot = `
@@ -1722,22 +1837,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
           .join(", ")}</p>`
       : "";
     const extra = `${bullets}<p class="seo-cta">${a.title} is part of YukiOS - a free browser-based desktop environment with 80+ apps, 2900 games, and no downloads or sign-ups required. Launch it directly from the Start Menu or bookmark this page for quick access.</p>${relatedApps}`;
-    const html = indexHtml
-      .replace(/<title>[^<]*<\/title>/, `<title>${a.title} - YukiOS</title>`)
-      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/, `$1${desc}$2`)
-      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/, `$1${a.title} - YukiOS$2`)
-      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/, `$1${desc}$2`)
-      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/, `$1${a.title} - YukiOS$2`)
-      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/, `$1${desc}$2`)
-      .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
-      .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
-      .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${GH}/mac.png" />`)
-      .replace(/<meta name="twitter:image"[^>]*>/, `<meta name="twitter:image" content="${GH}/mac.png" />`)
-      .replace(
-        /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-        `<script type="application/ld+json">${jsonld}</script>`
-      )
-      .replace("<body>", `<body>${makeLanding(a.title, desc, extra, `${GH}/mac.png`)}`);
+    const html = makeStandalonePage(a.title, desc, jsonld, url, `${GH}/mac.png`, extra, `/?app=${a.key}`);
     writeFileSync(resolve(appDir, `${a.key}.html`), html, "utf-8");
   }
 
@@ -2082,23 +2182,14 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
         breadcrumb
       ]);
     }
-    const landing = makeLanding(f.title, f.description, extra, ogImage);
-    const html = indexHtml
-      .replace(/<title>[^<]*<\/title>/, `<title>${f.title} - YukiOS</title>`)
-      .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/, `$1${f.description}$2`)
-      .replace(/(<meta\s+property="og:title"\s+content=")[^"]*(")/, `$1${f.title} - YukiOS$2`)
-      .replace(/(<meta\s+property="og:description"\s+content=")[^"]*(")/, `$1${f.description}$2`)
-      .replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*(")/, `$1${f.title} - YukiOS$2`)
-      .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/, `$1${f.description}$2`)
-      .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
-      .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
-      .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${ogImage}" />`)
-      .replace(/<meta name="twitter:image"[^>]*>/, `<meta name="twitter:image" content="${ogImage}" />`)
-      .replace(
-        /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-        `<script type="application/ld+json">${jsonld}</script>`
-      )
-      .replace("<body>", `<body>${landing}`);
+    const FEATURE_APP_MAP = {
+      terminal: "terminalApp",
+      games: "steamApp",
+      "3d-room": "room3dApp"
+    };
+    const featureAppId = FEATURE_APP_MAP[f.key];
+    const launchUrl = featureAppId ? `/?app=${featureAppId}` : "/";
+    const html = makeStandalonePage(f.title, f.description, jsonld, url, ogImage, extra, launchUrl);
     writeFileSync(resolve(f.rootFile ? outDir : featureDir, f.rootFile || `${f.key}.html`), html, "utf-8");
   }
 
