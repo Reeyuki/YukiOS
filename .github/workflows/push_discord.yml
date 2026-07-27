@@ -110,7 +110,7 @@ jobs:
                      "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
 
                 ZIP_FILE="dist.zip"
-                zip -r "$ZIP_FILE" dist/
+                zip -r "$ZIP_FILE" dist/ -x "dist/wasm/*" -x "dist/class/*"
 
                 if [ -f "$ZIP_FILE" ]; then
                   ZIP_PAYLOAD=$(jq -n \
@@ -197,7 +197,7 @@ jobs:
                    "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
 
               ZIP_FILE="dist.zip"
-              zip -r "$ZIP_FILE" dist/
+              zip -r "$ZIP_FILE" dist/ -x "dist/wasm/*" -x "dist/class/*"
 
               if [ -f "$ZIP_FILE" ]; then
                 ZIP_PAYLOAD=$(jq -n \
