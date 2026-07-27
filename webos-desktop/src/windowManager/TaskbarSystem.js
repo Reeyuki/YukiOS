@@ -22,6 +22,8 @@ export class TaskbarSystem {
     this.manager = manager;
     this.contextMenuOpen = false;
     setTimeout(() => this.initScrollHandling(), 0);
+    this.onCloseBound = () => this.applyTaskbarLabels();
+    os.events.on(BusEvents.WINDOW_CLOSED, this.onCloseBound);
   }
 
   initScrollHandling() {
@@ -153,7 +155,12 @@ export class TaskbarSystem {
       id: `taskbar-${winId}`,
       className: "taskbar-item"
     });
+    taskbarItem.dataset.title = title;
     taskbarItem.appendChild(this.buildTaskbarIcon(iconValue, title, color));
+    if (os.storage.get(StorageKeys.taskbarShowLabels) === "true") {
+      const label = createElement("span", { className: "taskbar-item-label", text: title });
+      taskbarItem.appendChild(label);
+    }
     os.events.emit(BusEvents.WINDOW_CREATED, { winId });
 
     taskbarItem.onclick = () => {
@@ -579,6 +586,7 @@ export class TaskbarSystem {
 
     pinnedItems.forEach((item) => {
       const pinnedItem = createElement("div", { className: "taskbar-item pinned" });
+      pinnedItem.dataset.title = item.title;
       pinnedItem.appendChild(this.buildTaskbarIcon(item.iconValue, item.title, item.color));
 
       pinnedItem.onclick = () => {
@@ -704,5 +712,25 @@ export class TaskbarSystem {
 
   restorePinnedItems() {
     this.renderPinnedItems();
+  }
+
+  applyTaskbarLabels() {
+    const show = os.storage.get(StorageKeys.taskbarShowLabels) === "true";
+    const taskbarWindows = $("#taskbar-windows");
+    if (!taskbarWindows) return;
+    $$(".taskbar-item:not(.pinned)", taskbarWindows).forEach((item) => {
+      let label = $(".taskbar-item-label", item);
+      if (show) {
+        if (!label) {
+          label = createElement("span", {
+            className: "taskbar-item-label",
+            text: item.dataset.title || ""
+          });
+          item.appendChild(label);
+        }
+      } else {
+        if (label) label.remove();
+      }
+    });
   }
 }

@@ -262,6 +262,15 @@
   position: relative;
 }
 
+.taskbar-item-label {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
 .taskbar-preview {
   position: fixed;
   z-index: 100000;

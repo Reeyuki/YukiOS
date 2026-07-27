@@ -254,6 +254,19 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
     });
   }
 
+  const taskbarShowLabelsToggle = $("#settingsTaskbarShowLabels", win);
+  if (taskbarShowLabelsToggle) {
+    bindEvent(taskbarShowLabelsToggle, "change", () => {
+      const enabled = taskbarShowLabelsToggle.checked;
+      settings.taskbarShowLabels = enabled;
+      os.storage.set(StorageKeys.taskbarShowLabels, String(enabled));
+      if (os.window.wm?.taskbarSystem) {
+        os.window.wm.taskbarSystem.applyTaskbarLabels();
+      }
+      showSaved();
+    });
+  }
+
   $$(".settings-start-cat-toggle", win).forEach((chk) => {
     bindEvent(chk, "change", save);
   });

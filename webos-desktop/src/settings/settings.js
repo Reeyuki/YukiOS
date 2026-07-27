@@ -120,6 +120,7 @@ export class SettingsApp extends BaseApp {
         desktopIconSize: Number(os.storage.get(StorageKeys.desktopIconSize)) || 48,
         taskbarScale: Number(os.storage.get(StorageKeys.taskbarScale)) || 100,
         hideDesktopIcons: os.storage.get(StorageKeys.hideDesktopIcons) === "true",
+        taskbarShowLabels: os.storage.get(StorageKeys.taskbarShowLabels) === "true",
         dockEnabled: os.storage.get(StorageKeys.dockEnabled) === "true",
         dockPosition: os.storage.get(StorageKeys.dockPosition) || "bottom",
         dockAutoHide: os.storage.get(StorageKeys.dockAutoHide) === "true",

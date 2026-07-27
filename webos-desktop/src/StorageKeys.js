@@ -145,6 +145,7 @@ export const StorageKeys = {
   mobileMode: "yukiOS_mobile_mode",
   desktopIconSize: "yukiOS_desktop_icon_size",
   taskbarScale: "yukiOS_taskbar_scale",
+  taskbarShowLabels: "yukiOS_taskbar_show_labels",
   virtualResolution: "yukiOS_virtual_resolution",
   clockAlarms: "yukiOS_clock_alarms",
   clockSettings: "yukiOS_clock_settings",

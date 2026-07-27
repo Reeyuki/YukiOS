@@ -7,9 +7,9 @@ import { resolveGhUrl } from "../shared/assetResolver.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { KeybindManager } from "../keybindManager.js";
 import { $, $$, bindEvent, toggleClass, addClass, removeClass, setText, setHTML } from "../shared/domUtils.js";
-
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import { BaseApp, os } from "../framework.js";
+
 const SAMPLE_MODELS = [
   {
     name: "Stanford Bunny",

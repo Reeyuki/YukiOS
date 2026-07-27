@@ -516,6 +516,16 @@ export function renderDesktopSettings(s) {
             <button class="settings-btn ${s.taskbarAlignment === "right" ? "active" : ""}" data-alignment="right"><i class="fas fa-align-right"></i> Right</button>
           </div>
         </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Show Taskbar Labels</span>
+            <span class="settings-label-desc">Display window titles next to taskbar icons</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsTaskbarShowLabels" ${s.taskbarShowLabels ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">
