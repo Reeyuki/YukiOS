@@ -1,5 +1,5 @@
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
-import { sortDesktopIcons } from "./desktopui.js";
+import { sortDesktopIcons, relayoutDesktopIcons, changeDesktopIconSize } from "./desktopui.js";
 import { os, StorageKeys } from "../framework.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
@@ -112,9 +112,12 @@ export class DesktopContextMenuManager {
           icon: "fa-paste"
         },
         "hr",
+        { id: "ctx-view", label: "View", icon: "fa-eye", action: "view" },
         { id: "ctx-sort", label: "Sort icons", icon: "fa-sort", action: "sort" },
         "hr",
         { id: "ctx-widgets", label: "Widgets", action: "widgets", icon: "fa-puzzle-piece" },
+        { id: "ctx-fullscreen", label: "Enter fullscreen", icon: "fa-expand", action: "fullscreen" },
+        "hr",
         { id: "ctx-refresh", label: "Refresh", action: "refresh", icon: "fa-sync-alt" }
       ]
     };
@@ -393,34 +396,281 @@ export class DesktopContextMenuManager {
 
   showDesktopContextMenu(e) {
     const currentSort = this.currentSortMode();
-    showContextMenu(e, this.templates.desktopContextMenu, {
-      new: () => this.showNewContextMenu(e),
-      addFiles: () => this.desktopUI.addFiles(),
-      openExplorer: () => this.desktopUI.explorerApp.open(),
-      startRecording: () => {
-        os.app.launch("cameraApp");
-      },
-      setWallpaper: () => {
-        os.app.launch("settingsApp", {
-          section: "pane-appearance"
-        });
-      },
-      background: () => {
-        this.showBackgroundContextMenu(e);
-      },
-      openTerminal: () => {
-        const username = os.storage.get(StorageKeys.username) || "guest";
-        os.app.launch("terminalApp", { initialPath: ["home", username, "Desktop"] });
-      },
-      paste: async () => {
-        await this.desktopUI.pasteToDesktop();
-      },
-      sort: () => this.showSortContextMenu(e, currentSort),
-      widgets: () => this.showWidgetsMenu(e),
-      refresh: async () => {
-        document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
-        await this.desktopUI.loadDesktopItems();
+    const currentAutoSort = os.storage.get(StorageKeys.desktopAutoSort) || false;
+
+    showDynamicContextMenu(e, (menu, item, hr, submenu) => {
+      menu.appendChild(
+        submenu(
+          "New",
+          (sub, sItem, sHr) => {
+            sub.appendChild(
+              sItem(
+                "Folder",
+                async () => {
+                  await this.spawnInlineDesktopItem(false);
+                },
+                "fa-folder"
+              )
+            );
+            sub.appendChild(
+              sItem(
+                "Text",
+                async () => {
+                  await this.spawnInlineDesktopItem(true);
+                },
+                "fa-file-alt"
+              )
+            );
+          },
+          "fa-plus"
+        )
+      );
+
+      menu.appendChild(hr());
+
+      menu.appendChild(item("Add file(s)", () => this.desktopUI.addFiles(), "fa-file-upload"));
+      menu.appendChild(item("Open File Explorer", () => this.desktopUI.explorerApp.open(), "fa-folder-open"));
+      menu.appendChild(item("Start Recording", () => os.app.launch("cameraApp"), "fa-circle"));
+      menu.appendChild(
+        item(
+          "Customize",
+          () => {
+            os.app.launch("settingsApp", { section: "pane-appearance" });
+          },
+          "fa-paint-brush"
+        )
+      );
+      menu.appendChild(item("Background", () => this.showBackgroundContextMenu(e), "fa-image"));
+      menu.appendChild(
+        item(
+          "Open Terminal Here",
+          () => {
+            const username = os.storage.get(StorageKeys.username) || "guest";
+            os.app.launch("terminalApp", { initialPath: ["home", username, "Desktop"] });
+          },
+          "fa-terminal"
+        )
+      );
+
+      menu.appendChild(hr());
+
+      if (this.desktopUI.getClipboard()) {
+        menu.appendChild(
+          item(
+            "Paste",
+            async () => {
+              await this.desktopUI.pasteToDesktop();
+            },
+            "fa-paste"
+          )
+        );
       }
+
+      menu.appendChild(hr());
+
+      menu.appendChild(
+        submenu(
+          "View",
+          (sub, sItem, sHr) => {
+            const currentSize = Number(os.storage.get(StorageKeys.desktopIconSize)) || 48;
+            const sizes = [
+              { size: 32, label: "Small icons", icon: "fa-th" },
+              { size: 64, label: "Medium icons", icon: "fa-th-large" },
+              { size: 96, label: "Large icons", icon: "fa-th-list" }
+            ];
+            sizes.forEach(({ size, label, icon: faIcon }) => {
+              const el = sItem(label, () => changeDesktopIconSize(size), faIcon);
+              if (currentSize === size) {
+                el.style.fontWeight = "700";
+                const check = document.createElement("i");
+                check.className = "fas fa-check";
+                check.style.marginLeft = "auto";
+                check.style.fontSize = "10px";
+                el.appendChild(check);
+              }
+              sub.appendChild(el);
+            });
+
+            sub.appendChild(sHr());
+
+            const currentAlignment = os.storage.get(StorageKeys.desktopIconAlignment) || "horizontal";
+            const alignLabel = currentAlignment === "vertical" ? "Align Horizontally" : "Align Vertically";
+            const alignIcon = currentAlignment === "vertical" ? "fa-arrows-alt-h" : "fa-arrows-alt-v";
+            sub.appendChild(
+              sItem(
+                alignLabel,
+                () => {
+                  const next = currentAlignment === "vertical" ? "horizontal" : "vertical";
+                  os.storage.set(StorageKeys.desktopIconAlignment, next);
+                  relayoutDesktopIcons();
+                  os.notify.send(`Icons aligned ${next}ly`);
+                },
+                alignIcon
+              )
+            );
+
+            sub.appendChild(sHr());
+
+            const hideDesktopIcons = os.storage.get(StorageKeys.hideDesktopIcons) === "true";
+            const hideLabel = hideDesktopIcons ? "Show desktop icons" : "Hide desktop icons";
+            const hideIcon = hideDesktopIcons ? "fa-eye" : "fa-eye-slash";
+            sub.appendChild(
+              sItem(
+                hideLabel,
+                () => {
+                  const next = !hideDesktopIcons;
+                  os.storage.set(StorageKeys.hideDesktopIcons, String(next));
+                  document.querySelectorAll("#desktop > .icon").forEach((icon) => {
+                    icon.style.display = next ? "none" : "";
+                  });
+                  os.notify.send(next ? "Desktop icons hidden" : "Desktop icons shown");
+                },
+                hideIcon
+              )
+            );
+          },
+          "fa-eye"
+        )
+      );
+
+      menu.appendChild(
+        submenu(
+          "Sort icons",
+          (sub, sItem, sHr) => {
+            const sortItems = [
+              { id: "name", label: "By Name", icon: "fa-sort-alpha-down" },
+              { id: "type", label: "By Type", icon: "fa-sort-amount-down" },
+              { id: "recent", label: "By Recent Use", icon: "fa-clock" }
+            ];
+            sortItems.forEach(({ id, label, icon: faIcon }) => {
+              const el = sItem(label, () => sortDesktopIcons(id), faIcon);
+              if (currentSort === id) {
+                el.style.fontWeight = "700";
+                const check = document.createElement("i");
+                check.className = "fas fa-check";
+                check.style.marginLeft = "auto";
+                check.style.fontSize = "10px";
+                el.appendChild(check);
+              }
+              sub.appendChild(el);
+            });
+            sub.appendChild(sHr());
+            if (currentSort && currentSort !== "none") {
+              sub.appendChild(sItem("Free Placement", () => sortDesktopIcons("none"), "fa-undo"));
+            }
+            sub.appendChild(sHr());
+            const autoLabel = currentAutoSort ? "Auto Sort: On" : "Auto Sort: Off";
+            const autoIcon = currentAutoSort ? "fa-toggle-on" : "fa-toggle-off";
+            const autoEl = sItem(
+              autoLabel,
+              () => {
+                const next = !currentAutoSort;
+                os.storage.set(StorageKeys.desktopAutoSort, next);
+                if (next && currentSort && currentSort !== "none") {
+                  sortDesktopIcons(currentSort);
+                }
+                os.notify.send(`Auto sort ${next ? "enabled" : "disabled"}`);
+              },
+              autoIcon
+            );
+            if (currentAutoSort) autoEl.style.color = "var(--brand)";
+            sub.appendChild(autoEl);
+          },
+          "fa-sort"
+        )
+      );
+
+      menu.appendChild(hr());
+
+      menu.appendChild(
+        submenu(
+          "Widgets",
+          (sub, sItem, sHr) => {
+            const wm = this.desktopUI.widgetManager;
+            const existing = wm.getAllWidgets();
+            const existingTypes = new Set(existing.map((w) => w.type));
+            const widgetTypes = [
+              { type: "clock", label: "Clock", icon: "fa-clock" },
+              { type: "weather", label: "Weather", icon: "fa-cloud-sun" },
+              { type: "notes", label: "Notes", icon: "fa-sticky-note" },
+              { type: "calendar", label: "Calendar", icon: "fa-calendar-alt" },
+              { type: "systemMonitor", label: "System Monitor", icon: "fa-desktop" },
+              { type: "musicControl", label: "Music Control", icon: "fa-music" },
+              { type: "todo", label: "To-Do", icon: "fa-check-square" },
+              { type: "power", label: "Power", icon: "fa-power-off" },
+              { type: "clipboard", label: "Clipboard", icon: "fa-clipboard" },
+              { type: "photoFrame", label: "Photo Frame", icon: "fa-image" },
+              { type: "timer", label: "Timer", icon: "fa-stopwatch" },
+              { type: "youtube", label: "YouTube", icon: "fa-youtube" }
+            ];
+            widgetTypes.forEach((wt) => {
+              const disabled = existingTypes.has(wt.type);
+              const el = sItem(
+                wt.label,
+                disabled
+                  ? null
+                  : () => {
+                      wm.addWidget(wt.type, wt.label);
+                      os.notify.send(`${wt.label} widget added`);
+                    },
+                wt.icon
+              );
+              if (disabled) {
+                el.style.opacity = "0.4";
+                el.style.cursor = "default";
+                const check = document.createElement("i");
+                check.className = "fas fa-check";
+                check.style.marginLeft = "auto";
+                check.style.fontSize = "10px";
+                check.style.color = "var(--brand)";
+                el.appendChild(check);
+              }
+              sub.appendChild(el);
+            });
+            if (existing.length > 0) {
+              sub.appendChild(sHr());
+              const removeAll = sItem(
+                "Remove All Widgets",
+                () => {
+                  existing.forEach((w) => wm.removeWidget(w.id));
+                  os.notify.send("All widgets removed");
+                },
+                "fa-trash-alt"
+              );
+              removeAll.style.color = "var(--error)";
+              sub.appendChild(removeAll);
+            }
+          },
+          "fa-puzzle-piece"
+        )
+      );
+
+      menu.appendChild(
+        item(
+          "Enter fullscreen",
+          () => {
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+            } else {
+              document.documentElement.requestFullscreen();
+            }
+          },
+          "fa-expand"
+        )
+      );
+
+      menu.appendChild(hr());
+
+      menu.appendChild(
+        item(
+          "Refresh",
+          async () => {
+            document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
+            await this.desktopUI.loadDesktopItems();
+          },
+          "fa-sync-alt"
+        )
+      );
     });
   }
 

@@ -37,7 +37,16 @@ export function updateGridConfig(iconSize) {
   relayoutDesktopIcons();
 }
 
-function relayoutDesktopIcons() {
+export function changeDesktopIconSize(size) {
+  os.storage.set(StorageKeys.desktopIconSize, String(size));
+  const iconSize = Math.max(32, Math.min(128, Number(size) || 48));
+  document.documentElement.style.setProperty("--icon-w", `${iconSize}px`);
+  document.documentElement.style.setProperty("--icon-img-s", `${iconSize}px`);
+  document.documentElement.style.setProperty("--icon-h", `${iconSize + 20}px`);
+  updateGridConfig(size);
+}
+
+export function relayoutDesktopIcons() {
   const allIcons = Array.from(desktop.querySelectorAll(":scope > .icon")).filter(
     (icon) => icon.style.display !== "none"
   );
@@ -57,8 +66,14 @@ function relayoutDesktopIcons() {
     i.style.left = "";
     i.style.top = "";
   });
+  const alignment = os.storage.get(StorageKeys.desktopIconAlignment) || "horizontal";
   let occupied = null;
-  if (regularIcons.length) occupied = positionHelper.layoutSync(regularIcons, false, occupied);
+  if (regularIcons.length) {
+    occupied =
+      alignment === "vertical"
+        ? positionHelper.layoutSyncVertical(regularIcons, false, occupied)
+        : positionHelper.layoutSync(regularIcons, false, occupied);
+  }
   if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
   PositionStore.save({});
 }
@@ -283,6 +298,41 @@ class PositionHelper {
         }
       });
     });
+  }
+
+  layoutSyncVertical(icons, isExplorerIcon = false, occupiedBefore = null) {
+    const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
+    const { width, height } = this.gridSize;
+    const cellW = width + gap,
+      cellH = height + gap;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const occupied = occupiedBefore || this.buildOccupancySet();
+    let col = 0,
+      row = 0;
+    icons.forEach((icon) => {
+      while (occupied.has(`${col},${row}`)) {
+        col++;
+        if (col >= maxCols) {
+          col = 0;
+          row++;
+        }
+        if (row >= maxRows) {
+          col = 0;
+          row = 0;
+          break;
+        }
+      }
+      occupied.add(`${col},${row}`);
+      icon.style.left = `${gap + col * cellW}px`;
+      icon.style.top = `${gap + row * cellH}px`;
+      col++;
+      if (col >= maxCols) {
+        col = 0;
+        row++;
+      }
+    });
+    return occupied;
   }
 
   layoutRight(icons) {
@@ -1159,8 +1209,14 @@ export function sortDesktopIcons(mode) {
     i.style.top = "";
     i.style.zIndex = "";
   });
+  const alignment = os.storage.get(StorageKeys.desktopIconAlignment) || "horizontal";
   let occupied = null;
-  if (regularIcons.length) occupied = positionHelper.layoutSync(regularIcons, false, occupied);
+  if (regularIcons.length) {
+    occupied =
+      alignment === "vertical"
+        ? positionHelper.layoutSyncVertical(regularIcons, false, occupied)
+        : positionHelper.layoutSync(regularIcons, false, occupied);
+  }
   if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
 
   const saved = {};

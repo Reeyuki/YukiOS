@@ -144,6 +144,7 @@ export const StorageKeys = {
   VM_MANAGER_VMS: "yukiOS_vm_manager_vms",
   mobileMode: "yukiOS_mobile_mode",
   desktopIconSize: "yukiOS_desktop_icon_size",
+  desktopIconAlignment: "yukiOS_desktop_icon_alignment",
   taskbarScale: "yukiOS_taskbar_scale",
   taskbarShowLabels: "yukiOS_taskbar_show_labels",
   virtualResolution: "yukiOS_virtual_resolution",

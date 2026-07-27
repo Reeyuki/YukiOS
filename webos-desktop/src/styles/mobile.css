@@ -589,6 +589,8 @@ html.is-mobile #taskbar-pos-menu.closing {
 }
 
 html.is-mobile #context-menu div,
+html.is-mobile .context-menu div,
+html.is-mobile .context-menu-item div,
 html.is-mobile #taskbar-context-menu .menu-item,
 html.is-mobile #taskbar-pos-menu .context-menu-item {
   padding: 14px 16px;
@@ -597,6 +599,7 @@ html.is-mobile #taskbar-pos-menu .context-menu-item {
 }
 
 html.is-mobile #context-menu hr,
+html.is-mobile .context-menu hr,
 html.is-mobile #taskbar-context-menu hr,
 html.is-mobile #taskbar-pos-menu hr {
   margin: 4px 12px;
@@ -628,6 +631,8 @@ html.is-mobile #taskbar-pos-menu hr {
   }
 
   #context-menu div,
+  .context-menu div,
+  .context-menu-item div,
   #taskbar-context-menu .menu-item,
   #taskbar-pos-menu .context-menu-item {
     padding: 14px 16px;
@@ -636,6 +641,7 @@ html.is-mobile #taskbar-pos-menu hr {
   }
 
   #context-menu hr,
+  .context-menu hr,
   #taskbar-context-menu hr,
   #taskbar-pos-menu hr {
     margin: 4px 12px;

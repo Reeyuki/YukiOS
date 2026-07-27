@@ -1,7 +1,15 @@
 const MENU_ID = "context-menu";
+const bodySubmenus = [];
 
 function getMenu() {
   return document.getElementById(MENU_ID);
+}
+
+function cleanupBodySubmenus() {
+  bodySubmenus.forEach((el) => {
+    el.remove();
+  });
+  bodySubmenus.length = 0;
 }
 
 export function hideMenu() {
@@ -10,6 +18,7 @@ export function hideMenu() {
     dismissHandler = null;
   }
   const menu = getMenu();
+  cleanupBodySubmenus();
   if (!menu) return;
   if (menu.classList.contains("closing")) return;
   menu.classList.add("closing");
@@ -265,6 +274,8 @@ export function showDynamicContextMenu(e, buildFn) {
   const menu = getMenu();
   if (!menu) return;
 
+  cleanupBodySubmenus();
+
   menu.classList.remove("closing");
   menu.style.display = "";
   menu.innerHTML = "";
@@ -274,9 +285,22 @@ export function showDynamicContextMenu(e, buildFn) {
 
   const hr = () => document.createElement("hr");
 
+  const positionSubmenu = (subEl, wrapperRect) => {
+    subEl.style.top = wrapperRect.top + "px";
+    subEl.style.left = wrapperRect.right + "px";
+    const subRect = subEl.getBoundingClientRect();
+    if (subRect.right > window.innerWidth) {
+      subEl.style.left = wrapperRect.left - subRect.width + "px";
+    }
+    if (subRect.bottom > window.innerHeight) {
+      subEl.style.top = Math.max(4, window.innerHeight - subRect.height - 4) + "px";
+    }
+  };
+
   const submenu = (label, buildSubFn, icon = null) => {
     const wrapper = document.createElement("div");
     wrapper.className = "context-menu-item has-submenu";
+    wrapper.style.cssText = "display:block;padding:0;background:none;border-radius:0;cursor:default;";
 
     const trigger = createItemElement(label, null, icon);
     const arrow = document.createElement("span");
@@ -289,7 +313,9 @@ export function showDynamicContextMenu(e, buildFn) {
     subMenuEl.className = "context-menu context-menu-glass";
     subMenuEl.style.display = "none";
     subMenuEl.style.position = "fixed";
-    wrapper.appendChild(subMenuEl);
+    subMenuEl.style.zIndex = "30001";
+    document.body.appendChild(subMenuEl);
+    bodySubmenus.push(subMenuEl);
 
     const subItem = (text, onclick, subIcon = null) => createItemElement(text, onclick, subIcon);
     const subHr = () => document.createElement("hr");
@@ -303,25 +329,29 @@ export function showDynamicContextMenu(e, buildFn) {
       clearTimeout(hideTimeout);
       clearTimeout(showTimeout);
       showTimeout = setTimeout(() => {
-        const wrapperRect = wrapper.getBoundingClientRect();
         subMenuEl.style.display = "block";
-        subMenuEl.style.top = "0";
-        subMenuEl.style.left = wrapperRect.width + "px";
-
-        const subRect = subMenuEl.getBoundingClientRect();
-        if (subRect.right > window.innerWidth) {
-          subMenuEl.style.left = "auto";
-          subMenuEl.style.right = wrapperRect.width + "px";
-        }
-        if (subRect.bottom > window.innerHeight) {
-          subMenuEl.style.top = Math.max(0, -(subRect.bottom - window.innerHeight) - 4) + "px";
-        }
+        const wrapperRect = wrapper.getBoundingClientRect();
+        positionSubmenu(subMenuEl, wrapperRect);
         refreshIcons(subMenuEl);
       }, 150);
     });
 
     wrapper.addEventListener("mouseleave", () => {
       clearTimeout(showTimeout);
+      hideTimeout = setTimeout(() => {
+        subMenuEl.style.display = "none";
+      }, 300);
+    });
+
+    wrapper.addEventListener("mousemove", () => {
+      clearTimeout(hideTimeout);
+    });
+
+    subMenuEl.addEventListener("mouseenter", () => {
+      clearTimeout(hideTimeout);
+    });
+
+    subMenuEl.addEventListener("mouseleave", () => {
       hideTimeout = setTimeout(() => {
         subMenuEl.style.display = "none";
       }, 300);
@@ -334,8 +364,7 @@ export function showDynamicContextMenu(e, buildFn) {
       subMenuEl.style.display = isVisible ? "none" : "block";
       if (!isVisible) {
         const wrapperRect = wrapper.getBoundingClientRect();
-        subMenuEl.style.top = "0";
-        subMenuEl.style.left = wrapperRect.width + "px";
+        positionSubmenu(subMenuEl, wrapperRect);
         refreshIcons(subMenuEl);
       }
     });
