@@ -131,11 +131,11 @@ jobs:
               cd ../..
 
               if [ -f webos-desktop/dist.zip ]; then
-                NOTES=$(git log --oneline -20 2>/dev/null || echo "No recent commits")
-                gh release create "${{ steps.version.outputs.tag }}" \
+                TAG="${{ steps.version.outputs.tag }}"
+                gh release create "$TAG" \
                   webos-desktop/dist.zip \
-                  --title "${{ steps.version.outputs.tag }}" \
-                  --notes "$NOTES"
+                  --title "$TAG" \
+                  --generate-notes
               fi
 
             fi
@@ -208,6 +208,16 @@ jobs:
                 curl -F "payload_json=$ZIP_PAYLOAD" \
                      -F "file1=@${ZIP_FILE};type=application/zip" \
                      "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+              fi
+
+              cd ..
+
+              if [ -f dist.zip ]; then
+                TAG="${{ steps.version.outputs.tag }}"
+                gh release create "$TAG" \
+                  dist.zip \
+                  --title "$TAG" \
+                  --generate-notes
               fi
 
             else
