@@ -96,6 +96,13 @@ export const KEYBIND_DEFINITIONS = [
     hidden: true
   },
   {
+    id: "boot.skip",
+    defaultKeys: ["Escape", "Enter", "Space"],
+    desc: "Skip boot animation",
+    cat: "global",
+    icon: "fas fa-forward"
+  },
+  {
     id: "global.windowSwitcher",
     defaultKeys: ["Alt", "Q"],
     desc: "Cycle forward through open windows",

@@ -2,6 +2,9 @@ import { StorageKeys, os } from "./framework.js";
 import logoImg from "./assets/logo.png";
 import versionStr from "../version.txt?raw";
 import "./styles/bootScreen.css";
+import { pickAnimation } from "./bootAnimations.js";
+import { KeybindManager } from "./keybindManager.js";
+import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
 
 const BRAND = "YUKiOS";
 const MIN_DURATION = 2500;
@@ -9,10 +12,6 @@ const MIN_DURATION = 2500;
 export function showBootScreen() {
   const raw = os.storage.get(StorageKeys.disableBootScreen);
   if (raw === true || raw === "true") {
-    return { hide: () => Promise.resolve() };
-  }
-
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
     return { hide: () => Promise.resolve() };
   }
 
@@ -26,12 +25,14 @@ export function showBootScreen() {
     } catch {}
   }
 
+  const savedId = os.storage.get(StorageKeys.selectedBootAnimation);
+  const animation = pickAnimation(savedId);
+
   const lettersHTML = BRAND.split("")
     .map((ch) => `<span class="boot-letter">${ch === " " ? "\u00A0" : ch}</span>`)
     .join("");
 
-  const div = document.createElement("div");
-  div.className = "boot-overlay";
+  const div = createElement("div", { className: "boot-overlay" });
   div.innerHTML = `
     <div class="boot-container">
       <div class="boot-logo-wrap">
@@ -40,100 +41,91 @@ export function showBootScreen() {
         <div class="boot-version">${versionStr}</div>
       </div>
     </div>
+    <div class="boot-skip-hint">Esc · Enter · Space to skip</div>
   `;
-  div.style.cssText = "opacity:0";
   document.body.appendChild(div);
 
-  const logo = div.querySelector(".boot-logo");
-  const letters = div.querySelectorAll(".boot-letter");
-  const version = div.querySelector(".boot-version");
+  const extEls = animation.createExtra ? animation.createExtra(div) || {} : {};
+
+  const container = $(".boot-container", div);
+  const logo = $(".boot-logo", div);
+  const letters = $$(".boot-letter", div);
+  const version = $(".boot-version", div);
 
   const startTime = performance.now();
   const gsap = typeof window !== "undefined" && window.gsap;
 
+  const els = { overlay: div, container, logo, letters, version, extEls };
+
+  let hidden = false;
+  let showTl = null;
+
   if (gsap && typeof gsap.to === "function") {
-    gsap.set(div, { opacity: 0 });
-    gsap.set(logo, { opacity: 0, scale: 0.5 });
-    gsap.set(letters, { opacity: 0, y: 16 });
-    gsap.set(version, { opacity: 0 });
+    animation.setup(els);
 
-    const tl = gsap.timeline();
-
-    tl.to(div, { opacity: 1, duration: 0.3, ease: "power2.out" });
-
-    tl.to(
-      logo,
-      {
-        opacity: 1,
-        scale: 1,
-        duration: 0.6,
-        ease: "back.out(1.4)"
-      },
-      "-=0.1"
-    );
-
-    tl.to(
-      letters,
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.4,
-        stagger: 0.07,
-        ease: "power2.out"
-      },
-      "-=0.3"
-    );
-
-    tl.to(version, { opacity: 1, duration: 0.35, ease: "power2.out" }, "-=0.15");
+    showTl = gsap.timeline();
+    animation.show(showTl, els);
   } else {
     requestAnimationFrame(() => {
-      div.style.transition = "opacity 0.3s ease";
-      div.style.opacity = "1";
+      addClass(div, "boot-visible");
     });
 
     requestAnimationFrame(() => {
-      logo.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)";
-      logo.style.opacity = "1";
-      logo.style.transform = "scale(1)";
+      addClass(logo, "boot-visible");
     });
 
     requestAnimationFrame(() => {
       letters.forEach((l, i) => {
-        l.style.transition = "opacity 0.35s ease, transform 0.35s ease";
-        l.style.transitionDelay = `${0.06 * i}s`;
-        l.style.opacity = "1";
-        l.style.transform = "translateY(0)";
+        setStyle(l, { transitionDelay: `${0.06 * i}s` });
+        addClass(l, "boot-visible");
       });
     });
 
     requestAnimationFrame(() => {
-      version.style.transition = "opacity 0.4s ease";
-      version.style.opacity = "1";
+      addClass(version, "boot-visible");
     });
   }
 
+  const skipHandler = (e) => {
+    if (KeybindManager.matches(e, "boot.skip")) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (hidden) return;
+      hidden = true;
+      document.removeEventListener("keydown", skipHandler);
+      if (showTl && showTl.kill) showTl.kill();
+      div.remove();
+    }
+  };
+  document.addEventListener("keydown", skipHandler);
+
   return {
     hide: () => {
+      document.removeEventListener("keydown", skipHandler);
       const elapsed = performance.now() - startTime;
       const delay = Math.max(0, MIN_DURATION - elapsed);
 
       return new Promise((resolve) => {
         const doHide = () => {
+          if (hidden) {
+            resolve();
+            return;
+          }
+          hidden = true;
           if (gsap && typeof gsap.to === "function") {
-            const tl = gsap.timeline({
+            const hideTl = gsap.timeline({
               onComplete: () => {
                 div.remove();
                 resolve();
               }
             });
-
-            tl.to(letters, { opacity: 0, y: -12, duration: 0.15, stagger: 0.03, ease: "power2.in" });
-            tl.to(logo, { opacity: 0, scale: 0.6, duration: 0.15, ease: "power2.in" }, "-=0.1");
-            tl.to(div, { opacity: 0, scale: 1.04, duration: 0.35, ease: "power2.inOut" }, "-=0.1");
+            animation.hide(hideTl, els);
           } else {
-            div.style.transition = "opacity 0.35s ease, transform 0.35s ease";
-            div.style.opacity = "0";
-            div.style.transform = "scale(1.04)";
+            setStyle(div, {
+              transition: "opacity 0.35s ease, transform 0.35s ease",
+              opacity: "0",
+              transform: "scale(1.04)"
+            });
             setTimeout(() => {
               div.remove();
               resolve();
@@ -146,4 +138,55 @@ export function showBootScreen() {
       });
     }
   };
+}
+
+export function runBootPreview(anim, onDone) {
+  const lettersHTML = BRAND.split("")
+    .map((ch) => `<span class="boot-letter">${ch === " " ? "\u00A0" : ch}</span>`)
+    .join("");
+
+  const div = createElement("div", { className: "boot-overlay" });
+  div.innerHTML = `
+    <div class="boot-container">
+      <div class="boot-logo-wrap">
+        <img class="boot-logo" src="${logoImg}" alt="YukiOS" />
+        <div class="boot-brand">${lettersHTML}</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(div);
+
+  const extEls = anim.createExtra ? anim.createExtra(div) || {} : {};
+  const container = $(".boot-container", div);
+  const logo = $(".boot-logo", div);
+  const letters = $$(".boot-letter", div);
+  const version = createElement("div", { styles: { display: "none" } });
+  div.appendChild(version);
+  const els = { overlay: div, container, logo, letters, version, extEls };
+
+  const gsap = typeof window !== "undefined" && window.gsap;
+  if (gsap && typeof gsap.to === "function") {
+    anim.setup(els);
+    const showTl = gsap.timeline();
+    anim.show(showTl, els);
+
+    setTimeout(() => {
+      const hideTl = gsap.timeline({
+        onComplete: () => {
+          div.remove();
+          if (onDone) onDone();
+        }
+      });
+      anim.hide(hideTl, els);
+    }, 2000);
+  } else {
+    setStyle(div, { transition: "opacity 0.3s ease", opacity: "1" });
+    setTimeout(() => {
+      setStyle(div, { opacity: "0" });
+      setTimeout(() => {
+        div.remove();
+        if (onDone) onDone();
+      }, 400);
+    }, 1000);
+  }
 }

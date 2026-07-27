@@ -969,7 +969,7 @@ export class SetupApp extends BaseApp {
         detail: { soundEnabled: this.userChoices.sound }
       })
     );
-    const welcomeContent = `All set, ${sm.currentSession?.name || "Guest"}!
+    const welcomeContent = `All set, ${sm?.currentSession?.name || "Guest"}!
 
 Here's what you picked:
 - Theme: ${this.userChoices.theme}

@@ -12,6 +12,8 @@ import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 import { fetchLiveStats } from "./analytics.js";
 import { liveActivityManager } from "./liveActivityManager.js";
+import { runBootPreview } from "./bootScreen.js";
+import { BOOT_ANIMATIONS } from "./bootAnimations.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -139,6 +141,19 @@ export class SessionManager {
     const now = Date.now();
     os.storage.set(StorageKeys.lastLaunchTime, now.toString());
 
+    if (os.storage.get(StorageKeys.autoLogin)) {
+      const savedName = os.storage.get(StorageKeys.username);
+      if (savedName) {
+        this.currentSession = {
+          name: savedName,
+          key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
+          avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+        };
+        await this.initializeSession();
+        return;
+      }
+    }
+
     return new Promise(async (resolve) => {
       await this.createSessionUI("login", resolve);
     });
@@ -175,6 +190,18 @@ export class SessionManager {
       <div class="session-content${state === "locked" ? "" : " extra-hidden"}">
         <div class="session-info-btn" id="session-info-btn">
           <i class="fas fa-info"></i>
+        </div>
+        <div class="session-boot-preview-btn" id="session-boot-preview-btn">
+          <i class="fas fa-play"></i>
+        </div>
+        <div class="session-boot-preview-modal" id="session-boot-preview-modal" style="display: none;">
+          <div class="boot-preview-modal-content">
+            <div class="boot-preview-modal-header">
+              <h3>Boot Animations</h3>
+            </div>
+            <div class="boot-preview-modal-body" id="boot-preview-list">
+            </div>
+          </div>
         </div>
         <div class="session-info-modal" id="session-info-modal" style="display: none;">
           <div class="info-modal-content">
@@ -222,6 +249,20 @@ export class SessionManager {
               <i class="fas fa-moon"></i>
             </button>
           </div>
+
+          ${
+            state !== "locked"
+              ? `
+          <div class="remember-me-row" id="remember-me-row">
+            <label class="remember-me-label">
+              <input type="checkbox" class="remember-me-checkbox" id="remember-checkbox" ${os.storage.get(StorageKeys.autoLogin) ? "checked" : ""}>
+              <span class="remember-me-checkmark"></span>
+              Remember me
+            </label>
+          </div>
+          `
+              : ""
+          }
         </div>
 
         <div class="session-selector" id="session-selector">
@@ -258,9 +299,9 @@ export class SessionManager {
               `
               ).join("")}
             </div>
-          </div>
         </div>
       </div>
+
     `;
 
     document.body.appendChild(this.container);
@@ -297,6 +338,7 @@ export class SessionManager {
       `;
       })
     );
+
     return renderedUsers.join("");
   }
 
@@ -452,6 +494,30 @@ export class SessionManager {
     const avatarGrid = this.container.querySelector("#avatar-grid");
     const infoBtn = this.container.querySelector("#session-info-btn");
     const infoModal = this.container.querySelector("#session-info-modal");
+    const bootPreviewBtn = this.container.querySelector("#session-boot-preview-btn");
+    const bootPreviewModal = this.container.querySelector("#session-boot-preview-modal");
+    const bootPreviewList = this.container.querySelector("#boot-preview-list");
+
+    const savedAnimId = os.storage.get(StorageKeys.selectedBootAnimation);
+    BOOT_ANIMATIONS.forEach((anim) => {
+      const item = document.createElement("div");
+      item.className = "boot-preview-option";
+      if (anim.id === savedAnimId) item.classList.add("selected");
+      item.innerHTML = `<span>${anim.label || anim.id}</span><i class="fas fa-check"></i>`;
+      item.addEventListener("click", () => {
+        const wasSelected = item.classList.contains("selected");
+        bootPreviewList.querySelectorAll(".boot-preview-option").forEach((el) => el.classList.remove("selected"));
+        if (!wasSelected) {
+          item.classList.add("selected");
+          os.storage.set(StorageKeys.selectedBootAnimation, anim.id);
+        } else {
+          os.storage.remove(StorageKeys.selectedBootAnimation);
+        }
+        bootPreviewModal.style.display = "none";
+        runBootPreview(anim);
+      });
+      bootPreviewList.appendChild(item);
+    });
 
     let selectedAvatar = this.selectedUser.avatar;
 
@@ -529,6 +595,17 @@ export class SessionManager {
       avatarModal.style.display = "none";
     });
 
+    const rememberCheckbox = this.container.querySelector("#remember-checkbox");
+    if (rememberCheckbox) {
+      rememberCheckbox.addEventListener("change", () => {
+        if (rememberCheckbox.checked) {
+          os.storage.set(StorageKeys.autoLogin, "true");
+        } else {
+          os.storage.remove(StorageKeys.autoLogin);
+        }
+      });
+    }
+
     powerBtn.addEventListener("click", async () => {
       if (await os.dialog.confirm("Shutdown", "Shut down YukiOS?")) {
         window.close();
@@ -546,13 +623,23 @@ export class SessionManager {
     });
 
     infoBtn.addEventListener("click", () => {
+      bootPreviewModal.style.display = "none";
       const isVisible = infoModal.style.display !== "none";
       infoModal.style.display = isVisible ? "none" : "block";
+    });
+
+    bootPreviewBtn.addEventListener("click", () => {
+      infoModal.style.display = "none";
+      const isVisible = bootPreviewModal.style.display !== "none";
+      bootPreviewModal.style.display = isVisible ? "none" : "block";
     });
 
     document.addEventListener("click", (e) => {
       if (!infoBtn.contains(e.target) && !infoModal.contains(e.target)) {
         infoModal.style.display = "none";
+      }
+      if (!bootPreviewBtn.contains(e.target) && !bootPreviewModal.contains(e.target)) {
+        bootPreviewModal.style.display = "none";
       }
     });
 
@@ -679,7 +766,18 @@ export class SessionManager {
       }
     }
 
-    this.updateActionButtonText();
+    const actionBtn = this.container?.querySelector("#action-button");
+    if (actionBtn) {
+      actionBtn.classList.add("transitioning-out");
+      await new Promise((r) => setTimeout(r, 100));
+      this.updateActionButtonText();
+      actionBtn.classList.remove("transitioning-out");
+      actionBtn.classList.add("transitioning-in");
+      await new Promise((r) => setTimeout(r, 150));
+      actionBtn.classList.remove("transitioning-in");
+    } else {
+      this.updateActionButtonText();
+    }
   }
 
   async handleKeyboardNav(e, handleAction) {
