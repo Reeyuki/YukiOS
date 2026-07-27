@@ -10,7 +10,7 @@ import { WeatherApp } from "./apps/weather.js";
 import { MarkdownApp } from "./apps/markdown.js";
 import { ShittifyApp } from "./apps/shittify.js";
 import { MonacoApp } from "./apps/monaco.js";
-import { Model3DApp } from "./apps/model3d.js";
+import { Model3DApp } from "./apps/blender.js";
 import { EmulatorApp } from "./apps/emulator.js";
 import { AchievementsApp } from "./achievements.js";
 import { RuffleApp } from "./apps/ruffle.js";
