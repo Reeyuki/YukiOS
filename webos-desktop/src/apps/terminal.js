@@ -1,7 +1,7 @@
 import "../styles/terminal.css";
 import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
-import { showContextMenu } from "../shared/contextMenu.js";
+import { showContextMenu, hideMenu } from "../shared/contextMenu.js";
 import { GitManager } from "../services/GitManager.js";
 import { BusEvents, $, $$, BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { formatSize } from "../utils/utils.js";
@@ -418,10 +418,18 @@ export class TerminalApp extends BaseApp {
     state.terminalContent.__termState = state;
     win.__termState = state;
 
-    win.querySelector("#terminal-output")?.addEventListener("contextmenu", (e) => {
+    state.terminalContent.addEventListener("contextmenu", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       this.activeState = state;
-      this.showTerminalContextMenu(e);
+      const tabEl = e.target.closest(".terminal-tab");
+      if (tabEl) {
+        const tabIdx = Array.from(state.terminalTabsEl.children).indexOf(tabEl);
+        const tab = state.tabs[tabIdx];
+        if (tab) this.showTabContextMenu(e, tab, tabIdx);
+      } else {
+        this.showTerminalContextMenu(e);
+      }
     });
 
     this.initTerminal(win, opts);
@@ -729,13 +737,14 @@ export class TerminalApp extends BaseApp {
 
     win.addEventListener("mousedown", (e) => {
       this.activeState = e.currentTarget.__termState;
-      if (e.target.closest(".terminal-output")) return;
+      if (e.target.closest(".terminal-content")) return;
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
     });
 
     win.addEventListener("mouseup", (e) => {
       this.activeState = e.currentTarget.__termState;
+      if (e.button === 2) return;
       if (e.target.closest(".terminal-output")) return;
       if (window.getSelection().toString().length > 0) return;
       this.terminalInput.focus();
@@ -953,7 +962,17 @@ export class TerminalApp extends BaseApp {
   }
 
   showTerminalContextMenu(e) {
-    const hasSelection = window.getSelection().toString().length > 0;
+    const getSelectionText = () => {
+      const docSel = window.getSelection().toString();
+      if (docSel) return docSel;
+      const input = this.terminalInput;
+      if (input && input.selectionStart !== input.selectionEnd) {
+        return input.value.substring(input.selectionStart, input.selectionEnd);
+      }
+      return "";
+    };
+    const hasSelection = getSelectionText().length > 0;
+    hideMenu();
     const items = [
       { id: "term-ctx-copy", label: "Copy", icon: "fa-copy", action: "copy", condition: () => hasSelection },
       { id: "term-ctx-paste", label: "Paste", icon: "fa-paste", action: "paste" },
@@ -965,7 +984,7 @@ export class TerminalApp extends BaseApp {
 
     const handlers = {
       copy: () => {
-        const text = window.getSelection().toString();
+        const text = getSelectionText();
         if (text) navigator.clipboard?.writeText(text);
       },
       paste: async () => {
@@ -992,6 +1011,71 @@ export class TerminalApp extends BaseApp {
     };
 
     showContextMenu(e, items, handlers);
+  }
+
+  showTabContextMenu(e, tab, idx) {
+    hideMenu();
+    const isActive = tab.id === this.activeTabId;
+    const items = [
+      { id: "tabctx-" + tab.id + "-close", label: "Close Tab", icon: "fa-times", action: "close" },
+      {
+        id: "tabctx-" + tab.id + "-close-others",
+        label: "Close Other Tabs",
+        icon: "fa-times-circle",
+        action: "closeOthers",
+        condition: () => this.tabs.length > 1
+      },
+      {
+        id: "tabctx-" + tab.id + "-close-right",
+        label: "Close Tabs to the Right",
+        icon: "fa-chevron-right",
+        action: "closeRight",
+        condition: () => idx < this.tabs.length - 1
+      },
+      "hr",
+      { id: "tabctx-" + tab.id + "-new", label: "New Tab", icon: "fa-plus", action: "newTab" }
+    ];
+
+    const handlers = {
+      close: () => this.closeTab(tab.id),
+      closeOthers: () => this.closeOtherTabs(tab.id),
+      closeRight: () => this.closeTabsToTheRight(tab.id, idx),
+      newTab: () => this.newTab()
+    };
+
+    showContextMenu(e, items, handlers);
+  }
+
+  closeOtherTabs(id) {
+    const state = this.activeState;
+    if (!state || state.tabs.length <= 1) return;
+    this.snapshotActiveTab();
+    state.tabs = state.tabs.filter((t) => t.id === id);
+    if (this.activeTabId !== id) {
+      this.activeTabId = id;
+      const tab = state.tabs[0];
+      this.currentPath = [...tab.currentPath];
+      this.terminalOutput.innerHTML = tab.outputHTML;
+      this.updatePrompt();
+    }
+    this.renderTabs();
+    this.terminalInput.focus();
+  }
+
+  closeTabsToTheRight(id, idx) {
+    const state = this.activeState;
+    if (!state || idx >= state.tabs.length - 1) return;
+    this.snapshotActiveTab();
+    state.tabs = state.tabs.slice(0, idx + 1);
+    if (this.activeTabId !== id) {
+      this.activeTabId = id;
+      const tab = state.tabs[idx];
+      this.currentPath = [...tab.currentPath];
+      this.terminalOutput.innerHTML = tab.outputHTML;
+      this.updatePrompt();
+    }
+    this.renderTabs();
+    this.terminalInput.focus();
   }
 
   async expandGlob(pattern, path) {

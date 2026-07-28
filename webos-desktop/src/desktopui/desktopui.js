@@ -584,7 +584,7 @@ export class DesktopUI {
         e.preventDefault();
         const clipboard = this.clipboardManager.getClipboard();
         if (!clipboard) return;
-        const explorerWins = $("[id^='explorer-']");
+        const explorerWins = $$("[id^='explorer-']");
         let targetExplorerWin = null;
 
         for (const win of explorerWins) {
@@ -651,7 +651,7 @@ export class DesktopUI {
       }
 
       if (KeybindManager.matches(e, "desktop.copy")) {
-        const explorerWins = $("[id^='explorer-']");
+        const explorerWins = $$("[id^='explorer-']");
         let anyExplorerFocused = false;
         for (const win of explorerWins) {
           if (isWindowFocused(win.id, lastMousePos)) {
@@ -669,7 +669,7 @@ export class DesktopUI {
       }
 
       if (KeybindManager.matches(e, "desktop.cut")) {
-        const explorerWins = $("[id^='explorer-']");
+        const explorerWins = $$("[id^='explorer-']");
         let anyExplorerFocused = false;
         for (const win of explorerWins) {
           if (isWindowFocused(win.id, lastMousePos)) {
@@ -688,7 +688,7 @@ export class DesktopUI {
 
       if (KeybindManager.matches(e, "desktop.rename")) {
         e.preventDefault();
-        const explorerWins = $("[id^='explorer-']");
+        const explorerWins = $$("[id^='explorer-']");
         let anyExplorerFocused = false;
         for (const win of explorerWins) {
           if (isWindowFocused(win.id, lastMousePos)) {
