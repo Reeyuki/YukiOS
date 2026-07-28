@@ -16,7 +16,7 @@ vi.mock("../../audioMixer.js", () => ({
 import { DialogAPI } from "../dialog.js";
 
 describe("DialogAPI", () => {
-  let dialog: DialogAPI;
+  let dialog;
 
   beforeEach(() => {
     dialog = new DialogAPI();
@@ -60,6 +60,6 @@ describe("DialogAPI", () => {
   it("setExplorerApp stores the app reference", () => {
     const mockApp = { open: vi.fn() };
     dialog.setExplorerApp(mockApp);
-    expect((dialog as any).explorerApp).toBe(mockApp);
+    expect(dialog.explorerApp).toBe(mockApp);
   });
 });

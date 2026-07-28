@@ -255,7 +255,7 @@ export class DesktopContextMenuManager {
           item(
             "Convert / Transform",
             async () => {
-              openFileConverter(fileName, [filePath, fileName], this.desktopUI.fs, this.desktopUI.appLauncher);
+              openFileConverter(fileName, [filePath, fileName], os, this.desktopUI.appLauncher);
             },
             "fa-exchange-alt"
           )

@@ -1,28 +1,21 @@
 import { OSBridge, AppAPI } from "./OSBridge.js";
 
-export type { WindowAPI } from "./window.js";
-export type { FileSystemAPI } from "./fs.js";
-export type { StorageAPI } from "./storage.js";
-export type { DialogAPI } from "./dialog.js";
-export type { AppAPI };
-export type * from "./types.js";
+let bridge = null;
 
-let bridge: OSBridge | null = null;
-
-export function initializeOSBridge(services: any): OSBridge {
+export function initializeOSBridge(services) {
   bridge = new OSBridge(services);
   return bridge;
 }
 
-export function setDialogExplorerApp(app: any): void {
+export function setDialogExplorerApp(app) {
   if (bridge) bridge.setDialogExplorerApp(app);
 }
 
-export function setTorManager(manager: any): void {
+export function setTorManager(manager) {
   if (bridge) bridge.setTorManager(manager);
 }
 
-export function getOS(): OSBridge {
+export function getOS() {
   if (!bridge) throw new Error("[OS Bridge] Not initialized. Call initializeOSBridge() first.");
   return bridge;
 }
@@ -162,7 +155,7 @@ const noopModes = {
 };
 
 const noopTiling = {
-  get enabled(): boolean {
+  get enabled() {
     return false;
   },
   setEnabled: NOOP,
@@ -211,7 +204,7 @@ const noopAchievements = {
   unlock: () => null
 };
 
-const noopAPIs: Record<string, any> = {
+const noopAPIs = {
   storage: noopStorage,
   events: noopEvents,
   notify: noopNotify,
@@ -228,14 +221,14 @@ const noopAPIs: Record<string, any> = {
   fileSystemManager: null
 };
 
-export const os = new Proxy({} as OSBridge, {
-  get(_target, prop: string) {
+export const os = new Proxy({}, {
+  get(_target, prop) {
     if (!bridge) {
       const fallback = noopAPIs[prop];
       if (fallback !== undefined) return fallback;
       if (prop === "then" || prop === "catch") return undefined;
       return undefined;
     }
-    return (bridge as any)[prop];
+    return bridge[prop];
   }
 });

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { StorageAPI } from "../storage.js";
 
 describe("StorageAPI", () => {
-  let storage: StorageAPI;
+  let storage;
 
   beforeEach(() => {
     localStorage.clear();

@@ -22,42 +22,7 @@ import { $ } from "./shared/domUtils.js";
 import { isMobile } from "./shared/platformUtils.js";
 
 export class WindowManager {
-  openWindows: Map<string, any>;
-  zIndexCounter: number;
-  gameWindowCount: number;
-  isDraggingWindow: boolean;
-  notificationCenter: any;
-  initialTitle: string;
-  initialFavicon: string;
-  snapGhost: any;
-  activeSnapZone: any;
-  snapThreshold: number;
-  taskbarPreview: any;
-  taskbarPreviewWinId: string | null;
-  taskbarPreviewHideTimer: any;
-  taskbarPreviewShowTimer: any;
-  taskbarPreviewHovering: boolean;
-  lastFocusZone: string;
-  fs: any;
-  appLauncher: any;
-  sessionSaveTimer: any;
-  isRestoring: boolean;
-  lastSpawnedPosition: any;
-  lastSpawnTime: number;
-  inputHandler: InputHandler;
-  layoutManager: LayoutManager;
-  snapSystem: SnapSystem;
-  taskbarSystem: TaskbarSystem;
-  macDock: MacDock;
-  sessionManager: WindowSessionManager;
-  appRestorationService: AppRestorationService;
-  windowStateManager: WindowStateManager;
-  contextMenuManager: ContextMenuManager;
-  utils: WindowManagerUtils;
-  workspaceManager: WorkspaceManager;
-  tilingManager: TilingManager;
-
-  constructor(notificationCenter: any = null) {
+  constructor(notificationCenter = null) {
     this.openWindows = new Map();
     this.zIndexCounter = 1000;
     this.gameWindowCount = 0;
@@ -65,7 +30,7 @@ export class WindowManager {
     this.notificationCenter = notificationCenter;
     this.initialTitle = document.title || "YukiOS";
     const faviconLink = $("link[rel~='icon']");
-    this.initialFavicon = faviconLink ? (faviconLink as HTMLLinkElement).href : "";
+    this.initialFavicon = faviconLink ? faviconLink.href : "";
     this.snapGhost = null;
     this.activeSnapZone = null;
     this.snapThreshold = 60;
@@ -81,6 +46,7 @@ export class WindowManager {
     this.isRestoring = false;
     this.lastSpawnedPosition = null;
     this.lastSpawnTime = 0;
+    this.pendingLaunchOptions = null;
 
     this.inputHandler = new InputHandler(this);
     this.layoutManager = new LayoutManager(this);
@@ -137,110 +103,96 @@ export class WindowManager {
     }, 0);
   }
 
-  applyWindowLayout(win: HTMLElement): void {
+  applyWindowLayout(win) {
     this.utils.applyWindowLayout(win);
   }
 
-  setNotificationCenter(notificationCenter: any): void {
+  setNotificationCenter(notificationCenter) {
     this.notificationCenter = notificationCenter;
   }
 
-  setFileSystemManager(fs: any): void {
+  setFileSystemManager(fs) {
     this.fs = fs;
   }
 
-  setAppLauncher(appLauncher: any): void {
+  setAppLauncher(appLauncher) {
     this.appLauncher = appLauncher;
     if (this.appRestorationService) {
       this.appRestorationService.buildRegistryFromConfig();
     }
   }
 
-  triggerSessionSave(): void {
+  triggerSessionSave() {
     if (this.appRestorationService && this.appRestorationService.isRestoring) return;
     if (this.sessionSaveTimer) clearTimeout(this.sessionSaveTimer);
-    this.sessionSaveTimer = setTimeout(() => this.appRestorationService!.saveSession(), 500);
+    this.sessionSaveTimer = setTimeout(() => this.appRestorationService.saveSession(), 500);
   }
 
-  guessAppIdFromWinId(winId: string): any {
+  guessAppIdFromWinId(winId) {
     return this.sessionManager.guessAppIdFromWinId(winId);
   }
 
-  saveSession(): any {
-    return this.appRestorationService!.saveSession();
+  saveSession() {
+    return this.appRestorationService.saveSession();
   }
 
-  restoreSession(): any {
-    return this.appRestorationService!.restoreSession();
+  restoreSession() {
+    return this.appRestorationService.restoreSession();
   }
 
-  isHeavyApp(appId: string, appType: string): any {
+  isHeavyApp(appId, appType) {
     return this.sessionManager.isHeavyApp(appId, appType);
   }
 
-  processRestorationQueue(queue: any): any {
+  processRestorationQueue(queue) {
     return this.sessionManager.processRestorationQueue(queue);
   }
 
-  restoreSingleWindowState(state: any, appId: string): any {
+  restoreSingleWindowState(state, appId) {
     return this.sessionManager.restoreSingleWindowState(state, appId);
   }
 
-  notify(
-    title: string,
-    message: string,
-    type: string = "info",
-    duration: number = 5000,
-    icon: string | null = null,
-    appSource: string | null = null
-  ): void {
+  notify(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
     notify(this, title, message, type, duration, icon, appSource);
   }
 
-  updateTransparency(): void {
+  updateTransparency() {
     this.utils.updateTransparency();
   }
 
-  updateTaskbarAlignment(): void {
+  updateTaskbarAlignment() {
     this.taskbarSystem.updateTaskbarAlignment();
   }
 
-  resolveIconType(iconValue: string): any {
+  resolveIconType(iconValue) {
     return this.utils.resolveIconType(iconValue);
   }
 
-  getFaviconLink(): any {
+  getFaviconLink() {
     return this.utils.getFaviconLink();
   }
 
-  animateAndRemove(win: HTMLElement): void {
+  animateAndRemove(win) {
     this.windowStateManager.animateAndRemove(win);
   }
 
-  buildPropertiesWindow(winId: string): void {
+  buildPropertiesWindow(winId) {
     this.contextMenuManager.buildPropertiesWindow(winId);
   }
 
-  buildContextMenuItems(addMenuItem: Function, addSeparator: Function, win: HTMLElement): void {
+  buildContextMenuItems(addMenuItem, addSeparator, win) {
     this.contextMenuManager.buildContextMenuItems(addMenuItem, addSeparator, win);
   }
 
-  getOpenWindowCount(): number {
+  getOpenWindowCount() {
     return this.utils.getOpenWindowCount();
   }
 
-  getWindowNormalGeometry(win: HTMLElement): any {
+  getWindowNormalGeometry(win) {
     return this.utils.getWindowNormalGeometry(win);
   }
 
-  createWindow(
-    id: string,
-    title: string,
-    width: string | number = "80vw",
-    height: string | number = "80vh",
-    isGame: boolean | Record<string, any> = false,
-    initialOptions: Record<string, any> = {}
-  ): HTMLElement {
+  createWindow(id, title, width = "80vw", height = "80vh", isGame = false, initialOptions = {}) {
     if (typeof isGame === "object") {
       initialOptions = isGame;
       isGame = false;
@@ -251,7 +203,7 @@ export class WindowManager {
       width = "100vw";
       height = "calc(100vh - var(--taskbar-h))";
     }
-    const pendingOpts: any = this.pendingLaunchOptions || {};
+    const pendingOpts = this.pendingLaunchOptions || {};
     const options = { ...pendingOpts, ...initialOptions };
     this.pendingLaunchOptions = null;
 
@@ -275,7 +227,7 @@ export class WindowManager {
     if (options.appId) win.dataset.appId = options.appId;
     if (options.appType) win.dataset.appType = options.appType;
 
-    const resolveToPx = (val: any, isHeight: boolean): number => {
+    const resolveToPx = (val, isHeight) => {
       if (val == null) return isHeight ? window.innerHeight * 0.8 : window.innerWidth * 0.8;
       const str = String(val).trim();
       if (str.endsWith("vw")) return (window.innerWidth * parseFloat(str)) / 100;
@@ -312,7 +264,7 @@ export class WindowManager {
       if (options.position) position = { left: options.position.x, top: options.position.y };
     } else if (options.appId) {
       try {
-        const saved: any = os.storage.get(`${StorageKeys.geometryPrefix}${options.appId}`);
+        const saved = os.storage.get(`${StorageKeys.geometryPrefix}${options.appId}`);
         if (saved) {
           if (saved && typeof saved.x === "number" && typeof saved.y === "number") {
             position = { left: saved.x, top: saved.y };
@@ -358,45 +310,39 @@ export class WindowManager {
     return win;
   }
 
-  pendingLaunchOptions: Record<string, any> | null = null;
-
-  calculateWindowPosition(
-    windowWidth: number,
-    windowHeight: number,
-    options: Record<string, any> = {}
-  ): { left: number; top: number } {
+  calculateWindowPosition(windowWidth, windowHeight, options = {}) {
     return this.layoutManager.calculateWindowPosition(windowWidth, windowHeight, options);
   }
 
-  getScreenBounds(): any {
+  getScreenBounds() {
     return this.layoutManager.getScreenBounds();
   }
 
-  getTaskbarHeight(): number {
+  getTaskbarHeight() {
     return this.layoutManager.getTaskbarHeight();
   }
 
-  getCenteredPosition(windowWidth: number, windowHeight: number): { left: number; top: number } {
+  getCenteredPosition(windowWidth, windowHeight) {
     return this.layoutManager.getCenteredPosition(windowWidth, windowHeight);
   }
 
-  getCascadePosition(windowWidth: number, windowHeight: number, workspace: any): { left: number; top: number } {
+  getCascadePosition(windowWidth, windowHeight, workspace) {
     return this.layoutManager.getCascadePosition(windowWidth, windowHeight, workspace);
   }
 
-  isTilingEnabled(): boolean {
+  isTilingEnabled() {
     return this.tilingManager?.enabled ?? false;
   }
 
-  setTilingEnabled(enabled: boolean): void {
+  setTilingEnabled(enabled) {
     this.tilingManager?.toggleMode(enabled);
   }
 
-  onTilingWindowCreated(winId: string): void {
+  onTilingWindowCreated(winId) {
     this.tilingManager?.onWindowCreated(winId);
   }
 
-  mountWindow(win: HTMLElement, winId: string, title: string, iconValue: string, color: string | null = null): void {
+  mountWindow(win, winId, title, iconValue, color = null) {
     if (!document.body.contains(win)) {
       document.body.appendChild(win);
     }
@@ -409,67 +355,67 @@ export class WindowManager {
     animateWindowOpen(win);
   }
 
-  getWindowIconHtml(iconValue: string, color: string | null = null): string {
+  getWindowIconHtml(iconValue, color = null) {
     return this.utils.getWindowIconHtml(iconValue, color);
   }
 
-  buildTaskbarIcon(iconValue: string, title: string, color: string | null): string {
+  buildTaskbarIcon(iconValue, title, color) {
     return this.taskbarSystem.buildTaskbarIcon(iconValue, title, color);
   }
 
-  addToTaskbar(winId: string, title: string, iconValue: string, color: string | null = null): void {
+  addToTaskbar(winId, title, iconValue, color = null) {
     this.taskbarSystem.addToTaskbar(winId, title, iconValue, color);
     if (this.macDock.isActive()) {
       this.macDock.addItem(winId, iconValue, title, color);
     }
   }
 
-  scheduleHideTaskbarPreview(): void {
+  scheduleHideTaskbarPreview() {
     this.taskbarSystem.scheduleHideTaskbarPreview();
   }
 
-  hideTaskbarPreview(): void {
+  hideTaskbarPreview() {
     this.taskbarSystem.hideTaskbarPreview();
   }
 
-  showTaskbarPreview(winId: string, anchorEl: HTMLElement): void {
+  showTaskbarPreview(winId, anchorEl) {
     this.taskbarSystem.showTaskbarPreview(winId, anchorEl);
   }
 
-  registerCloseWindow(closeButton: HTMLElement, winId: string): void {
+  registerCloseWindow(closeButton, winId) {
     this.windowStateManager.registerCloseWindow(closeButton, winId);
   }
 
-  updatePageFavicon(iconValue: string, title: string): void {
+  updatePageFavicon(iconValue, title) {
     this.utils.updatePageFavicon(iconValue, title);
   }
 
-  resetToDefaultState(): void {
+  resetToDefaultState() {
     this.utils.resetToDefaultState();
   }
 
-  initVisibilityTracking(): void {
+  initVisibilityTracking() {
     this.utils.initVisibilityTracking();
   }
 
-  bringToFront(win: HTMLElement): void {
+  bringToFront(win) {
     this.windowStateManager.bringToFront(win);
   }
 
-  removeFromTaskbar(winId: string): void {
+  removeFromTaskbar(winId) {
     this.taskbarSystem.removeFromTaskbar(winId);
     this.macDock.removeItem(winId);
   }
 
-  minimizeWindow(win: HTMLElement): void {
+  minimizeWindow(win) {
     this.windowStateManager.minimizeWindow(win);
   }
 
-  toggleFullscreen(win: HTMLElement): void {
+  toggleFullscreen(win) {
     this.windowStateManager.toggleFullscreen(win);
   }
 
-  updateWindowHeaderStyles(): void {
+  updateWindowHeaderStyles() {
     const isMac = os.storage.get(StorageKeys.macOsControls) === "true";
     this.openWindows.forEach((entry, winId) => {
       const win = document.getElementById(winId);
@@ -492,93 +438,93 @@ export class WindowManager {
     });
   }
 
-  setupWindowControls(win: HTMLElement): void {
+  setupWindowControls(win) {
     setupWindowControls(win, this);
   }
 
-  silenceWindow(win: HTMLElement): void {
+  silenceWindow(win) {
     this.windowStateManager.silenceWindow(win);
   }
 
-  showWindowContextMenu(e: MouseEvent, win: HTMLElement): void {
+  showWindowContextMenu(e, win) {
     this.contextMenuManager.showWindowContextMenu(e, win);
   }
 
-  initSnapGhost(): void {
+  initSnapGhost() {
     this.snapSystem.initSnapGhost();
   }
 
-  makeDraggable(win: HTMLElement): void {
+  makeDraggable(win) {
     this.snapSystem.makeDraggable(win);
   }
 
-  getSnapZone(x: number, y: number): any {
+  getSnapZone(x, y) {
     return this.snapSystem.getSnapZone(x, y);
   }
 
-  showSnapGhost(zone: any): void {
+  showSnapGhost(zone) {
     this.snapSystem.showSnapGhost(zone);
   }
 
-  hideSnapGhost(): void {
+  hideSnapGhost() {
     this.snapSystem.hideSnapGhost();
   }
 
-  applySnap(win: HTMLElement, zone: any): void {
+  applySnap(win, zone) {
     this.snapSystem.applySnap(win, zone);
   }
 
-  unsnap(win: HTMLElement): void {
+  unsnap(win) {
     this.snapSystem.unsnap(win);
   }
 
-  makeResizable(win: HTMLElement, setHeightUnsetElement: HTMLElement | null = null): void {
+  makeResizable(win, setHeightUnsetElement = null) {
     windowMakeResizable(win, this, setHeightUnsetElement);
   }
 
-  downloadWindowContent(win: HTMLElement): void {
+  downloadWindowContent(win) {
     this.utils.downloadWindowContent(win);
   }
 
-  getWindowControls(externalUrl?: string, showDownload?: boolean): string {
+  getWindowControls(externalUrl, showDownload) {
     return this.utils.getWindowControls(externalUrl, showDownload);
   }
 
-  sendNotify(text: string, appSource: string | null = null): void {
+  sendNotify(text, appSource = null) {
     sendNotify(this, text, appSource);
   }
 
-  isWindowPinned(winId: string): boolean {
+  isWindowPinned(winId) {
     return this.taskbarSystem.isWindowPinned(winId);
   }
 
-  getPinnedItems(): any {
+  getPinnedItems() {
     return this.taskbarSystem.getPinnedItems();
   }
 
-  savePinnedItems(pinnedItems: any): void {
+  savePinnedItems(pinnedItems) {
     this.taskbarSystem.savePinnedItems(pinnedItems);
   }
 
-  pinToTaskbar(winId: string): void {
+  pinToTaskbar(winId) {
     this.taskbarSystem.pinToTaskbar(winId);
   }
 
-  unpinFromTaskbar(winId: string): void {
+  unpinFromTaskbar(winId) {
     this.taskbarSystem.unpinFromTaskbar(winId);
   }
 
-  renderPinnedItems(): void {
+  renderPinnedItems() {
     this.taskbarSystem.renderPinnedItems();
   }
 
-  findAppIdByWinId(winId: string): string | null {
+  findAppIdByWinId(winId) {
     return this.utils.findAppIdByWinId(winId);
   }
 
-  closeWindow(win: HTMLElement | string): void {
+  closeWindow(win) {
     if (typeof win === "string") {
-      win = document.getElementById(win) as HTMLElement;
+      win = document.getElementById(win);
     }
     if (!win) return;
     this.silenceWindow(win);
@@ -590,15 +536,15 @@ export class WindowManager {
     this.animateAndRemove(win);
   }
 
-  closeAll(): void {
+  closeAll() {
     this.windowStateManager.closeAll();
   }
 
-  restorePinnedItems(): void {
+  restorePinnedItems() {
     this.taskbarSystem.restorePinnedItems();
   }
 
-  setWindowTitle(winId: string, title: string): void {
+  setWindowTitle(winId, title) {
     const win = document.getElementById(winId);
     if (!win) return;
 
@@ -617,7 +563,7 @@ export class WindowManager {
     }
   }
 
-  getWindowTitle(winId: string): string | null {
+  getWindowTitle(winId) {
     const entry = this.openWindows.get(winId);
     return entry?.title ?? null;
   }

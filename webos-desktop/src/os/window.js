@@ -1,22 +1,14 @@
-/**
- * Window Management API
- * Wraps WindowManager to provide clean OS-level window operations
- */
-
-import type { WindowOptions, WindowHandle, WindowManagerService } from "./types.js";
 import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
 import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
 import { sanitizeTitle } from "../utils/utils.js";
 import { $ } from "../shared/domUtils.js";
 
 export class WindowAPI {
-  private wm: WindowManagerService;
-
-  constructor(windowManager: WindowManagerService) {
+  constructor(windowManager) {
     this.wm = windowManager;
   }
 
-  private waitFor(win: HTMLElement, condition: () => boolean, callback: () => void, timeoutMs: number = 100): void {
+  waitFor(win, condition, callback, timeoutMs = 100) {
     let handled = false;
     const obs = new MutationObserver(() => {
       if (!handled && condition()) {
@@ -35,13 +27,7 @@ export class WindowAPI {
     }, timeoutMs);
   }
 
-  create(
-    id: string,
-    title: string,
-    width: string | number = "80vw",
-    height: string | number = "80vh",
-    options: WindowOptions = {}
-  ): HTMLElement {
+  create(id, title, width = "80vw", height = "80vh", options = {}) {
     title = sanitizeTitle(title);
     const win = this.wm.createWindow(id, title, width, height, options.isGame || false, options);
 
@@ -112,7 +98,7 @@ export class WindowAPI {
     return win;
   }
 
-  close(win: HTMLElement | string): void {
+  close(win) {
     if (typeof win === "string") {
       const element = $(`#${win}`);
       if (element) {
@@ -123,11 +109,11 @@ export class WindowAPI {
     }
   }
 
-  closeAll(): void {
+  closeAll() {
     this.wm.closeAll();
   }
 
-  focus(win: HTMLElement | string): void {
+  focus(win) {
     if (typeof win === "string") {
       const element = $(`#${win}`);
       if (element) {
@@ -138,7 +124,7 @@ export class WindowAPI {
     }
   }
 
-  minimize(win: HTMLElement | string): void {
+  minimize(win) {
     if (typeof win === "string") {
       const element = $(`#${win}`);
       if (element) {
@@ -149,7 +135,7 @@ export class WindowAPI {
     }
   }
 
-  maximize(win: HTMLElement | string): void {
+  maximize(win) {
     if (typeof win === "string") {
       const element = $(`#${win}`);
       if (element) {
@@ -160,31 +146,31 @@ export class WindowAPI {
     }
   }
 
-  bringToFront(win: HTMLElement | string): void {
+  bringToFront(win) {
     this.focus(win);
   }
 
-  addToTaskbar(winId: string, title: string, icon: string, color?: string): void {
+  addToTaskbar(winId, title, icon, color) {
     this.wm.addToTaskbar(winId, title, icon, color);
   }
 
-  removeFromTaskbar(winId: string): void {
+  removeFromTaskbar(winId) {
     this.wm.removeFromTaskbar(winId);
   }
 
-  getWindowControls(externalUrl?: string, showDownload?: boolean): string {
+  getWindowControls(externalUrl, showDownload) {
     return this.wm.getWindowControls(externalUrl, showDownload);
   }
 
-  setTitle(winId: string, title: string): void {
+  setTitle(winId, title) {
     this.wm.setWindowTitle(winId, title);
   }
 
-  getTitle(winId: string): string | null {
+  getTitle(winId) {
     return this.wm.getWindowTitle(winId);
   }
 
-  toggleFullscreen(win: HTMLElement | string): void {
+  toggleFullscreen(win) {
     if (typeof win === "string") {
       const element = $(`#${win}`);
       if (element) {
@@ -195,42 +181,35 @@ export class WindowAPI {
     }
   }
 
-  setupWindowControls(win: HTMLElement): void {
+  setupWindowControls(win) {
     this.wm.setupWindowControls(win);
   }
 
-  makeDraggable(win: HTMLElement): void {
+  makeDraggable(win) {
     windowMakeDraggable(win, this.wm);
   }
 
-  makeResizable(win: HTMLElement): void {
+  makeResizable(win) {
     this.wm.makeResizable(win);
   }
 
-  applySnap(win: HTMLElement, direction: "left" | "right"): void {
+  applySnap(win, direction) {
     this.wm.applySnap?.(win, direction);
   }
 
-  getOpenWindows(): Map<string, any> | undefined {
+  getOpenWindows() {
     return this.wm.openWindows;
   }
 
-  setFileSystemManager(fs: any): void {
+  setFileSystemManager(fs) {
     this.wm.setFileSystemManager?.(fs);
   }
 
-  restoreSession(): void {
+  restoreSession() {
     this.wm.restoreSession?.();
   }
 
-  notify(
-    title: string,
-    message: string,
-    type: string = "info",
-    duration: number = 5000,
-    icon?: string,
-    appSource?: string
-  ): void {
+  notify(title, message, type = "info", duration = 5000, icon, appSource) {
     this.wm.notify(title, message, type, duration, icon, appSource);
   }
 }

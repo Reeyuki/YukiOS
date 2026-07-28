@@ -3,13 +3,14 @@ import { FileSystemAPI } from "./fs.js";
 import { StorageAPI } from "./storage.js";
 import { DialogAPI } from "./dialog.js";
 import { ModeAPI } from "./modes.js";
-import type { OSServices, TorManagerService, ExplorerAppService } from "./types.js";
 import { TorManager } from "../tor/TorManager.js";
 
 export class NotificationAPI {
-  constructor(private nc: any) {}
+  constructor(nc) {
+    this.nc = nc;
+  }
 
-  send(title: string, message: string, options?: any): number {
+  send(title, message, options) {
     return this.nc.addNotification(
       title,
       message,
@@ -20,117 +21,119 @@ export class NotificationAPI {
     );
   }
 
-  clear(id: number): void {
+  clear(id) {
     this.nc.removeNotification(id);
   }
 
-  clearAll(): void {
+  clearAll() {
     this.nc.clearAllNotifications();
   }
 
-  getAll(): any[] {
+  getAll() {
     return this.nc.getNotifications?.() || [];
   }
 
-  getCount(): number {
+  getCount() {
     return this.nc.getNotificationCount?.() || 0;
   }
 
-  setDoNotDisturb(enabled: boolean): void {
+  setDoNotDisturb(enabled) {
     this.nc.setDoNotDisturb?.(enabled);
   }
 
-  getDoNotDisturb(): boolean {
+  getDoNotDisturb() {
     return this.nc.doNotDisturb ?? false;
   }
 }
 
 export class AppAPI {
-  _registry: Map<string, any> = new Map();
-  private _launcher: any = null;
+  constructor() {
+    this._registry = new Map();
+    this._launcher = null;
+  }
 
-  setLauncher(launcher: any): void {
+  setLauncher(launcher) {
     this._launcher = launcher;
   }
 
-  register(key: string, instance: any): void {
+  register(key, instance) {
     this._registry.set(key, instance);
   }
 
-  getInstance(key: string): any {
+  getInstance(key) {
     return this._registry.get(key) || null;
   }
 
-  launch(appId: string, options?: any): Promise<void> {
+  launch(appId, options) {
     if (!this._launcher) return Promise.reject(new Error("AppLauncher not initialized"));
     return this._launcher.launch(appId, false, options);
   }
 
-  launchGame(appId: string, isSwf?: boolean, options?: any): Promise<void> {
+  launchGame(appId, isSwf, options) {
     if (!this._launcher) return Promise.reject(new Error("AppLauncher not initialized"));
     return this._launcher.launch(appId, isSwf, options);
   }
 
-  close(winId: string): void {
+  close(winId) {
     const win = document.getElementById(winId);
     if (win) this._launcher?.wm?.closeWindow?.(win);
   }
 
-  getRunningApps(): any[] {
+  getRunningApps() {
     if (!this._launcher) return [];
     return this._launcher.listRunningApps?.() ?? [];
   }
 
-  getAllApps(): Record<string, any> {
+  getAllApps() {
     return this._launcher?.appMap ?? {};
   }
 
-  getAppInfo(appId: string): any {
+  getAppInfo(appId) {
     return this._launcher?.appMap?.[appId] ?? null;
   }
 
-  hasApp(appId: string): boolean {
+  hasApp(appId) {
     return !!this._launcher?.appMap?.[appId];
   }
 
-  searchApps(query: string): string[] {
+  searchApps(query) {
     if (!this._launcher) return [];
     const q = query.toLowerCase();
     return Object.entries(this._launcher.appMap)
-      .filter(([, app]: any) => app.title?.toLowerCase().includes(q))
+      .filter(([, app]) => app.title?.toLowerCase().includes(q))
       .map(([id]) => id);
   }
 
-  async openIframeApp(options: any): Promise<void> {
+  async openIframeApp(options) {
     if (!this._launcher) return;
     await this._launcher.openIframeApp(options);
   }
 
-  lockSession(): void {
+  lockSession() {
     this._registry.get("sessionManager")?.lockSession();
   }
 
-  lockToLoginScreen(): void {
+  lockToLoginScreen() {
     this._registry.get("sessionManager")?.lockToLoginScreen();
   }
 
-  triggerAchievement(id: string): void {
+  triggerAchievement(id) {
     this._registry.get("achievementsApp")?.trigger(id);
   }
 
-  incrementScreenshotTaken(): void {
+  incrementScreenshotTaken() {
     this._registry.get("achievementsApp")?.incrementScreenshotTaken();
   }
 
-  incrementCalculationDone(): void {
+  incrementCalculationDone() {
     this._registry.get("achievementsApp")?.incrementCalculationDone();
   }
 
-  incrementPowerProfileChange(): void {
+  incrementPowerProfileChange() {
     this._registry.get("achievementsApp")?.incrementPowerProfileChange();
   }
 
-  executeCommand(cmd: string): void {
+  executeCommand(cmd) {
     const term = this._registry.get("terminalApp");
     if (term) {
       term.open();
@@ -138,11 +141,11 @@ export class AppAPI {
     }
   }
 
-  setClipboardContent(value: string): void {
+  setClipboardContent(value) {
     this._registry.get("clipboardManagerApp")?.set(value, "text");
   }
 
-  takeScreenshot(autoCapture?: boolean): void {
+  takeScreenshot(autoCapture) {
     const app = this._registry.get("screenshotApp");
     if (app) {
       app.open();
@@ -150,31 +153,31 @@ export class AppAPI {
     }
   }
 
-  registerCustomApp(appId: string, entry: any): void {
+  registerCustomApp(appId, entry) {
     if (this._launcher) {
       this._launcher.appMap[appId] = entry;
     }
   }
 
-  unregisterCustomApp(appId: string): void {
+  unregisterCustomApp(appId) {
     if (this._launcher) {
       delete this._launcher.appMap[appId];
     }
   }
 
-  registerAppRuntime(appId: string, instance: any): void {
+  registerAppRuntime(appId, instance) {
     if (this._launcher?.appRuntime) {
       this._launcher.appRuntime.register(appId, instance);
     }
   }
 
-  unregisterAppRuntime(appId: string): void {
+  unregisterAppRuntime(appId) {
     if (this._launcher?.appRuntime) {
       this._launcher.appRuntime.unregister(appId);
     }
   }
 
-  openFileInApp(name: string, path: string | string[]): void {
+  openFileInApp(name, path) {
     const pathStr = Array.isArray(path) ? path.join("/") : path;
     import("../fileDisplay.js").then((mod) => {
       mod.openFileWith({ name, path: pathStr });
@@ -183,69 +186,73 @@ export class AppAPI {
 }
 
 export class EventBusAPI {
-  constructor(private bus: any) {}
+  constructor(bus) {
+    this.bus = bus;
+  }
 
-  on(event: string, handler: any): void {
+  on(event, handler) {
     this.bus.on(event, handler);
   }
 
-  off(event: string, handler: any): void {
+  off(event, handler) {
     this.bus.off(event, handler);
   }
 
-  emit(event: string, data?: any): void {
+  emit(event, data) {
     this.bus.emit(event, data);
   }
 
-  once(event: string, handler: any): void {
+  once(event, handler) {
     this.bus.once(event, handler);
   }
 }
 
 export class TrayAPI {
-  constructor(private tray: any) {}
+  constructor(tray) {
+    this.tray = tray;
+  }
 
-  register(winId: string, icon: string, label: string, options?: any): void {
+  register(winId, icon, label, options) {
     this.tray.register(winId, icon, label, options);
   }
 
-  unregister(winId: string): void {
+  unregister(winId) {
     this.tray.unregister(winId);
   }
 
-  updateIcon(winId: string, icon: string): void {
+  updateIcon(winId, icon) {
     this.tray.updateIcon(winId, icon);
   }
 
-  updateLabel(winId: string, label: string): void {
+  updateLabel(winId, label) {
     this.tray.updateLabel(winId, label);
   }
 
-  updateContextMenuItems(winId: string, items: any): void {
+  updateContextMenuItems(winId, items) {
     this.tray.updateContextMenuItems(winId, items);
   }
 
-  sendToTray(winId: string): void {
+  sendToTray(winId) {
     this.tray.sendToTray(winId);
   }
 
-  restoreFromTray(winId: string): void {
+  restoreFromTray(winId) {
     this.tray.restoreFromTray(winId);
   }
 
-  getTrayItems(): Map<string, any> {
+  getTrayItems() {
     return this.tray.items;
   }
 
-  isRegistered(winId: string): boolean {
+  isRegistered(winId) {
     return this.tray.isRegistered(winId);
   }
 
-  isInTray(winId: string): boolean {
+  isInTray(winId) {
     return this.tray.isInTray(winId);
   }
 
-  updateItemVisibility(winId: string, visible: boolean): void {
+  updateItemVisibility(winId, visible) {
     const item = this.tray.items.get(winId);
     if (item) {
       item.visibleInSettings = visible;
@@ -255,206 +262,190 @@ export class TrayAPI {
 }
 
 export class TilingAPI {
-  constructor(private wm: any) {}
+  constructor(wm) {
+    this.wm = wm;
+  }
 
-  get enabled(): boolean {
+  get enabled() {
     return this.wm?.isTilingEnabled() ?? false;
   }
 
-  setEnabled(enabled: boolean): void {
+  setEnabled(enabled) {
     this.wm?.setTilingEnabled(enabled);
   }
 
-  getEffectiveConfig(): any {
+  getEffectiveConfig() {
     return this.wm?.tilingManager?.getEffectiveConfig() ?? null;
   }
 
-  updateConfig(changes: any): void {
+  updateConfig(changes) {
     this.wm?.tilingManager?.updateConfig(changes);
   }
 
-  applyBarSettings(): void {
+  applyBarSettings() {
     this.wm?.tilingManager?.tilingBar?.applySettings();
   }
 
-  focusDirection(dir: string): void {
+  focusDirection(dir) {
     this.wm?.tilingManager?.focusDirection(dir);
   }
 
-  swapDirection(dir: string): void {
+  swapDirection(dir) {
     this.wm?.tilingManager?.swapDirection(dir);
   }
 
-  resizeDirection(dir: string): void {
+  resizeDirection(dir) {
     this.wm?.tilingManager?.resizeDirection(dir);
   }
 
-  cycleFocus(forward: boolean): void {
+  cycleFocus(forward) {
     this.wm?.tilingManager?.cycleFocus(forward);
   }
 
-  toggleFloating(): void {
+  toggleFloating() {
     this.wm?.tilingManager?.toggleFloating();
   }
 
-  toggleFullscreenOnTiled(): void {
+  toggleFullscreenOnTiled() {
     this.wm?.tilingManager?.toggleFullscreenOnTiled();
   }
 
-  toggleSplitType(): void {
+  toggleSplitType() {
     this.wm?.tilingManager?.toggleSplitType();
   }
 
-  closeFocusedWindow(): void {
+  closeFocusedWindow() {
     this.wm?.tilingManager?.closeFocusedWindow();
   }
 }
 
 class TorAPI {
-  private _manager: TorManagerService | null = null;
+  constructor() {
+    this._manager = null;
+  }
 
-  setManager(m: TorManagerService): void {
+  setManager(m) {
     this._manager = m;
   }
 
-  private require(): TorManagerService {
+  require() {
     if (!this._manager) throw new Error("Tor not initialized");
     return this._manager;
   }
 
-  get isReady(): boolean {
+  get isReady() {
     return this._manager?.getStatus().ready ?? false;
   }
 
-  get running(): boolean {
+  get running() {
     return this._manager?.getStatus().running ?? false;
   }
 
-  fetch(url: string): Promise<Response> {
+  fetch(url) {
     return this.require().fetch(url);
   }
 
-  post(url: string, body: Uint8Array): Promise<Response> {
+  post(url, body) {
     return this.require().post(url, body);
   }
 
-  request(
-    method: string,
-    url: string,
-    headers?: Record<string, string>,
-    body?: Uint8Array,
-    timeout?: number
-  ): Promise<Response> {
+  request(method, url, headers, body, timeout) {
     return this.require().request(method, url, headers, body, timeout);
   }
 
-  createClient(): Promise<any> {
+  createClient() {
     return this.require().createClient();
   }
 
-  getStatus(): { running: boolean; phase: string; ready: boolean } {
+  getStatus() {
     return this._manager?.getStatus() ?? { running: false, phase: "stopped", ready: false };
   }
 
-  start(options?: Record<string, unknown>): Promise<void> {
+  start(options) {
     return this.require().start(options);
   }
 
-  stop(): Promise<void> {
+  stop() {
     return this.require().stop();
   }
 
-  getLogs(): string[] {
+  getLogs() {
     return this._manager?.getLogs() ?? [];
   }
 
-  getSnowflakeUrl(): string {
-    return (this._manager as any)?.snowflakeUrl;
+  getSnowflakeUrl() {
+    return this._manager?.snowflakeUrl;
   }
 
-  setSnowflakeUrl(url: string): void {
-    (this._manager as any).snowflakeUrl = url;
+  setSnowflakeUrl(url) {
+    this._manager.snowflakeUrl = url;
   }
 
-  getFetchCount(): number {
+  getFetchCount() {
     return this._manager?.getFetchCount() ?? 0;
   }
 
-  reconnect(): void {
+  reconnect() {
     this.require().reconnect();
   }
 }
 
 export class AchievementsAPI {
-  constructor(private registry: Map<string, any>) {}
+  constructor(registry) {
+    this.registry = registry;
+  }
 
-  trigger(id: string): void {
+  trigger(id) {
     this.registry.get("achievementsApp")?.trigger(id);
   }
 
-  incrementAppLaunched(): void {
+  incrementAppLaunched() {
     this.registry.get("achievementsApp")?.incrementAppLaunched();
   }
 
-  incrementGameLaunched(): void {
+  incrementGameLaunched() {
     this.registry.get("achievementsApp")?.incrementGameLaunched();
   }
 
-  incrementScreenshotTaken(): void {
+  incrementScreenshotTaken() {
     this.registry.get("achievementsApp")?.incrementScreenshotTaken();
   }
 
-  incrementCalculationDone(): void {
+  incrementCalculationDone() {
     this.registry.get("achievementsApp")?.incrementCalculationDone();
   }
 
-  incrementPowerProfileChange(): void {
+  incrementPowerProfileChange() {
     this.registry.get("achievementsApp")?.incrementPowerProfileChange();
   }
 
-  incrementSession(): void {
+  incrementSession() {
     this.registry.get("achievementsApp")?.incrementSession();
   }
 
-  incrementWallpaper(): void {
+  incrementWallpaper() {
     this.registry.get("achievementsApp")?.incrementWallpaper();
   }
 
-  incrementTerminalCmd(): void {
+  incrementTerminalCmd() {
     this.registry.get("achievementsApp")?.incrementTerminalCmd();
   }
 
-  incrementFileUploaded(): void {
+  incrementFileUploaded() {
     this.registry.get("achievementsApp")?.incrementFileUploaded();
   }
 
-  triggerCommandExecution(command: string): void {
+  triggerCommandExecution(command) {
     this.registry.get("achievementsApp")?.triggerCommandExecution(command);
   }
 
-  unlock(achievementKey: string): any {
+  unlock(achievementKey) {
     return this.registry.get("achievementsApp")?.unlock?.(achievementKey);
   }
 }
 
 export class OSBridge {
-  window: WindowAPI;
-  fs: FileSystemAPI;
-  notify: NotificationAPI;
-  achievements: AchievementsAPI;
-  app: AppAPI;
-  events: EventBusAPI;
-  storage: StorageAPI;
-  dialog: DialogAPI;
-  tray: TrayAPI;
-  tor: TorAPI;
-  tiling: TilingAPI;
-  modes: ModeAPI;
-  clipboardManager: any = null;
-  fileSystemManager: any = null;
-  windowManager: any = null;
-
-  constructor(services: OSServices) {
+  constructor(services) {
     this.window = new WindowAPI(services.windowManager);
     this.windowManager = services.windowManager;
     this.fileSystemManager = services.fileSystemManager;
@@ -469,19 +460,20 @@ export class OSBridge {
     this.tor = new TorAPI();
     this.tiling = new TilingAPI(services.windowManager);
     this.modes = new ModeAPI();
+    this.clipboardManager = null;
 
-    (window as any).os = this;
+    window.os = this;
   }
 
-  setAppLauncher(launcher: any): void {
+  setAppLauncher(launcher) {
     this.app.setLauncher(launcher);
   }
 
-  setDialogExplorerApp(app: ExplorerAppService): void {
+  setDialogExplorerApp(app) {
     this.dialog.setExplorerApp(app);
   }
 
-  setTorManager(manager: TorManagerService): void {
+  setTorManager(manager) {
     this.tor.setManager(manager);
   }
 }

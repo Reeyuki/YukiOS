@@ -2,16 +2,10 @@ import { AppSource } from "../AppSource.js";
 import { os as _os } from "../os/index.js";
 
 export class BaseApp {
-  protected os: any;
-  protected services: Record<string, any>;
-  protected wm: any;
-  protected fs: any;
-  protected bus: any;
-  protected notifications: any;
-  constructor(param: Record<string, any> = {}) {
+  constructor(param = {}) {
     if (param.kernel) {
       this.os = param;
-      this.services = param as any;
+      this.services = param;
       this.wm = param.kernel?.windowManager;
       this.fs = param.kernel?.fileSystemManager;
       this.bus = param.events;
@@ -21,9 +15,9 @@ export class BaseApp {
       this.services = param;
       if (param.windowManager && !param.windowManager.__isProxied) {
         param.windowManager = new Proxy(param.windowManager, {
-          get: (target: any, prop: string) => {
+          get: (target, prop) => {
             if (prop === "sendNotify") {
-              return async (text: string, appSource: string | null = null) => {
+              return async (text, appSource = null) => {
                 const source = appSource || this.getAppSource();
                 _os.notify.send("", text, { appSource: source });
               };
@@ -40,19 +34,19 @@ export class BaseApp {
     }
   }
 
-  open(opts?: any): any {
+  open(opts) {
     throw new Error(`${this.constructor.name}.open() is not implemented.`);
   }
 
-  onClose(winId: string): void {}
+  onClose(winId) {}
 
-  getSnapshot(winId: string): any {
+  getSnapshot(winId) {
     return null;
   }
 
-  restoreSnapshot(winId: string, data: any): void {}
+  restoreSnapshot(winId, data) {}
 
-  async isSingletonOpen(winId: string): Promise<boolean> {
+  async isSingletonOpen(winId) {
     const existing = document.getElementById(winId);
     if (existing) {
       if (existing.style.display === "none") {
@@ -78,20 +72,13 @@ export class BaseApp {
     return false;
   }
 
-  async notify(
-    title: string,
-    message: string = "",
-    type: string = "info",
-    duration: number = 5000,
-    icon: string | null = null,
-    appSource: string | null = null
-  ): Promise<void> {
+  async notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
     const source = appSource || this.getAppSource();
     const os = _os;
     os.notify.send(title, message, { type, duration, icon, appSource: source });
   }
 
-  getAppSource(): string {
+  getAppSource() {
     const className = this.constructor.name;
     switch (className) {
       case "ClipboardManagerApp":
@@ -153,22 +140,22 @@ export class BaseApp {
     }
   }
 
-  async registerTray(winId: string, icon: string, label: string, options: Record<string, any> = {}): Promise<void> {
+  async registerTray(winId, icon, label, options = {}) {
     const os = _os;
     os.tray.register(winId, icon, label, options);
   }
 
-  async unregisterTray(winId: string): Promise<void> {
+  async unregisterTray(winId) {
     const os = _os;
     os.tray.unregister(winId);
   }
 
-  async sendToTray(winId: string): Promise<void> {
+  async sendToTray(winId) {
     const os = _os;
     os.tray.sendToTray(winId);
   }
 
-  async restoreFromTray(winId: string): Promise<void> {
+  async restoreFromTray(winId) {
     const os = _os;
     os.tray.restoreFromTray(winId);
   }

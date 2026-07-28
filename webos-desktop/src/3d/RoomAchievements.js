@@ -9,7 +9,6 @@ export class RoomAchievements {
 
   createDefinitions() {
     return [
-      { id: "room_explorer", title: "Step Inside", desc: "Enter the 3D room for the first time", rarity: "common" },
       {
         id: "game_master",
         title: "Game Master",

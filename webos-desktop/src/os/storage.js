@@ -1,23 +1,17 @@
-/**
- * OS Storage API
- * Provides unified storage interface with automatic serialization/deserialization
- * All values are automatically JSON serialized on set and deserialized on get
- */
-
 export class StorageAPI {
-  get<T = unknown>(key: string): T | null {
+  get(key) {
     try {
       const raw = localStorage.getItem(key);
       if (raw === null) {
         return null;
       }
-      return JSON.parse(raw) as T;
+      return JSON.parse(raw);
     } catch {
       return null;
     }
   }
 
-  set(key: string, value: unknown): void {
+  set(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
@@ -25,7 +19,7 @@ export class StorageAPI {
     }
   }
 
-  remove(key: string): void {
+  remove(key) {
     try {
       localStorage.removeItem(key);
     } catch (e) {
@@ -33,7 +27,7 @@ export class StorageAPI {
     }
   }
 
-  clear(): void {
+  clear() {
     try {
       localStorage.clear();
     } catch (e) {
@@ -41,7 +35,7 @@ export class StorageAPI {
     }
   }
 
-  has(key: string): boolean {
+  has(key) {
     return localStorage.getItem(key) !== null;
   }
 }

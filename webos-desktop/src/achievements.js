@@ -7,7 +7,6 @@ import { parseBool } from "./shared/boolUtils.js";
 
 import { BaseApp, StorageKeys, os } from "./framework.js";
 export const Achievements = {
-  WelcomeAboard: "first_boot",
   MultiTasker: "window_manager",
   NoteTaker: "note_taker",
   ArchiveHandler: "archive_handler",
@@ -179,13 +178,6 @@ export class AchievementsApp extends BaseApp {
 
   createAchievements() {
     return [
-      {
-        id: Achievements.WelcomeAboard,
-        title: "First Steps",
-        desc: "Launch YukiOS for the first time",
-        icon: "fa-rocket",
-        rarity: "common"
-      },
       {
         id: Achievements.MultiTasker,
         title: "Juggler",
@@ -746,11 +738,7 @@ export class AchievementsApp extends BaseApp {
   }
   incrementSession() {
     const isBootAchievement =
-      !this.unlocked.has(Achievements.WelcomeAboard) ||
-      !this.unlocked.has(Achievements.RegularUser) ||
-      !this.unlocked.has(Achievements.SystemVeteran);
-
-    this.trigger(Achievements.WelcomeAboard, isBootAchievement);
+      !this.unlocked.has(Achievements.RegularUser) || !this.unlocked.has(Achievements.SystemVeteran);
 
     this.increment("session");
   }

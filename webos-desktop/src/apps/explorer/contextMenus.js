@@ -163,18 +163,8 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
         item(
           convertableItems.length > 1 ? `Convert ${convertableItems.length} items...` : "Convert / Transform...",
           async () => {
-            const services = {
-              windowManager: explorer.wm,
-              fileSystemManager: explorer.fs,
-              notepadApp: explorer.notepadApp,
-              browserApp: explorer.browserApp,
-              officeApp: explorer.officeApp,
-              markdownApp: explorer.markdownApp,
-              jsDosApp: explorer.jsDosApp,
-              appLauncher: explorer.appLauncher
-            };
             convertableItems.forEach((convertItem) => {
-              openFileConverter(convertItem, inst.currentPath, services, () => {
+              openFileConverter(convertItem, inst.currentPath, os, () => {
                 explorer.renderInstance(inst);
               });
             });
