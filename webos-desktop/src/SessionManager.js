@@ -14,6 +14,7 @@ import { fetchLiveStats } from "./analytics.js";
 import { liveActivityManager } from "./liveActivityManager.js";
 import { runBootPreview } from "./bootScreen.js";
 import { BOOT_ANIMATIONS } from "./bootAnimations.js";
+import { modeManager, MODES } from "./modeManager.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -880,8 +881,7 @@ export class SessionManager {
   }
 
   applyMacSettings() {
-    document.documentElement.classList.add("mac-mode");
-    os.storage.set(StorageKeys.macOsControls, "true");
+    modeManager.enter(MODES.MAC);
     os.storage.set(StorageKeys.dockEnabled, "true");
     os.events.emit(BusEvents.SETTINGS_CHANGED, {});
     os.storage.set(StorageKeys.theme, "macos-fluent");
@@ -899,8 +899,7 @@ export class SessionManager {
   }
 
   disableMacSettings() {
-    document.documentElement.classList.remove("mac-mode");
-    os.storage.set(StorageKeys.macOsControls, "false");
+    modeManager.exit(MODES.MAC);
     os.storage.set(StorageKeys.dockEnabled, "false");
     os.events.emit(BusEvents.SETTINGS_CHANGED, {});
     const currentTheme = os.storage.get(StorageKeys.theme);
@@ -920,7 +919,7 @@ export class SessionManager {
   }
 
   applyTilingSettings() {
-    os.storage.set(StorageKeys.tilingEnabled, "true");
+    modeManager.enter(MODES.TILING);
     os.tiling.setEnabled(true);
     os.events.emit(BusEvents.SETTINGS_CHANGED, {});
 
@@ -930,12 +929,12 @@ export class SessionManager {
   }
 
   disableTilingSettings() {
-    os.storage.set(StorageKeys.tilingEnabled, "false");
+    modeManager.exit(MODES.TILING);
     os.tiling.setEnabled(false);
   }
 
   async apply3DSettings() {
-    document.documentElement.classList.add("3d-mode");
+    modeManager.enter(MODES["3D"]);
     const app = this.os.app.getInstance("room3dApp");
     if (app) {
       try {
@@ -950,7 +949,7 @@ export class SessionManager {
   }
 
   disable3DSettings() {
-    document.documentElement.classList.remove("3d-mode");
+    modeManager.exit(MODES["3D"]);
     const app = this.os.app.getInstance("room3dApp");
     if (app) {
       app.exitSystemMode();

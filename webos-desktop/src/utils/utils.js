@@ -1,3 +1,5 @@
+import { os, MODES } from "../framework.js";
+
 export function escapeHtml(str) {
   if (typeof str !== "string") return "";
   return str
@@ -155,7 +157,7 @@ export function sanitizeTitle(title) {
 }
 
 export function isTaskbarTop() {
-  if (document.documentElement.classList.contains("mac-mode")) return true;
+  if (os.modes.isActive(MODES.MAC)) return true;
   const taskbar = document.getElementById("taskbar");
   return taskbar && taskbar.classList.contains("position-top");
 }

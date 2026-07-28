@@ -10,7 +10,7 @@ import { getAppRegistry } from "../appRegistry.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 import { $, $$ } from "../shared/domUtils.js";
 import { STEAM_NEWS_ITEMS } from "./steamNewsData.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, MODES } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
 }
@@ -378,7 +378,7 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
       <div id="games-app-container" style="height:100%;"></div>
     </div>`;
 
-  if (os.storage.get(StorageKeys.macOsControls) !== "true") {
+  if (!os.modes.isActive(MODES.MAC)) {
     os.tray.register(STEAM_WIN_ID, taskbarIcon, winTitle, {
       showInTray: true,
       contextMenuItems: SteamDataManager.getSteamContextMenuItems(appLauncher),

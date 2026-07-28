@@ -2,7 +2,7 @@ import "../styles/torrent.css";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -281,7 +281,7 @@ export class TorrentClientApp extends BaseApp {
   }
 
   registerTray() {
-    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
+    if (os.modes.isActive(MODES.MAC)) return;
     if (this.trayRegistered) return;
     const winId = "torrent-client-win";
     os.tray.register(winId, "fas fa-download", "Torrent Client", {

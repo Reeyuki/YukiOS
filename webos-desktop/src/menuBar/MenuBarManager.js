@@ -4,6 +4,7 @@ import { getSetting } from "../shared/settingsUtils.js";
 import { $, $$, bindEvent, addClass, removeClass, toggleClass, setText, createElement } from "../shared/domUtils.js";
 import { DEFAULT_SYSTEM_MENUS, APP_MENU_OVERRIDES } from "./appMenus.js";
 import { StorageKeys } from "../StorageKeys.js";
+import { os, MODES } from "../framework.js";
 
 export class MenuBarManager {
   constructor(os) {
@@ -150,7 +151,7 @@ export class MenuBarManager {
   }
 
   isEnabled() {
-    return getSetting("macOsControls", false) === true;
+    return os.modes.isActive(MODES.MAC);
   }
 
   renderMenuBar() {

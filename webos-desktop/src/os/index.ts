@@ -153,6 +153,14 @@ const noopApp = {
   close: NOOP
 };
 
+const noopModes = {
+  isActive: () => false,
+  getActiveModes: () => [],
+  enter: NOOP,
+  exit: NOOP,
+  exitAll: NOOP
+};
+
 const noopTiling = {
   get enabled(): boolean {
     return false;
@@ -214,6 +222,7 @@ const noopAPIs: Record<string, any> = {
   app: noopApp,
   tor: noopTor,
   tiling: noopTiling,
+  modes: noopModes,
   achievements: noopAchievements,
   clipboardManager: null,
   fileSystemManager: null

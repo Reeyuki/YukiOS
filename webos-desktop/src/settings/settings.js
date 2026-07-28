@@ -5,6 +5,7 @@ import { appMap } from "../games/gamesList.js";
 import { turboManager } from "../shared/turboManager.js";
 
 import { buildSettingsHTML } from "./settingRenderer.js";
+import { modeManager, MODES } from "../modeManager.js";
 import {
   applyTheme,
   applyWindowTransparency,
@@ -319,7 +320,11 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.desktopIconSize, String(this.settings.desktopIconSize));
       os.storage.set(StorageKeys.taskbarScale, String(this.settings.taskbarScale));
       os.storage.set(StorageKeys.dockEnabled, String(this.settings.dockEnabled));
-      os.storage.set(StorageKeys.macOsControls, String(this.settings.dockEnabled));
+      if (this.settings.dockEnabled) {
+        modeManager.enter(MODES.MAC);
+      } else {
+        modeManager.exit(MODES.MAC);
+      }
       os.storage.set(StorageKeys.dockPosition, this.settings.dockPosition);
       os.storage.set(StorageKeys.dockAutoHide, String(this.settings.dockAutoHide));
       os.storage.set(StorageKeys.dockMagnification, String(this.settings.dockMagnification));

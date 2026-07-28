@@ -11,6 +11,7 @@ import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
 import { animateThemeChange } from "../settings/themeTransition.js";
 
 import { BaseApp, StorageKeys, os } from "../framework.js";
+import { modeManager, MODES } from "../modeManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 export const FEATURE_DATA = {
   step2: [
@@ -277,7 +278,11 @@ export class SetupApp extends BaseApp {
     win.innerHTML = this.buildUI();
     this.openWindows.add(winId);
     this.bindEvents(win);
-    this.animateStepIn();
+    this.animateStepIn(win);
+
+    win.addEventListener("remove", () => {
+      this.openWindows.delete(winId);
+    });
   }
 
   onClose(winId) {
@@ -827,7 +832,7 @@ export class SetupApp extends BaseApp {
         this.currentStep++;
 
         this.updateStepUI(win);
-        this.animateStepIn();
+        this.animateStepIn(win);
 
         this.isTransitioning = false;
         this.stepTransitionTimer = null;
@@ -892,8 +897,8 @@ export class SetupApp extends BaseApp {
     this.refreshProfileSummary(win);
   }
 
-  animateStepIn() {
-    const stepEl = document.querySelector(`.setup-step[data-step="${this.currentStep + 1}"]`);
+  animateStepIn(win) {
+    const stepEl = $(`.setup-step[data-step="${this.currentStep + 1}"]`, win);
     if (stepEl) {
       stepEl.classList.add("active");
       this.lazyLoadActiveStepImages(stepEl);
@@ -945,7 +950,11 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.transparency, this.userChoices.transparency);
 
     os.storage.set(StorageKeys.fontFamily, this.userChoices.fontFamily);
-    os.storage.set(StorageKeys.macOsControls, this.userChoices.macOsControls.toString());
+    if (this.userChoices.macOsControls) {
+      modeManager.enter(MODES.MAC);
+    } else {
+      modeManager.exit(MODES.MAC);
+    }
     os.storage.set(StorageKeys.dockEnabled, this.userChoices.macOsControls.toString());
     os.storage.set(StorageKeys.mikuCursor, this.userChoices.mikuCursor.toString());
     os.storage.set(StorageKeys.clippy, this.userChoices.clippy.toString());
@@ -1001,13 +1010,7 @@ Have fun!`;
       AppSource.SETUP
     );
 
-    win.style.transition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
-    win.style.transform = "scale(0) rotate(-6deg)";
-
-    setTimeout(() => {
-      os.window.close(win);
-      this.openWindows.delete("setup-wizard");
-    }, 500);
+    os.window.close(win);
   }
 
   skipSetup(win) {

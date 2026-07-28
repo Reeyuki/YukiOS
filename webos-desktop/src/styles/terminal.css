@@ -130,3 +130,119 @@ html[data-theme] .terminal-content ::selection {
 .terminal-output::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.terminal-stop-btn {
+  display: none;
+  position: absolute;
+  bottom: 40px;
+  right: 8px;
+  padding: 4px 12px;
+  background: var(--error, #cc0000);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  z-index: 10;
+  opacity: 0.9;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+
+.terminal-stop-btn:hover {
+  opacity: 1;
+}
+
+@keyframes terminal-cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.terminal-tabs.hidden {
+  display: none;
+}
+
+.terminal-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  user-select: none;
+}
+
+.terminal-tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.terminal-tab.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.terminal-tab-close {
+  opacity: 0.5;
+  padding: 0 2px;
+  border-radius: 3px;
+  line-height: 1;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+.terminal-tab:hover .terminal-tab-close {
+  opacity: 0.7;
+}
+
+.terminal-tab-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.terminal-tab-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  background: transparent;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  user-select: none;
+}
+
+.terminal-tab-add:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ansi-escape {
+  display: none;
+}

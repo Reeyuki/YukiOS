@@ -1,5 +1,5 @@
 import { makeDraggable } from "../shared/dragUtils.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, MODES } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
 import { BusEvents } from "../core/EventBus.js";
 const desktop = document.getElementById("desktop");
@@ -437,7 +437,7 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
   let tilingBarH = "0px";
   let tilingBarTop = "0px";
   const tilingBar = document.getElementById("tiling-bar");
-  if (tilingBar && tilingBar.style.display !== "none" && document.body.classList.contains("tiling-active")) {
+  if (tilingBar && tilingBar.style.display !== "none" && os.modes.isActive(MODES.TILING)) {
     tilingBarH = getComputedStyle(tilingBar).height || "38px";
     tilingBarTop = tilingBar.classList.contains("position-bottom") ? "0px" : tilingBarH;
   }

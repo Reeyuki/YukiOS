@@ -1,5 +1,5 @@
 import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
-import { os, StorageKeys } from "../framework.js";
+import { os, StorageKeys, MODES } from "../framework.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class DiscordApp extends ScramjetBaseApp {
@@ -155,7 +155,7 @@ export class DiscordApp extends ScramjetBaseApp {
 
     const appConfig = SYSTEM_APPS[this.getAppId()];
     const trayOpts = appConfig?.trayOptions;
-    if (trayOpts && this.winId && os.storage.get(StorageKeys.macOsControls) !== "true") {
+    if (trayOpts && this.winId && !os.modes.isActive(MODES.MAC)) {
       os.tray.register(this.winId, this.getAppIcon(), this.getAppName(), {
         showInTray: true,
         priority: 50,

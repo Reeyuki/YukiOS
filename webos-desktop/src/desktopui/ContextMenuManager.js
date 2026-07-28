@@ -1,3 +1,4 @@
+import { $, $$, createElement } from "../shared/domUtils.js";
 import { showContextMenu, showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
 import { sortDesktopIcons, relayoutDesktopIcons, changeDesktopIconSize } from "./desktopui.js";
 import { os, StorageKeys } from "../framework.js";
@@ -25,7 +26,7 @@ export class DesktopContextMenuManager {
     this.PositionStore = PositionStore;
     this.IconDataHelper = IconDataHelper;
     this.wm = wm;
-    this.desktop = document.getElementById("desktop");
+    this.desktop = $("#desktop");
     this.archiveExtractor = new ArchiveExtractor(
       desktopUI.fs,
       (msg) => os.notify.send(msg),
@@ -482,7 +483,7 @@ export class DesktopContextMenuManager {
               const el = sItem(label, () => changeDesktopIconSize(size), faIcon);
               if (currentSize === size) {
                 el.style.fontWeight = "700";
-                const check = document.createElement("i");
+                const check = createElement("i");
                 check.className = "fas fa-check";
                 check.style.marginLeft = "auto";
                 check.style.fontSize = "10px";
@@ -520,7 +521,7 @@ export class DesktopContextMenuManager {
                 () => {
                   const next = !hideDesktopIcons;
                   os.storage.set(StorageKeys.hideDesktopIcons, String(next));
-                  document.querySelectorAll("#desktop > .icon").forEach((icon) => {
+                  $$("#desktop > .icon").forEach((icon) => {
                     icon.style.display = next ? "none" : "";
                   });
                   os.notify.send(next ? "Desktop icons hidden" : "Desktop icons shown");
@@ -546,7 +547,7 @@ export class DesktopContextMenuManager {
               const el = sItem(label, () => sortDesktopIcons(id), faIcon);
               if (currentSort === id) {
                 el.style.fontWeight = "700";
-                const check = document.createElement("i");
+                const check = createElement("i");
                 check.className = "fas fa-check";
                 check.style.marginLeft = "auto";
                 check.style.fontSize = "10px";
@@ -618,7 +619,7 @@ export class DesktopContextMenuManager {
               if (disabled) {
                 el.style.opacity = "0.4";
                 el.style.cursor = "default";
-                const check = document.createElement("i");
+                const check = createElement("i");
                 check.className = "fas fa-check";
                 check.style.marginLeft = "auto";
                 check.style.fontSize = "10px";
@@ -665,8 +666,12 @@ export class DesktopContextMenuManager {
         item(
           "Refresh",
           async () => {
-            document.querySelectorAll(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
+            $$(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
             await this.desktopUI.loadDesktopItems();
+            relayoutDesktopIcons();
+            $$(".folder-icon, .desktop-file-icon").forEach((i) => {
+              i.style.animation = "wa-scale-in 0.25s ease-out both";
+            });
           },
           "fa-sync-alt"
         )
@@ -691,7 +696,7 @@ export class DesktopContextMenuManager {
         if (currentSort === id) {
           el.style.setProperty("--brand", "var(--brand)");
           el.style.fontWeight = "700";
-          const check = document.createElement("i");
+          const check = createElement("i");
           check.className = "fas fa-check";
           check.style.marginLeft = "auto";
           check.style.fontSize = "10px";
@@ -761,7 +766,7 @@ export class DesktopContextMenuManager {
         if (disabled) {
           el.style.opacity = "0.4";
           el.style.cursor = "default";
-          const check = document.createElement("i");
+          const check = createElement("i");
           check.className = "fas fa-check";
           check.style.marginLeft = "auto";
           check.style.fontSize = "10px";
@@ -856,7 +861,7 @@ export class DesktopContextMenuManager {
     const defaultName = isFile ? "New File.txt" : "New Folder";
     const iconSrc = isFile ? "static/icons/notepad.webp" : "static/icons/file.webp";
 
-    const icon = document.createElement("div");
+    const icon = createElement("div");
     icon.className = "icon selectable is-renaming";
     icon.innerHTML = `<img src="${iconSrc}"><div></div>`;
     this.desktopUI.positionHelper.snap(icon);
@@ -917,17 +922,17 @@ export class DesktopContextMenuManager {
   }
 
   createInlineInput(value) {
-    const wrap = document.createElement("div");
+    const wrap = createElement("div");
     wrap.style.cssText = "display:flex;flex-direction:column;gap:4px;margin-top:4px;";
 
-    const input = document.createElement("input");
+    const input = createElement("input");
     input.type = "text";
     input.value = value;
     input.style.cssText =
       "padding:4px 6px;border-radius:4px;border:1px solid var(--brand);background:rgba(0,0,0,0.6);color:inherit;font-size:13px;text-align:center;outline:none;width:100%;box-sizing:border-box;";
     wrap.appendChild(input);
 
-    const errorTip = document.createElement("div");
+    const errorTip = createElement("div");
     errorTip.style.cssText =
       "color:var(--error);font-size:11px;text-align:center;display:none;word-break:break-word;max-width:120px;";
     wrap.appendChild(errorTip);
@@ -960,7 +965,7 @@ export class DesktopContextMenuManager {
     if (icon.classList.contains("is-renaming")) return;
     icon.classList.add("is-renaming");
 
-    const labelDiv = icon.querySelector("div");
+    const labelDiv = $("div", icon);
     let currentName;
     if (icon.dataset.app) {
       currentName = labelDiv ? labelDiv.textContent.trim() : icon.dataset.app;

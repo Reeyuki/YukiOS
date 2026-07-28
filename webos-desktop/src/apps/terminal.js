@@ -3,7 +3,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showContextMenu } from "../shared/contextMenu.js";
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { GitManager } from "../services/GitManager.js";
 import { formatSize } from "../utils/utils.js";
 import { getExt } from "../shared/fileKindDetector.js";
@@ -15,6 +15,14 @@ import { processManager } from "../services/ProcessManager.js";
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "./about.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
+import { ShellEnvironment } from "../terminal/shellEnvironment.js";
+import { ShellParser } from "../terminal/shellParser.js";
+import { ShellInterpreter } from "../terminal/shellInterpreter.js";
+import { CommandRegistry } from "../terminal/commands.js";
+import { AnsiRenderer } from "../terminal/ansiRenderer.js";
+import { TerminalRawMode, AltScreenManager, TerminalUIApp } from "../terminal/terminalUI.js";
+import { renderPrompt } from "../terminal/prompt.js";
+import { Stream, collectStream } from "../terminal/stream.js";
 
 export class TerminalApp extends BaseApp {
   windowsMap = new Map();
@@ -40,6 +48,20 @@ export class TerminalApp extends BaseApp {
     this.aliases = os.storage.get(StorageKeys.terminalAliases) || {};
     this.fs = os.fileSystemManager;
     this.gitManager = new GitManager(this.fs);
+
+    this.shellEnv = new ShellEnvironment({
+      ...this.env,
+      PWD: `/home/${this.displayName}`,
+      HOSTNAME: this.hostname
+    });
+    this.shellParser = new ShellParser();
+    this.commandRegistry = new CommandRegistry();
+    this.ansiRenderer = null;
+    this.shellInterpreter = null;
+    this.rawModeInstance = null;
+    this.altScreenInstance = null;
+    this.stopRequested = false;
+
     this.registerDefaultCommands();
     this.initPerWindowGetters();
     this.perWindowDefaults = this.createState({}, null);
@@ -88,6 +110,212 @@ export class TerminalApp extends BaseApp {
       cmatrixIframeCleanup: null,
       cmatrixWinHandler: null
     };
+  }
+
+  buildCommandContext() {
+    const self = this;
+    return {
+      print: (text, color) => {
+        if (color) self.enqueuePrint(text, color);
+        else self.enqueuePrint(text);
+      },
+      printError: (text) => self.enqueuePrint(text, "#ff5555"),
+      get stopRequested() {
+        return self.stopRequested;
+      },
+      getPath: () => {
+        const p = self.currentPath;
+        return p.length ? "/" + p.join("/") : "/";
+      },
+      setPath: (path) => {
+        if (typeof path === "string") {
+          self.currentPath = self.splitPath(path);
+        } else {
+          self.currentPath = [...path];
+        }
+        self.shellEnv.set("PWD", self.getPath());
+      },
+      getHistory: () => self.history,
+      setExitCode: (code) => {
+        if (self.activeState) self.activeState.lastExitCode = code;
+      },
+      env: self.shellEnv,
+      fs: self.fs,
+      signal: (sig) => {
+        if (sig === "EXIT") self.cmdExit();
+        else if (sig === "CLEAR") self.cmdClear();
+        else if (sig === "SHUTDOWN") self.cmdShutdown();
+        else if (sig === "REBOOT") self.cmdReboot();
+        else if (sig === "LOCK") self.cmdLock();
+        else if (sig === "LOGOUT") self.cmdLogout();
+        else if (sig === "INTERRUPT") {
+          self.stopRequested = true;
+        }
+      },
+      resolvePath: (target) => self.resolvePath(target),
+      pathToAbs: (p) => {
+        const resolved = Array.isArray(p) ? p : self.fs.resolvePath(p, self.currentPath);
+        return self.pathToString(resolved);
+      },
+      formatSize: (bytes) => formatSize(bytes),
+      rawMode: self.rawModeInstance,
+      altScreen: self.altScreenInstance,
+      hasCommand: (name) => self.commandRegistry.has(name) || !!self.commands[name],
+      executeCommand: async (name, args, io) => {
+        if (self.commandRegistry.has(name)) {
+          return self.commandRegistry.execute(name, args, self.buildCommandContext());
+        }
+        const handler = self.commands[name];
+        if (handler) {
+          await handler(args, []);
+          return { exitCode: self.activeState?.lastExitCode ?? 0 };
+        }
+        return { exitCode: 127 };
+      },
+      expandString: (str) => self.expandWithEnv(str),
+      printInline: (text, colors) => {
+        const state = self.activeState;
+        if (!state) return;
+        const line = document.createElement("div");
+        for (let i = 0; i < text.length; i++) {
+          const span = document.createElement("span");
+          const [r, g, b] = colors[i % colors.length];
+          span.style.color = `rgb(${r},${g},${b})`;
+          span.textContent = text[i];
+          line.appendChild(span);
+        }
+        state.terminalOutput.appendChild(line);
+        requestAnimationFrame(() => {
+          if (self.isNearBottom(state)) {
+            line.scrollIntoView({ block: "end", behavior: "instant" });
+          }
+        });
+      }
+    };
+  }
+
+  expandWithEnv(str) {
+    return this.shellEnv.expandWord(str, (cmdStr) => {
+      this.executeInlineSubstitution(cmdStr);
+      return "";
+    });
+  }
+
+  executeInlineSubstitution(cmdStr) {
+    const ast = this.shellParser.parse(cmdStr);
+    if (!this.shellInterpreter) {
+      this.shellInterpreter = new ShellInterpreter({});
+    }
+  }
+
+  resolvePath(target) {
+    const resolved = this.fs.resolvePath(target, this.currentPath);
+    return resolved;
+  }
+
+  splitPath(pathStr) {
+    if (pathStr === "/") return [];
+    return pathStr.split("/").filter(Boolean);
+  }
+
+  async executeShellScript(script) {
+    const ctx = this.buildCommandContext();
+    if (!this.shellInterpreter) {
+      this.shellInterpreter = new ShellInterpreter(ctx);
+    }
+    const ast = this.shellParser.parse(script);
+    const result = await this.shellInterpreter.execute(ast);
+    return result.exitCode;
+  }
+
+  ensureAnsiRenderer() {
+    if (!this.ansiRenderer && this.terminalOutput) {
+      this.ansiRenderer = new AnsiRenderer(this.terminalOutput);
+    }
+    return this.ansiRenderer;
+  }
+
+  setupStopButton() {
+    const container = this.terminalInputLine?.parentElement;
+    if (!container) return;
+    let btn = container.querySelector(".terminal-stop-btn");
+    if (btn) return;
+    btn = document.createElement("button");
+    btn.className = "terminal-stop-btn";
+    btn.textContent = "Stop";
+    btn.title = "Interrupt running command (SIGINT)";
+    btn.style.cssText = `
+      display: none;
+      position: absolute;
+      bottom: 40px;
+      right: 8px;
+      padding: 4px 12px;
+      background: var(--error, #cc0000);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      z-index: 10;
+      opacity: 0.9;
+    `;
+    btn.addEventListener("click", () => {
+      this.stopRequested = true;
+      if (this.rawModeInstance && this.rawModeInstance.active) {
+        this.rawModeInstance.disable();
+      }
+      if (this.altScreenInstance && this.altScreenInstance.active) {
+        this.altScreenInstance.exit();
+      }
+      this.terminalInputLine.style.display = "flex";
+      this.terminalInput.disabled = false;
+      this.terminalInput.focus();
+    });
+    container.style.position = "relative";
+    container.appendChild(btn);
+    this.stopBtn = btn;
+  }
+
+  showStopButton(show) {
+    if (this.stopBtn) {
+      this.stopBtn.style.display = show ? "block" : "none";
+    }
+  }
+
+  enterRawMode(onKey, onResize) {
+    const outputEl = this.terminalOutput;
+    const inputEl = this.terminalInput;
+    if (!outputEl || !inputEl) return null;
+    this.rawModeInstance = new TerminalRawMode(outputEl, inputEl);
+    this.rawModeInstance.enable(onKey, onResize);
+    this.altScreenInstance = new AltScreenManager(this.terminalContent);
+    this.altScreenInstance.enter();
+    return this.rawModeInstance;
+  }
+
+  exitRawMode() {
+    if (this.altScreenInstance && this.altScreenInstance.active) {
+      this.altScreenInstance.exit();
+    }
+    if (this.rawModeInstance && this.rawModeInstance.active) {
+      this.rawModeInstance.disable();
+    }
+    this.rawModeInstance = null;
+    this.altScreenInstance = null;
+    this.terminalInputLine.style.display = "flex";
+    this.terminalInput.disabled = false;
+    this.terminalInput.focus();
+  }
+
+  renderAnsiOutput(text) {
+    const renderer = this.ensureAnsiRenderer();
+    if (renderer && text.includes("\x1b[")) {
+      return renderer.renderLine(text);
+    }
+    const line = document.createElement("div");
+    line.appendChild(document.createTextNode(text));
+    this.terminalOutput.appendChild(line);
+    return line;
   }
 
   initPerWindowGetters() {
@@ -161,10 +389,10 @@ export class TerminalApp extends BaseApp {
   }
 
   updateTabsVisibility() {
-    const isTiling = document.body.classList.contains("tiling-active");
+    const isTiling = os.modes.isActive(MODES.TILING);
     for (const state of this.windowsMap.values()) {
       if (state.terminalTabsEl) {
-        state.terminalTabsEl.style.display = isTiling ? "none" : "";
+        state.terminalTabsEl.classList.toggle("hidden", isTiling);
       }
     }
   }
@@ -217,6 +445,7 @@ export class TerminalApp extends BaseApp {
     this.updateTabsVisibility();
     this.updatePrompt();
     this.setupEventHandlers();
+    this.setupStopButton();
     this.pyReplActive = false;
     this.pyReplBuffer = "";
     this.pyReplContinuation = false;
@@ -276,6 +505,7 @@ export class TerminalApp extends BaseApp {
   async print(text, color = null, isCommand = false, promptText = null, delay = 1) {
     const state = this.activeState;
     if (!state) return;
+    if (this.stopRequested) return;
     state.printDepth++;
     if (state.printDepth === 1) {
       state.isPrinting = true;
@@ -284,29 +514,53 @@ export class TerminalApp extends BaseApp {
       state.terminalInput.disabled = true;
     }
 
-    const line = document.createElement("div");
-    const span = document.createElement("span");
-
+    let line;
     if (isCommand) {
+      line = document.createElement("div");
       const prompt = document.createElement("span");
       prompt.innerHTML = promptText || this.promptHtml();
       line.className = "cmd-line";
       line.appendChild(prompt);
+      const span = document.createElement("span");
       span.className = "cmd-text";
+      span.textContent = text;
       line.appendChild(span);
-    } else {
+      state.terminalOutput.appendChild(line);
+    } else if (text && text.includes("\x1b[")) {
+      const renderer = this.ensureAnsiRenderer();
+      if (renderer) {
+        line = renderer.render(text);
+        if (color) line.style.color = color;
+        state.terminalOutput.appendChild(line);
+      } else {
+        line = document.createElement("div");
+        const span = document.createElement("span");
+        if (color) span.style.color = color;
+        span.textContent = text;
+        line.appendChild(span);
+        state.terminalOutput.appendChild(line);
+      }
+    } else if (color || text?.includes("\x1b")) {
+      line = document.createElement("div");
+      const span = document.createElement("span");
       if (color) span.style.color = color;
+      span.textContent = text;
       line.appendChild(span);
+      state.terminalOutput.appendChild(line);
+    } else if (text !== null && text !== undefined) {
+      line = document.createElement("div");
+      const textNode = document.createTextNode(text);
+      line.appendChild(textNode);
+      state.terminalOutput.appendChild(line);
     }
 
-    state.terminalOutput.appendChild(line);
-
-    span.textContent = text;
-    requestAnimationFrame(() => {
-      if (this.isNearBottom(state)) {
-        line.scrollIntoView({ block: "end", behavior: "instant" });
-      }
-    });
+    if (line) {
+      requestAnimationFrame(() => {
+        if (this.isNearBottom(state)) {
+          line.scrollIntoView({ block: "end", behavior: "instant" });
+        }
+      });
+    }
 
     state.printDepth--;
     if (state.printDepth === 0) {
@@ -353,10 +607,13 @@ export class TerminalApp extends BaseApp {
     state.terminalInput.value = "";
     state.terminalInputLine.style.display = "none";
     state.commandRunning = true;
+    this.stopRequested = false;
+    this.showStopButton(true);
     try {
       await this.executeCommand(command);
     } finally {
       state.commandRunning = false;
+      this.showStopButton(false);
       if (!state.lavatActive && !state.btopActive && !state.cmatrixActive) {
         state.terminalInputLine.style.display = "flex";
       }
@@ -395,6 +652,7 @@ export class TerminalApp extends BaseApp {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
         e.preventDefault();
+        this.stopRequested = true;
         if (this.pyReplActive || this.nodeReplActive) {
           if (this.pyReplActive) {
             this.pyReplBuffer = "";
@@ -658,31 +916,18 @@ export class TerminalApp extends BaseApp {
     const state = this.activeState;
     if (!state || !state.terminalTabsEl) return;
     state.terminalTabsEl.innerHTML = "";
-    state.terminalTabsEl.style.display = "flex";
-    state.terminalTabsEl.style.gap = "4px";
-    state.terminalTabsEl.style.padding = "4px 6px";
 
     state.tabs.forEach((tab, i) => {
       const el = document.createElement("div");
       el.className = "terminal-tab" + (tab.id === state.activeTabId ? " active" : "");
-      el.style.display = "flex";
-      el.style.alignItems = "center";
-      el.style.gap = "6px";
-      el.style.padding = "2px 8px";
-      el.style.borderRadius = "4px";
-      el.style.cursor = "pointer";
-      el.style.fontSize = "12px";
-      el.style.background = tab.id === state.activeTabId ? "rgba(255,255,255,0.15)" : "transparent";
-      el.textContent = `Tab ${i + 1}`;
-      el.addEventListener("click", () => {
-        this.activeState = state;
-        this.switchTab(tab.id);
-      });
+
+      const label = document.createElement("span");
+      label.textContent = `Tab ${i + 1}`;
+      el.appendChild(label);
 
       const closeBtn = document.createElement("span");
+      closeBtn.className = "terminal-tab-close";
       closeBtn.textContent = "\u00d7";
-      closeBtn.style.opacity = "0.6";
-      closeBtn.style.marginLeft = "4px";
       closeBtn.addEventListener("click", (event) => {
         event.stopPropagation();
         this.activeState = state;
@@ -690,15 +935,17 @@ export class TerminalApp extends BaseApp {
       });
       el.appendChild(closeBtn);
 
+      el.addEventListener("click", () => {
+        this.activeState = state;
+        this.switchTab(tab.id);
+      });
+
       state.terminalTabsEl.appendChild(el);
     });
 
     const newTabBtn = document.createElement("div");
+    newTabBtn.className = "terminal-tab-add";
     newTabBtn.textContent = "+";
-    newTabBtn.style.padding = "2px 8px";
-    newTabBtn.style.cursor = "pointer";
-    newTabBtn.style.fontSize = "12px";
-    newTabBtn.style.opacity = "0.7";
     newTabBtn.addEventListener("click", () => {
       this.activeState = state;
       this.newTab();
@@ -792,52 +1039,12 @@ export class TerminalApp extends BaseApp {
   }
 
   expandVariables(str) {
-    let result = "";
-    let inSingle = false;
-    let inDouble = false;
-    for (let i = 0; i < str.length; i++) {
-      const ch = str[i];
-      if (ch === "'" && !inDouble) {
-        inSingle = !inSingle;
-        result += ch;
-        continue;
-      }
-      if (ch === '"' && !inSingle) {
-        inDouble = !inDouble;
-        result += ch;
-        continue;
-      }
-      if (ch === "\\" && i + 1 < str.length && !inSingle) {
-        result += ch + str[i + 1];
-        i++;
-        continue;
-      }
-      if (ch === "$" && !inSingle) {
-        const j = i + 1;
-        if (str[j] === "{") {
-          let k = j + 1;
-          while (k < str.length && str[k] !== "}") k++;
-          const name = str.slice(j + 1, k);
-          result += this.getEnvValue(name);
-          i = k;
-          continue;
-        }
-        if (str[j] === "?") {
-          result += String(this.lastExitCode);
-          i = j;
-          continue;
-        }
-        const match = str.slice(j).match(/^[A-Za-z_][A-Za-z0-9_]*/);
-        if (match) {
-          result += this.getEnvValue(match[0]);
-          i = j + match[0].length - 1;
-          continue;
-        }
-        result += ch;
-        continue;
-      }
-      result += ch;
-    }
+    this.shellEnv.set("PWD", this.currentPath.length ? "/" + this.currentPath.join("/") : "/");
+    this.shellEnv.set("?", String(this.activeState?.lastExitCode ?? 0));
+    const result = this.shellEnv.expandWord(str, (cmdStr) => {
+      this.executeInlineSubstitution(cmdStr);
+      return "";
+    });
     return result;
   }
 
@@ -1079,7 +1286,10 @@ export class TerminalApp extends BaseApp {
 
       if (isPiped) expandedArgs.unshift(output);
 
-      const handler = this.commands[command];
+      const ctx = this.buildCommandContext();
+      const handler = this.commandRegistry.has(command)
+        ? (args, flags, isPiped) => this.commandRegistry.execute(command, args, ctx)
+        : this.commands[command];
       if (!handler) {
         await this.enqueuePrint(`bash: ${command}: command not found`);
         state.lastExitCode = 127;
@@ -1144,8 +1354,37 @@ export class TerminalApp extends BaseApp {
       return;
     }
 
+    if (
+      commandStr.includes("if ") ||
+      commandStr.includes("while ") ||
+      commandStr.includes("for ") ||
+      commandStr.includes("$(") ||
+      commandStr.includes("$((") ||
+      commandStr.includes("then") ||
+      commandStr.includes("fi") ||
+      commandStr.includes("done")
+    ) {
+      this.shellEnv.set("PWD", this.currentPath.length ? "/" + this.currentPath.join("/") : "/");
+      this.shellEnv.set("?", String(state.lastExitCode ?? 0));
+      this.shellEnv.set("HOSTNAME", this.hostname);
+      this.shellEnv.set("USER", this.displayName);
+      const ctx = this.buildCommandContext();
+      if (!this.shellInterpreter) {
+        this.shellInterpreter = new ShellInterpreter(ctx);
+      }
+      const ast = this.shellParser.parse(commandStr);
+      const result = await this.shellInterpreter.execute(ast);
+      state.lastExitCode = result.exitCode;
+      this.updatePrompt();
+      return;
+    }
+
     const chain = this.parseCommand(commandStr);
     for (const segment of chain) {
+      if (this.stopRequested) {
+        this.stopRequested = false;
+        break;
+      }
       if (segment.operator === "&&" && state.lastExitCode !== 0) continue;
       if (segment.operator === "||" && state.lastExitCode === 0) continue;
       await this.executePipeline(segment.pipeline, segment.redirOut, segment.redirAppend, segment.redirIn);
@@ -1396,6 +1635,205 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("nano", textEditor);
     this.registerCommand("gedit", textEditor);
     this.registerCommand("hyprctl", (args) => cmdHyprctl(this, args));
+    this.registerCommand("true", () => {
+      this.lastExitCode = 0;
+    });
+    this.registerCommand("false", () => {
+      this.lastExitCode = 1;
+    });
+    this.registerCommand("sleep", async (args) => {
+      const secs = parseFloat(args[0]) || 1;
+      await new Promise((r) => setTimeout(r, secs * 1000));
+    });
+    this.registerCommand("yes", async (args) => {
+      const str = args.join(" ") || "y";
+      for (let i = 0; i < 100 && !this.stopRequested; i++) {
+        await this.print(str);
+      }
+    });
+    this.registerCommand("printenv", () => {
+      for (const [k, v] of Object.entries(this.env)) this.print(`${k}=${v}`);
+    });
+    this.registerCommand("dir", (args, flags) => this.cmdLs(args, flags));
+    this.registerCommand("rmdir", async (args) => {
+      for (const target of args) {
+        const absPath = this.pathToString(this.fs.resolvePath(target, this.currentPath));
+        try {
+          await this.fs.delete(absPath, target);
+        } catch (err) {
+          await this.print(`rmdir: ${target}: ${err.message}`, "#ff5555");
+        }
+      }
+    });
+    this.registerCommand("rev", async (args, flags, isPiped) => {
+      if (isPiped) {
+        for (const line of (args[0] || "").split("\n")) {
+          await this.print(line.split("").reverse().join(""));
+        }
+        return;
+      }
+      for (const target of args) {
+        const absPath = this.pathToString(this.fs.resolvePath(target, this.currentPath));
+        try {
+          const content = await this.fs.readTextFile(absPath, "");
+          if (content) {
+            const rev = content
+              .split("\n")
+              .map((l) => l.split("").reverse().join(""))
+              .join("\n");
+            await this.print(rev);
+          }
+        } catch {
+          await this.print(`rev: ${target}: No such file`, "#ff5555");
+        }
+      }
+    });
+    this.registerCommand("banner", (args) => {
+      const text = args.join(" ") || "Hello";
+      const width = text.length + 4;
+      this.print("#".repeat(width));
+      for (const ch of text) this.print(`# ${ch} #`);
+      this.print("#".repeat(width));
+    });
+    this.registerCommand("cowsay", (args) => {
+      const text = args.join(" ") || "moo";
+      const border = "-".repeat(text.length + 2);
+      this.print(` ${border} `);
+      this.print(`< ${text} >`);
+      this.print(` ${border} `);
+      this.print("        \\   ^__^");
+      this.print("         \\  (oo)\\_______");
+      this.print("            (__)\\       )\\/\\");
+      this.print("                ||----w |");
+      this.print("                ||     ||");
+    });
+    this.registerCommand("fortune", () => {
+      const fortunes = [
+        "The best time to plant a tree was 20 years ago. The second best time is now.",
+        "A journey of a thousand miles begins with a single step.",
+        "In the middle of difficulty lies opportunity.",
+        "The only way to do great work is to love what you do.",
+        "Simplicity is the ultimate sophistication.",
+        "Be yourself; everyone else is already taken.",
+        "The unexamined life is not worth living.",
+        "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe."
+      ];
+      this.print(fortunes[Math.floor(Math.random() * fortunes.length)]);
+    });
+
+    this.registerCommand("pipes", () => {
+      this.print("Starting pipes... (runs for 5s)");
+      const pipes = ["╸", "╻", "╺", "╹", "━", "┃", "┓", "┛", "┏", "┗", "┣", "┫", "┳", "┻", "╋"];
+      let x = 15,
+        y = 5,
+        dir = 0;
+      const dirs = [
+        [1, 0],
+        [0, 1],
+        [-1, 0],
+        [0, -1]
+      ];
+      const interval = setInterval(() => {
+        if (this.stopRequested) {
+          clearInterval(interval);
+          return;
+        }
+        if (Math.random() < 0.3) dir = (dir + (Math.random() < 0.5 ? 1 : -1) + 4) % 4;
+        x += dirs[dir][0];
+        y += dirs[dir][1];
+        if (x < 0 || x > 30 || y < 0 || y > 10) {
+          x = 15;
+          y = 5;
+        }
+        this.print(pipes[Math.floor(Math.random() * pipes.length)]);
+      }, 100);
+      setTimeout(() => clearInterval(interval), 5000);
+    });
+    this.registerCommand("snow", () => {
+      this.print("Starting snowfall... (runs for 5s)");
+      const interval = setInterval(() => {
+        if (this.stopRequested) {
+          clearInterval(interval);
+          return;
+        }
+        const flakes = Math.floor(Math.random() * 5) + 1;
+        for (let i = 0; i < flakes; i++) this.print("  *", "#ffffff");
+      }, 200);
+      setTimeout(() => clearInterval(interval), 5000);
+    });
+    this.registerCommand("watch", async (args) => {
+      const interval = args.includes("-n") ? parseInt(args[args.indexOf("-n") + 1], 10) || 2 : 2;
+      const cmdArgs = args.filter((a) => !a.startsWith("-") && isNaN(parseInt(a, 10)));
+      await this.print(`Every ${interval}s: ${cmdArgs.join(" ")}`);
+    });
+    this.registerCommand("whatis", (args) => {
+      const descriptions = {
+        ls: "list directory contents",
+        cd: "change directory",
+        pwd: "print working directory",
+        cat: "concatenate files",
+        echo: "display a line of text",
+        rm: "remove files",
+        mv: "move/rename files",
+        cp: "copy files",
+        mkdir: "create directories",
+        touch: "create empty files",
+        head: "output first part of files",
+        tail: "output last part of files",
+        grep: "print lines matching a pattern",
+        wc: "count lines, words, characters",
+        sort: "sort lines of text files",
+        uniq: "remove duplicate lines",
+        cut: "remove sections from lines",
+        find: "search for files",
+        whoami: "print effective user name",
+        hostname: "print system hostname",
+        date: "print system date and time",
+        history: "print command history",
+        help: "print help information",
+        clear: "clear terminal screen",
+        exit: "exit the terminal",
+        man: "display manual pages",
+        alias: "define or display aliases",
+        env: "display environment variables",
+        export: "set environment variables",
+        ps: "report process status",
+        kill: "terminate processes",
+        neofetch: "display system information",
+        ping: "send ICMP echo requests",
+        uname: "print system information",
+        tree: "display directory tree",
+        du: "estimate file space usage",
+        file: "determine file type",
+        type: "describe a command",
+        which: "locate a command",
+        banner: "display large banner text",
+        cowsay: "cow saying message",
+        fortune: "display random fortune",
+        lolcat: "rainbow text output",
+        sl: "steam locomotive animation",
+        rain: "terminal rain effect",
+        cmatrix: "Matrix-style rain effect",
+        pipes: "terminal pipes screensaver",
+        snow: "falling snow effect",
+        watch: "execute command periodically",
+        whatis: "display command descriptions",
+        true: "return successful exit code",
+        false: "return unsuccessful exit code",
+        sleep: "delay for specified time",
+        yes: "output a string repeatedly",
+        printenv: "print environment variables",
+        rev: "reverse lines of a file",
+        dir: "list directory contents",
+        rmdir: "remove empty directories",
+        shutdown: "shut down the system",
+        reboot: "reboot the system",
+        lock: "lock the session",
+        logout: "log out"
+      };
+      if (args[0] && descriptions[args[0]]) this.print(`${args[0]} (1) - ${descriptions[args[0]]}`);
+      else if (args[0]) this.print(`${args[0]}: nothing appropriate`);
+    });
     this.registerCommand("movefocus", (args) => this.cmdMovefocus(args));
     this.registerCommand("swapwindow", (args) => this.cmdSwapwindow(args));
     this.registerCommand("togglefloating", () => this.cmdTogglefloating());
@@ -1907,16 +2345,22 @@ export class TerminalApp extends BaseApp {
       const parentPath = resolved.slice(0, -1);
       const fileName = resolved[resolved.length - 1];
 
+      const exists = await this.fs.exists(this.pathToString(resolved));
+      if (!exists) {
+        notepadApp.open(fileName, "", resolved);
+        return;
+      }
+
       const isFile = await this.fs.isFile(parentPath, fileName);
       if (!isFile) {
         await this.print(`notepad: ${filePath}: Is a directory`);
         return;
       }
 
-      const content = await this.fs.readTextFile(this.pathToRelative(resolved), "");
+      const content = await this.fs.readTextFile(parentPath, fileName);
       notepadApp.open(fileName, content, resolved);
-    } catch {
-      await this.print(`notepad: ${filePath}: No such file or directory`);
+    } catch (e) {
+      await this.print(`notepad: ${filePath}: ${e.message}`);
     }
   }
 
@@ -3971,39 +4415,29 @@ export class TerminalApp extends BaseApp {
         return;
       }
 
-      const lines = content.split("\n");
-      let exitCode = 0;
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-
-        if (!trimmed || trimmed.startsWith("#")) continue;
-
-        await this.enqueuePrint(trimmed, null, true, this.promptHtml());
-
-        const chain = this.parseCommand(trimmed);
-        for (const segment of chain) {
-          if (segment.operator === "&&" && this.lastExitCode !== 0) {
-            exitCode = this.lastExitCode;
-            break;
-          }
-          if (segment.operator === "||" && this.lastExitCode === 0) {
-            break;
-          }
-          await this.executePipeline(segment.pipeline, segment.redirOut, segment.redirAppend, segment.redirIn);
-          exitCode = this.lastExitCode;
-        }
-
-        if (exitCode !== 0 && !trimmed.endsWith(" ||")) {
-          await this.print(`bash: script exited with status ${exitCode}`, "#ff5555");
-          break;
-        }
+      const shebang = content.startsWith("#!") ? content.split("\n")[0] : null;
+      let scriptContent = content;
+      if (shebang) {
+        scriptContent = content.split("\n").slice(1).join("\n");
       }
 
-      this.lastExitCode = exitCode;
+      this.shellEnv.set("PWD", this.currentPath.length ? "/" + this.currentPath.join("/") : "/");
+      this.shellEnv.set("HOSTNAME", this.hostname);
+      this.shellEnv.set("USER", this.displayName);
+
+      const ctx = this.buildCommandContext();
+      if (!this.shellInterpreter) {
+        this.shellInterpreter = new ShellInterpreter(ctx);
+      }
+      const ast = this.shellParser.parse(scriptContent);
+      const result = await this.shellInterpreter.execute(ast);
+
+      if (this.activeState) {
+        this.activeState.lastExitCode = result.exitCode;
+      }
     } catch (e) {
-      await this.print(`bash: ${scriptPath}: No such file or directory`);
-      this.lastExitCode = 127;
+      await this.print(`bash: ${scriptPath}: ${e.message || "No such file or directory"}`);
+      if (this.activeState) this.activeState.lastExitCode = 127;
     }
   }
 

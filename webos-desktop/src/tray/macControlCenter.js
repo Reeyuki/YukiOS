@@ -3,7 +3,7 @@ import { turboManager } from "../shared/turboManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, MODES } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 import { MAC_WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 
@@ -33,7 +33,7 @@ class MacControlCenter {
   }
 
   isMacMode() {
-    return os.storage.get(StorageKeys.macOsControls) === "true";
+    return os.modes.isActive(MODES.MAC);
   }
 
   refresh() {

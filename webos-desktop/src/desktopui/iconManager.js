@@ -17,7 +17,7 @@ import { Achievements } from "../achievements.js";
 import { makeDraggable } from "../shared/dragUtils.js";
 
 import { $, $$, createElement, setHTML, setText, setStyle } from "../shared/domUtils.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, MODES } from "../framework.js";
 
 const HARDCODED_DESKTOP_ICONS = [
   { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
@@ -357,7 +357,7 @@ export class IconManager {
     const systemIcons = [];
     const createdIcons = [];
 
-    const isMacMode = os.storage.get(StorageKeys.macOsControls) === "true";
+    const isMacMode = os.modes.isActive(MODES.MAC);
 
     for (const def of HARDCODED_DESKTOP_ICONS) {
       const icon = createElement("div", { className: "icon selectable" });

@@ -1,5 +1,5 @@
 import "../styles/wallpaperEngine.css";
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 import { WALLPAPER_NAME_URL_PAIRS, MAC_WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 import { videos, videos2 } from "../wallpaperList.js";
@@ -173,7 +173,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   initTray() {
-    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
+    if (os.modes.isActive(MODES.MAC)) return;
     os.tray.register("wallpaper-engine", "fas fa-paint-roller", "Wallpaper Engine", {
       showInTray: true,
       priority: 5,

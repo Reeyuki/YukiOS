@@ -1,7 +1,7 @@
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
 
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, MODES } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 class TrayManager {
   constructor() {
@@ -330,7 +330,7 @@ class TrayManager {
       document.body.appendChild(this.popupEl);
     }
     this.updatePopupContent(items);
-    const tilingActive = document.body.classList.contains("tiling-active");
+    const tilingActive = os.modes.isActive(MODES.TILING);
     let refEl, barAtTop;
     if (tilingActive) {
       refEl = sourceEl || document.getElementById("tiling-tray-items");
@@ -510,7 +510,7 @@ class TrayManager {
 }
 
 export function getTrayPosition(refEl) {
-  const tilingActive = document.body.classList.contains("tiling-active");
+  const tilingActive = os.modes.isActive(MODES.TILING);
   let el, atTop;
   if (tilingActive) {
     el = refEl || document.getElementById("tiling-tray-items");

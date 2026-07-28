@@ -9,7 +9,7 @@ import { getVantaPresetById } from "./vantaPresets.js";
 import { vantaPresets } from "./vantaPresets.js";
 import { loadVantaEffect } from "./vanta/vantaLoader.js";
 
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, MODES } from "./framework.js";
 function isBlob(obj) {
   if (!obj) return false;
   return (
@@ -718,7 +718,7 @@ export class SystemUtilities {
   }
 
   static async startTaskbarWeather() {
-    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
+    if (os.modes.isActive(MODES.MAC)) return;
     if (!SystemUtilities.weatherEventBound) {
       SystemUtilities.weatherEventBound = true;
       os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {

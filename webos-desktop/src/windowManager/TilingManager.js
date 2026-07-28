@@ -4,6 +4,7 @@ import { MasterStackEngine } from "./MasterStackEngine.js";
 import { bus, BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 import { TilingBar } from "../tiling/TilingBar.js";
+import { modeManager, MODES } from "../modeManager.js";
 
 const CONFIG_PATH = ["Config", "yukiOs", "tiling.conf"];
 
@@ -120,13 +121,13 @@ export class TilingManager {
     if (stored === "true") {
       this.enabled = true;
       this.config.enabled = true;
-      document.body.classList.add("tiling-active");
+      modeManager.enter(MODES.TILING);
       this.applyLayoutTypeClass();
       this.tilingBar.show();
     } else {
       this.enabled = this.config.enabled === true;
       if (this.enabled) {
-        document.body.classList.add("tiling-active");
+        modeManager.enter(MODES.TILING);
         this.applyLayoutTypeClass();
         this.tilingBar.show();
       }
@@ -159,10 +160,10 @@ export class TilingManager {
             this.config.enabled = desiredEnabled;
             if (wasEnabled !== this.enabled) {
               if (this.enabled) {
-                document.body.classList.add("tiling-active");
+                modeManager.enter(MODES.TILING);
                 this.applyLayoutToAllWindows();
               } else {
-                document.body.classList.remove("tiling-active");
+                modeManager.exit(MODES.TILING);
                 this.restoreAllWindows();
               }
             } else if (this.enabled) {
@@ -187,14 +188,14 @@ export class TilingManager {
     this.config.enabled = this.enabled;
 
     if (this.enabled) {
-      document.body.classList.add("tiling-active");
+      modeManager.enter(MODES.TILING);
       this.applyLayoutTypeClass();
       this.rebuildTreeForCurrentWorkspace();
       this.applyLayoutToAllWindows();
       this.tilingBar.show();
       os.notify.send("Tiling", "Tiling mode enabled", { icon: "fas fa-th-large" });
     } else {
-      document.body.classList.remove("tiling-active");
+      modeManager.exit(MODES.TILING);
       document.body.classList.remove("tiling-layout-master-stack");
       this.restoreAllWindows();
       this.trees.clear();
@@ -202,7 +203,6 @@ export class TilingManager {
       os.notify.send("Tiling", "Tiling mode disabled", { icon: "fas fa-th-large" });
     }
 
-    os.storage.set(StorageKeys.tilingEnabled, String(this.enabled));
     bus.emit(BusEvents.TILING_MODE_CHANGED, { enabled: this.enabled });
   }
 

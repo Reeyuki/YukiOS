@@ -1,6 +1,6 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { $, createElement } from "./shared/domUtils.js";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, MODES } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
 import { getTrayPosition } from "./tray/tray.js";
 export const SystemAudio = Object.freeze({
@@ -690,7 +690,7 @@ class AudioMixer {
     const btn = document.querySelector('[data-win-id="audio-mixer"]');
     if (!this.panel) return;
 
-    const tilingActive = document.body.classList.contains("tiling-active");
+    const tilingActive = os.modes.isActive(MODES.TILING);
     let atTop;
     if (tilingActive) {
       const tilingBar = document.getElementById("tiling-bar");

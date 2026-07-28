@@ -33,17 +33,6 @@ const EXISTING_NEWS_UPDATES = [
             "Footsteps, grab and release noises, shelving thuds, and chair creaks make the room feel alive."
           ]
         ]
-      },
-      {
-        icon: "fa-wrench",
-        title: "Fixes & Polish",
-        items: [
-          [
-            "fa-bolt",
-            "Physics Cleanup",
-            "Grabbing, releasing, and throwing objects all use the same physics logic now — no more inconsistent behavior."
-          ]
-        ]
       }
     ]
   },

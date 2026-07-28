@@ -2,7 +2,7 @@ import { turboManager } from "../shared/turboManager.js";
 import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
@@ -115,7 +115,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   initTray() {
-    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
+    if (os.modes.isActive(MODES.MAC)) return;
     this.registerTray(this.winId, this.getBatteryIcon(), "Display & Performance", {
       resident: true,
       showInTray: true,

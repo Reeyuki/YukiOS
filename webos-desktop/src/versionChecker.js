@@ -1,5 +1,5 @@
 import { YUKIOS_VERSION } from "./apps/about.js";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, MODES } from "./framework.js";
 
 const VERSION_URL = "https://raw.githubusercontent.com/reeyuki/YukiOS/main/webos-desktop/version.txt";
 const CHECK_INTERVAL = 6 * 60 * 60 * 1000;
@@ -49,7 +49,7 @@ class VersionChecker {
           });
         }
 
-        if (!os.tray.isRegistered(TRAY_ID) && os.storage.get(StorageKeys.macOsControls) !== "true") {
+        if (!os.tray.isRegistered(TRAY_ID) && !os.modes.isActive(MODES.MAC)) {
           os.tray.register(TRAY_ID, "fas fa-download", `Update: ${remoteVersion}`, {
             resident: true,
             priority: 100,

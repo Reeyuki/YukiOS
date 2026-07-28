@@ -2,6 +2,7 @@ import { WindowAPI } from "./window.js";
 import { FileSystemAPI } from "./fs.js";
 import { StorageAPI } from "./storage.js";
 import { DialogAPI } from "./dialog.js";
+import { ModeAPI } from "./modes.js";
 import type { OSServices, TorManagerService, ExplorerAppService } from "./types.js";
 import { TorManager } from "../tor/TorManager.js";
 
@@ -448,6 +449,7 @@ export class OSBridge {
   tray: TrayAPI;
   tor: TorAPI;
   tiling: TilingAPI;
+  modes: ModeAPI;
   clipboardManager: any = null;
   fileSystemManager: any = null;
   windowManager: any = null;
@@ -466,6 +468,7 @@ export class OSBridge {
     this.tray = new TrayAPI(services.trayManager);
     this.tor = new TorAPI();
     this.tiling = new TilingAPI(services.windowManager);
+    this.modes = new ModeAPI();
 
     (window as any).os = this;
   }

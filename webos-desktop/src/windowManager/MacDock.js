@@ -1,4 +1,5 @@
 import { os } from "../framework.js";
+import { modeManager, MODES } from "../modeManager.js";
 import { createElement } from "../shared/domUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { BusEvents } from "../core/EventBus.js";
@@ -119,7 +120,11 @@ export class MacDock {
   }
 
   syncMacSetting(enabled) {
-    os.storage.set(StorageKeys.macOsControls, String(enabled));
+    if (enabled) {
+      modeManager.enter(MODES.MAC);
+    } else {
+      modeManager.exit(MODES.MAC);
+    }
   }
 
   onSettingsChanged() {

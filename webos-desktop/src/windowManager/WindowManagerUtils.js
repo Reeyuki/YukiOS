@@ -3,6 +3,7 @@ import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
 import { updateTransparency } from "./transparencyManager.js";
 import { getSetting } from "../shared/settingsUtils.js";
+import { os, MODES } from "../framework.js";
 
 export class WindowManagerUtils {
   constructor(manager) {
@@ -105,7 +106,7 @@ export class WindowManagerUtils {
   generateWindowHeader(title, iconValue, color = null, externalUrl = null, macStyle = null) {
     const iconHtml = this.getWindowIconHtml(iconValue, color);
     const controlsHtml = this.getWindowControls(externalUrl);
-    const isMac = macStyle !== null ? macStyle : getSetting("macOsControls", false);
+    const isMac = macStyle !== null ? macStyle : os.modes.isActive(MODES.MAC);
     const cls = isMac ? ' class="window-header mac-header"' : ' class="window-header"';
     return `<div${cls}>${isMac ? "" : `<span>${iconHtml}${title}</span>`}${controlsHtml}</div>`;
   }
@@ -230,7 +231,7 @@ export class WindowManagerUtils {
     </button>`
       : "";
 
-    if (getSetting("macOsControls", false)) {
+    if (os.modes.isActive(MODES.MAC)) {
       return `<div class="window-controls mac-controls">
         <button class="close-btn mac-btn mac-close" title="Close"></button>
         ${externalBtn}

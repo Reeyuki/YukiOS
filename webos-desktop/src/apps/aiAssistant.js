@@ -5,7 +5,7 @@ import { AIMemory } from "./aiAssistant/memory.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import "./aiAssistant/aiAssistant.css";
 
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 export class AIAssistantApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -28,7 +28,7 @@ export class AIAssistantApp extends BaseApp {
     const winId = this.winId;
     if (await this.isSingletonOpen(winId)) return;
 
-    if (this.enabled && os.storage.get(StorageKeys.macOsControls) !== "true") {
+    if (this.enabled && !os.modes.isActive(MODES.MAC)) {
       await this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
         resident: true,
         showInTray: true

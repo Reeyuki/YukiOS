@@ -148,6 +148,7 @@ Planned features and improvements for YukiOS.
 - [💡] **.bash_history system**
 - [💡] **.bashrc support**
 - [💡] **Windows xp, win7, win10, win11 theme support**
+- [💡] **Between explorer instances drag support**
 
 ---
 

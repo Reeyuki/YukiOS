@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { modeManager, MODES } from "../modeManager.js";
 import { BusEvents } from "../core/EventBus.js";
 import { updateGridConfig } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
@@ -316,7 +317,11 @@ export function bindDesktopCategory(win, save, settings, showSaved) {
       const enabled = dockEnabledToggle.checked;
       settings.dockEnabled = enabled;
       os.storage.set(StorageKeys.dockEnabled, String(enabled));
-      os.storage.set(StorageKeys.macOsControls, String(enabled));
+      if (enabled) {
+        modeManager.enter(MODES.MAC);
+      } else {
+        modeManager.exit(MODES.MAC);
+      }
       showSaved();
       os.events.emit(BusEvents.SETTINGS_CHANGED, settings);
     });

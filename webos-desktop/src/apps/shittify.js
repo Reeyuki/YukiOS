@@ -1,6 +1,6 @@
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
 const SHITTIFY_ICON = resolveIconUrl("/static/icons/shittify.webp");
 
 const SHITTIFY_CDN_URL = "https://cdn.jsdelivr.net/gh/Reeyuki/shittifylol@master/shittify21.html";
@@ -198,7 +198,7 @@ export class ShittifyApp extends BaseApp {
     contentDiv.innerHTML = loadingContent;
     win.appendChild(contentDiv);
 
-    if (os.storage.get(StorageKeys.macOsControls) !== "true") {
+    if (!os.modes.isActive(MODES.MAC)) {
       os.tray.register(winId, SHITTIFY_ICON, "Evil Spotify", { showInTray: true, priority: 1 });
     }
     audioMixer().registerWindow(

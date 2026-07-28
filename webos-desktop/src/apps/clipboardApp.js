@@ -1,4 +1,4 @@
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
 class ClipboardManagerApp extends BaseApp {
@@ -23,7 +23,7 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   initTray() {
-    if (os.storage.get(StorageKeys.macOsControls) === "true") return;
+    if (os.modes.isActive(MODES.MAC)) return;
     if (this.enabled) {
       this.registerTray(this.winId, "fas fa-paste", "Clipboard", {
         resident: true,
