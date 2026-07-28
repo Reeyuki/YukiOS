@@ -1,11 +1,13 @@
-import { os } from "./framework.js";
+import { os, $ } from "./framework.js";
 import { StorageKeys } from "./StorageKeys.js";
 
 const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
+import { parseBool } from "./shared/boolUtils.js";
+
 const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
 const ENDPOINT = ENDPOINT_BASE + "/analytics";
 const hostname = window.location.hostname;
-const ANALYTICS_DISABLED = () => os.storage.get(StorageKeys.analyticsDisabled) === "true";
+const ANALYTICS_DISABLED = () => parseBool(os.storage.get(StorageKeys.analyticsDisabled));
 const FLUSH_INTERVAL_MS = 30000;
 const MAX_QUEUE_SIZE = 15;
 
@@ -28,7 +30,7 @@ export function getAnalyticsBase(app) {
   const now = Date.now();
   return {
     app: app ?? "unknown",
-    name: document.querySelector(".start-user span")?.textContent ?? "",
+    name: $(".start-user span")?.textContent ?? "",
     timestamp: now,
     sessionAgeMs: now - pageLoadTime
   };

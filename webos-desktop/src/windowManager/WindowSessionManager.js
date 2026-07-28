@@ -1,4 +1,5 @@
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 export class WindowSessionManager {
@@ -28,7 +29,7 @@ export class WindowSessionManager {
     const sessionKey = this.manager.fs.sessionKey;
     const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
 
-    const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
+    const persistenceEnabled = parseBool(os.storage.get(StorageKeys.windowSessionPersistence), true);
     if (!persistenceEnabled) {
       try {
         const exists = await this.manager.fs.exists(sessionPath);
@@ -124,7 +125,7 @@ export class WindowSessionManager {
 
   async restoreSession() {
     if (!this.manager.fs || !this.manager.fs.sessionKey || !this.manager.appLauncher) return;
-    const persistenceEnabled = os.storage.get(StorageKeys.windowSessionPersistence) !== "false";
+    const persistenceEnabled = parseBool(os.storage.get(StorageKeys.windowSessionPersistence), true);
     if (!persistenceEnabled) return;
     this.manager.isRestoring = true;
     const sessionKey = this.manager.fs.sessionKey;

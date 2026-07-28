@@ -3,6 +3,7 @@ import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
 import { os } from "../framework.js";
 import { openFileWith } from "../fileDisplay.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 const conversionHistory = [];
 
@@ -289,9 +290,9 @@ function csvToJson(csv, delimiter = ",") {
       if (!isNaN(Number(val)) && val !== "") {
         val = Number(val);
       } else if (val.toLowerCase() === "true") {
-        val = true;
+        val = parseBool(val);
       } else if (val.toLowerCase() === "false") {
-        val = false;
+        val = parseBool(val);
       }
       obj[h] = val;
     });
@@ -318,8 +319,8 @@ function yamlToJson(yaml) {
 
     if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
     else if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
-    else if (val.toLowerCase() === "true") val = true;
-    else if (val.toLowerCase() === "false") val = false;
+    else if (val.toLowerCase() === "true") val = parseBool(val);
+    else if (val.toLowerCase() === "false") val = parseBool(val);
     else if (!isNaN(Number(val)) && val !== "") val = Number(val);
 
     while (indent <= indents[indents.length - 1]) {

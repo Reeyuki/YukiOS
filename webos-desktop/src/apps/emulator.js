@@ -1,11 +1,10 @@
 import "../styles/emulator.css";
 import { Achievements } from "../achievements.js";
-import { BusEvents } from "../core/EventBus.js";
-import { resolveIconUrl } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { audioMixer } from "../audioMixer.js";
 
-import { BaseApp, os } from "../framework.js";
+import { audioMixer } from "../audioMixer.js";
+import { BusEvents, BaseApp, os } from "../framework.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 const EMULATOR_ICON = "static/icons/emulator.webp";
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];

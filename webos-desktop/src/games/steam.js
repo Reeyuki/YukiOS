@@ -3,6 +3,7 @@ import { descriptionMap } from "./gameDescriptions.js";
 import { injectAdsterraAd } from "../ads.js";
 import { steamAudio } from "./steamAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { parseBool } from "../shared/boolUtils.js";
 import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -363,7 +364,7 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
   const closeAll = () =>
     allDropdownMenus.forEach((m) => {
       m.classList.remove("visible");
-      if (m.dataset.movedToBody === "true") {
+      if (parseBool(m.dataset.movedToBody)) {
         m.remove();
         m.dataset.movedToBody = "false";
         container.appendChild(m);

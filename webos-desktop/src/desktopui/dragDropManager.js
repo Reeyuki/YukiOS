@@ -1,6 +1,5 @@
 import { showConflictDialog } from "../shared/conflictDialog.js";
-import { os } from "../framework.js";
-import { BusEvents } from "../core/EventBus.js";
+import { os, $, $$, BusEvents, setStyle } from "../framework.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 
 export class DragDropManager {
@@ -18,7 +17,7 @@ export class DragDropManager {
 
   updateDragTarget(event) {
     let foundFolder = null;
-    document.querySelectorAll(".folder-icon").forEach((folder) => {
+    $$(".folder-icon").forEach((folder) => {
       if (this.selectionManager.has(folder)) return;
       const rect = folder.getBoundingClientRect();
       if (
@@ -30,9 +29,9 @@ export class DragDropManager {
         foundFolder = folder;
     });
 
-    if (this.state.dragTarget) this.state.dragTarget.style.outline = "";
+    if (this.state.dragTarget) setStyle(this.state.dragTarget, { outline: "" });
     if (foundFolder && !this.selectionManager.has(foundFolder)) {
-      foundFolder.style.outline = "2px solid #0078d7";
+      setStyle(foundFolder, { outline: "2px solid var(--brand)" });
       this.state.dragTarget = foundFolder;
     } else {
       this.state.dragTarget = null;
@@ -40,7 +39,7 @@ export class DragDropManager {
 
     let foundExplorer = null;
     if (!foundFolder) {
-      document.querySelectorAll("[id^='explorer-']").forEach((win) => {
+      $$("[id^='explorer-']").forEach((win) => {
         const view = win.querySelector("[id$='-view']");
         if (!view) return;
         const rect = view.getBoundingClientRect();
@@ -236,7 +235,7 @@ export class DragDropManager {
     const topPx = clientY - rect.top;
 
     if (isFile) {
-      const existingIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(name)}"]`);
+      const existingIcon = $(`.desktop-file-icon[data-file-name="${CSS.escape(name)}"]`);
       if (existingIcon) {
         this.positionHelper.setPosition(existingIcon, leftPx - 40, topPx - 40);
         this.positionHelper.snap(existingIcon);
@@ -302,7 +301,7 @@ export class DragDropManager {
         os.notify.send(`Could not move "${name}" to Desktop`);
       }
     } else {
-      const existingIcon = document.querySelector(`.folder-icon[data-folder-name="${CSS.escape(name)}"]`);
+      const existingIcon = $(`.folder-icon[data-folder-name="${CSS.escape(name)}"]`);
       if (existingIcon) {
         this.positionHelper.setPosition(existingIcon, leftPx - 40, topPx - 40);
         this.positionHelper.snap(existingIcon);

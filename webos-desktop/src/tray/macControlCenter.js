@@ -2,8 +2,9 @@ import { audioMixer } from "../audioMixer.js";
 import { turboManager } from "../shared/turboManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
-import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os, MODES } from "../framework.js";
+import { BusEvents } from "../framework.js";
+import { parseBool } from "../shared/boolUtils.js";
+import { StorageKeys, os, MODES, $ } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 import { MAC_WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 
@@ -50,7 +51,7 @@ class MacControlCenter {
 
   setInitialMacWallpaper() {
     const initialized = os.storage.get(StorageKeys.macWallpaperInitialized);
-    if (initialized === "true") return;
+    if (parseBool(initialized)) return;
     if (!MAC_WALLPAPER_NAME_URL_PAIRS.length) return;
     const pick = MAC_WALLPAPER_NAME_URL_PAIRS[Math.floor(Math.random() * MAC_WALLPAPER_NAME_URL_PAIRS.length)];
     SystemUtilities.setWallpaper(pick.url);
@@ -89,9 +90,9 @@ class MacControlCenter {
   }
 
   getBatteryFillColor(level) {
-    if (level > 60) return "#22c55e";
-    if (level > 30) return "#facc15";
-    return "#ef4444";
+    if (level > 60) return "var(--charging)";
+    if (level > 30) return "var(--brand)";
+    return "var(--error)";
   }
 
   getTemperatureLabel(value) {
@@ -115,7 +116,7 @@ class MacControlCenter {
   openPopup() {
     if (this.popupVisible) return;
 
-    const existing = document.getElementById(this.popupId);
+    const existing = $("#" + this.popupId);
     if (existing) existing.remove();
 
     const popup = document.createElement("div");
@@ -232,7 +233,7 @@ class MacControlCenter {
   }
 
   closePopup() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (popup) {
       popup.classList.add("closing");
       popup.addEventListener("animationend", () => popup.remove(), { once: true });
@@ -242,7 +243,7 @@ class MacControlCenter {
   }
 
   handleOutsideClick = (e) => {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (popup && !e.target.closest(`#${this.popupId}`) && !e.target.closest("#app-tray")) {
       this.closePopup();
     }
@@ -304,7 +305,7 @@ class MacControlCenter {
 
     if (dockToggle) {
       dockToggle.addEventListener("change", (e) => {
-        const dock = document.querySelector(".mac-dock");
+        const dock = $(".mac-dock");
         if (dock) dock.style.display = e.target.checked ? "" : "none";
       });
     }

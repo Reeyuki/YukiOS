@@ -1,6 +1,7 @@
 import "../styles/markdown.css";
 import { decodeDataURLContent } from "../fileDisplay.js";
 
+import { $ } from "../framework.js";
 import { BaseApp, os } from "../framework.js";
 export class MarkdownApp extends BaseApp {
   constructor(services) {
@@ -32,7 +33,7 @@ export class MarkdownApp extends BaseApp {
   loadMarkdownCSS() {
     if (this.cssLoaded) return;
 
-    const existingLink = document.querySelector("link[data-markdown-css]");
+    const existingLink = $("link[data-markdown-css]");
     if (existingLink) {
       this.cssLoaded = true;
       return;
@@ -51,7 +52,7 @@ export class MarkdownApp extends BaseApp {
     this.loadMarkdownCSS();
     const decoded = decodeDataURLContent(content);
     const rendered = this.marked.parse(decoded);
-    const el = document.getElementById(`${winId}-content`);
+    const el = $(`#${winId}-content`);
     if (el) el.innerHTML = rendered;
   }
 
@@ -67,7 +68,7 @@ export class MarkdownApp extends BaseApp {
         icon: "fab fa-markdown",
         iconColor: "#519aba"
       });
-      const win = document.getElementById(winId);
+      const win = $(`#${winId}`);
       if (win) {
         win.innerHTML = `
           <div class="window-content markdown-container">

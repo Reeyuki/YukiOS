@@ -1,3 +1,4 @@
+import { $ } from "../shared/domUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
@@ -46,7 +47,7 @@ export class WindowManagerUtils {
   }
 
   getFaviconLink() {
-    let link = document.querySelector("link[rel~='icon']");
+    let link = $("link[rel~='icon']");
     return link;
   }
 

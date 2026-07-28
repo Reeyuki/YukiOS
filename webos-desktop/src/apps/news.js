@@ -1,5 +1,6 @@
 import "../styles/news.css";
 
+import { $, setStyle } from "../shared/domUtils.js";
 import { APP_MANIFESTS, BaseApp, StorageKeys, os } from "../framework.js";
 const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((manifest) => manifest.news);
 
@@ -1405,9 +1406,9 @@ export const updateNewsBadge = () => {
   const storedSignature = os.storage.get(StorageKeys.newsReadSignatureKey);
   const hasUnreadNews = currentSignature !== storedSignature;
 
-  const badge = document.querySelector(".news-badge");
+  const badge = $(".news-badge");
   if (badge) {
-    badge.style.display = hasUnreadNews ? "flex" : "none";
+    setStyle(badge, { display: hasUnreadNews ? "flex" : "none" });
   }
 };
 

@@ -87,7 +87,7 @@ export class ClockWidget extends WidgetBase {
   }
 
   getData() {
-    return { _24h: this.use24h, showSeconds: this.showSeconds };
+    return { twentyFourHour: this.use24h, showSeconds: this.showSeconds };
   }
 
   setData(data) {

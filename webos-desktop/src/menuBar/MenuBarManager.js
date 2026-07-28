@@ -249,7 +249,7 @@ export class MenuBarManager {
 
   onWindowClosed() {
     setTimeout(() => {
-      if (document.querySelectorAll(".window").length === 0) {
+      if ($$(".window").length === 0) {
         this.clearActiveApp();
       }
     }, 50);

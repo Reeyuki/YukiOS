@@ -1,5 +1,5 @@
 import { FileKind } from "./shared/fileKindDetector.js";
-import { os, StorageKeys } from "./framework.js";
+import { os, StorageKeys, $ } from "./framework.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { formatSize } from "./utils/utils.js";
@@ -408,7 +408,7 @@ export function openMediaViewer(name, src, kind) {
     `;
   }
 
-  const desktop = document.querySelector("#desktop");
+  const desktop = $("#desktop");
   if (desktop) desktop.appendChild(win);
   os.window.setupWindowControls(win);
   os.window.makeDraggable(win);

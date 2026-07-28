@@ -24,7 +24,7 @@ export class RhythmsApp extends BaseApp {
     this.effectMode = "none";
     this.settingsOpen = false;
     this.hue = 265;
-    this.color = "#8a2be2";
+    this.color = "var(--brand)";
   }
 
   open() {
@@ -79,7 +79,7 @@ export class RhythmsApp extends BaseApp {
                   </div>
                   <div class="rhythms-control-group">
                     <label class="rhythms-label">Color</label>
-                    <input type="color" id="rhythms-color" class="rhythms-color-picker" value="#8a2be2" />
+                    <input type="color" id="rhythms-color" class="rhythms-color-picker" value="var(--brand)" />
                   </div>
                 </div>
               </div>

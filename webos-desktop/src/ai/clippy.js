@@ -1,5 +1,6 @@
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { $$ } from "../shared/domUtils.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
@@ -40,7 +41,7 @@ let lastSpokenAt = 0;
 
 function isExplicitlyEnabled() {
   try {
-    return os.storage.get(CLIPPY_STORAGE_KEY) === "true";
+    return parseBool(os.storage.get(CLIPPY_STORAGE_KEY));
   } catch {
     return false;
   }

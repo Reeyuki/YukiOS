@@ -460,7 +460,7 @@ function createRecentFileItem(name, path, kind) {
 }
 
 function updateRecentlyUsedUI() {
-  const page = document.querySelector('.start-page[data-page="recent"]');
+  const page = $('.start-page[data-page="recent"]');
   if (!page) return;
   const wasActive = page.classList.contains("active");
   page.className = "start-page recent-page";
@@ -680,7 +680,7 @@ function launchSelectedItem() {
 }
 
 export function updateFavoritesUI() {
-  const favoritesPage = document.querySelector('.start-page[data-page="favorites"]');
+  const favoritesPage = $('.start-page[data-page="favorites"]');
   favoritesPage.innerHTML = "";
   const favorites = getFavorites();
 
@@ -927,7 +927,7 @@ export function setupStartMenu(sessionManager) {
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(async () => {
       const q = e.target.value.toLowerCase().trim();
-      const searchResultsPage = document.querySelector('.start-page[data-page="search-results"]');
+      const searchResultsPage = $('.start-page[data-page="search-results"]');
 
       if (!searchResultsPage) {
         const resultsPage = createElement("div");
@@ -942,11 +942,11 @@ export function setupStartMenu(sessionManager) {
         $$(".start-page").forEach((page) => {
           if (page.dataset.page === "search-results") {
             page.classList.remove("active");
-            page.style.display = "none";
+            setStyle(page, { display: "none" });
           } else {
-            page.style.display = "";
+            setStyle(page, { display: "" });
             $$(".start-menu-item").forEach((item) => {
-              item.style.display = "";
+              setStyle(item, { display: "" });
             });
           }
         });
@@ -962,11 +962,11 @@ export function setupStartMenu(sessionManager) {
       $(".start-menu")?.classList.add("search-mode");
       $$(".start-page").forEach((page) => {
         page.classList.remove("active");
-        page.style.display = "none";
+        setStyle(page, { display: "none" });
       });
 
-      const resultsPage = document.querySelector('.start-page[data-page="search-results"]');
-      resultsPage.style.display = "flex";
+      const resultsPage = $('.start-page[data-page="search-results"]');
+      setStyle(resultsPage, { display: "flex" });
       resultsPage.classList.add("active");
       const resultsContainer = $(".search-results-container", resultsPage);
       resultsContainer.innerHTML = "";

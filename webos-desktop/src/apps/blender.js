@@ -2,13 +2,12 @@ import "../styles/model3d.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { unzipSync } from "fflate";
 import { Achievements } from "../achievements.js";
-import { BusEvents } from "../core/EventBus.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
-import { getLibraryUrl } from "../shared/cdnConfig.js";
+import { addClass, removeClass, createElement } from "../shared/domUtils.js";
 import { KeybindManager } from "../keybindManager.js";
-import { $, $$, bindEvent, toggleClass, addClass, removeClass, setText, setHTML } from "../shared/domUtils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
-import { BaseApp, os } from "../framework.js";
+import { BusEvents, $, $$, bindEvent, toggleClass, setText, setHTML, setStyle, BaseApp, os } from "../framework.js";
+import { getLibraryUrl } from "../shared/cdnConfig.js";
 
 const SAMPLE_MODELS = [
   {
@@ -558,7 +557,7 @@ export class Model3DApp extends BaseApp {
             <div class="yb-ins-header">PBR Properties</div>
             <div class="yb-ins-row">
               <label>Color</label>
-              <input type="color" id="mat-color" value="#cccccc" class="yb-color-pick">
+              <input type="color" id="mat-color" value="var(--text-secondary)" class="yb-color-pick">
             </div>
             <div class="yb-ins-slider-row">
               <label>Roughness</label>
@@ -723,8 +722,8 @@ export class Model3DApp extends BaseApp {
     }
 
     const winId = `model3d-${Date.now()}`;
-    if (document.getElementById(winId)) {
-      os.window.focus(document.getElementById(winId));
+    if ($(`#${winId}`)) {
+      os.window.focus($(`#${winId}`));
       return;
     }
 
@@ -787,7 +786,7 @@ export class Model3DApp extends BaseApp {
         if (isToggle) {
           const chk = $(".yb-check", item);
           const newState = chk.style.visibility !== "visible";
-          chk.style.visibility = newState ? "visible" : "hidden";
+          setStyle(chk, { visibility: newState ? "visible" : "hidden" });
           this.handleToggle(action, newState);
         } else {
           this.handleAction(action);
@@ -799,8 +798,8 @@ export class Model3DApp extends BaseApp {
     $$(".rm-item[data-rm]", win).forEach((item) => {
       bindEvent(item, "click", (e) => {
         e.stopPropagation();
-        $$(".rm-item .yb-check", win).forEach((c) => (c.style.visibility = "hidden"));
-        $(".yb-check", item).style.visibility = "visible";
+        $$(".rm-item .yb-check", win).forEach((c) => setStyle(c, { visibility: "hidden" }));
+        setStyle($(".yb-check", item), { visibility: "visible" });
         this.setRenderMode(item.dataset.rm);
         closeAll();
       });
@@ -809,8 +808,8 @@ export class Model3DApp extends BaseApp {
     $$(".bg-item[data-bg]", win).forEach((item) => {
       bindEvent(item, "click", (e) => {
         e.stopPropagation();
-        $$(".bg-item .yb-check", win).forEach((c) => (c.style.visibility = "hidden"));
-        $(".yb-check", item).style.visibility = "visible";
+        $$(".bg-item .yb-check", win).forEach((c) => setStyle(c, { visibility: "hidden" }));
+        setStyle($(".yb-check", item), { visibility: "visible" });
         this.setBackground(item.dataset.bg);
         closeAll();
       });
@@ -1375,7 +1374,7 @@ export class Model3DApp extends BaseApp {
         switch (mode) {
           case "lit":
             mat.wireframe = false;
-            mat.color?.set(mat.originalColor || "#cccccc");
+            mat.color?.set(mat.originalColor || "var(--text-secondary)");
             break;
           case "wireframe":
             mat.wireframe = true;
@@ -1453,16 +1452,19 @@ export class Model3DApp extends BaseApp {
   }
 
   showOutlinerContextMenu(e, id) {
-    const existing = document.querySelector(".yb-context-menu");
+    const existing = $(".yb-context-menu");
     if (existing) existing.remove();
 
     const so = this.sceneObjects.get(id);
     if (!so) return;
 
-    const menu = document.createElement("div");
-    menu.className = "yb-context-menu";
-    menu.style.left = e.clientX + "px";
-    menu.style.top = e.clientY + "px";
+    const menu = createElement("div", {
+      className: "yb-context-menu",
+      styles: {
+        left: e.clientX + "px",
+        top: e.clientY + "px"
+      }
+    });
     menu.innerHTML = `
       <div class="yb-ctx-item" data-act="select"><i class="fa fa-mouse-pointer"></i> Select</div>
       <div class="yb-ctx-item" data-act="duplicate"><i class="fa fa-clone"></i> Duplicate</div>
@@ -1586,17 +1588,17 @@ export class Model3DApp extends BaseApp {
     set("sx-y", o.scale.y);
     set("sx-z", o.scale.z);
     const insEmpty = $("#ins-obj-empty", this.win);
-    if (insEmpty) insEmpty.style.display = "none";
+    if (insEmpty) setStyle(insEmpty, { display: "none" });
   }
 
   syncMaterialToInspector() {
     const sel = this.getFirstSelected();
     const empty = $("#ins-mat-empty", this.win);
     if (!sel) {
-      if (empty) empty.style.display = "flex";
+      if (empty) setStyle(empty, { display: "flex" });
       return;
     }
-    if (empty) empty.style.display = "none";
+    if (empty) setStyle(empty, { display: "none" });
 
     let mat = null;
     const slots = [];
@@ -1669,12 +1671,12 @@ export class Model3DApp extends BaseApp {
     const lbl = $("#yb-sel-label", this.win);
     if (!info || !lbl) return;
     if (this.selectedIds.size === 0) {
-      info.style.display = "none";
+      setStyle(info, { display: "none" });
       return;
     }
     const sel = this.getFirstSelected();
     setText(lbl, sel ? sel.name : `${this.selectedIds.size} objects`);
-    info.style.display = "flex";
+    setStyle(info, { display: "flex" });
   }
 
   updateStatusBar() {
@@ -1724,7 +1726,7 @@ export class Model3DApp extends BaseApp {
     this.hideWelcome();
     this.selectOnly(so.id);
     const hud = $("#yb-hud", this.win);
-    if (hud) hud.style.display = "block";
+    if (hud) setStyle(hud, { display: "block" });
     os.notify.send(`Added ${name}`, "Scene");
   }
 
@@ -1750,13 +1752,13 @@ export class Model3DApp extends BaseApp {
   showLoading(show, text = "Loading…") {
     const el = $("#yb-loading", this.win);
     const tx = $("#yb-loading-text", this.win);
-    if (el) el.style.display = show ? "flex" : "none";
+    if (el) setStyle(el, { display: show ? "flex" : "none" });
     if (tx) setText(tx, text);
   }
 
   hideWelcome() {
     const w = $("#yb-welcome", this.win);
-    if (w) w.style.display = "none";
+    if (w) setStyle(w, { display: "none" });
   }
 
   newScene() {
@@ -1776,11 +1778,11 @@ export class Model3DApp extends BaseApp {
     this.refreshOutliner();
     this.refreshAnimations([]);
     const hud = $("#yb-hud", this.win);
-    if (hud) hud.style.display = "none";
+    if (hud) setStyle(hud, { display: "none" });
     const tl = $("#yb-timeline", this.win);
-    if (tl) tl.style.display = "none";
+    if (tl) setStyle(tl, { display: "none" });
     const welcome = $("#yb-welcome", this.win);
-    if (welcome) welcome.style.display = "flex";
+    if (welcome) setStyle(welcome, { display: "flex" });
     const sbFile = $("#sb-file", this.win);
     if (sbFile) setHTML(sbFile, '<i class="fa fa-file"></i> No model');
     os.notify.send("New scene created", "Scene");
@@ -1919,7 +1921,7 @@ export class Model3DApp extends BaseApp {
         this.selectOnly(so.id);
 
         const hud = $("#yb-hud", this.win);
-        if (hud) hud.style.display = "block";
+        if (hud) setStyle(hud, { display: "block" });
 
         os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.ModelViewer });
       }
@@ -2041,12 +2043,12 @@ export class Model3DApp extends BaseApp {
 
       ["#ins-bones-section", "#ins-bones-anim"].forEach((id) => {
         const el = $(id, this.win);
-        if (el) el.style.display = "block";
+        if (el) setStyle(el, { display: "block" });
       });
     } else {
       ["#ins-bones-section", "#ins-bones-anim"].forEach((id) => {
         const el = $(id, this.win);
-        if (el) el.style.display = "none";
+        if (el) setStyle(el, { display: "none" });
       });
     }
   }
@@ -2095,7 +2097,7 @@ export class Model3DApp extends BaseApp {
 
   showTimeline(show) {
     const tl = $("#yb-timeline", this.win);
-    if (tl) tl.style.display = show ? "block" : "none";
+    if (tl) setStyle(tl, { display: show ? "block" : "none" });
   }
 
   refreshAnimations(animations) {
@@ -2105,12 +2107,12 @@ export class Model3DApp extends BaseApp {
 
     if (animations.length === 0) {
       setHTML(list, '<span class="yb-empty-label">No animations</span>');
-      if (empty) empty.style.display = "flex";
+      if (empty) setStyle(empty, { display: "flex" });
       const sb = $("#sb-anim", this.win);
       if (sb) setHTML(sb, '<i class="fa fa-film"></i> –');
       return;
     }
-    if (empty) empty.style.display = "none";
+    if (empty) setStyle(empty, { display: "none" });
 
     list.innerHTML = animations
       .map(
@@ -2668,7 +2670,7 @@ export class Model3DApp extends BaseApp {
   }
 
   openSamplesModal() {
-    const existing = document.querySelector(".yb-samples-backdrop");
+    const existing = $(".yb-samples-backdrop");
     if (existing) existing.remove();
 
     const backdrop = document.createElement("div");
@@ -2727,21 +2729,21 @@ export class Model3DApp extends BaseApp {
       if (e.target === backdrop) close();
     };
 
-    modal.querySelectorAll(".yb-sample-load-btn").forEach((btn) => {
+    $$(".yb-sample-load-btn", modal).forEach((btn) => {
       btn.onclick = async () => {
         const index = parseInt(btn.dataset.index);
-        const card = modal.querySelector(`.yb-sample-card[data-index="${index}"]`);
-        const progressEl = card.querySelector(".yb-sample-progress");
-        const fill = card.querySelector(".yb-sp-fill");
-        const text = card.querySelector(".yb-sp-text");
-        btn.style.display = "none";
-        progressEl.style.display = "block";
+        const card = $(`.yb-sample-card[data-index="${index}"]`, modal);
+        const progressEl = $(".yb-sample-progress", card);
+        const fill = $(".yb-sp-fill", card);
+        const text = $(".yb-sp-text", card);
+        setStyle(btn, { display: "none" });
+        setStyle(progressEl, { display: "block" });
         try {
           await this.loadSampleModel(index, fill, text, card);
           close();
         } catch {
-          btn.style.display = "flex";
-          progressEl.style.display = "none";
+          setStyle(btn, { display: "flex" });
+          setStyle(progressEl, { display: "none" });
         }
       };
     });
@@ -2754,7 +2756,7 @@ export class Model3DApp extends BaseApp {
       ab = this.sampleCache.get(sample.url);
     } else {
       if (textEl) textEl.textContent = "Connecting…";
-      if (fillEl) fillEl.style.width = "10%";
+      if (fillEl) setStyle(fillEl, { width: "10%" });
       const response = await fetch(sample.url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const total = parseInt(response.headers.get("content-length") || 0);
@@ -2768,7 +2770,7 @@ export class Model3DApp extends BaseApp {
           chunks.push(value);
           received += value.length;
           const pct = Math.round((received / total) * 100);
-          if (fillEl) fillEl.style.width = `${pct}%`;
+          if (fillEl) setStyle(fillEl, { width: `${pct}%` });
           if (textEl) textEl.textContent = `${pct}%`;
         }
         const all = new Uint8Array(received);
@@ -2780,10 +2782,10 @@ export class Model3DApp extends BaseApp {
         ab = all.buffer;
       } else {
         if (textEl) textEl.textContent = "Downloading…";
-        if (fillEl) fillEl.style.width = "50%";
+        if (fillEl) setStyle(fillEl, { width: "50%" });
         ab = await response.arrayBuffer();
       }
-      if (fillEl) fillEl.style.width = "100%";
+      if (fillEl) setStyle(fillEl, { width: "100%" });
       if (textEl) textEl.textContent = "Done!";
       this.sampleCache.set(sample.url, ab);
     }

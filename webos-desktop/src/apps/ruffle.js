@@ -1,9 +1,8 @@
 import { Achievements } from "../achievements.js";
-import { BusEvents } from "../core/EventBus.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
-import { CDN_CONFIG, getLibraryUrl } from "../shared/cdnConfig.js";
-
-import { BaseApp, os } from "../framework.js";
+import { CDN_CONFIG } from "../shared/cdnConfig.js";
+import { BusEvents, BaseApp, os } from "../framework.js";
+import { getLibraryUrl } from "../shared/cdnConfig.js";
 const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
 

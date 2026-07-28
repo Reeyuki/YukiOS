@@ -1,4 +1,4 @@
-import { createElement, setHTML } from "../../shared/domUtils.js";
+import { createElement, setHTML, setStyle } from "../../shared/domUtils.js";
 import { os } from "../../framework.js";
 import { renderSelectMenu, getSelectMenuValue, bindSelectMenu } from "../../shared/selectMenu.js";
 
@@ -22,10 +22,10 @@ export function showConfirmDialog({ title, message, confirmText = "OK", onConfir
     `
     <div class="fd-dialog">
       <div class="fd-dialog-title">${title}</div>
-      <div class="fd-dialog-label" style="font-size:13px;color:#ccc;line-height:1.5;">${message}</div>
+      <div class="fd-dialog-label fd-dialog-message">${message}</div>
       <div class="fd-dialog-actions">
         <button class="fd-btn fd-btn-cancel">Cancel</button>
-        <button class="fd-btn fd-btn-confirm" style="background:#b52a2a;">${confirmText}</button>
+        <button class="fd-btn fd-btn-confirm fd-btn-confirm--danger">${confirmText}</button>
       </div>
     </div>
   `
@@ -55,7 +55,7 @@ export function showInputDialog({ title, label, defaultValue, confirmText = "Cre
       <div class="fd-dialog-title">${title}</div>
       <div class="fd-dialog-label">${label}</div>
       <input class="fd-dialog-input" type="text" value="${defaultValue}" spellcheck="false">
-      <div class="fd-dialog-error" style="display:none;font-size:1.5em;color:#e06c75;margin-top:6px;"></div>
+      <div class="fd-dialog-error"></div>
       <div class="fd-dialog-actions">
         <button class="fd-btn fd-btn-cancel">Cancel</button>
         <button class="fd-btn fd-btn-confirm">${confirmText}</button>
@@ -76,13 +76,13 @@ export function showInputDialog({ title, label, defaultValue, confirmText = "Cre
   const close = () => overlay.remove();
   const showError = (msg) => {
     errorEl.textContent = msg;
-    errorEl.style.display = "block";
-    input.style.borderColor = "#e06c75";
+    setStyle(errorEl, { display: "block" });
+    setStyle(input, { borderColor: "var(--error)" });
     confirmBtn.disabled = false;
   };
   const clearError = () => {
-    errorEl.style.display = "none";
-    input.style.borderColor = "";
+    setStyle(errorEl, { display: "none" });
+    setStyle(input, { borderColor: "" });
   };
 
   const submit = async () => {
@@ -115,8 +115,7 @@ export function showInputDialog({ title, label, defaultValue, confirmText = "Cre
 }
 
 export function showArchiveDialog({ title, defaultValue, onConfirm }) {
-  const overlay = document.createElement("div");
-  overlay.className = "explorer-confirmation-overlay";
+  const overlay = createElement("div", { className: "explorer-confirmation-overlay" });
   const formatOptions = [
     { value: "zip", label: "ZIP (.zip)" },
     { value: "7z", label: "7z (.7z)" },
@@ -199,7 +198,7 @@ export function showArchiveDialog({ title, defaultValue, onConfirm }) {
   confirmBtn.onclick = async () => {
     const archiveName = nameInput.value.trim();
     if (!archiveName) {
-      nameInput.style.borderColor = "#e06c75";
+      setStyle(nameInput, { borderColor: "var(--error)" });
       return;
     }
     confirmBtn.disabled = true;

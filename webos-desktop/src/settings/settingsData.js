@@ -91,7 +91,7 @@ export async function importData(fs, showStatus = () => {}) {
       if (!payload || payload.version !== 1 || !payload.fs) throw new Error("Invalid backup file.");
 
       try {
-        localStorage.clear();
+        os.storage.clear();
         sessionStorage.clear();
       } catch {}
 
@@ -124,18 +124,7 @@ export async function deleteAllData() {
   if (!confirmed) return;
 
   try {
-    const localKeys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) localKeys.push(key);
-    }
-    localKeys.forEach((key) => {
-      try {
-        localStorage.removeItem(key);
-      } catch (e) {
-        console.warn(`Failed to remove localStorage key: ${key}`, e);
-      }
-    });
+    os.storage.clear();
 
     const sessionKeys = [];
     for (let i = 0; i < sessionStorage.length; i++) {

@@ -1,6 +1,6 @@
 import { CDN_MIRRORS, setCdnMirror, getCdnMirror } from ".././shared/assetResolver.js";
 
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, $ } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
 class NetworkTrayApp extends BaseApp {
@@ -81,7 +81,7 @@ class NetworkTrayApp extends BaseApp {
   openPopup() {
     if (this.popupVisible) return;
 
-    const existingPopup = document.getElementById(this.popupId);
+    const existingPopup = $("#" + this.popupId);
     if (existingPopup) {
       existingPopup.remove();
     }
@@ -182,7 +182,7 @@ class NetworkTrayApp extends BaseApp {
   }
 
   closePopup() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (popup) {
       popup.classList.add("closing");
       popup.addEventListener(
@@ -198,8 +198,8 @@ class NetworkTrayApp extends BaseApp {
   }
 
   handleOutsideClick = (e) => {
-    const popup = document.getElementById(this.popupId);
-    const trayEl = document.getElementById("app-tray");
+    const popup = $("#" + this.popupId);
+    const trayEl = $("#app-tray");
     if (popup && !e.target.closest("#network-tray-popup") && !e.target.closest("#app-tray")) {
       this.closePopup();
     }

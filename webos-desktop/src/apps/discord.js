@@ -1,5 +1,5 @@
+import { setStyle, os, StorageKeys, MODES } from "../framework.js";
 import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
-import { os, StorageKeys, MODES } from "../framework.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class DiscordApp extends ScramjetBaseApp {
@@ -63,7 +63,7 @@ export class DiscordApp extends ScramjetBaseApp {
       </div>
     `;
     win.getAnimations().forEach((a) => a.cancel());
-    win.style.opacity = "0";
+    setStyle(win, { opacity: "0" });
 
     await this.initScramjet(null, null, win, {});
 
@@ -79,8 +79,7 @@ export class DiscordApp extends ScramjetBaseApp {
     setTimeout(() => {
       this.removeSplash();
       closeObserver.disconnect();
-      win.style.transition = "opacity 0.6s ease";
-      win.style.opacity = "";
+      setStyle(win, { transition: "opacity 0.6s ease", opacity: "" });
     }, 3500);
 
     return win;
@@ -92,28 +91,28 @@ export class DiscordApp extends ScramjetBaseApp {
 
     const splash = document.createElement("div");
     splash.id = "discord-splash";
-    splash.style.cssText = `
-      position: fixed;
-      width: 220px;
-      height: 220px;
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-secondary);
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      backdrop-filter: blur(32px);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.65);
-      pointer-events: none;
-    `;
+    setStyle(splash, {
+      position: "fixed",
+      width: "220px",
+      height: "220px",
+      zIndex: "99999",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "var(--bg-secondary)",
+      border: "1px solid var(--glass-border)",
+      borderRadius: "14px",
+      backdropFilter: "blur(32px)",
+      boxShadow: "0 24px 64px rgba(0,0,0,0.65)",
+      pointerEvents: "none"
+    });
     splash.style.left = `${Math.round((window.innerWidth - 220) / 2)}px`;
     splash.style.top = `${Math.round((window.innerHeight - 220) / 2)}px`;
 
     splash.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
         <i class="fab fa-discord"
-        style="font-size:56px;color:#5865F2;animation: discordLoader 2s ease-in-out infinite;transform-origin:center;"></i>
+        style="font-size:56px;color:var(--brand);animation: discordLoader 2s ease-in-out infinite;transform-origin:center;"></i>
         <div style="color:var(--text-secondary);font-size:11px;font-family:var(--font-ui);opacity:0.6;">Starting</div>
       </div>
     `;

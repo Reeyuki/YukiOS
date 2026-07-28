@@ -5,13 +5,14 @@ import "./styles/bootScreen.css";
 import { pickAnimation } from "./bootAnimations.js";
 import { KeybindManager } from "./keybindManager.js";
 import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 const BRAND = "YUKiOS";
 const MIN_DURATION = 2500;
 
 export function showBootScreen() {
   const raw = os.storage.get(StorageKeys.disableBootScreen);
-  if (raw === true || raw === "true") {
+  if (parseBool(raw)) {
     return { hide: () => Promise.resolve() };
   }
 

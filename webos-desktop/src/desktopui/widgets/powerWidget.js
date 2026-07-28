@@ -46,11 +46,11 @@ export class PowerWidget extends WidgetBase {
       let color;
 
       if (level > 60) {
-        color = "#22c55e"; // green
+        color = "var(--charging)";
       } else if (level > 30) {
-        color = "#facc15"; // yellow
+        color = "var(--brand)";
       } else {
-        color = "#ef4444"; // red
+        color = "var(--error)";
       }
 
       fill.style.background = color;

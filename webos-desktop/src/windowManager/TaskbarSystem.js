@@ -4,6 +4,7 @@ import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 import { animateWindowOpen } from "./AnimationSystem.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 import {
   $,
@@ -157,7 +158,7 @@ export class TaskbarSystem {
     });
     taskbarItem.dataset.title = title;
     taskbarItem.appendChild(this.buildTaskbarIcon(iconValue, title, color));
-    if (os.storage.get(StorageKeys.taskbarShowLabels) === "true") {
+    if (parseBool(os.storage.get(StorageKeys.taskbarShowLabels))) {
       const label = createElement("span", { className: "taskbar-item-label", text: title });
       taskbarItem.appendChild(label);
     }
@@ -714,7 +715,7 @@ export class TaskbarSystem {
   }
 
   applyTaskbarLabels() {
-    const show = os.storage.get(StorageKeys.taskbarShowLabels) === "true";
+    const show = parseBool(os.storage.get(StorageKeys.taskbarShowLabels));
     const taskbarWindows = $("#taskbar-windows");
     if (!taskbarWindows) return;
     $$(".taskbar-item:not(.pinned)", taskbarWindows).forEach((item) => {

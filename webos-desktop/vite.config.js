@@ -243,7 +243,9 @@ if (isVisualize) {
 }
 plugins.push(staticCdnRewrite());
 plugins.push(removeCosmicFolder());
-plugins.push(pageGenerator());
+if (!isDevBuild) {
+  plugins.push(pageGenerator());
+}
 
 export default defineConfig({
   base: isSingleFile ? "./" : "/",

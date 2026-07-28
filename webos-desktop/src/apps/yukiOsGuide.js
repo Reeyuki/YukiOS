@@ -6,6 +6,7 @@ const gamesListAppMap = appMap;
 import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
+import { $, $$ } from "../shared/domUtils.js";
 
 import { BaseApp, os } from "../framework.js";
 import { buildTilingKeybindHTML } from "../tiling/TilingKeybindOverlay.js";
@@ -718,7 +719,7 @@ export class YukiOsGuideApp extends BaseApp {
             <h3>Automatic Window Tiling</h3>
             <p>Select "Yuki Tiling WM" from the login session picker to enable a Hyprland-inspired tiling window manager. Windows are automatically arranged in a non-overlapping layout with a waybar-style status bar at the top.</p>
           </div>
-          <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:4px 0;border:1px solid rgba(255,255,255,0.05)">
+          <div class="guide-tiling-section">
             ${buildTilingKeybindHTML(searchLower)}
           </div>
           <div class="feature-card" style="margin-bottom:12px;margin-top:16px">
@@ -911,10 +912,10 @@ export class YukiOsGuideApp extends BaseApp {
 
   filterCapabilities(win) {
     const searchLower = this.searchQuery.toLowerCase();
-    const capabilitiesGrid = win.querySelector("#capabilities-grid");
+    const capabilitiesGrid = $("#capabilities-grid", win);
     if (!capabilitiesGrid) return;
 
-    const cards = capabilitiesGrid.querySelectorAll(".capability-card");
+    const cards = $$(".capability-card", capabilitiesGrid);
     cards.forEach((card) => {
       const searchData = card.dataset.search || "";
       if (searchData.includes(searchLower) || searchLower === "") {
@@ -1014,8 +1015,8 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   bindEvents(win) {
-    const searchInput = win.querySelector("#guide-search");
-    const navBtns = win.querySelectorAll(".guide-nav-item");
+    const searchInput = $("#guide-search", win);
+    const navBtns = $$(".guide-nav-item", win);
 
     searchInput.addEventListener("input", (e) => {
       this.searchQuery = e.target.value;
@@ -1046,12 +1047,12 @@ export class YukiOsGuideApp extends BaseApp {
         ? this.appRegistry.getAllApps(appMap)
         : this.appRegistry.getAllApps(gamesListAppMap);
     const filteredApps = this.filterApps(allApps);
-    const mainContent = win.querySelector(".yuki-guide-main");
+    const mainContent = $(".yuki-guide-main", win);
 
     if (mainContent) {
       mainContent.innerHTML = this.buildContent(filteredApps);
 
-      mainContent.querySelectorAll(".app-icon img").forEach((img) => {
+      $$(".app-icon img", mainContent).forEach((img) => {
         img.addEventListener("error", () => {
           img.style.display = "none";
           const fallback = img.nextElementSibling;
@@ -1059,7 +1060,7 @@ export class YukiOsGuideApp extends BaseApp {
         });
       });
 
-      const navCount = win.querySelector(".guide-nav-item[data-tab='apps'] .guide-nav-badge");
+      const navCount = $(".guide-nav-item[data-tab='apps'] .guide-nav-badge", win);
       if (navCount) {
         navCount.textContent = filteredApps.length;
       }

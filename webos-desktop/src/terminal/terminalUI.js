@@ -1,3 +1,4 @@
+import { setStyle } from "../shared/domUtils.js";
 export class TerminalRawMode {
   constructor(terminalElement, inputElement) {
     this.terminal = terminalElement;
@@ -63,7 +64,9 @@ export class TerminalRawMode {
     this.onResize = null;
   }
 
-  get active() { return this.isActive; }
+  get active() {
+    return this.isActive;
+  }
 
   setCursorPosition(row, col) {
     this.cursorRow = row;
@@ -108,16 +111,16 @@ export class TerminalRawMode {
   createCursor() {
     if (this.cursorEl) return;
     this.cursorEl = document.createElement("div");
-    this.cursorEl.style.cssText = `
-      position: absolute;
-      width: 8px;
-      height: 18px;
-      background: var(--text-primary, #fff);
-      opacity: 0.8;
-      pointer-events: none;
-      z-index: 10;
-      animation: terminal-cursor-blink 1s step-end infinite;
-    `;
+    setStyle(this.cursorEl, {
+      position: "absolute",
+      width: "8px",
+      height: "18px",
+      background: "var(--text-primary, #fff)",
+      opacity: "0.8",
+      pointerEvents: "none",
+      zIndex: "10",
+      animation: "terminal-cursor-blink 1s step-end infinite"
+    });
     this.terminal.style.position = "relative";
     this.terminal.appendChild(this.cursorEl);
   }
@@ -168,7 +171,9 @@ export class AltScreenManager {
     if (this.onExit) this.onExit();
   }
 
-  get active() { return this.isActive; }
+  get active() {
+    return this.isActive;
+  }
 
   writeLine(text, renderer) {
     if (!this.isActive) return;
@@ -193,9 +198,13 @@ export class AltScreenManager {
     if (outputEl) outputEl.innerHTML = "";
   }
 
-  get lines() { return [...this.bufferLines]; }
+  get lines() {
+    return [...this.bufferLines];
+  }
 
-  onExit(callback) { this.onExit = callback; }
+  onExit(callback) {
+    this.onExit = callback;
+  }
 }
 
 export class TerminalUIApp {
@@ -238,14 +247,22 @@ export class TerminalUIApp {
     if (this.onStop) this.onStop();
   }
 
-  get rawMode() { return this.rawModeInstance; }
-  get altScreen() { return this.altScreenInstance; }
-  get running() { return this.isRunning; }
+  get rawMode() {
+    return this.rawModeInstance;
+  }
+  get altScreen() {
+    return this.altScreenInstance;
+  }
+  get running() {
+    return this.isRunning;
+  }
 
   async onStart() {}
   async onTick() {}
   handleKey(keyData) {}
   handleResize() {}
 
-  onStop(callback) { this.onStop = callback; }
+  onStop(callback) {
+    this.onStop = callback;
+  }
 }

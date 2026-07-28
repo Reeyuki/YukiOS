@@ -1,12 +1,10 @@
 import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { Achievements } from "../achievements.js";
+import { $, $$, setStyle, BusEvents, BaseApp, os } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
-
-import { BusEvents } from "../core/EventBus.js";
-import { BaseApp, os } from "../framework.js";
 export class NotepadApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -118,11 +116,10 @@ export class NotepadApp extends BaseApp {
     this.setupIdleDetection(win);
     this.setupCleanup(win, winId);
 
-    const textarea = win.querySelector(".notepad-textarea");
-    textarea.style.whiteSpace = "pre-wrap";
-    textarea.style.overflowX = "hidden";
+    const textarea = $(".notepad-textarea", win);
+    setStyle(textarea, { whiteSpace: "pre-wrap", overflowX: "hidden" });
     const instance = this.instances.get(winId);
-    textarea.style.fontSize = (instance?.baseFontSize || 14) + "px";
+    setStyle(textarea, { fontSize: (instance?.baseFontSize || 14) + "px" });
 
     this.updateStatusBar(win, winId);
   }
@@ -143,25 +140,25 @@ export class NotepadApp extends BaseApp {
     this.updateStatusBar(win, winId);
   }
 
-  createDialog(win, html, style = {}) {
+  createDialog(win, html, style) {
     this.closeDialogs(win);
     const dialog = document.createElement("div");
     dialog.className = "notepad-dialog";
     dialog.innerHTML = html;
-    Object.assign(dialog.style, style);
-    win.querySelector(".notepad-content").appendChild(dialog);
+    if (style) setStyle(dialog, style);
+    $(".notepad-content", win).appendChild(dialog);
     return dialog;
   }
 
   bindDialogButtons(dialog, bindings) {
     for (const [selector, handler] of Object.entries(bindings)) {
-      const el = dialog.querySelector(selector);
+      const el = $(selector, dialog);
       if (el) el.onclick = handler;
     }
   }
 
   setupMenus(win, winId) {
-    const menuItems = win.querySelectorAll(".app-menubar-item");
+    const menuItems = $$(".app-menubar-item", win);
     let activeMenu = null;
 
     const closeAllMenus = () => {
@@ -190,7 +187,7 @@ export class NotepadApp extends BaseApp {
       });
     });
 
-    win.querySelectorAll(".dropdown-item[data-action]").forEach((item) => {
+    $$(".dropdown-item[data-action]", win).forEach((item) => {
       item.addEventListener("click", (e) => {
         e.stopPropagation();
         this.handleAction(win, winId, item.dataset.action);
@@ -206,9 +203,9 @@ export class NotepadApp extends BaseApp {
   }
 
   updateStatusBar(win, winId) {
-    const textarea = win.querySelector(".notepad-textarea");
-    const statusPosition = win.querySelector(".status-position");
-    const statusZoom = win.querySelector(".status-zoom");
+    const textarea = $(".notepad-textarea", win);
+    const statusPosition = $(".status-position", win);
+    const statusZoom = $(".status-zoom", win);
     const instance = this.instances.get(winId);
 
     if (!textarea || !statusPosition || !instance) return;
@@ -220,7 +217,7 @@ export class NotepadApp extends BaseApp {
   }
 
   setupTextarea(win, winId) {
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     const refresh = () => this.updateStatusBar(win, winId);
 
     textarea.addEventListener("input", () => this.markModified(win, winId));
@@ -310,7 +307,7 @@ export class NotepadApp extends BaseApp {
 
   resetEditor(win, winId) {
     const instance = this.instances.get(winId);
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     textarea.value = "";
     instance.currentTitle = "Untitled";
     instance.currentPath = null;
@@ -368,7 +365,7 @@ export class NotepadApp extends BaseApp {
       return;
     }
 
-    const content = win.querySelector(".notepad-textarea").value;
+    const content = $(".notepad-textarea", win).value;
     const filePath = [...instance.currentPath, instance.currentTitle];
     os.fs
       .write(filePath, content)
@@ -390,7 +387,7 @@ export class NotepadApp extends BaseApp {
     const defaultName = instance.currentTitle.includes(".") ? instance.currentTitle : `${instance.currentTitle}.txt`;
 
     this.explorerApp.openSaveDialog(defaultName, (path, fileName) => {
-      const content = win.querySelector(".notepad-textarea").value;
+      const content = $(".notepad-textarea", win).value;
       const filePath = [...path, fileName];
       os.fs
         .write(filePath, content, { kind: "text", icon: "static/icons/notepad.webp" })
@@ -415,7 +412,7 @@ export class NotepadApp extends BaseApp {
       const filePath = [...path, fileName];
       const content = await os.fs.read(filePath);
       const instance = this.instances.get(winId);
-      const textarea = win.querySelector(".notepad-textarea");
+      const textarea = $(".notepad-textarea", win);
       textarea.value = content;
       instance.currentTitle = fileName;
       instance.currentPath = path;
@@ -437,7 +434,7 @@ export class NotepadApp extends BaseApp {
         const reader = new FileReader();
         reader.onload = (ev) => {
           const content = ev.target.result;
-          const textarea = win.querySelector(".notepad-textarea");
+          const textarea = $(".notepad-textarea", win);
           textarea.value = content;
           instance.currentTitle = file.name;
           instance.currentPath = null;
@@ -514,8 +511,8 @@ export class NotepadApp extends BaseApp {
       { top: "60px", right: "30px" }
     );
 
-    const input = dialog.querySelector(".find-input");
-    const matchCase = dialog.querySelector(".match-case");
+    const input = $(".find-input", dialog);
+    const matchCase = $(".match-case", dialog);
 
     const syncAndRun = (direction) => {
       instance.findText = input.value;
@@ -543,7 +540,7 @@ export class NotepadApp extends BaseApp {
       return;
     }
 
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     const text = textarea.value;
     const searchIn = instance.matchCase ? text : text.toLowerCase();
     const searchFor = instance.matchCase ? instance.findText : instance.findText.toLowerCase();
@@ -604,10 +601,10 @@ export class NotepadApp extends BaseApp {
       { top: "60px", right: "30px" }
     );
 
-    const findInput = dialog.querySelector(".find-input");
-    const replaceInput = dialog.querySelector(".replace-input");
-    const matchCase = dialog.querySelector(".match-case");
-    const textarea = win.querySelector(".notepad-textarea");
+    const findInput = $(".find-input", dialog);
+    const replaceInput = $(".replace-input", dialog);
+    const matchCase = $(".match-case", dialog);
+    const textarea = $(".notepad-textarea", win);
 
     const syncInstance = () => {
       instance.findText = findInput.value;
@@ -656,7 +653,7 @@ export class NotepadApp extends BaseApp {
   }
 
   showGoToDialog(win, winId) {
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     const currentLine = textarea.value.substring(0, textarea.selectionStart).split("\n").length;
 
     const dialog = this.createDialog(
@@ -675,7 +672,7 @@ export class NotepadApp extends BaseApp {
       { top: "60px", right: "30px" }
     );
 
-    const input = dialog.querySelector(".line-input");
+    const input = $(".line-input", dialog);
 
     const goToLine = () => {
       const lineNum = parseInt(input.value);
@@ -706,11 +703,13 @@ export class NotepadApp extends BaseApp {
 
   toggleWordWrap(win, winId) {
     const instance = this.instances.get(winId);
-    const textarea = win.querySelector(".notepad-textarea");
-    const checkmark = win.querySelector('[data-action="wordWrap"] .checkmark');
+    const textarea = $(".notepad-textarea", win);
+    const checkmark = $('[data-action="wordWrap"] .checkmark', win);
     instance.wordWrap = !instance.wordWrap;
-    textarea.style.whiteSpace = instance.wordWrap ? "pre-wrap" : "pre";
-    textarea.style.overflowX = instance.wordWrap ? "hidden" : "auto";
+    setStyle(textarea, {
+      whiteSpace: instance.wordWrap ? "pre-wrap" : "pre",
+      overflowX: instance.wordWrap ? "hidden" : "auto"
+    });
     checkmark.style.visibility = instance.wordWrap ? "visible" : "hidden";
   }
 
@@ -722,7 +721,7 @@ export class NotepadApp extends BaseApp {
   }
 
   showFontDialog(win, winId) {
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     const computed = window.getComputedStyle(textarea);
 
     const currentFamily = textarea.style.fontFamily || computed.fontFamily;
@@ -777,7 +776,7 @@ export class NotepadApp extends BaseApp {
       </div>
       <div class="notepad-dialog-row">
         <label>Preview:</label>
-        <div class="font-preview" style="border:1px solid #ccc;padding:6px 10px;min-height:30px;font-size:${currentSize}px;font-family:${currentFamily}">AaBbCcXxYyZz</div>
+        <div class="font-preview" style="border:1px solid var(--text-secondary);padding:6px 10px;min-height:30px;font-size:${currentSize}px;font-family:${currentFamily}">AaBbCcXxYyZz</div>
       </div>
       <div class="notepad-dialog-buttons">
         <button class="ok-btn primary">OK</button>
@@ -787,14 +786,14 @@ export class NotepadApp extends BaseApp {
       { top: "60px", right: "30px" }
     );
 
-    const fontFamilyEl = dialog.querySelector(".font-family");
-    const fontStyleEl = dialog.querySelector(".font-style");
-    const fontSizeEl = dialog.querySelector(".font-size");
-    const preview = dialog.querySelector(".font-preview");
+    const fontFamilyEl = $(".font-family", dialog);
+    const fontStyleEl = $(".font-style", dialog);
+    const fontSizeEl = $(".font-size", dialog);
+    const preview = $(".font-preview", dialog);
 
     const updatePreview = () => {
       const { fontWeight, fontStyle } = this.parseFontStyle(fontStyleEl.value);
-      Object.assign(preview.style, {
+      setStyle(preview, {
         fontFamily: fontFamilyEl.value,
         fontSize: fontSizeEl.value + "px",
         fontWeight,
@@ -808,7 +807,7 @@ export class NotepadApp extends BaseApp {
       ".ok-btn": () => {
         const { fontWeight, fontStyle } = this.parseFontStyle(fontStyleEl.value);
         const instance = this.instances.get(winId);
-        Object.assign(textarea.style, {
+        setStyle(textarea, {
           fontFamily: fontFamilyEl.value,
           fontSize: fontSizeEl.value + "px",
           fontWeight,
@@ -826,27 +825,27 @@ export class NotepadApp extends BaseApp {
   zoom(win, winId, delta) {
     const instance = this.instances.get(winId);
     if (!instance) return;
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     instance.zoom = Math.max(10, Math.min(500, instance.zoom + delta));
-    textarea.style.fontSize = (instance.baseFontSize * instance.zoom) / 100 + "px";
+    setStyle(textarea, { fontSize: (instance.baseFontSize * instance.zoom) / 100 + "px" });
     this.updateStatusBar(win, winId);
   }
 
   zoomReset(win, winId) {
     const instance = this.instances.get(winId);
     if (!instance) return;
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     instance.zoom = 100;
-    textarea.style.fontSize = instance.baseFontSize + "px";
+    setStyle(textarea, { fontSize: instance.baseFontSize + "px" });
     this.updateStatusBar(win, winId);
   }
 
   toggleStatusBar(win, winId) {
     const instance = this.instances.get(winId);
-    const statusBar = win.querySelector(".notepad-statusbar");
-    const checkmark = win.querySelector('[data-action="statusBar"] .checkmark');
+    const statusBar = $(".notepad-statusbar", win);
+    const checkmark = $('[data-action="statusBar"] .checkmark', win);
     instance.statusBarVisible = !instance.statusBarVisible;
-    statusBar.style.display = instance.statusBarVisible ? "flex" : "none";
+    setStyle(statusBar, { display: instance.statusBarVisible ? "flex" : "none" });
     checkmark.style.visibility = instance.statusBarVisible ? "visible" : "hidden";
   }
 
@@ -861,7 +860,7 @@ export class NotepadApp extends BaseApp {
   }
 
   closeDialogs(win) {
-    win.querySelectorAll(".notepad-dialog").forEach((d) => d.remove());
+    $$(".notepad-dialog", win).forEach((d) => d.remove());
   }
 
   setupCleanup(win, winId) {
@@ -877,7 +876,7 @@ export class NotepadApp extends BaseApp {
   }
 
   setupIdleDetection(win) {
-    const textarea = win.querySelector(".notepad-textarea");
+    const textarea = $(".notepad-textarea", win);
     const resetIdleTimer = () => {
       if (this.idleTimer) clearTimeout(this.idleTimer);
       if (textarea.value.trim().length > 0) {

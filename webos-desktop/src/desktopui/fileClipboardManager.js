@@ -1,6 +1,6 @@
 import { showConflictDialog } from "../shared/conflictDialog.js";
 import { FileKind } from "../shared/fileKindDetector.js";
-import { os } from "../framework.js";
+import { os, $ } from "../framework.js";
 
 export class ClipboardManager {
   constructor(fs, positionStore, deletedIconsStore, iconManager, iconDataHelper, explorerApp) {
@@ -105,9 +105,7 @@ export class ClipboardManager {
 
             if (action === "cut") await os.fs.delete(srcPath, name);
 
-            const existingIcon = document.querySelector(
-              `.desktop-file-icon[data-file-name="${CSS.escape(finalName)}"]`
-            );
+            const existingIcon = $(`.desktop-file-icon[data-file-name="${CSS.escape(finalName)}"]`);
             if (!existingIcon) await this.iconManager.createDesktopFileIcon(finalName, { content, kind });
             pastedCount++;
           } else {
@@ -182,9 +180,7 @@ export class ClipboardManager {
 
             if (action === "cut") await os.fs.delete(srcPath, name);
 
-            const existingFolder = document.querySelector(
-              `.folder-icon[data-folder-name="${CSS.escape(finalFolderName)}"]`
-            );
+            const existingFolder = $(`.folder-icon[data-folder-name="${CSS.escape(finalFolderName)}"]`);
             if (!existingFolder) await this.iconManager.createFolderIcon(finalFolderName);
             pastedCount++;
           }

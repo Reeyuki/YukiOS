@@ -1,5 +1,6 @@
 import "../styles/room3d.css";
 import { BaseApp, os, StorageKeys } from "../framework.js";
+import { $ } from "../shared/domUtils.js";
 import { gameBridge } from "../game-bridge/GameBridge.js";
 import { RoomRenderer } from "../3d/RoomRenderer.js";
 import { FPSControls } from "../3d/FPSControls.js";
@@ -33,15 +34,15 @@ const rmStore = {
   storagePrefix: "rm3d_",
   get(k, d) {
     try {
-      const v = localStorage.getItem(this.storagePrefix + k);
-      return v !== null ? JSON.parse(v) : d;
+      const v = os.storage.get(this.storagePrefix + k);
+      return v !== null && v !== undefined ? v : d;
     } catch {
       return d;
     }
   },
   set(k, v) {
     try {
-      localStorage.setItem(this.storagePrefix + k, JSON.stringify(v));
+      os.storage.set(this.storagePrefix + k, v);
     } catch {}
   }
 };
@@ -82,7 +83,7 @@ export class Room3DApp extends BaseApp {
     document.body.appendChild(overlay);
 
     SystemUtilities.disableVantaWallpaper();
-    document.getElementById("desktop").style.display = "none";
+    $("#desktop").style.display = "none";
 
     this.buildUI(overlay);
     const container = overlay.querySelector("#room3d-canvas");
@@ -113,7 +114,7 @@ export class Room3DApp extends BaseApp {
     document.body.appendChild(overlay);
 
     SystemUtilities.disableVantaWallpaper();
-    document.getElementById("desktop").style.display = "none";
+    $("#desktop").style.display = "none";
 
     this.buildUI(overlay);
     const container = overlay.querySelector("#room3d-canvas");
@@ -1453,14 +1454,11 @@ export class Room3DApp extends BaseApp {
     }
 
     setTimeout(() => {
-      const win =
-        document.querySelector(`[data-appId="${appId}"]`) ||
-        document.getElementById(`${appId}-win`) ||
-        document.getElementById(appId);
+      const win = $(`[data-appId="${appId}"]`) || $(`#${appId}-win`) || $(`#${appId}`);
       if (win) {
         win.classList.add("snapping");
         win.offsetHeight;
-        this.wm.applySnap(win, "maximize");
+        os.window.maximize(win);
       }
     }, 600);
     if (this.systemOnExit) this.systemOnExit();
@@ -1704,7 +1702,7 @@ export class Room3DApp extends BaseApp {
           }
           if (ro) ro.disconnect();
           if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-          document.getElementById("desktop").style.display = "";
+          $("#desktop").style.display = "";
           SystemUtilities.loadWallpaper();
         },
         { once: true }
@@ -1766,7 +1764,7 @@ export class Room3DApp extends BaseApp {
         /* ignore */
       }
       if (ro) ro.disconnect();
-      document.getElementById("desktop").style.display = "";
+      $("#desktop").style.display = "";
       SystemUtilities.loadWallpaper();
     }
 

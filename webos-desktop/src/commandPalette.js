@@ -1,6 +1,6 @@
 import "./styles/commandPalette.css";
 import { SystemUtilities } from "./system.js";
-import { BusEvents } from "./core/EventBus.js";
+import { BusEvents, $, $$ } from "./framework.js";
 import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { AppSource } from "./AppSource.js";
@@ -1133,12 +1133,12 @@ export class CommandPalette {
   }
 
   minimizeAllWindows() {
-    const wins = document.querySelectorAll(".window");
+    const wins = $$(".window");
     wins.forEach((win) => os.window.minimize(win));
   }
 
   toggleFullscreen() {
-    const active = document.querySelector(".window.active");
+    const active = $(".window.active");
     if (active) os.window.maximize(active);
   }
 

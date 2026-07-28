@@ -100,7 +100,7 @@ export async function cmdYuki(terminal, args) {
 
     case "wallpaper": {
       if (args[1] === "random") {
-        const count = parseInt(os.storage.get("yukiOS_wallpaper_count") || "20");
+        const count = parseInt(os.storage.get(StorageKeys.wallpaperCount) || "20");
         const idx = Math.floor(Math.random() * count);
         os.storage.set(StorageKeys.wallpaperIndexKey, idx);
         os.events.emit("WALLPAPER_CHANGED", { index: idx });

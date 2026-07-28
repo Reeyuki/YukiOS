@@ -1,8 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { zipSync } from "fflate";
 
-import { BusEvents } from "../core/EventBus.js";
-import { BaseApp, os } from "../framework.js";
+import { setStyle, BusEvents, BaseApp, os } from "../framework.js";
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {
@@ -260,7 +259,7 @@ export class JsDosApp extends BaseApp {
 
       iframeEl = document.createElement("iframe");
       iframeEl.src = iframeBlobUrl;
-      iframeEl.style.cssText = "width:100%;height:100%;border:none;display:block;";
+      setStyle(iframeEl, { width: "100%", height: "100%", border: "none", display: "block" });
       iframeEl.setAttribute("allowfullscreen", "");
       inner.appendChild(iframeEl);
     } catch (e) {
@@ -405,12 +404,12 @@ export class JsDosApp extends BaseApp {
       iframePageUrl = iframeBlobUrl;
 
       inner.innerHTML = "";
-      inner.style.cssText = "width:100%;height:100%;";
+      setStyle(inner, { width: "100%", height: "100%" });
       inner.classList.remove("jsdos-loading");
 
       iframeEl = document.createElement("iframe");
       iframeEl.src = iframeBlobUrl;
-      iframeEl.style.cssText = "width:100%;height:100%;border:none;display:block;";
+      setStyle(iframeEl, { width: "100%", height: "100%", border: "none", display: "block" });
       iframeEl.setAttribute("allowfullscreen", "");
       inner.appendChild(iframeEl);
     } catch (e) {

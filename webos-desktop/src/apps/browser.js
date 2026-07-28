@@ -1,8 +1,8 @@
 import "../styles/scramjet.css";
-import { BaseApp, StorageKeys, os } from "../framework.js";
-import { BusEvents } from "../core/EventBus.js";
+import { BaseApp, StorageKeys, os, BusEvents } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 import { PROXIES } from "../proxies.js";
+import { $, setStyle, createElement, addClass, removeClass } from "../shared/domUtils.js";
 
 const THEME_VARS = [
   "--brand",
@@ -93,8 +93,8 @@ export class BrowserApp extends BaseApp {
       if (span) span.textContent = "";
     }
 
-    this.wm.makeDraggable(element);
-    this.wm.makeResizable(element);
+    os.window.makeDraggable(element);
+    os.window.makeResizable(element);
 
     const sendDataToIframe = () => {
       if (!iframe || !iframe.contentWindow) return;
@@ -169,10 +169,10 @@ export class BrowserApp extends BaseApp {
       if (state.openUrl) this.navigateToUrl(iframe, state.openUrl);
     });
 
-    this._settingsChangedHandler = () => {
+    this.settingsChangedHandler = () => {
       this.sendDataToIframe();
     };
-    os.events.on(BusEvents.SETTINGS_CHANGED, this._settingsChangedHandler);
+    os.events.on(BusEvents.SETTINGS_CHANGED, this.settingsChangedHandler);
   }
 
   trySetupIframe(iframe, element) {
@@ -229,7 +229,7 @@ export class BrowserApp extends BaseApp {
         e.preventDefault();
         e.stopPropagation();
         if (element.dataset.snapZone === "maximize") os.window.maximize(element);
-        else this.wm.applySnap(element, "maximize");
+        else os.window.maximize(element);
       });
     if (minBtn)
       minBtn.addEventListener("click", (e) => {
@@ -246,7 +246,7 @@ export class BrowserApp extends BaseApp {
   }
 
   attachDragHandler(tabsContainer, iframe, element) {
-    tabsContainer.style.cursor = "move";
+    setStyle(tabsContainer, { cursor: "move" });
     tabsContainer.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
       if (
@@ -265,24 +265,20 @@ export class BrowserApp extends BaseApp {
     os.window.bringToFront(element);
     wobbleStart(element);
     const wasSnapped = !!element.dataset.snapZone;
-    if (wasSnapped) this.wm.unsnap(element);
+    if (wasSnapped) os.windowManager.unsnap(element);
     const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false";
     if (disableStretch) {
       if (getComputedStyle(element).position !== "fixed") {
         const rect = element.getBoundingClientRect();
-        element.style.left = `${rect.left}px`;
-        element.style.top = `${rect.top}px`;
-        element.style.position = "fixed";
+        setStyle(element, { left: `${rect.left}px`, top: `${rect.top}px`, position: "fixed" });
       }
     } else if (getComputedStyle(element).position === "fixed") {
       const rect = element.getBoundingClientRect();
-      const desktop = document.getElementById("desktop");
+      const desktop = $("#desktop");
       const desktopRect = desktop.getBoundingClientRect();
       const left = rect.left - desktopRect.left + desktop.scrollLeft;
       const top = rect.top - desktopRect.top + desktop.scrollTop;
-      element.style.left = `${left}px`;
-      element.style.top = `${top}px`;
-      element.style.position = "absolute";
+      setStyle(element, { left: `${left}px`, top: `${top}px`, position: "absolute" });
     }
     const iframeRect = iframe.getBoundingClientRect();
     const startX = e.clientX + iframeRect.left;
@@ -290,33 +286,32 @@ export class BrowserApp extends BaseApp {
     const winRect = element.getBoundingClientRect();
     const ox = startX - winRect.left;
     const oy = startY - winRect.top;
-    this.wm.isDraggingWindow = true;
-    document.body.classList.add("is-dragging");
+    os.windowManager.isDraggingWindow = true;
+    addClass(document.body, "is-dragging");
     const onMouseMove = (moveEvent) => {
       const newLeft = moveEvent.clientX - ox;
       const newTop = moveEvent.clientY - oy;
-      element.style.left = `${newLeft}px`;
-      element.style.top = `${newTop}px`;
-      const entry = this.wm.openWindows.get(element.id);
+      setStyle(element, { left: `${newLeft}px`, top: `${newTop}px` });
+      const entry = os.windowManager.openWindows.get(element.id);
       if (entry?.record) entry.record.setGeometry(newLeft, newTop);
       wobbleMove(element, moveEvent.clientX - startX, moveEvent.clientY - startY);
-      const zone = this.wm.getSnapZone(moveEvent.clientX, moveEvent.clientY);
-      this.wm.activeSnapZone = zone;
-      if (zone) this.wm.showSnapGhost(zone);
-      else this.wm.hideSnapGhost();
+      const zone = os.windowManager.getSnapZone(moveEvent.clientX, moveEvent.clientY);
+      os.windowManager.activeSnapZone = zone;
+      if (zone) os.windowManager.showSnapGhost(zone);
+      else os.windowManager.hideSnapGhost();
     };
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
-      this.wm.isDraggingWindow = false;
-      document.body.classList.remove("is-dragging");
+      os.windowManager.isDraggingWindow = false;
+      removeClass(document.body, "is-dragging");
       wobbleEnd(element);
-      if (this.wm.activeSnapZone) {
-        this.wm.applySnap(element, this.wm.activeSnapZone);
-        this.wm.activeSnapZone = null;
-        this.wm.hideSnapGhost();
+      if (os.windowManager.activeSnapZone) {
+        os.windowManager.applySnap(element, os.windowManager.activeSnapZone);
+        os.windowManager.activeSnapZone = null;
+        os.windowManager.hideSnapGhost();
       }
-      if (this.wm.triggerSessionSave) this.wm.triggerSessionSave();
+      if (os.windowManager.triggerSessionSave) os.windowManager.triggerSessionSave();
     };
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
@@ -340,9 +335,9 @@ export class BrowserApp extends BaseApp {
   }
 
   cleanupScramjet() {
-    if (this._settingsChangedHandler) {
-      os.events.off(BusEvents.SETTINGS_CHANGED, this._settingsChangedHandler);
-      this._settingsChangedHandler = null;
+    if (this.settingsChangedHandler) {
+      os.events.off(BusEvents.SETTINGS_CHANGED, this.settingsChangedHandler);
+      this.settingsChangedHandler = null;
     }
     if (this.msgHandler) {
       window.removeEventListener("message", this.msgHandler);
@@ -396,8 +391,7 @@ export class BrowserApp extends BaseApp {
     const container = this.element?.querySelector(".scramjet-container");
     if (!container) return;
 
-    const overlay = document.createElement("div");
-    overlay.className = "tor-overlay";
+    const overlay = createElement("div", { className: "tor-overlay" });
     overlay.innerHTML = `
       <div class="tor-bar">
         <span class="tor-bar-label"><i class="fas fa-shield-halved"></i> Tor Active</span>
@@ -439,13 +433,13 @@ export class BrowserApp extends BaseApp {
   showTorLoading(text) {
     const el = this.torOverlay?.querySelector("#tor-loading");
     const txt = this.torOverlay?.querySelector("#tor-loading-text");
-    if (el) el.style.display = "flex";
+    if (el) setStyle(el, { display: "flex" });
     if (txt) txt.textContent = text || "Starting Tor...";
   }
 
   hideTorLoading() {
     const el = this.torOverlay?.querySelector("#tor-loading");
-    if (el) el.style.display = "none";
+    if (el) setStyle(el, { display: "none" });
   }
 
   async startTorWithStatus() {
@@ -645,9 +639,7 @@ export class BrowserApp extends BaseApp {
       name = new URL(url).pathname.split("/").pop() || "download";
     } catch {}
     const objectUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = objectUrl;
-    a.download = name;
+    const a = createElement("a", { attributes: { href: objectUrl, download: name } });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

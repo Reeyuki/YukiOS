@@ -4,6 +4,7 @@ import { FileKind } from "../shared/fileKindDetector.js";
 import { formatSize } from "../utils/utils.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { BaseApp, os } from "../framework.js";
+import { $, $$, setStyle, createElement } from "../framework.js";
 
 export class CameraApp extends BaseApp {
   constructor(services) {
@@ -108,21 +109,21 @@ export class CameraApp extends BaseApp {
   }
 
   bindCameraEvents(win) {
-    win.querySelectorAll(".cam-mode-btn").forEach((btn) => {
+    $$(".cam-mode-btn", win).forEach((btn) => {
       btn.addEventListener("click", () => {
-        win.querySelectorAll(".cam-mode-btn").forEach((b) => b.classList.remove("active"));
+        $$(".cam-mode-btn", win).forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         this.state.currentMode = btn.dataset.mode;
-        const indicator = win.querySelector("#mode-indicator");
+        const indicator = $("#mode-indicator", win);
         if (indicator) {
-          indicator.textContent = btn.querySelector("span")?.textContent || this.state.currentMode;
+          indicator.textContent = $("span", btn)?.textContent || this.state.currentMode;
         }
         this.updateShutterButton(this.state, win);
       });
     });
 
-    win.querySelector("#shutter-btn")?.addEventListener("click", async () => {
-      const shutterBtn = win.querySelector("#shutter-btn");
+    $("#shutter-btn", win)?.addEventListener("click", async () => {
+      const shutterBtn = $("#shutter-btn", win);
       if (shutterBtn) {
         shutterBtn.classList.add("shutter-snap");
         setTimeout(() => shutterBtn.classList.remove("shutter-snap"), 200);
@@ -145,7 +146,7 @@ export class CameraApp extends BaseApp {
       }
     });
 
-    win.querySelector("#open-history-btn")?.addEventListener("click", () => {
+    $("#open-history-btn", win)?.addEventListener("click", () => {
       this.openHistoryWindow(this.state);
     });
   }
@@ -187,7 +188,7 @@ export class CameraApp extends BaseApp {
           </div>
         </div>
         <div id="history-list" class="history-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 16px; overflow-y: auto; max-height: calc(70vh - 120px);"></div>
-        <div class="history-pagination" style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="history-pagination" style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 16px; border-top: 1px solid var(--glass-border);">
           <button id="prev-page" class="history-btn secondary" disabled>Previous</button>
           <span id="page-info">Page 1 of 1</span>
           <button id="next-page" class="history-btn secondary" disabled>Next</button>
@@ -200,13 +201,13 @@ export class CameraApp extends BaseApp {
     state.currentPage = 1;
     state.itemsPerPage = 12;
 
-    const typeFilter = historyWin.querySelector("#history-type-filter");
-    const sortSelect = historyWin.querySelector("#history-sort");
-    const bulkSelectBtn = historyWin.querySelector("#bulk-select-btn");
-    const deleteSelectedBtn = historyWin.querySelector("#delete-selected-btn");
-    const prevPageBtn = historyWin.querySelector("#prev-page");
-    const nextPageBtn = historyWin.querySelector("#next-page");
-    const pageInfo = historyWin.querySelector("#page-info");
+    const typeFilter = $("#history-type-filter", historyWin);
+    const sortSelect = $("#history-sort", historyWin);
+    const bulkSelectBtn = $("#bulk-select-btn", historyWin);
+    const deleteSelectedBtn = $("#delete-selected-btn", historyWin);
+    const prevPageBtn = $("#prev-page", historyWin);
+    const nextPageBtn = $("#next-page", historyWin);
+    const pageInfo = $("#page-info", historyWin);
 
     typeFilter.addEventListener("change", () => {
       state.currentPage = 1;
@@ -220,7 +221,7 @@ export class CameraApp extends BaseApp {
     bulkSelectBtn.onclick = () => {
       state.bulkSelectMode = !state.bulkSelectMode;
       bulkSelectBtn.textContent = state.bulkSelectMode ? "Cancel Select" : "Bulk Select";
-      deleteSelectedBtn.style.display = state.bulkSelectMode ? "block" : "none";
+      setStyle(deleteSelectedBtn, { display: state.bulkSelectMode ? "block" : "none" });
       state.selectedItems = [];
       this.renderHistory(state, historyWin);
     };
@@ -255,8 +256,8 @@ export class CameraApp extends BaseApp {
   }
 
   updateShutterButton(state, cameraApp) {
-    const shutterBtn = cameraApp.querySelector("#shutter-btn");
-    const inner = shutterBtn.querySelector(".shutter-inner");
+    const shutterBtn = $("#shutter-btn", cameraApp);
+    const inner = $(".shutter-inner", shutterBtn);
     inner.className = "shutter-inner";
     if (state.currentMode === "photo") {
       inner.classList.add("photo");
@@ -270,17 +271,17 @@ export class CameraApp extends BaseApp {
   }
 
   async initCamera(payload, event, element, state) {
-    const cameraApp = document.querySelector(".camera-app");
+    const cameraApp = $(".camera-app");
     if (!cameraApp) {
       console.error("Camera app container not found");
       return;
     }
-    this.video = cameraApp.querySelector("#camera-video");
-    this.shutterBtn = cameraApp.querySelector("#shutter-btn");
-    this.downloadLink = cameraApp.querySelector("#download-link");
-    this.recordingIcon = cameraApp.querySelector("#recording-icon");
-    this.recordingTimer = cameraApp.querySelector("#recording-timer");
-    this.modeIndicator = cameraApp.querySelector("#mode-indicator");
+    this.video = $("#camera-video", cameraApp);
+    this.shutterBtn = $("#shutter-btn", cameraApp);
+    this.downloadLink = $("#download-link", cameraApp);
+    this.recordingIcon = $("#recording-icon", cameraApp);
+    this.recordingTimer = $("#recording-timer", cameraApp);
+    this.modeIndicator = $("#mode-indicator", cameraApp);
 
     state.currentMode = "photo";
     state.isRecording = false;
@@ -315,11 +316,11 @@ export class CameraApp extends BaseApp {
     this.downloadLink.href = dataUrl;
     this.downloadLink.download = fileName;
     this.downloadLink.textContent = "Download Photo";
-    this.downloadLink.style.display = "flex";
+    setStyle(this.downloadLink, { display: "flex" });
 
     await this.addRecording(dataUrl, blob, fileName, fileName.replace(".png", ""), state);
 
-    const flash = document.createElement("div");
+    const flash = createElement("div");
     flash.className = "cam-viewfinder-flash";
     const viewfinder = this.video.parentElement;
     viewfinder.appendChild(flash);
@@ -355,12 +356,12 @@ export class CameraApp extends BaseApp {
       this.downloadLink.href = url;
       this.downloadLink.download = fileName;
       this.downloadLink.textContent = "Download Video";
-      this.downloadLink.style.display = "flex";
+      setStyle(this.downloadLink, { display: "flex" });
     };
 
     this.mediaRecorder.start();
     this.shutterBtn.classList.add("recording");
-    this.recordingIcon.style.display = "block";
+    setStyle(this.recordingIcon, { display: "block" });
     this.updateShutterButton(state, cameraApp);
     this.startTimer();
   }
@@ -401,9 +402,9 @@ export class CameraApp extends BaseApp {
         this.downloadLink.href = url;
         this.downloadLink.download = fileName;
         this.downloadLink.textContent = "Download Screen Recording";
-        this.downloadLink.style.display = "flex";
+        setStyle(this.downloadLink, { display: "flex" });
         this.stopTimer();
-        this.recordingIcon.style.display = "none";
+        setStyle(this.recordingIcon, { display: "none" });
         this.shutterBtn.classList.remove("recording");
         this.updateShutterButton(state, cameraApp);
         this.activeStream.getTracks().forEach((t) => t.stop());
@@ -418,7 +419,7 @@ export class CameraApp extends BaseApp {
       state.isRecording = true;
       this.mediaRecorder.start();
       this.shutterBtn.classList.add("recording");
-      this.recordingIcon.style.display = "block";
+      setStyle(this.recordingIcon, { display: "block" });
       this.updateShutterButton(state, cameraApp);
       this.startTimer();
     } catch (e) {
@@ -464,20 +465,18 @@ export class CameraApp extends BaseApp {
   }
 
   closePreviewModal() {
-    const modal = document.querySelector("#preview-modal");
+    const modal = $("#preview-modal");
     if (modal) modal.remove();
   }
 
   renderHistory(state, historyWin = null) {
-    const list = historyWin ? historyWin.querySelector("#history-list") : document.querySelector("#history-list");
-    const count = historyWin ? historyWin.querySelector("#history-count") : document.querySelector("#history-count");
-    const typeFilter = historyWin
-      ? historyWin.querySelector("#history-type-filter")
-      : document.querySelector("#history-type-filter");
-    const sortSelect = historyWin ? historyWin.querySelector("#history-sort") : document.querySelector("#history-sort");
-    const prevPageBtn = historyWin ? historyWin.querySelector("#prev-page") : document.querySelector("#prev-page");
-    const nextPageBtn = historyWin ? historyWin.querySelector("#next-page") : document.querySelector("#next-page");
-    const pageInfo = historyWin ? historyWin.querySelector("#page-info") : document.querySelector("#page-info");
+    const list = $("#history-list", historyWin);
+    const count = $("#history-count", historyWin);
+    const typeFilter = $("#history-type-filter", historyWin);
+    const sortSelect = $("#history-sort", historyWin);
+    const prevPageBtn = $("#prev-page", historyWin);
+    const nextPageBtn = $("#next-page", historyWin);
+    const pageInfo = $("#page-info", historyWin);
 
     if (!list) return;
 
@@ -738,7 +737,7 @@ export class CameraApp extends BaseApp {
       </div>
     `;
 
-    const videoEl = playerWin.querySelector("video");
+    const videoEl = $("video", playerWin);
     videoEl.src = url;
   }
 

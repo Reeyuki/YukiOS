@@ -1,6 +1,6 @@
 import "../styles/roblox.css";
 import { BaseApp, StorageKeys, os } from "../framework.js";
-import { $, $$ } from "../shared/domUtils.js";
+import { $, $$ } from "../framework.js";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 
 const CDN = resolveGhUrl("https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/html/roblox");

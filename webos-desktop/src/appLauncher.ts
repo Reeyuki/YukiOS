@@ -7,6 +7,7 @@ import { initializeAppGrid, tryGetIcon, trackRecentlyUsed } from "./desktopui/st
 import { IFRAME_ATTRS } from "./shared/iframeAttrs.js";
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { StorageKeys, os } from "./framework.js";
+import { parseBool } from "./shared/boolUtils.js";
 import {
   fetchHtmlAsBlobUrl,
   resolveUrl,
@@ -110,8 +111,8 @@ export class AppLauncher {
 
     const currentNewsSig = getNewsContentSignature();
     const savedNewsSig = os.storage.get(StorageKeys.newsReadSignatureKey);
-    const legacyNewsSeen = os.storage.get(StorageKeys.newsSeenKey) === "true";
-    const setupCompleted = os.storage.get(StorageKeys.setupCompleted) === "true";
+    const legacyNewsSeen = parseBool(os.storage.get(StorageKeys.newsSeenKey));
+    const setupCompleted = parseBool(os.storage.get(StorageKeys.setupCompleted));
 
     if (!savedNewsSig && legacyNewsSeen) {
       os.storage.set(StorageKeys.newsReadSignatureKey, currentNewsSig);

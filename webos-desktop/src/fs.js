@@ -8,6 +8,7 @@ import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
 import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
+import { parseBool } from "./shared/boolUtils.js";
 import { ISOFileSystem } from "./isoFS.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 
@@ -713,7 +714,7 @@ export class FileSystemManager {
 
   async ensureDefaults() {
     const defaultsCreatedKey = StorageKeys.defaultsCreatedPrefix + this.sessionKey;
-    if (os.storage.get(defaultsCreatedKey) === "true") {
+    if (parseBool(os.storage.get(defaultsCreatedKey))) {
       const homeExists = await this.exists(this.CONFIG.ROOT);
       if (homeExists) {
         return;
@@ -727,7 +728,7 @@ export class FileSystemManager {
 
   async migrateDefaultWallpapers() {
     const migrationKey = StorageKeys.wallpaperMigratedPrefix + this.sessionKey;
-    if (os.storage.get(migrationKey) === "true") {
+    if (parseBool(os.storage.get(migrationKey))) {
       return;
     }
 

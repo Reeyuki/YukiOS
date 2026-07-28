@@ -1,7 +1,6 @@
 import "../styles/shortcuts.css";
 import { Achievements } from "../achievements.js";
-import { BusEvents } from "../core/EventBus.js";
-import { os, BaseApp } from "../framework.js";
+import { BusEvents, os, BaseApp } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const MODIFIER_KEY_MAP = {

@@ -65,6 +65,7 @@ export class RoomAchievements {
 
   load() {
     try {
+      // this module will use localStorage on purpose to be decoupled from main os
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
@@ -76,6 +77,7 @@ export class RoomAchievements {
 
   save() {
     try {
+      // this module will use localStorage on purpose to be decoupled from main os
       const obj = {};
       for (const [id, ts] of this.unlocked) obj[id] = ts;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));

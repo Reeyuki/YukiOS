@@ -109,7 +109,7 @@ class ProcessManager {
     const procs = [];
     const runningApps = os.app.getRunningApps();
     runningApps.forEach((app) => {
-      const win = document.getElementById(app.winId);
+      const win = $("#" + app.winId);
       if (!win) return;
 
       const { cpu, mem } = this.measureProcess(app.winId, win);
@@ -154,7 +154,7 @@ class ProcessManager {
         : trayItems;
     trayArray.forEach((item) => {
       if (procs.find((p) => p.winId === item.winId)) return;
-      const win = document.getElementById(item.winId);
+      const win = $("#" + item.winId);
       let cpu = 0,
         mem = 0;
       if (win) {
@@ -185,13 +185,13 @@ class ProcessManager {
   }
 
   killByWinId(id) {
-    const winEl = document.getElementById(id);
+    const winEl = $("#" + id);
     if (winEl) {
       const title = os.window.getTitle(winEl.id)?.trim() || id;
       try {
         os.app.close(id);
       } catch (_) {}
-      if (document.getElementById(id)) winEl.remove();
+      if ($("#" + id)) winEl.remove();
       os.window.removeFromTaskbar(id);
       try {
         os.tray.unregister(id);
@@ -218,7 +218,7 @@ class ProcessManager {
           os.tray.unregister(id);
         } catch (_) {}
         os.window.removeFromTaskbar(id);
-        const hiddenWin = document.getElementById(id);
+        const hiddenWin = $("#" + id);
         if (hiddenWin) hiddenWin.remove();
         try {
           os.notify.send("", `"${trayItem.label || id}" ended`);

@@ -695,10 +695,43 @@
 }
 
 .explorer-save-bar label,
-.explorer-dir-bar label {
-  color: #aaa;
+.explorer-dir-label {
+  color: var(--text-muted);
   font-size: 12px;
   white-space: nowrap;
+}
+
+.explorer-dir-path {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.explorer-dir-select-btn {
+  padding: 6px 18px;
+  border-radius: 5px;
+  border: none;
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.explorer-dir-cancel-btn {
+  padding: 6px 14px;
+  border-radius: 5px;
+  border: none;
+  background: var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .explorer-filename-input {
@@ -816,12 +849,22 @@
 .fd-dialog-error {
   display: none;
   font-size: 12px;
-  color: #e06c75;
+  color: var(--error);
   margin-top: 6px;
 }
 
 .fd-dialog-actions {
   margin-top: 16px;
+}
+
+.fd-dialog-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.fd-btn-confirm--danger {
+  background: var(--error);
 }
 
 .explorer-upload-progress {

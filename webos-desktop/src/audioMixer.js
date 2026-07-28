@@ -1,5 +1,6 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
-import { $, createElement } from "./shared/domUtils.js";
+import { $, createElement, setStyle } from "./shared/domUtils.js";
+import { parseBool } from "./shared/boolUtils.js";
 import { StorageKeys, os, MODES } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
 import { getTrayPosition } from "./tray/tray.js";
@@ -17,7 +18,7 @@ class AudioMixer {
   constructor() {
     this.masterVolume = 1.0;
     this.systemVolume = 1.0;
-    this.systemAudioEnabled = os.storage.get(StorageKeys.systemAudioEnabled) !== "false";
+    this.systemAudioEnabled = parseBool(os.storage.get(StorageKeys.systemAudioEnabled), true);
     this.channels = new Map();
     this.gainNodes = new Map();
     this.audioCtx = null;
@@ -40,7 +41,7 @@ class AudioMixer {
     if (Number.isFinite(settingsSystemVolume)) {
       this.systemVolume = settingsSystemVolume;
     }
-    this.muted = os.storage.get(StorageKeys.soundEnabled) === "false";
+    this.muted = parseBool(os.storage.get(StorageKeys.soundEnabled)) === false;
   }
 
   save() {
@@ -402,10 +403,9 @@ class AudioMixer {
   }
 
   setupTrayIcon() {
-    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    const btn = $('[data-win-id="audio-mixer"]');
     if (!btn) return;
-    btn.style.width = "auto";
-    btn.style.padding = "0 4px";
+    setStyle(btn, { width: "auto", padding: "0 4px" });
     btn.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" id="tray-audio-bars" width="24" height="20" viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10 5 5 9H1v6h4l5 4V5Z"/>
@@ -665,7 +665,7 @@ class AudioMixer {
     }
     this.panel.classList.remove("closing");
     this.panel.style.display = "flex";
-    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    const btn = $('[data-win-id="audio-mixer"]');
     if (btn) btn.classList.add("active");
     this.renderSliders();
     this.positionPanel();
@@ -674,7 +674,7 @@ class AudioMixer {
   close() {
     this.isOpen = false;
     this.panel.classList.add("closing");
-    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    const btn = $('[data-win-id="audio-mixer"]');
     if (btn) btn.classList.remove("active");
     this.panel.addEventListener(
       "animationend",
@@ -687,13 +687,13 @@ class AudioMixer {
   }
 
   positionPanel() {
-    const btn = document.querySelector('[data-win-id="audio-mixer"]');
+    const btn = $('[data-win-id="audio-mixer"]');
     if (!this.panel) return;
 
     const tilingActive = os.modes.isActive(MODES.TILING);
     let atTop;
     if (tilingActive) {
-      const tilingBar = document.getElementById("tiling-bar");
+      const tilingBar = $("#tiling-bar");
       atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;
     } else {
       atTop = isTaskbarTop();
@@ -705,19 +705,14 @@ class AudioMixer {
       let left = btnRect.right - panelW;
       if (left < 8) left = 8;
       if (atTop) {
-        this.panel.style.top = `${btnRect.bottom + 6}px`;
-        this.panel.style.bottom = "auto";
+        setStyle(this.panel, { top: `${btnRect.bottom + 6}px`, bottom: "auto" });
       } else {
-        this.panel.style.bottom = `${window.innerHeight - btnRect.top + 6}px`;
-        this.panel.style.top = "auto";
+        setStyle(this.panel, { bottom: `${window.innerHeight - btnRect.top + 6}px`, top: "auto" });
       }
       this.panel.style.left = `${left}px`;
     } else {
       const pos = getTrayPosition();
-      this.panel.style.right = pos.right;
-      this.panel.style.top = pos.top;
-      this.panel.style.bottom = pos.bottom;
-      this.panel.style.left = "auto";
+      setStyle(this.panel, { right: pos.right, top: pos.top, bottom: pos.bottom, left: "auto" });
     }
   }
 

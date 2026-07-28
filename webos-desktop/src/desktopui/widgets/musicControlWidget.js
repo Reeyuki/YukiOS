@@ -1,4 +1,5 @@
 import { WidgetBase } from "../widgetManager.js";
+import { $$ } from "../../shared/domUtils.js";
 import { audioMixer } from "../../audioMixer.js";
 
 export class MusicControlWidget extends WidgetBase {
@@ -122,7 +123,7 @@ export class MusicControlWidget extends WidgetBase {
       const isPlaying = np && np.playbackState === "playing";
       active.ch.sendCommand(isPlaying ? "pause" : "play");
 
-      const els = document.querySelectorAll(".window audio, .window video");
+      const els = $$(".window audio, .window video");
       for (const el of els) {
         if (el.paused) {
           el.play().catch(() => {});

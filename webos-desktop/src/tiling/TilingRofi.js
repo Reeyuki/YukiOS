@@ -1,3 +1,4 @@
+import { $ } from "../shared/domUtils.js";
 import { os, StorageKeys } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 
@@ -354,7 +355,7 @@ export class TilingRofi {
   }
 
   focusWindow(winId) {
-    const el = document.getElementById(winId);
+    const el = $("#" + winId);
     if (el) {
       os.window.focus(el);
     }

@@ -399,7 +399,7 @@ export class SetupApp extends BaseApp {
     const themeButtons = themes
       .map(
         (theme) => `
-        <button class="theme-btn ${this.userChoices.theme === theme.value ? "active" : ""}" data-theme="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
+        <button class="theme-btn ${this.userChoices.theme === theme.value ? "active" : ""}" data-theme="${theme.value}" style="height: 56px; background: ${theme.preview || "var(--brand)"}; color: ${theme.textColor || "var(--text-on-brand)"};">
           <span>${theme.label}</span>
         </button>
       `

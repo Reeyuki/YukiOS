@@ -166,8 +166,8 @@ export class WallpaperEngineApp extends BaseApp {
       this.shuffleTimer = null;
     }
     os.tray.unregister("wallpaper-engine");
-    document.querySelectorAll(".we-tooltip").forEach((el) => el.remove());
-    document.querySelectorAll(".we-fs-overlay").forEach((el) => el.remove());
+    $$(".we-tooltip").forEach((el) => el.remove());
+    $$(".we-fs-overlay").forEach((el) => el.remove());
     this.winId = null;
     this.win = null;
   }

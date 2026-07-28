@@ -1,4 +1,5 @@
 import { BusEvents } from "./core/EventBusConstants.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 import { StorageKeys, os } from "./framework.js";
 let container = null;
@@ -14,7 +15,7 @@ const MIN_VISIBLE = 600;
 const DEFAULT_ICON = "fa-solid fa-cube";
 
 function getEnabled() {
-  return os.storage.get(StorageKeys.cursorEffectEnabled) !== "false";
+  return parseBool(os.storage.get(StorageKeys.cursorEffectEnabled), true);
 }
 
 function isFontAwesome(icon) {

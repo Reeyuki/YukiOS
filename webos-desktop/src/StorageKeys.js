@@ -232,6 +232,7 @@ export const StorageKeys = {
   friendsLiveActivity: "yukiOS_friends_live_activity",
   room3dBookPositions: "yukiOS_room3d_book_positions",
   room3dBallPosition: "yukiOS_room3d_ball_position",
+  wallpaperCount: "yukiOS_wallpaper_count",
   room3dWallColor: "yukiOS_room3d_wall_color",
   room3dFloorColor: "yukiOS_room3d_floor_color",
   room3dFurniturePositions: "yukiOS_room3d_furniture_positions",

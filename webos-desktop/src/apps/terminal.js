@@ -1,10 +1,9 @@
 import "../styles/terminal.css";
-import { BusEvents } from "../core/EventBus.js";
 import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showContextMenu } from "../shared/contextMenu.js";
-import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { GitManager } from "../services/GitManager.js";
+import { BusEvents, $, $$, BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { formatSize } from "../utils/utils.js";
 import { getExt } from "../shared/fileKindDetector.js";
 import { getPyodide, runPython } from "../services/PyodideManager.js";
@@ -119,7 +118,7 @@ export class TerminalApp extends BaseApp {
         if (color) self.enqueuePrint(text, color);
         else self.enqueuePrint(text);
       },
-      printError: (text) => self.enqueuePrint(text, "#ff5555"),
+      printError: (text) => self.enqueuePrint(text, "var(--error)"),
       get stopRequested() {
         return self.stopRequested;
       },
@@ -1394,8 +1393,8 @@ export class TerminalApp extends BaseApp {
   }
 
   async cmdNukeSystem() {
-    await this.print("rm: descending into '/'...", "#ff3333");
-    await this.print("rm: removing all files...", "#ff3333");
+    await this.print("rm: descending into '/'...", "var(--error)");
+    await this.print("rm: removing all files...", "var(--error)");
 
     const overlay = document.createElement("div");
     overlay.id = "yukios-nuke-overlay";
@@ -1436,7 +1435,7 @@ export class TerminalApp extends BaseApp {
     }
 
     try {
-      localStorage.clear();
+      os.storage.clear();
       sessionStorage.clear();
     } catch (e) {
       console.error("YukiOS nuke: local/session storage clear failed", e);
@@ -1661,7 +1660,7 @@ export class TerminalApp extends BaseApp {
         try {
           await this.fs.delete(absPath, target);
         } catch (err) {
-          await this.print(`rmdir: ${target}: ${err.message}`, "#ff5555");
+          await this.print(`rmdir: ${target}: ${err.message}`, "var(--error)");
         }
       }
     });
@@ -1684,7 +1683,7 @@ export class TerminalApp extends BaseApp {
             await this.print(rev);
           }
         } catch {
-          await this.print(`rev: ${target}: No such file`, "#ff5555");
+          await this.print(`rev: ${target}: No such file`, "var(--error)");
         }
       }
     });
@@ -1757,7 +1756,7 @@ export class TerminalApp extends BaseApp {
           return;
         }
         const flakes = Math.floor(Math.random() * 5) + 1;
-        for (let i = 0; i < flakes; i++) this.print("  *", "#ffffff");
+        for (let i = 0; i < flakes; i++) this.print("  *", "#fff");
       }, 200);
       setTimeout(() => clearInterval(interval), 5000);
     });
@@ -3302,7 +3301,10 @@ export class TerminalApp extends BaseApp {
       }
       offset += pageSize;
       const done = offset >= lines.length;
-      await this.print(done ? "(END) press q to continue" : "-- more -- (space: next page, q: quit)", "#888888");
+      await this.print(
+        done ? "(END) press q to continue" : "-- more -- (space: next page, q: quit)",
+        "var(--text-muted)"
+      );
       return done;
     };
 
@@ -3499,7 +3501,7 @@ export class TerminalApp extends BaseApp {
     const theme = os.storage.get(StorageKeys.theme) || "dark";
     const power = os.storage.get(StorageKeys.turboMode) || "balanced";
     const dnd = os.storage.get(StorageKeys.dndKey) === "true" ? "on" : "off";
-    const winCount = document.querySelectorAll(".window").length;
+    const winCount = $$(".window").length;
     const appCount = Object.keys(os.app.getAllApps()).length;
     const mx = audioMixer();
     const masterVol = mx.muted ? 0 : Math.round(mx.masterVolume * 100);
@@ -3679,12 +3681,13 @@ export class TerminalApp extends BaseApp {
     if (this.tiling) {
       this.tiling.closeFocusedWindow();
     } else {
-      const wins = Array.from(this.wm.openWindows.keys())
-        .map((id) => document.getElementById(id))
+      const openWindows = os.window.getOpenWindows();
+      const wins = Array.from(openWindows ? openWindows.keys() : [])
+        .map((id) => $(`#${id}`))
         .filter(Boolean)
         .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex));
       const focused = wins[0];
-      if (focused) this.wm.closeWindow(focused);
+      if (focused) os.window.close(focused);
     }
   }
 
@@ -4279,15 +4282,15 @@ export class TerminalApp extends BaseApp {
       await this.print("Loading Python...");
       const { result, stdout, stderr, error } = await runPython(code);
       if (error) {
-        await this.print("Traceback (most recent call last):", "#ff5555");
-        await this.print(error, "#ff5555");
+        await this.print("Traceback (most recent call last):", "var(--error)");
+        await this.print(error, "var(--error)");
         return;
       }
       if (stdout) await this.print(stdout.trimEnd());
-      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (stderr) await this.print(stderr.trimEnd(), "var(--error)");
       if (result !== undefined) await this.print(String(result));
     } catch (e) {
-      await this.print(String(e.message || e), "#ff5555");
+      await this.print(String(e.message || e), "var(--error)");
     }
   }
 
@@ -4317,7 +4320,7 @@ export class TerminalApp extends BaseApp {
     try {
       const { result, stdout, stderr, error } = await runPython(this.pyReplBuffer);
       if (stdout) await this.print(stdout.trimEnd());
-      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (stderr) await this.print(stderr.trimEnd(), "var(--error)");
       if (error) {
         const isIncomplete =
           error.includes("unexpected EOF while parsing") ||
@@ -4329,15 +4332,15 @@ export class TerminalApp extends BaseApp {
           this.updatePrompt();
           return;
         }
-        await this.print("Traceback (most recent call last):", "#ff5555");
-        await this.print(error, "#ff5555");
+        await this.print("Traceback (most recent call last):", "var(--error)");
+        await this.print(error, "var(--error)");
         this.pyReplBuffer = "";
       } else {
         if (result !== undefined) await this.print(String(result));
         this.pyReplBuffer = "";
       }
     } catch (e) {
-      await this.print(String(e.message || e), "#ff5555");
+      await this.print(String(e.message || e), "var(--error)");
       this.pyReplBuffer = "";
     }
     this.pyReplContinuation = false;
@@ -4380,13 +4383,13 @@ export class TerminalApp extends BaseApp {
       }
       const { stdout, stderr, error } = await runNode(code, filename || "/eval.js");
       if (error) {
-        await this.print(error, "#ff5555");
+        await this.print(error, "var(--error)");
         return;
       }
       if (stdout) await this.print(stdout.trimEnd());
-      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (stderr) await this.print(stderr.trimEnd(), "var(--error)");
     } catch (e) {
-      await this.print(String(e.message || e), "#ff5555");
+      await this.print(String(e.message || e), "var(--error)");
     }
   }
 
@@ -4459,13 +4462,13 @@ export class TerminalApp extends BaseApp {
     try {
       const { stdout, stderr, error } = await runNode(line, "/repl.js");
       if (stdout) await this.print(stdout.trimEnd());
-      if (stderr) await this.print(stderr.trimEnd(), "#ff5555");
+      if (stderr) await this.print(stderr.trimEnd(), "var(--error)");
       if (error) {
-        await this.print(error, "#ff5555");
+        await this.print(error, "var(--error)");
         this.nodeReplBuffer = "";
       }
     } catch (e) {
-      await this.print(String(e.message || e), "#ff5555");
+      await this.print(String(e.message || e), "var(--error)");
       this.nodeReplBuffer = "";
     }
     this.nodeReplContinuation = false;

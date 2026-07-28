@@ -1,3 +1,5 @@
+import { os } from "../../os/index.js";
+
 const STORAGE_KEY = "rm3d_roomLayout";
 
 export class SceneSerializer {
@@ -15,16 +17,16 @@ export class SceneSerializer {
       version: 1
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(json));
+    os.storage.set(STORAGE_KEY, json);
   }
 
   deserialize() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === null) {
+    const data = os.storage.get(STORAGE_KEY);
+    if (data === null) {
       return null;
     }
     try {
-      return JSON.parse(raw);
+      return data;
     } catch (error) {
       return null;
     }
@@ -57,6 +59,6 @@ export class SceneSerializer {
   }
 
   clear() {
-    localStorage.removeItem(STORAGE_KEY);
+    os.storage.remove(STORAGE_KEY);
   }
 }

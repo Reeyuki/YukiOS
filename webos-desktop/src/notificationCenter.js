@@ -4,6 +4,7 @@ import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { getSetting } from "./shared/settingsUtils.js";
 import { $, createElement, setHTML, toggleClass, addClass, removeClass } from "./shared/domUtils.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 import { APP_MANIFESTS, StorageKeys, os } from "./framework.js";
 function escapeHtml(str) {
@@ -126,7 +127,7 @@ export class NotificationCenter {
 
     requestAnimationFrame(() => {
       if (this.isOpen) {
-        const btn = document.querySelector(`[data-win-id="${this.notificationWinId}"]`);
+        const btn = $(`[data-win-id="${this.notificationWinId}"]`);
         if (btn) btn.classList.add("active");
       }
     });
@@ -140,7 +141,7 @@ export class NotificationCenter {
   }
 
   updateTrayActiveState() {
-    const btn = document.querySelector(`[data-win-id="${this.notificationWinId}"]`);
+    const btn = $(`[data-win-id="${this.notificationWinId}"]`);
     if (btn) {
       btn.classList.toggle("active", this.isOpen);
     }
@@ -504,7 +505,7 @@ export class NotificationCenter {
 
   loadDoNotDisturb() {
     try {
-      return os.storage.get(StorageKeys.dndKey) === "1";
+      return parseBool(os.storage.get(StorageKeys.dndKey));
     } catch {
       return false;
     }

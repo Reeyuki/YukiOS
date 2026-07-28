@@ -1,9 +1,8 @@
 import { Achievements } from "../achievements.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
-import { resolveIconUrl } from "../shared/assetResolver.js";
 
-import { BusEvents } from "../core/EventBus.js";
-import { BaseApp, os } from "../framework.js";
+import { BusEvents, BaseApp, os, $, $$, setStyle } from "../framework.js";
+import { resolveIconUrl } from "../shared/assetResolver.js";
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {
@@ -56,8 +55,8 @@ export class V86App extends BaseApp {
       </div>
     </div>`;
 
-    const uploadZone = win.querySelector("#v86-upload-zone");
-    const fileInput = win.querySelector("#v86-file-input");
+    const uploadZone = $("#v86-upload-zone", win);
+    const fileInput = $("#v86-file-input", win);
 
     uploadZone?.addEventListener("click", () => fileInput?.click());
     uploadZone?.addEventListener("dragover", (e) => {
@@ -80,10 +79,10 @@ export class V86App extends BaseApp {
       fileInput.value = "";
     });
 
-    win.querySelectorAll(".v86-system-card").forEach((card) => {
+    $$(".v86-system-card", win).forEach((card) => {
       card.addEventListener("click", () => {
         const systemId = card.dataset.system;
-        const systemName = card.querySelector("div").textContent;
+        const systemName = $("div", card).textContent;
         this.launchSystem(systemId, systemName);
       });
       card.addEventListener("mouseenter", () => card.classList.add("emu-card--hover"));
@@ -108,7 +107,7 @@ export class V86App extends BaseApp {
       await os.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
       os.notify.send("V86", `Saved ${file.name} to VMs.`);
       zone.innerHTML = `<i class="fa-solid fa-circle-check v86-success-icon emu-state-icon"></i><div class="v86-success-text emu-state-text">Saved!</div>`;
-      await this.loadUserImages(document.querySelector("#v86-win"));
+      await this.loadUserImages($("#v86-win"));
       setTimeout(() => {
         zone.innerHTML = originalHTML;
       }, 1500);
@@ -121,7 +120,7 @@ export class V86App extends BaseApp {
   }
 
   async loadUserImages(win) {
-    const container = win.querySelector("#v86-user-images");
+    const container = $("#v86-user-images", win);
     if (!container) return;
 
     try {
@@ -155,7 +154,7 @@ export class V86App extends BaseApp {
         })
         .join("");
 
-      container.querySelectorAll(".v86-image-card").forEach((card) => {
+      $$(".v86-image-card", container).forEach((card) => {
         card.addEventListener("click", (e) => {
           if (e.target.closest(".v86-delete-btn")) return;
           const fileName = card.dataset.userFile;
@@ -169,7 +168,7 @@ export class V86App extends BaseApp {
         });
       });
 
-      container.querySelectorAll(".v86-delete-btn").forEach((btn) => {
+      $$(".v86-delete-btn", container).forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
           const fileName = btn.dataset.file;
@@ -261,9 +260,9 @@ export class V86App extends BaseApp {
       <div id="${winId}-screen" class="v86-screen emu-window-screen"></div>
     </div>`;
 
-    const inner = win.querySelector(`#${winId}-inner`);
-    const screenDiv = win.querySelector(`#${winId}-screen`);
-    const log = win.querySelector(`#${winId}-log`);
+    const inner = $(`#${winId}-inner`, win);
+    const screenDiv = $(`#${winId}-screen`, win);
+    const log = $(`#${winId}-log`, win);
 
     const setLog = (msg) => {
       if (log) log.textContent = msg;
@@ -303,7 +302,7 @@ export class V86App extends BaseApp {
       setLog("Booting up…");
 
       const screenContainer = document.createElement("div");
-      screenContainer.style.cssText = "width:100%;height:100%;";
+      setStyle(screenContainer, { width: "100%", height: "100%" });
       screenDiv.appendChild(screenContainer);
 
       const baseConfig = {
@@ -320,13 +319,13 @@ export class V86App extends BaseApp {
       emulator = new V86(baseConfig);
 
       emulator.add_listener("emulator-ready", () => {
-        inner.style.display = "none";
-        screenDiv.style.display = "block";
+        setStyle(inner, { display: "none" });
+        setStyle(screenDiv, { display: "block" });
       });
 
       emulator.add_listener("emulator-started", () => {
-        inner.style.display = "none";
-        screenDiv.style.display = "block";
+        setStyle(inner, { display: "none" });
+        setStyle(screenDiv, { display: "block" });
       });
 
       emulator.add_listener("download-progress", (e) => {
@@ -345,10 +344,9 @@ export class V86App extends BaseApp {
 
     const resizeObserver = new ResizeObserver(() => {
       if (emulator && screenDiv.style.display !== "none") {
-        const canvas = screenDiv.querySelector("canvas");
+        const canvas = $("canvas", screenDiv);
         if (canvas) {
-          canvas.style.width = "100%";
-          canvas.style.height = "100%";
+          setStyle(canvas, { width: "100%", height: "100%" });
         }
       }
     });

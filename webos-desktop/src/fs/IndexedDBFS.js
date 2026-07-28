@@ -64,18 +64,18 @@ function n(path) {
 
 class Stats {
   constructor(doc) {
-    this._isFile = doc.type === "file";
-    this._isDirectory = doc.type === "directory";
+    this.fileType = doc.type === "file";
+    this.directoryType = doc.type === "directory";
     this.size = doc.size || 0;
     this.mtime = new Date(doc.mtime || Date.now());
     this.ctime = new Date(doc.ctime || Date.now());
-    this.mode = this._isDirectory ? 0o777 : 0o666;
+    this.mode = this.directoryType ? 0o777 : 0o666;
   }
   isFile() {
-    return this._isFile;
+    return this.fileType;
   }
   isDirectory() {
-    return this._isDirectory;
+    return this.directoryType;
   }
 }
 

@@ -1,5 +1,5 @@
 import "../styles/calendar.css";
-import { createElement } from "../shared/domUtils.js";
+import { createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { os, StorageKeys } from "../framework.js";
 import { getWeekNumber } from "../shared/calendarUtils.js";

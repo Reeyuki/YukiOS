@@ -12,7 +12,7 @@ import { DesktopPeekManager } from "./desktopPeek.js";
 import { SettingsApp } from "./settings/settings.js";
 import { AppCreatorApp } from "./apps/appCreator.js";
 import { OfficeAppProxy } from "./office/officeLoader.js";
-
+import { parseBool } from "./shared/boolUtils.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
@@ -188,7 +188,7 @@ async function start() {
   const urlParams = new URLSearchParams(queryString);
   const game = urlParams.get("game");
   const app = urlParams.get("app");
-  const swf = urlParams.get("swf") === "true";
+  const swf = parseBool(urlParams.get("swf"));
   const steamParam = urlParams.get("steam");
 
   const pathMatch = window.location.pathname.match(/^\/(app|game)\/(.+)\.html$/);

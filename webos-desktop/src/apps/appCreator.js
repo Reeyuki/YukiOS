@@ -1,14 +1,12 @@
 import "../styles/appCreator.css";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";
+import { $, $$, bindEvent, setText, setHTML, toggleClass, BaseApp, StorageKeys, os } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
-import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
-import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
-
-import { BaseApp, StorageKeys, os } from "../framework.js";
 const AC = {
   WIN_ID: "app-creator-win",
   FS_FOLDER: ["Apps"],
@@ -624,10 +622,10 @@ export class AppCreatorApp extends BaseApp {
     }
 
     if (fileNameChanged) {
-      const oldIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
+      const oldIcon = $(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
       if (oldIcon) oldIcon.remove();
       await this.desktopUI.iconManager.createDesktopFileIcon(newFileName);
-      const icon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(newFileName)}"]`);
+      const icon = $(`.desktop-file-icon[data-file-name="${CSS.escape(newFileName)}"]`);
       if (icon) {
         icon.addEventListener("contextmenu", (e) => {
           e.preventDefault();
@@ -660,7 +658,7 @@ export class AppCreatorApp extends BaseApp {
 
     os.app.unregisterCustomApp(appId);
 
-    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
+    const desktopIcon = $(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
     if (desktopIcon) desktopIcon.remove();
 
     os.notify.send("", `"${meta.name}" has been uninstalled.`);
@@ -672,14 +670,14 @@ export class AppCreatorApp extends BaseApp {
     const meta = await this.loadAppMeta(appId);
     if (!meta) return;
 
-    const desktopIcon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
+    const desktopIcon = $(`.desktop-file-icon[data-file-name="${CSS.escape(meta.fileName)}"]`);
     if (!desktopIcon) return;
 
-    const label = desktopIcon.querySelector("div");
+    const label = $("div", desktopIcon);
     if (label) label.textContent = name;
 
-    const existingImg = desktopIcon.querySelector("img");
-    const existingI = desktopIcon.querySelector("i");
+    const existingImg = $("img", desktopIcon);
+    const existingI = $("i", desktopIcon);
 
     if (isImageIcon(iconUrl)) {
       const resolvedIconUrl = resolveIconUrl(iconUrl);
@@ -813,7 +811,7 @@ export class AppCreatorApp extends BaseApp {
     if (this.desktopUI) {
       const fileName = `${name}.desktop`;
       await this.desktopUI.iconManager.createDesktopFileIcon(fileName);
-      const icon = document.querySelector(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`);
+      const icon = $(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`);
       if (icon) {
         icon.addEventListener("contextmenu", (e) => {
           e.preventDefault();
@@ -830,7 +828,7 @@ export class AppCreatorApp extends BaseApp {
     desktopUI.selectionManager.clear();
     desktopUI.selectionManager.add(icon);
 
-    const menu = document.getElementById("context-menu");
+    const menu = $("#context-menu");
     const items = [
       { id: "ctx-ca-open", label: "Open", icon: "fa-external-link-alt" },
       { id: "ctx-ca-edit", label: "Edit App", icon: "fa-edit" },

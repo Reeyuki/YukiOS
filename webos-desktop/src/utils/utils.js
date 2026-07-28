@@ -1,4 +1,5 @@
 import { os, MODES } from "../framework.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 export function escapeHtml(str) {
   if (typeof str !== "string") return "";
@@ -135,7 +136,7 @@ export function buildClipboardIcons(selectedItems, itemName, isFile, view, curre
   if (view) {
     [...view.querySelectorAll(".file-item")].forEach((el) => {
       const n = el.querySelector("span")?.textContent;
-      if (n) nameToIsFile[n] = el.dataset.isFile === "true";
+      if (n) nameToIsFile[n] = parseBool(el.dataset.isFile);
     });
   }
 

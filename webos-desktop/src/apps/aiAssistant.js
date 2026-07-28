@@ -673,7 +673,7 @@ Say what you're about to do before running an action. If it could be destructive
   }
 
   addMessageToChat(role, content, state, win) {
-    const historyContainer = win?.querySelector("#ai-chat-history") || document.querySelector("#ai-chat-history");
+    const historyContainer = win ? $("#ai-chat-history", win) : $("#ai-chat-history");
     if (!historyContainer) return;
 
     const msgDiv = document.createElement("div");

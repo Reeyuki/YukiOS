@@ -1,3 +1,5 @@
+import { os } from "../os/index.js";
+import { $, $$ } from "./domUtils.js";
 import { StorageKeys } from "../StorageKeys.js";
 
 export const CDN_MIRRORS = [
@@ -49,7 +51,11 @@ let currentMirrorId = null;
 
 export function getCdnMirror() {
   if (currentMirrorId === null) {
-    currentMirrorId = localStorage.getItem(StorageKeys.cdnMirror) || "jsdelivr";
+    try {
+      currentMirrorId = os.storage.get(StorageKeys.cdnMirror) || "jsdelivr";
+    } catch {
+      currentMirrorId = "jsdelivr";
+    }
   }
   return currentMirrorId;
 }
@@ -57,7 +63,9 @@ export function getCdnMirror() {
 export function setCdnMirror(id) {
   if (CDN_MIRRORS.find((m) => m.id === id)) {
     currentMirrorId = id;
-    localStorage.setItem(StorageKeys.cdnMirror, id);
+    try {
+      os.storage.set(StorageKeys.cdnMirror, id);
+    } catch {}
   }
 }
 
@@ -126,12 +134,12 @@ const CDN_PROVIDERS = {
 
 export function initializeMirrors(appMap) {
   try {
-    const base = document.querySelector("base");
+    const base = $("base");
     if (base && base.href.includes("cdn.jsdelivr.net/gh/")) {
       base.href = resolveGhUrl(base.href);
     }
 
-    document.querySelectorAll("img[src]").forEach((img) => {
+    $$("img[src]").forEach((img) => {
       const src = img.getAttribute("src");
       if (src && !src.startsWith("http") && !src.startsWith("blob:") && !src.startsWith("data:")) {
         const newSrc = resolveIconUrl(src);

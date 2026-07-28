@@ -1,3 +1,4 @@
+import { $, $$, setStyle, setText, setHTML } from "../shared/domUtils.js";
 import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
@@ -201,15 +202,32 @@ class ClipboardManagerApp extends BaseApp {
           const originalBackground = el.style.background;
           const originalBoxShadow = el.style.boxShadow;
 
-          el.style.background = "var(--brand-dim)";
-          el.style.borderColor = "var(--brand)";
-          el.style.boxShadow = "0 0 30px var(--brand-glow)";
-          el.style.transition = "all 0.3s ease";
+          setStyle(el, {
+            background: "var(--brand-dim)",
+            borderColor: "var(--brand)",
+            boxShadow: "0 0 30px var(--brand-glow)",
+            transition: "all 0.3s ease"
+          });
 
           const copiedIndicator = document.createElement("div");
           copiedIndicator.className = "clipboard-copied-indicator";
           copiedIndicator.textContent = "Copied!";
-          copiedIndicator.style.cssText = `position:fixed;top:${rect.top + rect.height / 2}px;left:${rect.left + rect.width / 2}px;transform:translate(-50%,-50%);background:var(--brand);color:var(--text-on-brand);font-size:13px;padding:6px 16px;border-radius:6px;font-weight:600;pointer-events:none;z-index:10000;box-shadow:0 4px 12px var(--brand-glow);transition:opacity 0.3s ease;`;
+          setStyle(copiedIndicator, {
+            position: "fixed",
+            top: `${rect.top + rect.height / 2}px`,
+            left: `${rect.left + rect.width / 2}px`,
+            transform: "translate(-50%,-50%)",
+            background: "var(--brand)",
+            color: "var(--text-on-brand)",
+            fontSize: "13px",
+            padding: "6px 16px",
+            borderRadius: "6px",
+            fontWeight: "600",
+            pointerEvents: "none",
+            zIndex: "10000",
+            boxShadow: "0 4px 12px var(--brand-glow)",
+            transition: "opacity 0.3s ease"
+          });
           document.body.appendChild(copiedIndicator);
 
           try {
@@ -217,17 +235,19 @@ class ClipboardManagerApp extends BaseApp {
           } catch (e) {
             console.error("[ClipboardApp] Failed to copy to browser clipboard:", e);
             copiedIndicator.textContent = "Failed";
-            copiedIndicator.style.background = "var(--error)";
+            setStyle(copiedIndicator, { background: "var(--error)" });
           }
 
           setTimeout(() => {
-            copiedIndicator.style.opacity = "0";
+            setStyle(copiedIndicator, { opacity: "0" });
           }, 1500);
 
           setTimeout(() => {
-            el.style.background = originalBackground;
-            el.style.borderColor = originalBorder;
-            el.style.boxShadow = originalBoxShadow;
+            setStyle(el, {
+              background: originalBackground,
+              borderColor: originalBorder,
+              boxShadow: originalBoxShadow
+            });
             copiedIndicator.remove();
             this.isCopyingFromHistory = false;
           }, 1800);

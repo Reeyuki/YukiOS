@@ -1,5 +1,6 @@
 import "../styles/tilingBar.css";
 import { StorageKeys, os } from "../framework.js";
+import { parseBool } from "../shared/boolUtils.js";
 import { TilingRofi } from "./TilingRofi.js";
 import { TilingKeybindOverlay } from "./TilingKeybindOverlay.js";
 import { trayManager } from "../tray/tray.js";
@@ -38,7 +39,7 @@ export class TilingBar {
     this.timeTickUnsub = null;
     this.calendarState = { year: 0, month: 0 };
 
-    this.clock24h = os.storage.get(StorageKeys.tilingClock24h) === "true";
+    this.clock24h = parseBool(os.storage.get(StorageKeys.tilingClock24h));
     this.sysMode = "both";
   }
 
@@ -101,7 +102,7 @@ export class TilingBar {
     this.rofiTrigger.addEventListener("click", () => this.rofi.toggle());
 
     if (this.hintBtn) {
-      if (os.storage.get(StorageKeys.tilingKeybindHintHidden) === "true") {
+      if (parseBool(os.storage.get(StorageKeys.tilingKeybindHintHidden))) {
         this.hintBtn.style.display = "none";
       } else {
         this.hintBtn.addEventListener("click", (e) => {
@@ -191,9 +192,9 @@ export class TilingBar {
     this.el.classList.toggle("position-bottom", position === "bottom");
     this.el.style.setProperty("--tiling-bar-height", `${height}px`);
 
-    const showClock = os.storage.get(StorageKeys.tilingBarShowClock) !== "false";
-    const showWorkspace = os.storage.get(StorageKeys.tilingBarShowWorkspace) !== "false";
-    const showTray = os.storage.get(StorageKeys.tilingBarShowTray) !== "false";
+    const showClock = parseBool(os.storage.get(StorageKeys.tilingBarShowClock), true);
+    const showWorkspace = parseBool(os.storage.get(StorageKeys.tilingBarShowWorkspace), true);
+    const showTray = parseBool(os.storage.get(StorageKeys.tilingBarShowTray), true);
 
     this.clockEl.style.display = showClock ? "flex" : "none";
     this.pillsContainer.style.display = showWorkspace ? "flex" : "none";

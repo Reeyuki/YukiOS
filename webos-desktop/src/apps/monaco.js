@@ -8,6 +8,7 @@ import { showConflictDialog } from "../shared/conflictDialog.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import { Shell } from "../shared/shell.js";
 import { FileKind } from "../shared/fileKindDetector.js";
+import { $, setStyle, createElement } from "../shared/domUtils.js";
 import { BaseApp, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
@@ -477,6 +478,11 @@ export class MonacoApp extends BaseApp {
 
     this.setupTerminalPanel(win);
 
+    win.addEventListener("focus", () => {
+      const editorData = this.getActiveEditorData();
+      if (editorData) editorData.editor.focus();
+    });
+
     win.addEventListener("keydown", (e) => {
       if (KeybindManager.matches(e, "monaco.toggleTerminal")) {
         e.preventDefault();
@@ -490,7 +496,7 @@ export class MonacoApp extends BaseApp {
     if (!terminalPanel) return;
 
     const isHidden = terminalPanel.style.display === "none";
-    terminalPanel.style.display = isHidden ? "flex" : "none";
+    setStyle(terminalPanel, { display: isHidden ? "flex" : "none" });
 
     if (isHidden) {
       this.initTerminal();
@@ -631,52 +637,54 @@ export class MonacoApp extends BaseApp {
   }
 
   showCommandPalette() {
-    const existingPalette = document.querySelector(".monaco-command-palette");
+    const existingPalette = $(".monaco-command-palette");
     if (existingPalette) {
       existingPalette.remove();
       return;
     }
 
-    const palette = document.createElement("div");
-    palette.className = "monaco-command-palette";
-    palette.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 600px;
-      max-height: 400px;
-      background: var(--bg-elev-3);
-      border: 1px solid var(--glass-border);
-      border-radius: 8px;
-      box-shadow: var(--shadow-depth);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      backdrop-filter: blur(32px);
-    `;
+    const palette = createElement("div", {
+      className: "monaco-command-palette",
+      styles: {
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: "600px",
+        maxHeight: "400px",
+        background: "var(--bg-elev-3)",
+        border: "1px solid var(--glass-border)",
+        borderRadius: "8px",
+        boxShadow: "var(--shadow-depth)",
+        zIndex: "10000",
+        display: "flex",
+        flexDirection: "column",
+        backdropFilter: "blur(32px)"
+      }
+    });
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "Type '>' for commands, or search actions...";
-    input.style.cssText = `
-      background: var(--surface-1);
-      border: none;
-      border-bottom: 1px solid var(--glass-border);
-      color: var(--text-primary);
-      padding: 12px 16px;
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      border-radius: 8px 8px 0 0;
-    `;
+    const input = createElement("input", {
+      attributes: { type: "text", placeholder: "Type '>' for commands, or search actions..." },
+      styles: {
+        background: "var(--surface-1)",
+        border: "none",
+        borderBottom: "1px solid var(--glass-border)",
+        color: "var(--text-primary)",
+        padding: "12px 16px",
+        fontSize: "14px",
+        fontFamily: "inherit",
+        outline: "none",
+        borderRadius: "8px 8px 0 0"
+      }
+    });
 
-    const list = document.createElement("div");
-    list.style.cssText = `
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 0;
-    `;
+    const list = createElement("div", {
+      styles: {
+        flex: "1",
+        overflowY: "auto",
+        padding: "8px 0"
+      }
+    });
 
     const commands = [
       {
@@ -870,15 +878,16 @@ export class MonacoApp extends BaseApp {
       }
 
       filteredItems.forEach((item, index) => {
-        const itemEl = document.createElement("div");
-        itemEl.style.cssText = `
-          padding: 8px 16px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          ${index === selectedIndex ? "background: var(--surface-hover);" : ""}
-        `;
+        const itemEl = createElement("div", {
+          styles: {
+            padding: "8px 16px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px"
+          }
+        });
+        if (index === selectedIndex) setStyle(itemEl, { background: "var(--surface-hover)" });
         itemEl.innerHTML = `
           <span style="color: var(--text-muted); font-size: 11px; min-width: 60px;">${item.category || "TERMINAL"}</span>
           <span style="color: var(--text-primary);">${item.label}</span>
@@ -959,10 +968,10 @@ export class MonacoApp extends BaseApp {
     const tabId = `tab-${Date.now()}-${Math.random()}`;
     const language = this.detectLanguage(title);
 
-    const editorContainer = document.createElement("div");
-    editorContainer.className = "monaco-editor-container";
-    editorContainer.dataset.tabId = tabId;
-    editorContainer.style.display = "none";
+    const editorContainer = createElement("div", {
+      className: "monaco-editor-container",
+      attributes: { "data-tab-id": tabId }
+    });
 
     const editorsWrapper = this.currentWindow.querySelector(".monaco-editors-wrapper");
     editorsWrapper.appendChild(editorContainer);
@@ -1031,12 +1040,14 @@ export class MonacoApp extends BaseApp {
     if (!editorData) return;
 
     this.tabs.forEach((data) => {
-      data.container.style.display = "none";
-      const tab = this.currentWindow.querySelector(`[data-tab-id="${data.tabId}"]`);
-      if (tab) tab.classList.remove("active");
+      if (data.tabId !== tabId) {
+        setStyle(data.container, { display: "none" });
+        const tab = this.currentWindow.querySelector(`[data-tab-id="${data.tabId}"]`);
+        if (tab) tab.classList.remove("active");
+      }
     });
 
-    editorData.container.style.display = "block";
+    setStyle(editorData.container, { display: "block" });
     const activeTab = this.currentWindow.querySelector(`[data-tab-id="${tabId}"]`);
     if (activeTab) activeTab.classList.add("active");
 

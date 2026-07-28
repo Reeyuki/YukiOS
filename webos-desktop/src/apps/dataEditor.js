@@ -549,13 +549,13 @@ export class DataEditorApp extends BaseApp {
   }
 
   setStorageValue(key, val) {
-    if (this.currentTab === "ls") localStorage.setItem(key, val);
+    if (this.currentTab === "ls") os.storage.set(key, val);
     else if (this.currentTab === "ss") sessionStorage.setItem(key, val);
     else if (this.currentTab === "cookie") document.cookie = `${key}=${val}; path=/`;
   }
 
   removeStorageValue(key) {
-    if (this.currentTab === "ls") localStorage.removeItem(key);
+    if (this.currentTab === "ls") os.storage.remove(key);
     else if (this.currentTab === "ss") sessionStorage.removeItem(key);
     else if (this.currentTab === "cookie") {
       document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
@@ -573,7 +573,7 @@ export class DataEditorApp extends BaseApp {
   }
 
   getStorageValue(key) {
-    if (this.currentTab === "ls") return localStorage.getItem(key);
+    if (this.currentTab === "ls") return os.storage.get(key);
     if (this.currentTab === "ss") return sessionStorage.getItem(key);
     if (this.currentTab === "cookie") {
       return (

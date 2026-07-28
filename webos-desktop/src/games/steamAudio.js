@@ -82,7 +82,7 @@ export class LargeModeAudio {
       frequency: 980,
       endFrequency: 1030,
       duration: 0.025,
-      volume: 0.025
+      volume: 0.05
     });
   }
 

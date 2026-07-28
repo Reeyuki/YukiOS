@@ -1,6 +1,7 @@
 import "./styles/donationPopup.css";
 import { StorageKeys, os } from "./framework.js";
 import { $, bindEvent } from "./shared/domUtils.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 const MONERO_ADDRESS =
   "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
@@ -129,7 +130,7 @@ async function copyAddress() {
 export function checkAndShowDonationPopup() {
   if (!os.storage.get(StorageKeys.setupCompleted)) return;
 
-  if (os.storage.get(StorageKeys.donationDismissed) === "true") return;
+  if (parseBool(os.storage.get(StorageKeys.donationDismissed))) return;
 
   const firstLaunch = Number(os.storage.get(StorageKeys.firstLaunchTime));
   if (!firstLaunch || isNaN(firstLaunch)) return;

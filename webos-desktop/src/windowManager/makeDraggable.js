@@ -1,5 +1,6 @@
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os, MODES } from "../framework.js";
+import { parseBool } from "../shared/boolUtils.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
 import { BusEvents } from "../core/EventBus.js";
 const desktop = document.getElementById("desktop");
@@ -55,7 +56,7 @@ export function windowMakeDraggable(win, wm) {
           dragOffsetY = posY - win.getBoundingClientRect().top;
 
           tilingDragTouched = wm.tilingManager;
-          if (tilingDragTouched && tilingDragTouched.enabled && win.dataset.tiled === "true") {
+          if (tilingDragTouched && tilingDragTouched.enabled && parseBool(win.dataset.tiled)) {
             win.dataset.tilingDrag = "true";
             wobbleStart(win);
           } else if (win.dataset.snapZone) {

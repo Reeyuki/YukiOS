@@ -3,6 +3,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { SystemUtilities } from "../system.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 import { StorageKeys, os } from "../framework.js";
 export class InputHandler {
@@ -345,7 +346,7 @@ export class InputHandler {
     return {
       mode: os.storage.get(StorageKeys.windowSwitcherMode) || "mru",
       ui: os.storage.get(StorageKeys.windowSwitcherUI) || "overlay",
-      includeMinimized: os.storage.get(StorageKeys.windowSwitcherIncludeMinimized) !== "false"
+      includeMinimized: parseBool(os.storage.get(StorageKeys.windowSwitcherIncludeMinimized), true)
     };
   }
 

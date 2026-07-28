@@ -1,5 +1,5 @@
 import "../styles/screenshot.css";
-import { createElement } from "../shared/domUtils.js";
+import { $, setStyle, createElement } from "../framework.js";
 import { BaseApp, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
@@ -22,17 +22,17 @@ export class ScreenshotApp extends BaseApp {
       if (e.target.closest("input, textarea, [contenteditable]")) return;
       if (KeybindManager.matches(e, "global.screenshot.full")) {
         e.preventDefault();
-        if (!document.getElementById("screenshot")) this.open();
+        if (!$("#screenshot")) this.open();
         this.captureFull(true);
       }
       if (KeybindManager.matches(e, "global.screenshot.area")) {
         e.preventDefault();
-        if (!document.getElementById("screenshot")) this.open();
+        if (!$("#screenshot")) this.open();
         this.captureArea(true);
       }
       if (KeybindManager.matches(e, "global.screenshot.record")) {
         e.preventDefault();
-        if (!document.getElementById("screenshot")) this.open();
+        if (!$("#screenshot")) this.open();
         this.toggleRecording();
       }
     };
@@ -41,7 +41,7 @@ export class ScreenshotApp extends BaseApp {
 
   open() {
     const winId = "screenshot";
-    if (document.getElementById(winId)) {
+    if ($("#" + winId)) {
       os.window.focus(winId);
       return;
     }
@@ -125,8 +125,8 @@ export class ScreenshotApp extends BaseApp {
       console.warn("[Screenshot] html2canvas-pro CDN failed, trying getDisplayMedia fallback:", e);
       return await this.fallbackCapture();
     }
-    const win = document.getElementById("screenshot");
-    if (win) win.style.display = "none";
+    const win = $("#screenshot");
+    if (win) setStyle(win, { display: "none" });
     const opts = [
       { useCORS: true, allowTaint: true, backgroundColor: null },
       { useCORS: false, allowTaint: false, backgroundColor: "#1a1a2e" }
@@ -141,7 +141,7 @@ export class ScreenshotApp extends BaseApp {
           x: window.scrollX,
           y: window.scrollY
         });
-        if (win) win.style.display = "";
+        if (win) setStyle(win, { display: "" });
         const blob = await new Promise((resolve) => {
           canvas.toBlob(resolve, "image/png");
         });
@@ -155,7 +155,7 @@ export class ScreenshotApp extends BaseApp {
         throw e;
       }
     }
-    if (win) win.style.display = "";
+    if (win) setStyle(win, { display: "" });
     console.warn("[Screenshot] all html2canvas options tainted, trying getDisplayMedia fallback");
     try {
       return await this.fallbackCapture();
@@ -312,19 +312,19 @@ export class ScreenshotApp extends BaseApp {
   }
 
   showStatus(msg) {
-    const preview = document.getElementById("sc-preview");
-    const actions = document.getElementById("sc-actions");
+    const preview = $("#sc-preview");
+    const actions = $("#sc-actions");
     if (preview) {
       preview.innerHTML = `<div class="sc-preview-placeholder"><span>${msg}</span></div>`;
     }
-    if (actions) actions.style.display = "none";
+    if (actions) setStyle(actions, { display: "none" });
   }
 
   showResult(blob, type) {
     this.currentBlob = blob;
     this.currentType = type;
-    const preview = document.getElementById("sc-preview");
-    const actions = document.getElementById("sc-actions");
+    const preview = $("#sc-preview");
+    const actions = $("#sc-actions");
     if (!preview || !actions) return;
 
     const url = URL.createObjectURL(blob);
@@ -335,7 +335,7 @@ export class ScreenshotApp extends BaseApp {
     }
 
     this.currentUrl = url;
-    actions.style.display = "flex";
+    setStyle(actions, { display: "flex" });
   }
 
   showCropOverlay(blob) {
@@ -358,11 +358,11 @@ export class ScreenshotApp extends BaseApp {
       <button class="sc-confirm-btn" id="sc-crop-confirm" disabled>Crop</button>
       <kbd>Esc</kbd> cancel
     `;
-    document.getElementById("browser-drop-overlay")?.remove();
+    $("#browser-drop-overlay")?.remove();
     document.body.appendChild(info);
     document.body.appendChild(overlay);
 
-    overlay.style.cursor = "crosshair";
+    setStyle(overlay, { cursor: "crosshair" });
 
     const onMouseDown = (e) => {
       e.stopPropagation();
@@ -385,11 +385,8 @@ export class ScreenshotApp extends BaseApp {
       const y = Math.min(dragStart.y, cy);
       const w = Math.abs(cx - dragStart.x);
       const h = Math.abs(cy - dragStart.y);
-      rectEl.style.left = `${x}px`;
-      rectEl.style.top = `${y}px`;
-      rectEl.style.width = `${w}px`;
-      rectEl.style.height = `${h}px`;
-      const btn = document.getElementById("sc-crop-confirm");
+      setStyle(rectEl, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
+      const btn = $("#sc-crop-confirm");
       if (btn) btn.disabled = w < 5 || h < 5;
     };
 

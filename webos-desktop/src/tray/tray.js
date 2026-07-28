@@ -1,4 +1,6 @@
+import { $ } from "../shared/domUtils.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
+import { parseBool } from "../shared/boolUtils.js";
 
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os, MODES } from "../framework.js";
@@ -17,7 +19,7 @@ class TrayManager {
 
   init(wm) {
     this.wm = wm;
-    const sysTray = document.getElementById("system-tray");
+    const sysTray = $("#system-tray");
     if (!sysTray) return;
     this.el = document.createElement("div");
     this.el.id = "app-tray";
@@ -87,8 +89,8 @@ class TrayManager {
   sendToTray(winId) {
     const item = this.items.get(winId);
     if (!item) return false;
-    const win = document.getElementById(winId);
-    const taskbarItem = document.getElementById(`taskbar-${winId}`);
+    const win = $("#" + winId);
+    const taskbarItem = $(`#taskbar-${winId}`);
     if (win) win.style.display = "none";
     if (taskbarItem) taskbarItem.style.display = "none";
     item.inTray = true;
@@ -103,8 +105,8 @@ class TrayManager {
       if (item.onClick) item.onClick();
       return true;
     }
-    const win = document.getElementById(winId);
-    const taskbarItem = document.getElementById(`taskbar-${winId}`);
+    const win = $("#" + winId);
+    const taskbarItem = $(`#taskbar-${winId}`);
     if (win) {
       win.style.display = "flex";
       os.window.bringToFront(win);
@@ -225,7 +227,7 @@ class TrayManager {
     if (!this.el) return;
     this.el.innerHTML = "";
 
-    const trayEnabled = os.storage.get(StorageKeys.trayEnabled) !== "false";
+    const trayEnabled = parseBool(os.storage.get(StorageKeys.trayEnabled), true);
     if (!trayEnabled) {
       this.el.style.display = "none";
       this.hidePopup();
@@ -333,8 +335,8 @@ class TrayManager {
     const tilingActive = os.modes.isActive(MODES.TILING);
     let refEl, barAtTop;
     if (tilingActive) {
-      refEl = sourceEl || document.getElementById("tiling-tray-items");
-      const tilingBar = document.getElementById("tiling-bar");
+      refEl = sourceEl || $("#tiling-tray-items");
+      const tilingBar = $("#tiling-bar");
       barAtTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : isTaskbarTop();
     } else {
       refEl = this.el;
@@ -362,12 +364,12 @@ class TrayManager {
       item.onQuit();
     }
     this.unregister(winId);
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
     os.window.removeFromTaskbar(winId);
     if (this.wm) {
       this.wm.silenceWindow(win);
-      if (win.dataset.isGame === "true") {
+      if (parseBool(win.dataset.isGame)) {
         this.wm.gameWindowCount = Math.max(0, this.wm.gameWindowCount - 1);
       }
       this.wm.updateTransparency();
@@ -435,7 +437,7 @@ class TrayManager {
   renderInContainer(containerEl, includeDedicated) {
     if (!containerEl) return;
     containerEl.innerHTML = "";
-    const trayEnabled = os.storage.get(StorageKeys.trayEnabled) !== "false";
+    const trayEnabled = parseBool(os.storage.get(StorageKeys.trayEnabled), true);
     if (!trayEnabled) {
       containerEl.style.display = "none";
       return;
@@ -513,11 +515,11 @@ export function getTrayPosition(refEl) {
   const tilingActive = os.modes.isActive(MODES.TILING);
   let el, atTop;
   if (tilingActive) {
-    el = refEl || document.getElementById("tiling-tray-items");
-    const tilingBar = document.getElementById("tiling-bar");
+    el = refEl || $("#tiling-tray-items");
+    const tilingBar = $("#tiling-bar");
     atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;
   } else {
-    el = refEl || document.getElementById("app-tray");
+    el = refEl || $("#app-tray");
     atTop = isTaskbarTop();
   }
   const trayRect = el

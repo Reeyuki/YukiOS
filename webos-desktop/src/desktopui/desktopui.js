@@ -1,7 +1,7 @@
 import { updateFavoritesUI, setupStartMenu as setupStartMenuFn } from "./startMenu.js";
 import { desktop } from "./desktop.js";
 import { makeDraggable } from "../shared/dragUtils.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, $, $$, setStyle } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
 import { isWindowFocused } from "../utils/utils.js";
 import { DesktopContextMenuManager } from "./ContextMenuManager.js";
@@ -556,7 +556,7 @@ export class DesktopUI {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
       this.toggleStartMenu();
-      document.querySelector('.start-cat[data-cat="all"]')?.click();
+      $('.start-cat[data-cat="all"]')?.click();
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("click", (e) => {
@@ -584,7 +584,7 @@ export class DesktopUI {
         e.preventDefault();
         const clipboard = this.clipboardManager.getClipboard();
         if (!clipboard) return;
-        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        const explorerWins = $("[id^='explorer-']");
         let targetExplorerWin = null;
 
         for (const win of explorerWins) {
@@ -651,7 +651,7 @@ export class DesktopUI {
       }
 
       if (KeybindManager.matches(e, "desktop.copy")) {
-        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        const explorerWins = $("[id^='explorer-']");
         let anyExplorerFocused = false;
         for (const win of explorerWins) {
           if (isWindowFocused(win.id, lastMousePos)) {
@@ -669,7 +669,7 @@ export class DesktopUI {
       }
 
       if (KeybindManager.matches(e, "desktop.cut")) {
-        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        const explorerWins = $("[id^='explorer-']");
         let anyExplorerFocused = false;
         for (const win of explorerWins) {
           if (isWindowFocused(win.id, lastMousePos)) {
@@ -688,7 +688,7 @@ export class DesktopUI {
 
       if (KeybindManager.matches(e, "desktop.rename")) {
         e.preventDefault();
-        const explorerWins = document.querySelectorAll("[id^='explorer-']");
+        const explorerWins = $("[id^='explorer-']");
         let anyExplorerFocused = false;
         for (const win of explorerWins) {
           if (isWindowFocused(win.id, lastMousePos)) {
@@ -914,7 +914,7 @@ export class DesktopUI {
 
   setupIconHandlers() {
     const deleted = DeletedIconsStore.load();
-    document.querySelectorAll(".icon.selectable").forEach((icon) => {
+    $$(".icon.selectable").forEach((icon) => {
       const key = PositionStore.getKey(icon);
       if (deleted.includes(key)) {
         icon.remove();
@@ -933,11 +933,9 @@ export class DesktopUI {
     } else {
       this.selectionManager.toggle(icon);
     }
-    document.querySelectorAll(".icon.selectable").forEach((i) => {
+    $$(".icon.selectable").forEach((i) => {
       if (!this.selectionManager.has(i)) {
-        i.style.zIndex = "";
-        i.style.opacity = "";
-        i.style.cursor = "";
+        setStyle(i, { zIndex: "", opacity: "", cursor: "" });
       }
     });
   }
@@ -961,10 +959,8 @@ export class DesktopUI {
     const onMouseDown = (e) => {
       if (e.target !== this.desktop) return;
       if (e.target?.closest?.(".window")) return;
-      document.querySelectorAll(".icon.selectable").forEach((i) => {
-        i.style.zIndex = "";
-        i.style.opacity = "";
-        i.style.cursor = "";
+      $$(".icon.selectable").forEach((i) => {
+        setStyle(i, { zIndex: "", opacity: "", cursor: "" });
       });
       selectionState = { startX: e.pageX, startY: e.pageY, isActive: true };
       Object.assign(this.selectionBox.style, {
@@ -993,7 +989,7 @@ export class DesktopUI {
       selRafId = requestAnimationFrame(() => {
         selRafId = null;
         const boxRect = this.selectionBox.getBoundingClientRect();
-        document.querySelectorAll(".icon.selectable").forEach((icon) => {
+        $$(".icon.selectable").forEach((icon) => {
           if (icon.style.display === "none") return;
           const r = icon.getBoundingClientRect();
           const overlaps = !(
@@ -1128,12 +1124,10 @@ window.addEventListener("resize", () => {
 });
 
 function resetIconDragState() {
-  document.querySelectorAll(".icon.selectable").forEach((icon) => {
+  $$(".icon.selectable").forEach((icon) => {
     const zIndex = parseInt(icon.style.zIndex);
     if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
-      icon.style.zIndex = "";
-      icon.style.opacity = "";
-      icon.style.cursor = "";
+      setStyle(icon, { zIndex: "", opacity: "", cursor: "" });
     }
   });
 }
@@ -1148,12 +1142,10 @@ document.addEventListener("click", (e) => {
 window.addEventListener("focus", resetIconDragState);
 
 setInterval(() => {
-  document.querySelectorAll(".icon.selectable").forEach((icon) => {
+  $$(".icon.selectable").forEach((icon) => {
     const zIndex = parseInt(icon.style.zIndex);
     if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
-      icon.style.zIndex = "";
-      icon.style.opacity = "";
-      icon.style.cursor = "";
+      setStyle(icon, { zIndex: "", opacity: "", cursor: "" });
     }
   });
 }, 5000);

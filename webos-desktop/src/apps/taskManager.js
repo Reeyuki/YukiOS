@@ -1,8 +1,5 @@
 import "../styles/taskManager.css";
-import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
-import { BusEvents } from "../core/EventBusConstants.js";
-
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { $, $$, bindEvent, setText, setHTML, toggleClass, BusEvents, BaseApp, os, StorageKeys } from "../framework.js";
 import { processManager } from "../services/ProcessManager.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
@@ -245,7 +242,7 @@ export class TaskManagerApp extends BaseApp {
     this.startRefresh(win);
 
     setTimeout(() => {
-      const tabApps = document.getElementById("tm-tab-apps");
+      const tabApps = $("#tm-tab-apps");
       if (tabApps) tabApps.click();
     }, 100);
 
@@ -436,7 +433,7 @@ export class TaskManagerApp extends BaseApp {
             <span class="tm-bar-content">${p.cpu.toFixed(1)}%</span>
           </td>
           <td class="tm-td tm-td-right tm-bar-cell">
-            <div class="tm-bar" style="width:${memPct}%; background:#81c995;"></div>
+            <div class="tm-bar" style="width:${memPct}%; background:var(--charging);"></div>
             <span class="tm-bar-content">${p.mem} MB</span>
           </td>
           <td class="tm-td tm-td-right">
@@ -480,7 +477,7 @@ export class TaskManagerApp extends BaseApp {
         if (proc?.isTray) {
           os.tray.restoreFromTray(id);
         } else {
-          const w = document.getElementById(id);
+          const w = $(`#${CSS.escape(id)}`);
           if (w) {
             w.style.display = "block";
             os.window.focus(w);
@@ -745,7 +742,7 @@ export class TaskManagerApp extends BaseApp {
 
     const handleWindowChange = () => {
       setTimeout(() => {
-        const taskManagerWin = document.getElementById("taskmanager-app");
+        const taskManagerWin = $("#taskmanager-app");
         if (!taskManagerWin) return;
         const procPanel = $("#tm-panel-proc", taskManagerWin);
         const appsPanel = $("#tm-panel-apps", taskManagerWin);

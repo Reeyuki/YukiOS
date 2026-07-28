@@ -1,4 +1,6 @@
+import { $ } from "../shared/domUtils.js";
 import { turboManager } from "../shared/turboManager.js";
+import { parseBool } from "../shared/boolUtils.js";
 import { StorageKeys, os } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 
@@ -77,7 +79,7 @@ class BatteryPerformanceManager {
     document.documentElement.classList.add("battery-saver");
     turboManager.setMode("turbo");
 
-    const vc = document.getElementById("vanta-container");
+    const vc = $("#vanta-container");
     if (vc) SystemUtilities.disableVantaWallpaper();
 
     os.notify.send("Battery Saver", `Battery critically low (${level}%) - switched to maximum power saving.`, {
@@ -108,10 +110,10 @@ class BatteryPerformanceManager {
     turboManager.setMode("turbo");
     document.documentElement.classList.add("battery-saver");
 
-    const vc = document.getElementById("vanta-container");
+    const vc = $("#vanta-container");
     if (vc) SystemUtilities.disableVantaWallpaper();
 
-    const vid = document.getElementById("wallpaper-video");
+    const vid = $("#wallpaper-video");
     if (vid && !vid.paused) {
       vid.pause();
       vid.dataset.batterySaverPaused = "true";
@@ -135,8 +137,8 @@ class BatteryPerformanceManager {
 
     SystemUtilities.loadWallpaper();
 
-    const vid = document.getElementById("wallpaper-video");
-    if (vid && vid.dataset.batterySaverPaused === "true") {
+    const vid = $("#wallpaper-video");
+    if (vid && parseBool(vid.dataset.batterySaverPaused)) {
       vid.play();
       delete vid.dataset.batterySaverPaused;
     }

@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "./framework.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 export function shouldEnableAds() {
   return true;
@@ -6,7 +7,7 @@ export function shouldEnableAds() {
   if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
     return false;
   }
-  const adsDisabled = os.storage.get(StorageKeys.adsDisabled) === "true";
+  const adsDisabled = parseBool(os.storage.get(StorageKeys.adsDisabled));
   if (adsDisabled) {
     return false;
   }

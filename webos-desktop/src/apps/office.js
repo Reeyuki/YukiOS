@@ -1,23 +1,23 @@
 import "../styles/office.css";
 import { KeybindManager } from "../keybindManager.js";
-import {
-  $,
-  $$,
-  bindEvent,
-  toggleClass,
-  addClass,
-  removeClass,
-  setStyle,
-  setHTML,
-  createElement
-} from "../shared/domUtils.js";
+import { addClass, removeClass } from "../shared/domUtils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 
 import { Achievements } from "../achievements.js";
-import { BaseApp, os } from "../framework.js";
-import { BusEvents } from "../core/EventBus.js";
+import {
+  $,
+  $$,
+  bindEvent,
+  toggleClass,
+  setStyle,
+  setHTML,
+  createElement,
+  BusEvents,
+  BaseApp,
+  os
+} from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -857,7 +857,9 @@ class OdtViewer extends EditorStrategy {
               let is = "max-width:100%;";
               if (iw) is += `width:${iw};`;
               if (ih) is += `height:${ih};`;
-              html += src ? `<img src="${src}" style="${is}">` : `<span style="color:#6c7086;">[image]</span>`;
+              html += src
+                ? `<img src="${src}" style="${is}">`
+                : `<span style="color:var(--text-muted);">[image]</span>`;
             } else html += walk(c);
             break;
           }
@@ -1419,9 +1421,8 @@ export class OfficeApp extends BaseApp {
       style: { left: "200px", top: "100px", ...(options.style || {}) }
     });
 
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "window-content";
-    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    const contentDiv = createElement("div", { className: "window-content" });
+    setStyle(contentDiv, { width: "100%", height: "100%", overflow: "hidden" });
     contentDiv.innerHTML = windowContent;
     win.appendChild(contentDiv);
 
@@ -1834,7 +1835,7 @@ export class OfficeApp extends BaseApp {
     for (let r = 0; r < parseInt(rows); r++) {
       html += "<tr>";
       for (let c = 0; c < parseInt(cols); c++) {
-        html += '<td style="border:1px solid #45475a;padding:8px">&nbsp;</td>';
+        html += '<td style="border:1px solid var(--glass-border);padding:8px">&nbsp;</td>';
       }
       html += "</tr>";
     }
@@ -1875,7 +1876,7 @@ export class OfficeApp extends BaseApp {
 
   showShortcuts() {
     const shortcuts = `
-    <div style="text-align:left;font-family:monospace;font-size:12px">
+    <div class="office-shortcuts-container">
       <div><b>File</b></div>
       <div>Ctrl+N - New</div>
       <div>Ctrl+O - Open</div>
@@ -2123,16 +2124,12 @@ export class OfficeApp extends BaseApp {
     const rows = tbody.querySelectorAll("tr");
     const colCount = rows[0]?.querySelectorAll("td").length || 26;
     const rowIndex = rows.length;
-    const tr = document.createElement("tr");
-    const th = document.createElement("th");
-    th.className = "office-th-row";
-    th.textContent = rowIndex + 1;
+    const tr = createElement("tr");
+    const th = createElement("th", { className: "office-th-row", text: String(rowIndex + 1) });
     tr.appendChild(th);
     const fragment = document.createDocumentFragment();
     for (let c = 0; c < colCount; c++) {
-      const td = document.createElement("td");
-      td.className = "office-cell";
-      td.contentEditable = "true";
+      const td = createElement("td", { className: "office-cell", attributes: { contentEditable: "true" } });
       td.dataset.row = rowIndex;
       td.dataset.col = c;
       fragment.appendChild(td);
@@ -2149,14 +2146,13 @@ export class OfficeApp extends BaseApp {
     const tbody = table.querySelector("tbody");
     if (!thead || !tbody) return;
     const colIndex = thead.querySelectorAll("th").length - 1;
-    const th = document.createElement("th");
-    th.className = "office-th-col";
-    th.textContent = String.fromCharCode(65 + colIndex);
+    const th = createElement("th", {
+      className: "office-th-col",
+      text: String.fromCharCode(65 + colIndex)
+    });
     thead.querySelector("tr").appendChild(th);
     tbody.querySelectorAll("tr").forEach((tr, r) => {
-      const td = document.createElement("td");
-      td.className = "office-cell";
-      td.contentEditable = "true";
+      const td = createElement("td", { className: "office-cell", attributes: { contentEditable: "true" } });
       td.dataset.row = r;
       td.dataset.col = colIndex;
       tr.appendChild(td);

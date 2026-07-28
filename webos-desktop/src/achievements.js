@@ -3,6 +3,7 @@ import { BusEvents } from "./core/EventBus.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
 import { $$ } from "./shared/domUtils.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 import { BaseApp, StorageKeys, os } from "./framework.js";
 export const Achievements = {
@@ -449,7 +450,7 @@ export class AchievementsApp extends BaseApp {
 
   renderHero() {
     const stats = this.getStats();
-    const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
+    const disabled = parseBool(os.storage.get(StorageKeys.achievementsDisabled));
 
     return `
     <div class="achievements-hero">
@@ -490,7 +491,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   renderGrid(filter) {
-    const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
+    const disabled = parseBool(os.storage.get(StorageKeys.achievementsDisabled));
 
     return this.achievements
       .filter((a) => {
@@ -527,7 +528,7 @@ export class AchievementsApp extends BaseApp {
     const total = this.achievements.length;
     const done = this.unlocked.size;
     const pct = Math.round((done / total) * 100);
-    const disabled = os.storage.get(StorageKeys.achievementsDisabled) === "true";
+    const disabled = parseBool(os.storage.get(StorageKeys.achievementsDisabled));
 
     return `
     <div class="achievements-progress ${disabled ? "achievements-progress--disabled" : ""}">
@@ -576,7 +577,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   trigger(achievementKey, skipSound = false) {
-    if (os.storage.get(StorageKeys.achievementsDisabled) === "true") return;
+    if (parseBool(os.storage.get(StorageKeys.achievementsDisabled))) return;
 
     if (!this.achievements.find((a) => a.id === achievementKey)) return;
     if (this.unlocked.has(achievementKey)) return;

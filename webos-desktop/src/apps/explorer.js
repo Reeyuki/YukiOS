@@ -592,22 +592,10 @@ export class ExplorerApp extends BaseApp {
         <div class="explorer-main" id="${winId}-view"></div>
       </div>
       <div class="explorer-dir-bar" id="${winId}-dir-bar">
-        <label style="color:#aaa;font-size:12px;white-space:nowrap;">Selected:</label>
-        <span id="${winId}-selected-path" style="
-          flex:1;color:#fff;font-size:13px;
-          font-family:inherit;overflow:hidden;
-          text-overflow:ellipsis;white-space:nowrap;
-        ">/</span>
-        <button id="${winId}-select-btn" style="
-          padding:6px 18px;border-radius:5px;border:none;
-          background:#2a6db5;color:#fff;font-size:13px;
-          cursor:pointer;font-family:inherit;white-space:nowrap;
-        ">Select</button>
-        <button id="${winId}-cancel-btn" style="
-          padding:6px 14px;border-radius:5px;border:none;
-          background:rgba(255,255,255,0.08);color:#ccc;font-size:13px;
-          cursor:pointer;font-family:inherit;
-        ">Cancel</button>
+        <label class="explorer-dir-label">Selected:</label>
+        <span class="explorer-dir-path" id="${winId}-selected-path">/</span>
+        <button class="explorer-dir-select-btn" id="${winId}-select-btn">Select</button>
+        <button class="explorer-dir-cancel-btn" id="${winId}-cancel-btn">Cancel</button>
       </div>
     `;
 
@@ -1109,7 +1097,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   updateActiveSidebar(inst) {
-    const win = document.getElementById(inst.winId);
+    const win = $(`#${inst.winId}`);
     if (!win) return;
     const items = win.querySelectorAll(".explorer-sidebar .nav-item");
     const currentPath = inst.currentPath.join("/");
@@ -1611,7 +1599,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   selectExplorerItem(inst, name, itemEl, isCtrl, isShift) {
-    const win = document.getElementById(inst.winId);
+    const win = $(`#${inst.winId}`);
     if (!win) return;
     const view = $(`#${inst.winId}-view`, win);
     if (!view) return;
@@ -1681,7 +1669,7 @@ export class ExplorerApp extends BaseApp {
           dragging = true;
           if (!inst.selectedItems.has(name)) this.selectExplorerItem(inst, name, itemEl, false);
 
-          const win = document.getElementById(inst.winId);
+          const win = $(`#${inst.winId}`);
           const view = win?.querySelector(`#${inst.winId}-view`);
           const selectedEls = view ? [...view.querySelectorAll(".file-item.explorer-selected")] : [itemEl];
 
@@ -1694,24 +1682,24 @@ export class ExplorerApp extends BaseApp {
           label.textContent = selectedEls.length > 1 ? `${selectedEls.length} items` : name;
           ghost.appendChild(iconEl);
           ghost.appendChild(label);
-          ghost.style.left = ev.clientX - 50 + "px";
-          ghost.style.top = ev.clientY - 30 + "px";
+          setStyle(ghost, { left: ev.clientX - 50 + "px", top: ev.clientY - 30 + "px" });
           document.body.appendChild(ghost);
         }
 
         if (dragging && ghost) {
-          ghost.style.left = ev.clientX - 50 + "px";
-          ghost.style.top = ev.clientY - 30 + "px";
+          setStyle(ghost, { left: ev.clientX - 50 + "px", top: ev.clientY - 30 + "px" });
 
           if (dragRafId) return;
           dragRafId = requestAnimationFrame(() => {
             dragRafId = null;
-            const explorerWin = document.getElementById(inst.winId);
+            const explorerWin = $(`#${inst.winId}`);
             const overDesktop = !explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
-            ghost.style.borderColor = overDesktop ? "rgba(79,255,120,0.7)" : "rgba(79,158,255,0.55)";
-            ghost.style.boxShadow = overDesktop
-              ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
-              : "0 8px 32px rgba(0,0,0,0.5)";
+            setStyle(ghost, {
+              borderColor: overDesktop ? "rgba(79,255,120,0.7)" : "rgba(79,158,255,0.55)",
+              boxShadow: overDesktop
+                ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
+                : "0 8px 32px rgba(0,0,0,0.5)"
+            });
           });
         }
       };
@@ -1722,11 +1710,11 @@ export class ExplorerApp extends BaseApp {
         if (ghost) ghost.remove();
         if (!dragging) return;
 
-        const explorerWin = document.getElementById(inst.winId);
+        const explorerWin = $(`#${inst.winId}`);
         const droppedOnExplorer = explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
         if (droppedOnExplorer || !this.desktopUI?.dropFromExplorer) return;
 
-        const desktopEl = document.getElementById("desktop");
+        const desktopEl = $("#desktop");
         if (!desktopEl) return;
         const dRect = desktopEl.getBoundingClientRect();
         const overDesktop =
@@ -1736,7 +1724,7 @@ export class ExplorerApp extends BaseApp {
           ev.clientY <= dRect.bottom;
         if (!overDesktop) return;
 
-        const win = document.getElementById(inst.winId);
+        const win = $(`#${inst.winId}`);
         const view = win?.querySelector(`#${inst.winId}-view`);
         const nameToIsFile = {};
         if (view) {
@@ -1989,7 +1977,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   async updateStatusBar(inst, folder) {
-    const win = document.getElementById(inst.winId);
+    const win = $(`#${inst.winId}`);
     if (!win) return;
     const itemsEl = win.querySelector(`#${inst.winId}-status-items`);
     const selectedEl = win.querySelector(`#${inst.winId}-status-selected`);

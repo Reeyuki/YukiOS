@@ -42,8 +42,12 @@ You are working under webos-desktop directory. when src is mentioned it means we
 - Never use grep, instead always use rg (ripgrep)
 - Never use variable or function names (or any naming convention) starting with `_` (underscore). All identifiers must
   use descriptive names without leading underscores.
-- When applying changes to multiple files (2+ files), delegate each file's changes to a separate sub-agent via the Task
-  tool so they can run in parallel and CONCURRENTLY is a must to requirement. Do not edit multiple files sequentially in a single context.
+- When applying changes to multiple files (2+ files), you MUST launch multiple concurrent Task sub-agents in a SINGLE
+  message (one `task` tool call per sub-agent). Each sub-agent handles a SPECIFIC, NON-OVERLAPPING set of files. Never
+  batch all files into one sub-agent. Never edit multiple files sequentially in your own context. Each sub-agent prompt
+  must enumerate exactly which files it should edit and what changes to make. Group files by ownership/subsystem to
+  avoid two agents editing the same file. Example: for a 12-file change, launch 4 sub-agents of 3 files each, not 1
+  sub-agent with all 12 files.
 
 ---
 

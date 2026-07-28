@@ -1,4 +1,5 @@
 import "../styles/colorPicker.css";
+import { $, $$, setStyle } from "../shared/domUtils.js";
 import { BaseApp, os, StorageKeys } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
@@ -101,16 +102,16 @@ export class ColorPickerApp extends BaseApp {
   }
 
   renderHistory() {
-    const section = document.getElementById("cp-history-section");
-    const container = document.getElementById("cp-history");
+    const section = $("#cp-history-section");
+    const container = $("#cp-history");
     if (!container || !section) return;
 
     if (this.colors.length === 0) {
-      section.style.display = "none";
+      setStyle(section, { display: "none" });
       return;
     }
 
-    section.style.display = "flex";
+    setStyle(section, { display: "flex" });
     container.innerHTML = this.colors
       .map(
         (c) => `
@@ -122,7 +123,7 @@ export class ColorPickerApp extends BaseApp {
       )
       .join("");
 
-    container.querySelectorAll(".cp-history-item").forEach((el) => {
+    $$(".cp-history-item", container).forEach((el) => {
       el.addEventListener("click", () => {
         const color = el.dataset.color;
         navigator.clipboard.writeText(color).catch(() => {});
@@ -139,12 +140,12 @@ export class ColorPickerApp extends BaseApp {
   }
 
   updatePreview(hex) {
-    const swatch = document.getElementById("cp-swatch");
-    const hexEl = document.getElementById("cp-hex");
-    const rgbEl = document.getElementById("cp-rgb");
+    const swatch = $("#cp-swatch");
+    const hexEl = $("#cp-hex");
+    const rgbEl = $("#cp-rgb");
     if (!swatch || !hexEl || !rgbEl) return;
 
-    swatch.style.background = hex;
+    setStyle(swatch, { background: hex });
     hexEl.textContent = hex.toUpperCase();
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -179,7 +180,7 @@ export class ColorPickerApp extends BaseApp {
     if (this.picking) return;
     this.picking = true;
 
-    const btn = document.getElementById("cp-activate");
+    const btn = $("#cp-activate");
     if (btn) {
       btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i><span>Capturing screen…</span>';
     }
@@ -233,7 +234,7 @@ export class ColorPickerApp extends BaseApp {
 
   async captureAndMagnify(overlay) {
     try {
-      const target = document.getElementById("desktop") || document.body;
+      const target = $("#desktop") || document.body;
       const canvas = await window.html2canvas(target, {
         useCORS: true,
         allowTaint: true,
@@ -337,7 +338,7 @@ export class ColorPickerApp extends BaseApp {
     }
     this.currentHex = null;
 
-    const btn = document.getElementById("cp-activate");
+    const btn = $("#cp-activate");
     if (btn) {
       btn.innerHTML = '<i class="fas fa-eye-dropper"></i><span>Pick Color from Screen</span>';
     }

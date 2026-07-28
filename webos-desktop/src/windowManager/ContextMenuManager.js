@@ -1,4 +1,5 @@
 import { showStartStyleMenu } from "../shared/contextMenu.js";
+import { parseBool } from "../shared/boolUtils.js";
 import { os } from "../framework.js";
 
 export class ContextMenuManager {
@@ -45,7 +46,7 @@ export class ContextMenuManager {
       ],
       system: [
         ["Z-Index", win.style.zIndex || "-"],
-        ["Fullscreen", dataset.fullscreen === "true" ? "Yes" : "No"],
+        ["Fullscreen", parseBool(dataset.fullscreen) ? "Yes" : "No"],
         ["SWF", dataset.swf || "-"],
         ["ROM", dataset.rom || "-"],
         ["Core", dataset.core || "-"]
@@ -101,7 +102,7 @@ export class ContextMenuManager {
   buildContextMenuItems(addMenuItem, addSeparator, win) {
     const winId = win.id;
     const isMinimized = win.style.display === "none";
-    const isFullscreen = win.dataset.fullscreen === "true";
+    const isFullscreen = parseBool(win.dataset.fullscreen);
     const appId = win.dataset.appId || this.manager.guessAppIdFromWinId(winId);
 
     addMenuItem(

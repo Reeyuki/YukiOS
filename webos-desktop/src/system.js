@@ -8,6 +8,7 @@ import { BusEvents } from "./core/EventBus.js";
 import { getVantaPresetById } from "./vantaPresets.js";
 import { vantaPresets } from "./vantaPresets.js";
 import { loadVantaEffect } from "./vanta/vantaLoader.js";
+import { parseBool } from "./shared/boolUtils.js";
 
 import { StorageKeys, os, MODES } from "./framework.js";
 function isBlob(obj) {
@@ -246,10 +247,10 @@ class WallpaperManager {
   }
 
   static async setSequentialWallpaper() {
-    const isManual = os.storage.get(StorageKeys.manualWallpaper) === "true";
+    const isManual = parseBool(os.storage.get(StorageKeys.manualWallpaper));
     if (isManual) return;
 
-    const shouldCycle = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
+    const shouldCycle = parseBool(os.storage.get(StorageKeys.cycleWallpaper), true);
     if (!shouldCycle) return;
 
     const existing = os.storage.get(StorageKeys.wallpaperKey);
@@ -623,8 +624,8 @@ class WallpaperManager {
   }
 
   static async loadWallpaper() {
-    const shouldCycle = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
-    const isManual = os.storage.get(StorageKeys.manualWallpaper) === "true";
+    const shouldCycle = parseBool(os.storage.get(StorageKeys.cycleWallpaper), true);
+    const isManual = parseBool(os.storage.get(StorageKeys.manualWallpaper));
     const saved = os.storage.get(StorageKeys.wallpaperKey);
 
     if (this.isVantaCustom(saved)) {

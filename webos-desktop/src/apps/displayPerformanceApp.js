@@ -1,8 +1,7 @@
 import { turboManager } from "../shared/turboManager.js";
 import { BRIGHTNESS_PRESETS } from "../shared/brightnessPresets.js";
 import { Achievements } from "../achievements.js";
-import { BusEvents } from "../core/EventBus.js";
-import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
+import { $, $$, setStyle, BusEvents, BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
@@ -66,15 +65,15 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   getBatteryFillColor(level) {
-    if (this.batteryInfo.charging) return "#4ade80";
-    if (level > 60) return "#22c55e";
-    if (level > 30) return "#facc15";
-    return "#ef4444";
+    if (this.batteryInfo.charging) return "var(--charging)";
+    if (level > 60) return "var(--charging)";
+    if (level > 30) return "var(--brand)";
+    return "var(--error)";
   }
 
   getBatteryIconHtml() {
     if (this.batteryInfo.charging) {
-      return `<i class="fas fa-bolt" style="color:#4ade80"></i>`;
+      return `<i class="fas fa-bolt" style="color:var(--charging)"></i>`;
     }
     return `<i class="${this.getBatteryIcon()}"></i>`;
   }
@@ -91,7 +90,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   updateTrayIcon() {
-    const trayEl = document.querySelector(`[data-tray-id="${this.winId}"]`);
+    const trayEl = $(`[data-tray-id="${this.winId}"]`);
     if (trayEl) {
       const iconContainer = trayEl.querySelector(".tray-icon-btn") || trayEl;
       iconContainer.innerHTML = this.getBatteryIconHtml();

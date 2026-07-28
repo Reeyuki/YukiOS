@@ -6,6 +6,8 @@ let stderrBuffer = "";
 
 const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.mjs";
 
+import { os } from "../os/index.js";
+
 export async function getPyodide() {
   if (pyodideInstance) return pyodideInstance;
   if (loadingPromise) return loadingPromise;
@@ -13,8 +15,8 @@ export async function getPyodide() {
   loadingPromise = (async () => {
     const mod = await import(/* @vite-ignore */ PYODIDE_URL);
     pyodideInstance = await mod.loadPyodide({
-      stdin: () => {
-        return prompt("Python input:") || "";
+      stdin: async () => {
+        return (await os.dialog.prompt("Python Input", "Python input:")) || "";
       },
       stdout: (text) => {
         if (capturing) stdoutBuffer += text + "\n";
