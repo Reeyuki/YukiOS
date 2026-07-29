@@ -10,6 +10,7 @@ import { LayoutManager } from "./windowManager/LayoutManager.js";
 import { SnapSystem } from "./windowManager/SnapSystem.js";
 import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
 import { MacDock } from "./windowManager/MacDock.js";
+import { Shelf } from "./chromeos/Shelf.js";
 import { WindowSessionManager } from "./windowManager/WindowSessionManager.js";
 import { AppRestorationService } from "./windowManager/AppRestorationService.js";
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
@@ -17,7 +18,7 @@ import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 import { TilingManager } from "./windowManager/TilingManager.js";
 
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, MODES } from "./framework.js";
 import { $ } from "./shared/domUtils.js";
 import { isMobile } from "./shared/platformUtils.js";
 
@@ -53,6 +54,7 @@ export class WindowManager {
     this.snapSystem = new SnapSystem(this);
     this.taskbarSystem = new TaskbarSystem(this);
     this.macDock = new MacDock(this);
+    this.chromeShelf = new Shelf(this);
     this.sessionManager = new WindowSessionManager(this);
     this.appRestorationService = new AppRestorationService(this);
     this.windowStateManager = new WindowStateManager(this);
@@ -87,6 +89,20 @@ export class WindowManager {
       }
       if (wasActive !== nowActive) {
         this.updateWindowHeaderStyles();
+      }
+    });
+
+    bus.on(BusEvents.MODE_ENTERED, ({ id }) => {
+      if (id === MODES.CHROME_OS) {
+        this.chromeShelf.init();
+        document.getElementById("taskbar")?.classList.add("chromeos-active");
+      }
+    });
+
+    bus.on(BusEvents.MODE_EXITED, ({ id }) => {
+      if (id === MODES.CHROME_OS) {
+        this.chromeShelf.destroy();
+        document.getElementById("taskbar")?.classList.remove("chromeos-active");
       }
     });
 
@@ -368,6 +384,9 @@ export class WindowManager {
     if (this.macDock.isActive()) {
       this.macDock.addItem(winId, iconValue, title, color);
     }
+    if (this.chromeShelf && this.chromeShelf.el) {
+      this.chromeShelf.addRunningItem(winId, iconValue, title);
+    }
   }
 
   scheduleHideTaskbarPreview() {
@@ -427,10 +446,7 @@ export class WindowManager {
       const hasExternal = !!controls.querySelector(".external-btn");
       const showDownload = !!controls.querySelector(".download-btn");
       header.classList.toggle("mac-header", isMac);
-      controls.outerHTML = this.utils.getWindowControls(
-        hasExternal ? "external" : null,
-        showDownload
-      );
+      controls.outerHTML = this.utils.getWindowControls(hasExternal ? "external" : null, showDownload);
     });
     this.openWindows.forEach((entry, winId) => {
       const win = document.getElementById(winId);

@@ -20,7 +20,7 @@ export function renderPrompt(env, format) {
     const parts = cwd.split("/").filter(Boolean);
     return parts.length ? parts[parts.length - 1] : "/";
   });
-  result = result.replace(/\\$/g, (env.get("UID") === "0" || env.get("EUID") === "0") ? "#" : "$");
+  result = result.replace(/\\$/g, env.get("UID") === "0" || env.get("EUID") === "0" ? "#" : "$");
   result = result.replace(/\\n/g, "\n");
   result = result.replace(/\\t/g, () => {
     const now = new Date();

@@ -520,6 +520,12 @@ export function getTrayPosition(refEl) {
     atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;
   } else {
     el = refEl || $("#app-tray");
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) {
+        el = $("#shelf-tray-items") || $(".shelf-right") || el;
+      }
+    }
     atTop = isTaskbarTop();
   }
   const trayRect = el

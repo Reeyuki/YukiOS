@@ -5,6 +5,7 @@ export const SETTINGS_CATEGORIES = [
   { id: "pane-desktop", title: "Desktop", icon: "fas fa-home" },
   { id: "pane-appearance", title: "Appearance", icon: "fas fa-paint-brush" },
   { id: "pane-tiling", title: "Tiling", icon: "fas fa-th-large" },
+  { id: "pane-chromeos", title: "Chrome OS", icon: "fab fa-chrome" },
   { id: "pane-data", title: "Data & Storage", icon: "fas fa-database" },
   { id: "pane-network", title: "Network", icon: "fas fa-network-wired" },
   { id: "pane-audio", title: "Audio", icon: "fas fa-volume-high" },

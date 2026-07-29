@@ -5,6 +5,7 @@ import { os, StorageKeys } from "../framework.js";
 import { getWeekNumber } from "../shared/calendarUtils.js";
 import { subscribeTimeTick } from "../services/timeWorker.js";
 import { isTaskbarTop } from "../utils/utils.js";
+import { $ } from "../shared/domUtils.js";
 
 let calendarPopup = null;
 let currentCalendarMonth = new Date();
@@ -223,7 +224,7 @@ export function createCalendarPopup() {
   }, 0);
 }
 
-function closeCalendarPopup() {
+export function closeCalendarPopup() {
   if (calendarPopup) {
     calendarPopup.remove();
     calendarPopup = null;
@@ -236,41 +237,74 @@ function closeCalendarPopup() {
   document.removeEventListener("click", closeCalendarOnClickOutside);
 }
 
+function getShelfPos() {
+  const shelf = $("#chromeos-shelf");
+  if (shelf && getComputedStyle(shelf).display !== "none" && shelf.dataset.shelfPos) {
+    return shelf.dataset.shelfPos;
+  }
+  return null;
+}
+
 function positionCalendarPopup() {
   if (!calendarPopup) return;
 
   requestAnimationFrame(() => {
     if (!calendarPopup) return;
-    const dateEl = document.getElementById("time-container") || document.getElementById("date");
+    const dateCandidates = [$("#time-container"), $("#date"), $(".shelf-clock")];
+    const dateEl =
+      dateCandidates.find((el) => {
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      }) || dateCandidates[0];
+    if (!dateEl) return;
     const rect = dateEl.getBoundingClientRect();
     const popupRect = calendarPopup.getBoundingClientRect();
 
     const margin = 10;
-    const isMac = isTaskbarTop();
-    if (isMac) {
+    const shelfPos = getShelfPos();
+    if (shelfPos === "left") {
+      calendarPopup.style.top = `${Math.max(margin, rect.top)}px`;
+      calendarPopup.style.left = `${rect.right + 8}px`;
+      calendarPopup.style.bottom = "auto";
+      calendarPopup.style.right = "auto";
+    } else if (shelfPos === "right") {
+      calendarPopup.style.top = `${Math.max(margin, rect.top)}px`;
+      calendarPopup.style.right = `${window.innerWidth - rect.left + 8}px`;
+      calendarPopup.style.bottom = "auto";
+      calendarPopup.style.left = "auto";
+    } else if (shelfPos === "top") {
       calendarPopup.style.top = `${rect.bottom + 8}px`;
       calendarPopup.style.bottom = "auto";
       calendarPopup.style.right = `${window.innerWidth - rect.right}px`;
       calendarPopup.style.left = "auto";
     } else {
-      let bottom = window.innerHeight - rect.top + 8;
-      if (bottom + popupRect.height > window.innerHeight - margin) {
-        bottom = window.innerHeight - popupRect.height - margin;
+      const isMac = isTaskbarTop();
+      if (isMac) {
+        calendarPopup.style.top = `${rect.bottom + 8}px`;
+        calendarPopup.style.bottom = "auto";
+        calendarPopup.style.right = `${window.innerWidth - rect.right}px`;
+        calendarPopup.style.left = "auto";
+      } else {
+        let bottom = window.innerHeight - rect.top + 8;
+        if (bottom + popupRect.height > window.innerHeight - margin) {
+          bottom = window.innerHeight - popupRect.height - margin;
+        }
+        if (bottom < margin) {
+          bottom = margin;
+        }
+        calendarPopup.style.bottom = `${bottom}px`;
+        calendarPopup.style.top = "auto";
+        let left = rect.left + rect.width / 2 - popupRect.width / 2;
+        if (left + popupRect.width > window.innerWidth - margin) {
+          left = window.innerWidth - popupRect.width - margin;
+        }
+        if (left < margin) {
+          left = margin;
+        }
+        calendarPopup.style.left = `${left}px`;
+        calendarPopup.style.right = "auto";
       }
-      if (bottom < margin) {
-        bottom = margin;
-      }
-      calendarPopup.style.bottom = `${bottom}px`;
-      calendarPopup.style.top = "auto";
-      let left = rect.left + rect.width / 2 - popupRect.width / 2;
-      if (left + popupRect.width > window.innerWidth - margin) {
-        left = window.innerWidth - popupRect.width - margin;
-      }
-      if (left < margin) {
-        left = margin;
-      }
-      calendarPopup.style.left = `${left}px`;
-      calendarPopup.style.right = "auto";
     }
   });
 }
@@ -325,7 +359,8 @@ function closeCalendarOnClickOutside(e) {
     !calendarPopup.contains(e.target) &&
     e.target.id !== "date" &&
     e.target.id !== "clock" &&
-    !e.target.closest("#time-container")
+    !e.target.closest("#time-container") &&
+    !e.target.closest(".shelf-clock")
   ) {
     closeCalendarPopup();
   }

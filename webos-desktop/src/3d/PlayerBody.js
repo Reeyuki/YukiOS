@@ -48,7 +48,7 @@ export class PlayerBody {
     });
 
     const neckBox = new T.Mesh(new T.BoxGeometry(0.16, 0.12, 0.16), skinMat);
-    neckBox.position.set(0, 1.30, 0);
+    neckBox.position.set(0, 1.3, 0);
     this.group.add(neckBox);
 
     const head = new T.Mesh(new T.BoxGeometry(0.32, 0.3, 0.26), skinMat);
@@ -142,11 +142,7 @@ export class PlayerBody {
     const floorY = Math.max(0, cp.y - 1.6);
     const yaw = new this.THREE.Euler().setFromQuaternion(this.camera.quaternion, "YXZ").y;
     const bodyBack = 0.03;
-    this.group.position.set(
-      cp.x + Math.sin(yaw) * bodyBack,
-      floorY,
-      cp.z + Math.cos(yaw) * bodyBack
-    );
+    this.group.position.set(cp.x + Math.sin(yaw) * bodyBack, floorY, cp.z + Math.cos(yaw) * bodyBack);
     this.group.quaternion.setFromEuler(new this.THREE.Euler(0, yaw, 0, "YXZ"));
     this.group.updateMatrixWorld();
 
@@ -199,28 +195,12 @@ export class PlayerBody {
       const float = Math.sin(t * 0.7 + 1.5) * 0.018;
       const rotSway = Math.sin(t * 1.3 + 1) * 0.04;
 
-      this.leftArm.position.set(
-        this.baseArmL.x + sway,
-        this.baseArmL.y + float * 0.8,
-        this.baseArmL.z
-      );
+      this.leftArm.position.set(this.baseArmL.x + sway, this.baseArmL.y + float * 0.8, this.baseArmL.z);
       this.leftArm.rotation.z = 0.2 + rotSway * 0.4;
-      this.rightArm.position.set(
-        this.baseArmR.x - sway,
-        this.baseArmR.y + float * 0.8,
-        this.baseArmR.z
-      );
+      this.rightArm.position.set(this.baseArmR.x - sway, this.baseArmR.y + float * 0.8, this.baseArmR.z);
       this.rightArm.rotation.z = -0.2 - rotSway * 0.4;
-      this.leftHand.position.set(
-        this.baseHandL.x + sway * 0.6,
-        this.baseHandL.y + float * 1.2,
-        this.baseHandL.z
-      );
-      this.rightHand.position.set(
-        this.baseHandR.x - sway * 0.6,
-        this.baseHandR.y + float * 1.2,
-        this.baseHandR.z
-      );
+      this.leftHand.position.set(this.baseHandL.x + sway * 0.6, this.baseHandL.y + float * 1.2, this.baseHandL.z);
+      this.rightHand.position.set(this.baseHandR.x - sway * 0.6, this.baseHandR.y + float * 1.2, this.baseHandR.z);
     }
 
     this.leftShoulder.position.y = this.baseShoulderL.y + Math.sin(t * 0.8) * 0.008;

@@ -40,6 +40,7 @@ import {
 } from "./settingsBinders.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
 import { bindTilingCategory } from "./pane-tiling.js";
+import { bindChromeOsCategory } from "./chromeosPanel.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
@@ -430,6 +431,7 @@ export class SettingsApp extends BaseApp {
     bindAudioCategory(win, this.settings, showSaved);
     bindAccountsCategory(win);
     bindTilingCategory(win, save, this.settings);
+    bindChromeOsCategory(win, showSaved);
   }
 
   showSavedMessage(win) {

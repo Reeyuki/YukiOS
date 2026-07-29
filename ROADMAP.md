@@ -136,6 +136,7 @@ Planned features and improvements for YukiOS.
 - [✅] Transparency setting for all panels — Extend transparency effects to all tray menus, context menus, and GUI
   panels consistently
 - [✅] Achievement popup redesign — Replicate Steam achievement style with bottom-right corner popup
+- [✅] **Chrome OS theming**
 - [📋] **Notification system depth** — Grouping by app, history view, scheduled DND, per-app notification sounds,
   persistent notifications, snooze
 - [📋] **Lock screen enrichment** — Show time with seconds, weather, media controls, notification badges, and quick
@@ -144,7 +145,6 @@ Planned features and improvements for YukiOS.
   icon**
 - [💡] **Currently active apps should show an indicator to show they are active (already implemented in mac dock, need to also add in regular taskbar)**
 - [💡] **Magnifier / zoom** — Lens-style screen magnification like windows 7 magnify app
-- [💡] **Chrome OS theming**
 - [💡] **.bash_history system**
 - [💡] **.bashrc support**
 - [💡] **Windows xp, win7, win10, win11 theme support**

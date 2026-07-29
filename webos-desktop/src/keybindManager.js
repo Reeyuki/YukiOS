@@ -96,6 +96,13 @@ export const KEYBIND_DEFINITIONS = [
     hidden: true
   },
   {
+    id: "chromeos.launcher",
+    defaultKeys: ["Meta"],
+    desc: "Toggle Chrome OS Launcher",
+    cat: "global",
+    icon: "fas fa-th-large"
+  },
+  {
     id: "boot.skip",
     defaultKeys: ["Escape", "Enter", "Space"],
     desc: "Skip boot animation",

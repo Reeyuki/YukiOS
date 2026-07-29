@@ -15,6 +15,7 @@ export const StorageKeys = {
   cursorSizeKey: "yukiOS_customCursor_size",
   mikuCursor: "yukiOS_miku_cursor",
   macOsControls: "yukiOS_macOsControls",
+  chromeOsMode: "yukiOS_chrome_os_mode",
   clippy: "yukiOS_clippy",
   disableDesktopStretchScroll: "yukiOS_disable_desktop_stretch_scroll",
   calendarEvents: "yukiOS_calendar_events",
@@ -238,5 +239,9 @@ export const StorageKeys = {
   room3dFurniturePositions: "yukiOS_room3d_furniture_positions",
   room3dActiveDecorations: "yukiOS_room3d_active_decorations",
   room3dSettings: "yukiOS_room3d_settings",
-  room3dReturnHintShown: "yukiOS_room3d_return_hint_shown"
+  room3dReturnHintShown: "yukiOS_room3d_return_hint_shown",
+  chromeOsShelfPosition: "yukiOS_chrome_os_shelf_position",
+  chromeOsShelfAutoHide: "yukiOS_chrome_os_shelf_autohide",
+  chromeOsClock24h: "yukiOS_chrome_os_clock_24h",
+  chromeOsShelfPinnedItems: "yukiOS_chrome_os_shelf_pinned_items"
 };

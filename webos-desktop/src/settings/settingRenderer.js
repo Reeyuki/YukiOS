@@ -7,6 +7,7 @@ import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
 import { renderTilingSettings } from "./pane-tiling.js";
+import { renderChromeOsSettings } from "./chromeosPanel.js";
 import { RESOLUTION_PRESETS, getViewportLabel } from "../resolution/resolutionManager.js";
 
 function getBrowserInfo() {
@@ -225,6 +226,7 @@ export function buildSettingsHTML(settings, wm) {
           <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
           <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
           <li data-target="pane-tiling"><i class="fas fa-th-large"></i> Tiling</li>
+          <li data-target="pane-chromeos"><i class="fab fa-chrome"></i> Chrome OS</li>
           <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
           <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
           <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
@@ -238,6 +240,7 @@ export function buildSettingsHTML(settings, wm) {
         ${renderDesktopSettings(settings)}
         ${renderAppearanceSettings(settings)}
         ${renderTilingSettings()}
+        ${renderChromeOsSettings()}
         ${renderDataSettings()}
         ${renderNetworkSettings(settings)}
         ${renderAudioSettings(settings)}
@@ -815,6 +818,29 @@ export function renderAppearanceSettings(s) {
         </div>
       </div>
 
+      <div id="settings-wallpaper-card" class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-images"></i> Wallpaper</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Cycle Wallpapers on Start</span>
+            <span class="settings-label-desc">Automatically switch wallpapers on boot</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsCycleWallpaper" ${s.cycleWallpaper ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Wallpaper Engine</span>
+            <span class="settings-label-desc">Browse, preview, and manage all your wallpapers in the dedicated manager</span>
+          </div>
+          <button class="settings-btn" id="settingsOpenWallpaperEngine">
+            <i class="fas fa-paint-roller"></i> Open
+          </button>
+        </div>
+      </div>
+
       <div class="settings-card" id="sc-style" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-palette"></i> Style &amp; Transparency</div>
 
@@ -1128,28 +1154,7 @@ export function renderAppearanceSettings(s) {
         </div>
       </div>
 
-      <div id="settings-wallpaper-card" class="settings-card" style="margin-top: 16px;">
-        <div class="settings-card-header"><i class="fas fa-images"></i> Wallpaper</div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Cycle Wallpapers on Start</span>
-            <span class="settings-label-desc">Automatically switch wallpapers on boot</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsCycleWallpaper" ${s.cycleWallpaper ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Wallpaper Engine</span>
-            <span class="settings-label-desc">Browse, preview, and manage all your wallpapers in the dedicated manager</span>
-          </div>
-          <button class="settings-btn" id="settingsOpenWallpaperEngine">
-            <i class="fas fa-paint-roller"></i> Open
-          </button>
-        </div>
-      </div>
+
     </div>
   `;
 }

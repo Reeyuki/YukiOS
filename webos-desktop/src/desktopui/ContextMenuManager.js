@@ -794,6 +794,8 @@ export class DesktopContextMenuManager {
 
   async showBackgroundContextMenu(e) {
     showDynamicContextMenu(e, (menu, item, hr) => {
+      menu.appendChild(item("Open Wallpaper Engine", () => os.app.launch("wallpaperEngineApp"), "fa-paint-roller"));
+      menu.appendChild(hr());
       menu.appendChild(item("Vanta.js Wallpapers", null, "fa-magic"));
       menu.appendChild(hr());
 

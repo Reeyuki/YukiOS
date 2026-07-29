@@ -804,23 +804,21 @@ html[data-theme="light"] .ntf-toast__progress {
 .mac-mode .ntf-toast,
 html[data-theme].mac-mode .ntf-toast {
   animation-name: toastInMac;
-  background: rgb(28 28 32 / 60%) !important;
-  backdrop-filter: blur(40px) saturate(1.4) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04),
-    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+  background: #000000a3 !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid black !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5) !important;
 }
 
 .mac-mode .ntf-toast__glyph-wrap,
 html[data-theme].mac-mode .ntf-toast__glyph-wrap {
-  background: rgb(28 28 32 / 62%) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
 }
 
 .mac-mode .ntf-toast__close:hover,
 html[data-theme].mac-mode .ntf-toast__close:hover {
-  background: rgb(28 28 32 / 65%) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
 }
 
 .mac-mode #ntf-panel,
@@ -828,73 +826,87 @@ html[data-theme].mac-mode #ntf-panel {
   top: calc(var(--taskbar-h) + 12px);
   bottom: auto;
   max-height: calc(100vh - var(--taskbar-h) - 60px);
-  background: rgb(28 28 32 / 60%) !important;
-  backdrop-filter: blur(40px) saturate(1.4) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04),
-    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+  background: #000000a3 !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid black !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5) !important;
 }
 
 .mac-mode .ntf-panel__head,
 html[data-theme].mac-mode .ntf-panel__head {
-  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.3) !important;
 }
 
 .mac-mode .ntf-panel__dnd,
 html[data-theme].mac-mode .ntf-panel__dnd {
-  background: rgb(28 28 32 / 55%) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
 }
 
 .mac-mode .ntf-panel__dnd:hover,
 html[data-theme].mac-mode .ntf-panel__dnd:hover {
-  background: rgb(28 28 32 / 65%) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
 }
 
 .mac-mode .ntf-panel__dismiss:hover,
 html[data-theme].mac-mode .ntf-panel__dismiss:hover {
-  background: rgb(28 28 32 / 62%) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
 }
 
 .mac-mode .ntf-card,
 html[data-theme].mac-mode .ntf-card {
-  background: rgb(28 28 32 / 55%) !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
 }
 
 .mac-mode .ntf-card:hover,
 html[data-theme].mac-mode .ntf-card:hover {
-  background: rgb(28 28 32 / 65%) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
 .mac-mode .ntf-card__glyph-wrap,
 html[data-theme].mac-mode .ntf-card__glyph-wrap {
-  background: rgb(28 28 32 / 62%) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
 }
 
 .mac-mode .ntf-card__remove:hover,
 html[data-theme].mac-mode .ntf-card__remove:hover {
-  background: rgb(28 28 32 / 62%) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
 }
 
 .mac-mode .ntf-panel__foot,
 html[data-theme].mac-mode .ntf-panel__foot {
-  border-top-color: rgba(255, 255, 255, 0.06) !important;
+  border-top-color: rgba(0, 0, 0, 0.3) !important;
 }
 
 .mac-mode .ntf-purge-btn,
 html[data-theme].mac-mode .ntf-purge-btn {
-  background: rgb(28 28 32 / 55%) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
 }
 
 .mac-mode .ntf-purge-btn:hover,
 html[data-theme].mac-mode .ntf-purge-btn:hover {
-  background: rgb(28 28 32 / 65%) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+html.chromeos-mode .ntf-toast {
+  background: #000000a3 !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid black !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.chromeos-mode #ntf-panel {
+  background: #000000a3 !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid black !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5) !important;
 }

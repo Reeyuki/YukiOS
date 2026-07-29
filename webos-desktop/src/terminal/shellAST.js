@@ -3,7 +3,7 @@ export const NodeType = {
   Command: "Command",
   Pipeline: "Pipeline",
   Logical: "Logical",
-  "If": "If",
+  If: "If",
   While: "While",
   ForIn: "ForIn",
   ForExpression: "ForExpression",
@@ -29,7 +29,13 @@ export function createLogical(left, operator, right) {
 }
 
 export function createIf(condition, thenBody, elifs, elseBody) {
-  return { type: NodeType["If"], condition, thenBody: thenBody || createBlock([]), elifs: elifs || [], elseBody: elseBody || null };
+  return {
+    type: NodeType["If"],
+    condition,
+    thenBody: thenBody || createBlock([]),
+    elifs: elifs || [],
+    elseBody: elseBody || null
+  };
 }
 
 export function createWhile(condition, body) {

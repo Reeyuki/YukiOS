@@ -24,13 +24,15 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 
 ## Screenshots
 
-| | |
-|---|---|
-| ![Mac Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png) | ![Steam](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png) |
-| ![Start Menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png) | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png) |
-| ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png) | ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png) |
-| ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png) |
-| ![3D Os Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/3d.png) |
+|                                                                                                             |                                                                                             |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ![Mac Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png)                          | ![Steam](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png)           |
+| ![ChromeOS Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/chromeos.png)                | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)    |
+| ![Start Menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)                  | ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png) |
+| ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)                 | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)       |
+| ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) |                                                                                             |
+| ![3D Os Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/3d.png)                         |                                                                                             |
+
 # Desktop Experience
 
 - Draggable, resizable, minimizable, maximizable windows
@@ -80,7 +82,8 @@ config editing.
 - Alt+Space toggles tiling on and off; Alt+Arrow moves focus, Ctrl+Alt+Arrow resizes boundaries, Alt+Shift+Arrow swaps
   windows
 - Alt+1-9 switches between 9 independent workspaces, each with its own BSP tree
-- Alt+Q closes the focused window, Alt+F toggles floating, alt + 1-2-3-4-5 keys switch workspaces, alt+t spawns terminal  etc.
+- Alt+Q closes the focused window, Alt+F toggles floating, alt + 1-2-3-4-5 keys switch workspaces, alt+t spawns terminal
+  etc.
 - Drag a tiled window onto another to swap them in the tree
 - Gap, border width, and split ratio adjustable from Settings > Tiling or by editing Config/yukiOs/tiling.conf
 - hyprctl terminal command provides Hyprland-style CLI control
@@ -178,8 +181,7 @@ config editing.
 - Import/export system for backup and migration
 - Transparent UI toggle with: glass effect on windows, taskbar, start menu.
 - Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
-- Calendar popup from taskbar clock with monthly grid, keyboard navigation, and today button
-  coding
+- Calendar popup from taskbar clock with monthly grid, keyboard navigation, and today button coding
 
 # 📦 Built-in Applications
 
@@ -202,10 +204,11 @@ config editing.
     (list/uninstall/install/disable/enable), DND, notifications, storage report
   - **[lavat](https://github.com/Reeyuki/lavat-web)** -- lava lamp simulation with customizable metaballs and gravity;
     Emscripten WASM port (by Reeyuki) of the original C program, runs fully client-side
-  - **[cmatrix](https://github.com/Reeyuki/cmatrix/)** -- Matrix rain animation with color, speed, and character
-    modes; browser-native JS reimplementation (by Reeyuki)
+  - **[cmatrix](https://github.com/Reeyuki/cmatrix/)** -- Matrix rain animation with color, speed, and character modes;
+    browser-native JS reimplementation (by Reeyuki)
   - **[btop](https://github.com/Reeyuki/btop-emscripten)** -- real-time resource monitor (CPU, memory, disks, network,
-    processes); Emscripten WASM port (by Reeyuki) that feeds live host system data from yuki os into the emulated terminal
+    processes); Emscripten WASM port (by Reeyuki) that feeds live host system data from yuki os into the emulated
+    terminal
 - Notepad
 - Markdown Viewer
 - Yuki Code
@@ -341,3 +344,7 @@ See the [Development Guide](DEVELOPMENT.md).
 - ESLint
 - Prettier
 - [vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile)
+
+## License
+
+YukiOS is licensed under the MIT License. While attribution isn't required, it would be greatly appreciated if you use this project.

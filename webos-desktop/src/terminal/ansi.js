@@ -74,20 +74,40 @@ export const ANSI = {
   },
 
   ctrl: {
-    a: "\x01", b: "\x02", c: "\x03", d: "\x04",
-    e: "\x05", f: "\x06", g: "\x07", h: "\x08",
-    i: "\x09", j: "\x0a", k: "\x0b", l: "\x0c",
-    m: "\x0d", n: "\x0e", o: "\x0f", p: "\x10",
-    q: "\x11", r: "\x12", s: "\x13", t: "\x14",
-    u: "\x15", v: "\x16", w: "\x17", x: "\x18",
-    y: "\x19", z: "\x1a"
+    a: "\x01",
+    b: "\x02",
+    c: "\x03",
+    d: "\x04",
+    e: "\x05",
+    f: "\x06",
+    g: "\x07",
+    h: "\x08",
+    i: "\x09",
+    j: "\x0a",
+    k: "\x0b",
+    l: "\x0c",
+    m: "\x0d",
+    n: "\x0e",
+    o: "\x0f",
+    p: "\x10",
+    q: "\x11",
+    r: "\x12",
+    s: "\x13",
+    t: "\x14",
+    u: "\x15",
+    v: "\x16",
+    w: "\x17",
+    x: "\x18",
+    y: "\x19",
+    z: "\x1a"
   },
 
   strip(str) {
-    return str.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "")
-              .replace(/\x1b\][0-9;]*[^\x1b]*\x1b\\/g, "")
-              .replace(/\x1b[\[\(][0-9;]*[a-zA-Z]/g, "")
-              .replace(/\x1b[PX^_].*?\x1b\\/g, "");
+    return str
+      .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "")
+      .replace(/\x1b\][0-9;]*[^\x1b]*\x1b\\/g, "")
+      .replace(/\x1b[\[\(][0-9;]*[a-zA-Z]/g, "")
+      .replace(/\x1b[PX^_].*?\x1b\\/g, "");
   },
 
   wrap(str, code) {

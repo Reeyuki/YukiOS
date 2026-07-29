@@ -93,8 +93,9 @@ export class ShellEnvironment {
       const ch = str[i];
       if (ch === "'" && !inDouble) inSingle = !inSingle;
       else if (ch === '"' && !inSingle) inDouble = !inDouble;
-      else if (ch === "\\" && !inSingle) { i++; }
-      else if (!inSingle && !inDouble) {
+      else if (ch === "\\" && !inSingle) {
+        i++;
+      } else if (!inSingle && !inDouble) {
         if (ch === "{") depth++;
         else if (ch === "}") depth--;
       }
@@ -112,9 +113,24 @@ export class ShellEnvironment {
     let inDouble = false;
     for (let i = 0; i < content.length; i++) {
       const ch = content[i];
-      if (ch === "'" && !inDouble) { inSingle = !inSingle; cur += ch; continue; }
-      if (ch === '"' && !inSingle) { inDouble = !inDouble; cur += ch; continue; }
-      if (ch === "\\" && !inSingle) { cur += ch; if (i + 1 < content.length) { cur += content[i + 1]; i++; } continue; }
+      if (ch === "'" && !inDouble) {
+        inSingle = !inSingle;
+        cur += ch;
+        continue;
+      }
+      if (ch === '"' && !inSingle) {
+        inDouble = !inDouble;
+        cur += ch;
+        continue;
+      }
+      if (ch === "\\" && !inSingle) {
+        cur += ch;
+        if (i + 1 < content.length) {
+          cur += content[i + 1];
+          i++;
+        }
+        continue;
+      }
       if (!inSingle && !inDouble) {
         if (ch === "{") depth++;
         else if (ch === "}") depth--;
@@ -150,28 +166,36 @@ export class ShellEnvironment {
   }
 
   expandParameters(str) {
-    return str.replace(/\$\{([^}]+)\}/g, (match, expr) => {
-      return this.expandParameter(expr);
-    }).replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (match, name) => {
-      const val = this.get(name);
-      return val !== null ? val : "";
-    });
+    return str
+      .replace(/\$\{([^}]+)\}/g, (match, expr) => {
+        return this.expandParameter(expr);
+      })
+      .replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (match, name) => {
+        const val = this.get(name);
+        return val !== null ? val : "";
+      });
   }
 
   expandParameter(expr) {
     const colonOps = [
-      { op: ":-", handler: (val, word) => val !== null && val.length > 0 ? val : word },
-      { op: ":=", handler: (val, word) => {
-        if (val !== null && val.length > 0) return val;
-        const name = expr.split(":=")[0];
-        this.set(name, word);
-        return word;
-      }},
-      { op: ":+", handler: (val, word) => val !== null && val.length > 0 ? word : "" },
-      { op: ":?", handler: (val, word) => {
-        if (val !== null && val.length > 0) return val;
-        throw new Error(`$${expr.split(":?")[0]}: ${word || "parameter null or not set"}`);
-      }}
+      { op: ":-", handler: (val, word) => (val !== null && val.length > 0 ? val : word) },
+      {
+        op: ":=",
+        handler: (val, word) => {
+          if (val !== null && val.length > 0) return val;
+          const name = expr.split(":=")[0];
+          this.set(name, word);
+          return word;
+        }
+      },
+      { op: ":+", handler: (val, word) => (val !== null && val.length > 0 ? word : "") },
+      {
+        op: ":?",
+        handler: (val, word) => {
+          if (val !== null && val.length > 0) return val;
+          throw new Error(`$${expr.split(":?")[0]}: ${word || "parameter null or not set"}`);
+        }
+      }
     ];
 
     for (const { op, handler } of colonOps) {
@@ -185,18 +209,24 @@ export class ShellEnvironment {
     }
 
     const noColonOps = [
-      { op: "-", handler: (val, word) => val !== null ? val : word },
-      { op: "=", handler: (val, word) => {
-        if (val !== null) return val;
-        const name = expr.split("=")[0];
-        this.set(name, word);
-        return word;
-      }},
-      { op: "+", handler: (val, word) => val !== null ? word : "" },
-      { op: "?", handler: (val, word) => {
-        if (val !== null) return val;
-        throw new Error(`$${expr.split("?")[0]}: ${word || "parameter not set"}`);
-      }}
+      { op: "-", handler: (val, word) => (val !== null ? val : word) },
+      {
+        op: "=",
+        handler: (val, word) => {
+          if (val !== null) return val;
+          const name = expr.split("=")[0];
+          this.set(name, word);
+          return word;
+        }
+      },
+      { op: "+", handler: (val, word) => (val !== null ? word : "") },
+      {
+        op: "?",
+        handler: (val, word) => {
+          if (val !== null) return val;
+          throw new Error(`$${expr.split("?")[0]}: ${word || "parameter not set"}`);
+        }
+      }
     ];
 
     for (const { op, handler } of noColonOps) {
@@ -229,42 +259,185 @@ export class ShellEnvironment {
     const tokens = [];
     let i = 0;
     while (i < expr.length) {
-      if (/\s/.test(expr[i])) { i++; continue; }
-      if (expr[i] === "+" && i + 1 < expr.length && expr[i + 1] === "+") { tokens.push({ type: "INC", value: "++" }); i += 2; continue; }
-      if (expr[i] === "-" && i + 1 < expr.length && expr[i + 1] === "-") { tokens.push({ type: "DEC", value: "--" }); i += 2; continue; }
-      if (expr[i] === "+" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_ADD", value: "+=" }); i += 2; continue; }
-      if (expr[i] === "-" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_SUB", value: "-=" }); i += 2; continue; }
-      if (expr[i] === "*" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_MUL", value: "*=" }); i += 2; continue; }
-      if (expr[i] === "/" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_DIV", value: "/=" }); i += 2; continue; }
-      if (expr[i] === "%" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_MOD", value: "%=" }); i += 2; continue; }
-      if (expr[i] === "<" && expr[i + 1] === "<" && expr[i + 2] === "=") { tokens.push({ type: "ASSIGN_SHL", value: "<<=" }); i += 3; continue; }
-      if (expr[i] === ">" && expr[i + 1] === ">" && expr[i + 2] === "=") { tokens.push({ type: "ASSIGN_SHR", value: ">>=" }); i += 3; continue; }
-      if (expr[i] === "&" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_AND", value: "&=" }); i += 2; continue; }
-      if (expr[i] === "|" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_OR", value: "|=" }); i += 2; continue; }
-      if (expr[i] === "^" && expr[i + 1] === "=") { tokens.push({ type: "ASSIGN_XOR", value: "^=" }); i += 2; continue; }
-      if (expr[i] === "=" && expr[i + 1] === "=") { tokens.push({ type: "EQ", value: "==" }); i += 2; continue; }
-      if (expr[i] === "!" && expr[i + 1] === "=") { tokens.push({ type: "NE", value: "!=" }); i += 2; continue; }
-      if (expr[i] === "<" && expr[i + 1] === "=") { tokens.push({ type: "LE", value: "<=" }); i += 2; continue; }
-      if (expr[i] === ">" && expr[i + 1] === "=") { tokens.push({ type: "GE", value: ">=" }); i += 2; continue; }
-      if (expr[i] === "<" && expr[i + 1] === "<") { tokens.push({ type: "SHL", value: "<<" }); i += 2; continue; }
-      if (expr[i] === ">" && expr[i + 1] === ">") { tokens.push({ type: "SHR", value: ">>" }); i += 2; continue; }
-      if (expr[i] === "&" && expr[i + 1] === "&") { tokens.push({ type: "LAND", value: "&&" }); i += 2; continue; }
-      if (expr[i] === "|" && expr[i + 1] === "|") { tokens.push({ type: "LOR", value: "||" }); i += 2; continue; }
-      if (expr[i] === "?") { tokens.push({ type: "TERNARY", value: "?" }); i++; continue; }
-      if (expr[i] === ":") { tokens.push({ type: "COLON", value: ":" }); i++; continue; }
-      if (expr[i] === "(") { tokens.push({ type: "LPAREN", value: "(" }); i++; continue; }
-      if (expr[i] === ")") { tokens.push({ type: "RPAREN", value: ")" }); i++; continue; }
-      if (expr[i] === "~") { tokens.push({ type: "BITNOT", value: "~" }); i++; continue; }
-      if (expr[i] === "!") { tokens.push({ type: "NOT", value: "!" }); i++; continue; }
-      if (expr[i] === "+") { tokens.push({ type: "PLUS", value: "+" }); i++; continue; }
-      if (expr[i] === "-") { tokens.push({ type: "MINUS", value: "-" }); i++; continue; }
-      if (expr[i] === "*") { tokens.push({ type: "MUL", value: "*" }); i++; continue; }
-      if (expr[i] === "/") { tokens.push({ type: "DIV", value: "/" }); i++; continue; }
-      if (expr[i] === "%") { tokens.push({ type: "MOD", value: "%" }); i++; continue; }
-      if (expr[i] === "&") { tokens.push({ type: "BITAND", value: "&" }); i++; continue; }
-      if (expr[i] === "|") { tokens.push({ type: "BITOR", value: "|" }); i++; continue; }
-      if (expr[i] === "^") { tokens.push({ type: "BITXOR", value: "^" }); i++; continue; }
-      if (expr[i] === "=") { tokens.push({ type: "ASSIGN", value: "=" }); i++; continue; }
+      if (/\s/.test(expr[i])) {
+        i++;
+        continue;
+      }
+      if (expr[i] === "+" && i + 1 < expr.length && expr[i + 1] === "+") {
+        tokens.push({ type: "INC", value: "++" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "-" && i + 1 < expr.length && expr[i + 1] === "-") {
+        tokens.push({ type: "DEC", value: "--" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "+" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_ADD", value: "+=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "-" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_SUB", value: "-=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "*" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_MUL", value: "*=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "/" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_DIV", value: "/=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "%" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_MOD", value: "%=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "<" && expr[i + 1] === "<" && expr[i + 2] === "=") {
+        tokens.push({ type: "ASSIGN_SHL", value: "<<=" });
+        i += 3;
+        continue;
+      }
+      if (expr[i] === ">" && expr[i + 1] === ">" && expr[i + 2] === "=") {
+        tokens.push({ type: "ASSIGN_SHR", value: ">>=" });
+        i += 3;
+        continue;
+      }
+      if (expr[i] === "&" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_AND", value: "&=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "|" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_OR", value: "|=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "^" && expr[i + 1] === "=") {
+        tokens.push({ type: "ASSIGN_XOR", value: "^=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "=" && expr[i + 1] === "=") {
+        tokens.push({ type: "EQ", value: "==" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "!" && expr[i + 1] === "=") {
+        tokens.push({ type: "NE", value: "!=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "<" && expr[i + 1] === "=") {
+        tokens.push({ type: "LE", value: "<=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === ">" && expr[i + 1] === "=") {
+        tokens.push({ type: "GE", value: ">=" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "<" && expr[i + 1] === "<") {
+        tokens.push({ type: "SHL", value: "<<" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === ">" && expr[i + 1] === ">") {
+        tokens.push({ type: "SHR", value: ">>" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "&" && expr[i + 1] === "&") {
+        tokens.push({ type: "LAND", value: "&&" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "|" && expr[i + 1] === "|") {
+        tokens.push({ type: "LOR", value: "||" });
+        i += 2;
+        continue;
+      }
+      if (expr[i] === "?") {
+        tokens.push({ type: "TERNARY", value: "?" });
+        i++;
+        continue;
+      }
+      if (expr[i] === ":") {
+        tokens.push({ type: "COLON", value: ":" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "(") {
+        tokens.push({ type: "LPAREN", value: "(" });
+        i++;
+        continue;
+      }
+      if (expr[i] === ")") {
+        tokens.push({ type: "RPAREN", value: ")" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "~") {
+        tokens.push({ type: "BITNOT", value: "~" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "!") {
+        tokens.push({ type: "NOT", value: "!" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "+") {
+        tokens.push({ type: "PLUS", value: "+" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "-") {
+        tokens.push({ type: "MINUS", value: "-" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "*") {
+        tokens.push({ type: "MUL", value: "*" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "/") {
+        tokens.push({ type: "DIV", value: "/" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "%") {
+        tokens.push({ type: "MOD", value: "%" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "&") {
+        tokens.push({ type: "BITAND", value: "&" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "|") {
+        tokens.push({ type: "BITOR", value: "|" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "^") {
+        tokens.push({ type: "BITXOR", value: "^" });
+        i++;
+        continue;
+      }
+      if (expr[i] === "=") {
+        tokens.push({ type: "ASSIGN", value: "=" });
+        i++;
+        continue;
+      }
 
       if (/[0-9]/.test(expr[i])) {
         let num = "";
@@ -272,10 +445,16 @@ export class ShellEnvironment {
         if (expr[i] === "0" && (expr[i + 1] === "x" || expr[i + 1] === "X")) {
           num = "0x";
           i += 2;
-          while (i < expr.length && /[0-9a-fA-F]/.test(expr[i])) { num += expr[i]; i++; }
+          while (i < expr.length && /[0-9a-fA-F]/.test(expr[i])) {
+            num += expr[i];
+            i++;
+          }
           tokens.push({ type: "NUMBER", value: parseInt(num, 16) });
         } else {
-          while (i < expr.length && /[0-9]/.test(expr[i])) { num += expr[i]; i++; }
+          while (i < expr.length && /[0-9]/.test(expr[i])) {
+            num += expr[i];
+            i++;
+          }
           tokens.push({ type: "NUMBER", value: parseInt(num, 10) });
         }
         continue;
@@ -283,7 +462,10 @@ export class ShellEnvironment {
 
       if (/[A-Za-z_]/.test(expr[i])) {
         let name = "";
-        while (i < expr.length && /[A-Za-z_][A-Za-z0-9_]*/.test(expr[i])) { name += expr[i]; i++; }
+        while (i < expr.length && /[A-Za-z_][A-Za-z0-9_]*/.test(expr[i])) {
+          name += expr[i];
+          i++;
+        }
         const val = this.get(name);
         tokens.push({ type: "NUMBER", value: val !== null ? parseInt(val, 10) || 0 : 0 });
         continue;
@@ -361,7 +543,10 @@ export class ShellEnvironment {
     while (left.pos < tokens.length && (tokens[left.pos].type === "EQ" || tokens[left.pos].type === "NE")) {
       const op = tokens[left.pos].type;
       const right = this.parseArithmeticRelational(tokens, left.pos + 1);
-      left = { value: op === "EQ" ? (left.value === right.value ? 1 : 0) : (left.value !== right.value ? 1 : 0), pos: right.pos };
+      left = {
+        value: op === "EQ" ? (left.value === right.value ? 1 : 0) : left.value !== right.value ? 1 : 0,
+        pos: right.pos
+      };
     }
     return left;
   }
@@ -403,11 +588,22 @@ export class ShellEnvironment {
 
   parseArithmeticMulDiv(tokens, pos) {
     let left = this.parseArithmeticUnary(tokens, pos);
-    while (left.pos < tokens.length && (tokens[left.pos].type === "MUL" || tokens[left.pos].type === "DIV" || tokens[left.pos].type === "MOD")) {
+    while (
+      left.pos < tokens.length &&
+      (tokens[left.pos].type === "MUL" || tokens[left.pos].type === "DIV" || tokens[left.pos].type === "MOD")
+    ) {
       const op = tokens[left.pos].type;
       const right = this.parseArithmeticUnary(tokens, left.pos + 1);
       if (op === "DIV" && right.value === 0) throw new Error("Division by zero");
-      left = { value: op === "MUL" ? left.value * right.value : op === "DIV" ? Math.trunc(left.value / right.value) : left.value % right.value, pos: right.pos };
+      left = {
+        value:
+          op === "MUL"
+            ? left.value * right.value
+            : op === "DIV"
+              ? Math.trunc(left.value / right.value)
+              : left.value % right.value,
+        pos: right.pos
+      };
     }
     return left;
   }
@@ -415,10 +611,22 @@ export class ShellEnvironment {
   parseArithmeticUnary(tokens, pos) {
     if (pos >= tokens.length) return { value: 0, pos };
     const tok = tokens[pos];
-    if (tok.type === "PLUS") { const r = this.parseArithmeticUnary(tokens, pos + 1); return { value: +r.value, pos: r.pos }; }
-    if (tok.type === "MINUS") { const r = this.parseArithmeticUnary(tokens, pos + 1); return { value: -r.value, pos: r.pos }; }
-    if (tok.type === "NOT") { const r = this.parseArithmeticUnary(tokens, pos + 1); return { value: r.value ? 0 : 1, pos: r.pos }; }
-    if (tok.type === "BITNOT") { const r = this.parseArithmeticUnary(tokens, pos + 1); return { value: ~r.value, pos: r.pos }; }
+    if (tok.type === "PLUS") {
+      const r = this.parseArithmeticUnary(tokens, pos + 1);
+      return { value: +r.value, pos: r.pos };
+    }
+    if (tok.type === "MINUS") {
+      const r = this.parseArithmeticUnary(tokens, pos + 1);
+      return { value: -r.value, pos: r.pos };
+    }
+    if (tok.type === "NOT") {
+      const r = this.parseArithmeticUnary(tokens, pos + 1);
+      return { value: r.value ? 0 : 1, pos: r.pos };
+    }
+    if (tok.type === "BITNOT") {
+      const r = this.parseArithmeticUnary(tokens, pos + 1);
+      return { value: ~r.value, pos: r.pos };
+    }
     if (tok.type === "INC") {
       if (pos + 1 < tokens.length && tokens[pos + 1].type === "NUMBER") {
         tokens[pos + 1] = { ...tokens[pos + 1], value: tokens[pos + 1].value + 1 };
@@ -436,7 +644,8 @@ export class ShellEnvironment {
     if (tok.type === "NUMBER") return { value: tok.value, pos: pos + 1 };
     if (tok.type === "LPAREN") {
       const inner = this.parseArithmeticExpression(tokens, pos + 1);
-      if (inner.pos < tokens.length && tokens[inner.pos].type === "RPAREN") return { value: inner.value, pos: inner.pos + 1 };
+      if (inner.pos < tokens.length && tokens[inner.pos].type === "RPAREN")
+        return { value: inner.value, pos: inner.pos + 1 };
       return inner;
     }
     return { value: 0, pos: pos + 1 };
@@ -460,8 +669,9 @@ export class ShellEnvironment {
           const ch = str[j];
           if (ch === "'" && !inDouble) inSingle = !inSingle;
           else if (ch === '"' && !inSingle) inDouble = !inDouble;
-          else if (ch === "\\" && !inSingle) { j++; }
-          else if (!inSingle && !inDouble) {
+          else if (ch === "\\" && !inSingle) {
+            j++;
+          } else if (!inSingle && !inDouble) {
             if (ch === "(") depth++;
             else if (ch === ")") depth--;
           }
@@ -483,8 +693,13 @@ export class ShellEnvironment {
         let escaped = false;
         let cmdStr = "";
         while (j < str.length && (str[j] !== "`" || escaped)) {
-          if (str[j] === "\\" && !escaped) { escaped = true; }
-          else { if (escaped && str[j] !== "`" && str[j] !== "\\" && str[j] !== "$") cmdStr += "\\"; cmdStr += str[j]; escaped = false; }
+          if (str[j] === "\\" && !escaped) {
+            escaped = true;
+          } else {
+            if (escaped && str[j] !== "`" && str[j] !== "\\" && str[j] !== "$") cmdStr += "\\";
+            cmdStr += str[j];
+            escaped = false;
+          }
           j++;
         }
         if (j < str.length) {

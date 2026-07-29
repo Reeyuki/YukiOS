@@ -945,13 +945,12 @@ html[data-theme="light"] .file-tooltip {
 .mac-mode #audio-mixer-panel,
 html[data-theme].mac-mode #audio-mixer-panel {
   animation-name: trayPopupInMacBig !important;
-  background: rgb(28 28 32 / 60%) !important;
-  backdrop-filter: blur(40px) saturate(1.4) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(1.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04),
-    0 4px 24px rgba(0, 0, 0, 0.55) !important;
+  background: #000000a3 !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid black !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 16px !important;
 }
 
 .mac-mode #audio-mixer-panel.closing,

@@ -33,7 +33,7 @@ export class SessionManager {
     this.userHistory = this.loadUserHistory();
     this.sessionState = "login";
     this.selectedUser = null;
-    this.selectedSession = os.storage.get(StorageKeys.selectedSession) || "Yuki Desktop";
+    this.selectedSession = os.storage.get(StorageKeys.selectedSession) || "Yuki Desktop(Default)";
     this.ensureUserId();
     this.setupProfileUpdateListener();
     this.startTime = Date.now();
@@ -290,9 +290,10 @@ export class SessionManager {
           </button>
 
           <div class="session-dropdown" id="session-dropdown">
-            <div class="session-option" data-value="desktop">Yuki Desktop</div>
+            <div class="session-option" data-value="desktop">Yuki Desktop(Default)</div>
             <div class="session-option" data-value="mac">Yuki Mac Desktop</div>
             <div class="session-option" data-value="tiling">Yuki Tiling WM</div>
+            <div class="session-option" data-value="chromeos">Yuki Chrome OS</div>
             <div class="session-option" data-value="3d">Yuki 3D Desktop</div>
           </div>
         </div>
@@ -669,11 +670,13 @@ export class SessionManager {
           ? "Yuki Mac Desktop"
           : this.selectedSession === "Yuki 3D Desktop"
             ? "Yuki 3D Desktop"
-            : "Yuki Desktop";
+            : this.selectedSession === "Yuki Chrome OS"
+              ? "Yuki Chrome OS"
+              : "Yuki Desktop(Default)";
     sessionSelectorBtn.addEventListener("change", (e) => {
       const value = e.target.value;
 
-      this.selectedSession = value === "tiling" ? "Yuki Tiling VM" : "Yuki Desktop";
+      this.selectedSession = value === "tiling" ? "Yuki Tiling VM" : "Yuki Desktop(Default)";
       os.storage.set(StorageKeys.selectedSession, this.selectedSession);
     });
     const sessionRoot = this.container.querySelector("#session-selector");
@@ -694,9 +697,10 @@ export class SessionManager {
       const value = option.dataset.value;
 
       const sessionMap = {
-        desktop: "Yuki Desktop",
+        desktop: "Yuki Desktop(Default)",
         tiling: "Yuki Tiling VM",
         mac: "Yuki Mac Desktop",
+        chromeos: "Yuki Chrome OS",
         "3d": "Yuki 3D Desktop"
       };
 
@@ -857,6 +861,12 @@ export class SessionManager {
       this.disableTilingSettings();
     }
 
+    if (this.selectedSession === "Yuki Chrome OS") {
+      this.applyChromeOsSettings();
+    } else {
+      this.disableChromeOsSettings();
+    }
+
     if (this.selectedSession === "Yuki 3D Desktop") {
       await this.apply3DSettings();
     } else {
@@ -866,7 +876,7 @@ export class SessionManager {
     os.window.setFileSystemManager(os.fileSystemManager);
     setTimeout(() => os.window.restoreSession(), 500);
 
-    if (this.selectedSession === "Yuki Desktop") {
+    if (this.selectedSession === "Yuki Desktop(Default)") {
       audioMixer().playSystemSound(SystemAudio.START);
     }
 
@@ -931,6 +941,36 @@ export class SessionManager {
   disableTilingSettings() {
     modeManager.exit(MODES.TILING);
     os.tiling.setEnabled(false);
+  }
+
+  applyChromeOsSettings() {
+    modeManager.enter(MODES.CHROME_OS);
+    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
+    const chromeWallpapers = [
+      "Blues-Dark.jpg",
+      "Blues.jpg",
+      "Earth-Dark.jpg",
+      "Earth-Light.jpg",
+      "Fire-Dark.jpg",
+      "Fire-Light.jpg",
+      "Greens-Dark.jpg",
+      "Greens.jpg",
+      "Reds-Dark.jpg",
+      "Reds.jpg",
+      "Water-Dark.jpg",
+      "Water-Light.jpg",
+      "Wind-Dark.jpg",
+      "Wind-Light.jpg",
+      "Yellows-Dark.jpg",
+      "Yellows.jpg",
+      "chromeos-default.jpg"
+    ];
+    const pick = chromeWallpapers[Math.floor(Math.random() * chromeWallpapers.length)];
+    SystemUtilities.setWallpaper(`/static/wallpapers/chromeos-wallpapers/${pick}`);
+  }
+
+  disableChromeOsSettings() {
+    modeManager.exit(MODES.CHROME_OS);
   }
 
   async apply3DSettings() {

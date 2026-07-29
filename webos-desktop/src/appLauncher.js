@@ -669,15 +669,7 @@ player.load("${swfPath}");
     return !!el;
   }
 
-  createIframeWindow(
-    id,
-    title,
-    contentHtml,
-    appId,
-    appMeta,
-    analyticsBase = null,
-    externalUrl = null
-  ) {
+  createIframeWindow(id, title, contentHtml, appId, appMeta, analyticsBase = null, externalUrl = null) {
     this.createWindow(id, title, contentHtml, externalUrl, appId, appMeta);
   }
 
@@ -685,14 +677,7 @@ player.load("${swfPath}");
     return !(appMeta.type === "system" || this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId));
   }
 
-  createWindow(
-    id,
-    title,
-    contentHtml,
-    externalUrl = null,
-    appId = null,
-    appMeta = {}
-  ) {
+  createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("game") && appId) {
       document.title = sanitizeTitle(title);

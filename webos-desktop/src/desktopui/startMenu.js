@@ -26,6 +26,7 @@ import {
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
+import { modeManager, MODES } from "../modeManager.js";
 function getStartMenuEl() {
   return $("#start-menu") || $(".start-menu");
 }
@@ -128,8 +129,13 @@ export function applyStartMenuSettings(el) {
   });
 }
 
-function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
+async function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   if (os.tiling.enabled) return;
+  if (modeManager.isActive(MODES.CHROME_OS)) {
+    const { getLauncher } = await import("../chromeos/Launcher.js");
+    getLauncher().open();
+    return;
+  }
   const el = getStartMenuEl();
   if (!el) return;
 
@@ -172,9 +178,9 @@ function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
   }
 }
 
-export function toggleStartMenu(opts) {
+export async function toggleStartMenu(opts) {
   if (isStartMenuOpen()) closeStartMenu();
-  else openStartMenu(opts);
+  else await openStartMenu(opts);
 }
 
 function getFavorites() {

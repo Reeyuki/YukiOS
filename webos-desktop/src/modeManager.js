@@ -6,7 +6,8 @@ import { BusEvents } from "./core/EventBusConstants.js";
 export const MODES = Object.freeze({
   MAC: "mac",
   TILING: "tiling",
-  "3D": "3d"
+  "3D": "3d",
+  CHROME_OS: "chromeos"
 });
 
 const MODE_DEFS = {
@@ -24,6 +25,11 @@ const MODE_DEFS = {
     cssClass: "3d-mode",
     cssTarget: "html",
     storageKey: null
+  },
+  [MODES.CHROME_OS]: {
+    cssClass: "chromeos-mode",
+    cssTarget: "html",
+    storageKey: StorageKeys.chromeOsMode
   }
 };
 

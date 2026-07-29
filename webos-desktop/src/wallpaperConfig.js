@@ -1,5 +1,6 @@
 export const WALLPAPER_STATIC_DIR = "/static/wallpapers/";
 export const MAC_WALLPAPER_DIR = "/static/wallpapers/mac-wallpapers/";
+export const CHROME_OS_WALLPAPER_DIR = "/static/wallpapers/chromeos-wallpapers/";
 
 const MAC_WALLPAPERS = [
   { name: "Adwaita Lock", filename: "adwaitalock.webp" },
@@ -29,6 +30,26 @@ const MAC_WALLPAPERS = [
   { name: "Pills Dark", filename: "pillsd.webp" },
   { name: "Pixel Pusher Dark", filename: "pixelpusherd.webp" },
   { name: "Wallpaper", filename: "wp.webp" }
+];
+
+const CHROME_OS_WALLPAPERS = [
+  { name: "ChromeOS Earth Light", filename: "Earth-Light.jpg" },
+  { name: "ChromeOS Earth Dark", filename: "Earth-Dark.jpg" },
+  { name: "ChromeOS Blues", filename: "Blues.jpg" },
+  { name: "ChromeOS Blues Dark", filename: "Blues-Dark.jpg" },
+  { name: "ChromeOS Fire Light", filename: "Fire-Light.jpg" },
+  { name: "ChromeOS Fire Dark", filename: "Fire-Dark.jpg" },
+  { name: "ChromeOS Greens", filename: "Greens.jpg" },
+  { name: "ChromeOS Greens Dark", filename: "Greens-Dark.jpg" },
+  { name: "ChromeOS Reds", filename: "Reds.jpg" },
+  { name: "ChromeOS Reds Dark", filename: "Reds-Dark.jpg" },
+  { name: "ChromeOS Water Light", filename: "Water-Light.jpg" },
+  { name: "ChromeOS Water Dark", filename: "Water-Dark.jpg" },
+  { name: "ChromeOS Wind Light", filename: "Wind-Light.jpg" },
+  { name: "ChromeOS Wind Dark", filename: "Wind-Dark.jpg" },
+  { name: "ChromeOS Yellows", filename: "Yellows.jpg" },
+  { name: "ChromeOS Yellows Dark", filename: "Yellows-Dark.jpg" },
+  { name: "ChromeOS Default", filename: "chromeos-default.jpg" }
 ];
 
 const WALLPAPERS = [
@@ -80,4 +101,9 @@ export const WALLPAPER_NAME_URL_PAIRS = getWallpaperNameUrlPairs();
 export const MAC_WALLPAPER_NAME_URL_PAIRS = MAC_WALLPAPERS.map((w) => ({
   name: w.name,
   url: `${MAC_WALLPAPER_DIR}${w.filename}`
+}));
+
+export const CHROME_OS_WALLPAPER_NAME_URL_PAIRS = CHROME_OS_WALLPAPERS.map((w) => ({
+  name: w.name,
+  url: `${CHROME_OS_WALLPAPER_DIR}${w.filename}`
 }));

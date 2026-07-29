@@ -1,4 +1,17 @@
-import { NodeType, createBlock, createCommand, createPipeline, createLogical, createIf, createWhile, createForIn, createForExpression, createAssignment, createRedirection, createSubshell } from "./shellAST.js";
+import {
+  NodeType,
+  createBlock,
+  createCommand,
+  createPipeline,
+  createLogical,
+  createIf,
+  createWhile,
+  createForIn,
+  createForExpression,
+  createAssignment,
+  createRedirection,
+  createSubshell
+} from "./shellAST.js";
 
 const KEYWORDS = new Set(["if", "then", "elif", "else", "fi", "while", "do", "done", "for", "in"]);
 
@@ -139,7 +152,10 @@ export class ShellParser {
           i += 2;
         } else if (str[i] === "'") {
           i++;
-          while (i < str.length && str[i] !== "'") { word += str[i]; i++; }
+          while (i < str.length && str[i] !== "'") {
+            word += str[i];
+            i++;
+          }
           if (i < str.length) i++;
         } else if (str[i] === '"') {
           i++;
@@ -208,10 +224,19 @@ export class ShellParser {
     while (this.pos < this.tokens.length) {
       const tok = this.peek();
       if (!tok) break;
-      if (tok.type === "RPAREN" || tok.value === "fi" || tok.value === "done" || tok.value === "elif" || tok.value === "else") {
+      if (
+        tok.type === "RPAREN" ||
+        tok.value === "fi" ||
+        tok.value === "done" ||
+        tok.value === "elif" ||
+        tok.value === "else"
+      ) {
         break;
       }
-      if (tok.type === "SEMI") { this.pos++; continue; }
+      if (tok.type === "SEMI") {
+        this.pos++;
+        continue;
+      }
       const node = this.parseLogical();
       if (node) nodes.push(node);
       this.expect("SEMI");
@@ -226,9 +251,15 @@ export class ShellParser {
     while (this.pos < this.tokens.length) {
       const tok = this.peek();
       if (!tok) break;
-      if (tok.type === "AND") { this.advance(); const right = this.parsePipeline(); if (right) left = createLogical(left, "&&", right); }
-      else if (tok.type === "OR") { this.advance(); const right = this.parsePipeline(); if (right) left = createLogical(left, "||", right); }
-      else break;
+      if (tok.type === "AND") {
+        this.advance();
+        const right = this.parsePipeline();
+        if (right) left = createLogical(left, "&&", right);
+      } else if (tok.type === "OR") {
+        this.advance();
+        const right = this.parsePipeline();
+        if (right) left = createLogical(left, "||", right);
+      } else break;
     }
     return left;
   }
@@ -270,18 +301,39 @@ export class ShellParser {
       const t = this.peek();
       if (!t) break;
       if (t.type === "PIPE" || t.type === "AND" || t.type === "OR" || t.type === "LPAREN" || t.type === "RPAREN") break;
-      if (t.value === "fi" || t.value === "done" || t.value === "elif" || t.value === "else" || t.value === "then") break;
+      if (t.value === "fi" || t.value === "done" || t.value === "elif" || t.value === "else" || t.value === "then")
+        break;
       if (t.type === "SEMI") break;
 
-      if (t.type === "REDIR_OUT" || t.type === "REDIR_APPEND" || t.type === "REDIR_IN" || t.type === "REDIR_DUP_OUT" || t.type === "REDIR_DUP_IN" || t.type === "REDIR_FD_DUP") {
+      if (
+        t.type === "REDIR_OUT" ||
+        t.type === "REDIR_APPEND" ||
+        t.type === "REDIR_IN" ||
+        t.type === "REDIR_DUP_OUT" ||
+        t.type === "REDIR_DUP_IN" ||
+        t.type === "REDIR_FD_DUP"
+      ) {
         this.advance();
         const target = this.advance();
         let fd = null;
         if (t.type === "REDIR_FD_DUP") {
           const prev = args.length > 0 ? args[args.length - 1] : null;
-          if (prev && /^[0-9]+$/.test(prev)) { fd = parseInt(args.pop(), 10); }
+          if (prev && /^[0-9]+$/.test(prev)) {
+            fd = parseInt(args.pop(), 10);
+          }
         }
-        const rType = t.type === "REDIR_OUT" ? ">" : t.type === "REDIR_APPEND" ? ">>" : t.type === "REDIR_IN" ? "<" : t.type === "REDIR_DUP_OUT" ? ">&" : t.type === "REDIR_DUP_IN" ? "<&" : ">&";
+        const rType =
+          t.type === "REDIR_OUT"
+            ? ">"
+            : t.type === "REDIR_APPEND"
+              ? ">>"
+              : t.type === "REDIR_IN"
+                ? "<"
+                : t.type === "REDIR_DUP_OUT"
+                  ? ">&"
+                  : t.type === "REDIR_DUP_IN"
+                    ? "<&"
+                    : ">&";
         if (target) redirections.push(createRedirection(rType, target.value, fd));
         continue;
       }
@@ -377,8 +429,10 @@ export class ShellParser {
       while (this.pos < this.tokens.length) {
         const t = this.peek();
         if (!t || t.value === "do" || t.type === "SEMI") break;
-        if (t.type === "WORD") { wordList.push(t.value); this.advance(); }
-        else break;
+        if (t.type === "WORD") {
+          wordList.push(t.value);
+          this.advance();
+        } else break;
       }
     }
     this.expectKeyword("do");
@@ -416,7 +470,10 @@ export class ShellParser {
 
   expectKeyword(value) {
     const tok = this.peek();
-    if (tok && tok.value === value) { this.advance(); return true; }
+    if (tok && tok.value === value) {
+      this.advance();
+      return true;
+    }
     return false;
   }
 }

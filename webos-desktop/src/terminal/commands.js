@@ -35,8 +35,13 @@ export class CommandRegistry {
   registerBuiltins() {
     this.register("lolcat", async (args, ctx) => {
       const stops = [
-        [255,0,0],[255,119,0],[255,255,0],[0,255,0],
-        [0,0,255],[75,0,130],[139,0,255]
+        [255, 0, 0],
+        [255, 119, 0],
+        [255, 255, 0],
+        [0, 255, 0],
+        [0, 0, 255],
+        [75, 0, 130],
+        [139, 0, 255]
       ];
       let text;
       if (args.length > 0) {

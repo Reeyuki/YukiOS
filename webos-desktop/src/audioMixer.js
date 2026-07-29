@@ -1,5 +1,5 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
-import { $, createElement, setStyle } from "./shared/domUtils.js";
+import { $, $$, createElement, setStyle } from "./shared/domUtils.js";
 import { parseBool } from "./shared/boolUtils.js";
 import { StorageKeys, os, MODES } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
@@ -687,12 +687,21 @@ class AudioMixer {
   }
 
   positionPanel() {
-    const btn = $('[data-win-id="audio-mixer"]');
+    const candidates = $$('[data-win-id="audio-mixer"]');
+    const btn =
+      Array.from(candidates).find((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      }) || candidates[0];
     if (!this.panel) return;
 
     const tilingActive = os.modes.isActive(MODES.TILING);
+    const chromeShelf = $("#chromeos-shelf");
+    const chromeShelfVisible = chromeShelf && getComputedStyle(chromeShelf).display !== "none";
     let atTop;
-    if (tilingActive) {
+    if (chromeShelfVisible && chromeShelf.dataset.shelfPos === "top") {
+      atTop = true;
+    } else if (tilingActive) {
       const tilingBar = $("#tiling-bar");
       atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;
     } else {
@@ -702,8 +711,16 @@ class AudioMixer {
     if (btn) {
       const btnRect = btn.getBoundingClientRect();
       const panelW = 280;
-      let left = btnRect.right - panelW;
-      if (left < 8) left = 8;
+      let left;
+      if (chromeShelfVisible && chromeShelf.dataset.shelfPos === "left") {
+        left = btnRect.right + 8;
+      } else if (chromeShelfVisible && chromeShelf.dataset.shelfPos === "right") {
+        left = window.innerWidth - btnRect.left - panelW;
+        if (left < 8) left = 8;
+      } else {
+        left = btnRect.right - panelW;
+        if (left < 8) left = 8;
+      }
       if (atTop) {
         setStyle(this.panel, { top: `${btnRect.bottom + 6}px`, bottom: "auto" });
       } else {

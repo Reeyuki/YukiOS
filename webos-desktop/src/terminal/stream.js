@@ -17,10 +17,18 @@ export class OutputStream {
     this.errorHandlers = [];
   }
 
-  onWrite(handler) { this.writeHandlers.push(handler); }
-  onEnd(handler) { this.endHandlers.push(handler); }
-  onSignal(handler) { this.signalStateHandlers.push(handler); }
-  onError(handler) { this.errorHandlers.push(handler); }
+  onWrite(handler) {
+    this.writeHandlers.push(handler);
+  }
+  onEnd(handler) {
+    this.endHandlers.push(handler);
+  }
+  onSignal(handler) {
+    this.signalStateHandlers.push(handler);
+  }
+  onError(handler) {
+    this.errorHandlers.push(handler);
+  }
 
   write(data) {
     if (this.endedState) return false;
@@ -40,8 +48,12 @@ export class OutputStream {
     if (sig !== Signal.SIGPIPE) this.end();
   }
 
-  get ended() { return this.endedState; }
-  get signal() { return this.signalState; }
+  get ended() {
+    return this.endedState;
+  }
+  get signal() {
+    return this.signalState;
+  }
 }
 
 export class InputStream {
@@ -83,8 +95,12 @@ export class InputStream {
     this.end();
   }
 
-  get ended() { return this.endedState; }
-  get signal() { return this.signalState; }
+  get ended() {
+    return this.endedState;
+  }
+  get signal() {
+    return this.signalState;
+  }
 }
 
 export class Stream {
@@ -93,10 +109,20 @@ export class Stream {
     this.output = new OutputStream();
   }
 
-  write(data) { return this.output.write(data); }
-  async read() { return this.input.read(); }
-  end() { this.output.end(); this.input.end(); }
-  signal(sig) { this.output.signal(sig); this.input.signal(sig); }
+  write(data) {
+    return this.output.write(data);
+  }
+  async read() {
+    return this.input.read();
+  }
+  end() {
+    this.output.end();
+    this.input.end();
+  }
+  signal(sig) {
+    this.output.signal(sig);
+    this.input.signal(sig);
+  }
 
   pipe(destination) {
     this.output.onWrite((data) => destination.write(data));
@@ -105,7 +131,9 @@ export class Stream {
     return destination;
   }
 
-  get ended() { return this.output.ended; }
+  get ended() {
+    return this.output.ended;
+  }
 }
 
 export function fromIterable(iterable) {

@@ -89,13 +89,15 @@ export class ShellInterpreter {
       }
     }
 
-    const results = await Promise.all(commands.map((cmd, i) => {
-      return this.executeNode(cmd, {
-        stdin: streams[i].stdin,
-        stdout: streams[i].stdout,
-        stderr: streams[i].stderr
-      });
-    }));
+    const results = await Promise.all(
+      commands.map((cmd, i) => {
+        return this.executeNode(cmd, {
+          stdin: streams[i].stdin,
+          stdout: streams[i].stdout,
+          stderr: streams[i].stderr
+        });
+      })
+    );
 
     for (const s of streams) {
       s.stdin.end();
@@ -121,7 +123,7 @@ export class ShellInterpreter {
     for (const arg of args) {
       // expand variables in args
     }
-    const expandedArgs = args.map(a => this.ctx.expandString ? this.ctx.expandString(a) : a);
+    const expandedArgs = args.map((a) => (this.ctx.expandString ? this.ctx.expandString(a) : a));
 
     if (this.ctx.hasCommand && this.ctx.hasCommand(node.name)) {
       const capturedOutput = [];
@@ -129,7 +131,7 @@ export class ShellInterpreter {
       const cmdIo = {
         stdin: io.stdin,
         stdout: io.stdout || { write: (data) => capturedOutput.push(data), end: () => {} },
-        stderr: io.stderr || { write: (data) => this.ctx.print ? this.ctx.print(data) : null, end: () => {} }
+        stderr: io.stderr || { write: (data) => (this.ctx.print ? this.ctx.print(data) : null), end: () => {} }
       };
 
       const result = await this.ctx.executeCommand(node.name, expandedArgs, cmdIo);

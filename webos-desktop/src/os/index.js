@@ -221,14 +221,17 @@ const noopAPIs = {
   fileSystemManager: null
 };
 
-export const os = new Proxy({}, {
-  get(_target, prop) {
-    if (!bridge) {
-      const fallback = noopAPIs[prop];
-      if (fallback !== undefined) return fallback;
-      if (prop === "then" || prop === "catch") return undefined;
-      return undefined;
+export const os = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      if (!bridge) {
+        const fallback = noopAPIs[prop];
+        if (fallback !== undefined) return fallback;
+        if (prop === "then" || prop === "catch") return undefined;
+        return undefined;
+      }
+      return bridge[prop];
     }
-    return bridge[prop];
   }
-});
+);
