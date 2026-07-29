@@ -1,5 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
-import { resolveAppName } from "../shared/appNameResolver.js";
+import { resolveAppName } from "../utils/utils.js";
 import { appMap } from "../games/gamesList.js";
 import { fetchLiveStats } from "../analytics.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";

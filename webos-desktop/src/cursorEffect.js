@@ -1,5 +1,5 @@
 import { BusEvents } from "./core/EventBusConstants.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 import { StorageKeys, os } from "./framework.js";
 let container = null;

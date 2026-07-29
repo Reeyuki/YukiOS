@@ -1,6 +1,6 @@
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os, MODES } from "../framework.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
 import { BusEvents } from "../core/EventBus.js";
 const desktop = document.getElementById("desktop");

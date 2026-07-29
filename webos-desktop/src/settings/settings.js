@@ -3,7 +3,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { setCdnMirror, initializeMirrors } from "../shared/assetResolver.js";
 import { appMap } from "../games/gamesList.js";
 import { turboManager } from "../shared/turboManager.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 
 import { buildSettingsHTML } from "./settingRenderer.js";
 import { modeManager, MODES } from "../modeManager.js";
@@ -40,7 +40,7 @@ import {
 } from "./settingsBinders.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
 import { bindTilingCategory } from "./pane-tiling.js";
-import { bindChromeOsCategory } from "./chromeosPanel.js";
+import { bindChromeOsCategory } from "../modes/chromeos/settings.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";

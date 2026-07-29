@@ -1,7 +1,7 @@
 import { os } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { animateWindowClose, animateWindowMinimize, applyFocusGlow, applyZDepthLift } from "./AnimationSystem.js";
-import { getSetting } from "../shared/settingsUtils.js";
+import { getSetting } from "../utils/utils.js";
 import { sanitizeTitle } from "../utils/utils.js";
 
 export class WindowStateManager {

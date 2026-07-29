@@ -1,6 +1,6 @@
 import { $ } from "../shared/domUtils.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os, MODES } from "../framework.js";

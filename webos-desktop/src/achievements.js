@@ -3,7 +3,7 @@ import { BusEvents } from "./core/EventBus.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
 import { $$ } from "./shared/domUtils.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 import { BaseApp, StorageKeys, os } from "./framework.js";
 export const Achievements = {

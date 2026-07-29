@@ -1,10 +1,10 @@
-import "../styles/tiling.css";
-import { TilingLayoutEngine as Engine } from "./TilingLayoutEngine.js";
-import { MasterStackEngine } from "./MasterStackEngine.js";
-import { bus, BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os } from "../framework.js";
-import { TilingBar } from "../tiling/TilingBar.js";
-import { modeManager, MODES } from "../modeManager.js";
+import "./style.css";
+import { TilingLayoutEngine as Engine } from "../../windowManager/TilingLayoutEngine.js";
+import { MasterStackEngine } from "../../windowManager/MasterStackEngine.js";
+import { bus, BusEvents } from "../../core/EventBus.js";
+import { StorageKeys, os } from "../../framework.js";
+import { TilingBar } from "../../tiling/TilingBar.js";
+import { modeManager, MODES } from "../../modeManager.js";
 
 const CONFIG_PATH = ["Config", "yukiOs", "tiling.conf"];
 

@@ -2,21 +2,21 @@ import { audioMixer } from "./audioMixer.js";
 import { WorkspaceManager } from "./windowManager/WorkspaceManager.js";
 import { windowMakeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
-import { notify, sendNotify } from "./windowManager/notificationBridge.js";
+
 import { bus, BusEvents } from "./core/EventBus.js";
 import { initClickBubble, animateWindowOpen } from "./windowManager/AnimationSystem.js";
 import { InputHandler } from "./windowManager/InputHandler.js";
 import { LayoutManager } from "./windowManager/LayoutManager.js";
 import { SnapSystem } from "./windowManager/SnapSystem.js";
 import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
-import { MacDock } from "./windowManager/MacDock.js";
+import { MacDock } from "./modes/macos/MacDock.js";
 import { Shelf } from "./chromeos/Shelf.js";
 import { WindowSessionManager } from "./windowManager/WindowSessionManager.js";
 import { AppRestorationService } from "./windowManager/AppRestorationService.js";
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
-import { TilingManager } from "./windowManager/TilingManager.js";
+import { TilingManager } from "./modes/tiling/TilingManager.js";
 
 import { StorageKeys, os, MODES } from "./framework.js";
 import { $ } from "./shared/domUtils.js";
@@ -169,7 +169,7 @@ export class WindowManager {
   }
 
   notify(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
-    notify(this, title, message, type, duration, icon, appSource);
+    os.notify.send(title, message, { type, duration, icon, appSource });
   }
 
   updateTransparency() {
@@ -507,7 +507,7 @@ export class WindowManager {
   }
 
   sendNotify(text, appSource = null) {
-    sendNotify(this, text, appSource);
+    os.notify.send(text, "", { appSource });
   }
 
   isWindowPinned(winId) {

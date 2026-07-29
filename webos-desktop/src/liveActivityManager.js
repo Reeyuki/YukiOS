@@ -1,6 +1,6 @@
 import { BusEvents } from "./core/EventBus.js";
 import { StorageKeys, os } from "./framework.js";
-import { resolveAppName, resolveAppIcon } from "./shared/appNameResolver.js";
+import { resolveAppName, resolveAppIcon } from "./utils/utils.js";
 import { PREDEFINED_AVATARS } from "./utils/avatarData.js";
 
 const ACTIVITY_ENDPOINT = "https://analytics.liventcord-a60.workers.dev/live/activity";

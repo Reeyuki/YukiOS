@@ -1,6 +1,6 @@
-import { StorageKeys, os } from "../framework.js";
-import { BusEvents } from "../core/EventBus.js";
-import { $, $$, bindEvent, toggleClass } from "../shared/domUtils.js";
+import { StorageKeys, os } from "../../framework.js";
+import { BusEvents } from "../../core/EventBus.js";
+import { $, $$, bindEvent, toggleClass } from "../../shared/domUtils.js";
 
 function getSettings() {
   return {

@@ -7,7 +7,7 @@ import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
 import { renderTilingSettings } from "./pane-tiling.js";
-import { renderChromeOsSettings } from "./chromeosPanel.js";
+import { renderChromeOsSettings } from "../modes/chromeos/settings.js";
 import { RESOLUTION_PRESETS, getViewportLabel } from "../resolution/resolutionManager.js";
 
 function getBrowserInfo() {

@@ -1,6 +1,6 @@
 import "../styles/tilingBar.css";
 import { StorageKeys, os } from "../framework.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 import { TilingRofi } from "./TilingRofi.js";
 import { TilingKeybindOverlay } from "./TilingKeybindOverlay.js";
 import { trayManager } from "../tray/tray.js";

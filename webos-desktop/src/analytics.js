@@ -2,7 +2,7 @@ import { os, $ } from "./framework.js";
 import { StorageKeys } from "./StorageKeys.js";
 
 const ANALYTICS_QUEUE_KEY = "yuki_analytics_queue";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
 const ENDPOINT = ENDPOINT_BASE + "/analytics";

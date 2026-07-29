@@ -8,7 +8,7 @@ import { BusEvents } from "./core/EventBus.js";
 import { getVantaPresetById } from "./vantaPresets.js";
 import { vantaPresets } from "./vantaPresets.js";
 import { loadVantaEffect } from "./vanta/vantaLoader.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 import { StorageKeys, os, MODES } from "./framework.js";
 function isBlob(obj) {

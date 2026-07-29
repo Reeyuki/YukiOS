@@ -1,5 +1,4 @@
-import { os, MODES } from "../framework.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { os, MODES, StorageKeys } from "../framework.js";
 
 export function escapeHtml(str) {
   if (typeof str !== "string") return "";
@@ -161,4 +160,39 @@ export function isTaskbarTop() {
   if (os.modes.isActive(MODES.MAC)) return true;
   const taskbar = document.getElementById("taskbar");
   return taskbar && taskbar.classList.contains("position-top");
+}
+
+export function parseBool(val, defaultValue = false) {
+  if (val === true || val === "true" || val === "1") return true;
+  if (val === false || val === "false" || val === "0") return false;
+  return defaultValue;
+}
+
+export function getSetting(key, defaultValue) {
+  const storageKey = StorageKeys[key];
+  if (!storageKey) return defaultValue;
+  const val = os.storage.get(storageKey);
+  if (val === null) return defaultValue;
+  if (val === "true") return true;
+  if (val === "false") return false;
+  const num = Number(val);
+  if (!isNaN(num)) return num;
+  return val;
+}
+
+export function getRawSetting(key, fallback) {
+  return os.storage.get(key) ?? fallback;
+}
+
+export function resolveAppName(appId) {
+  if (!appId) return "Unknown App";
+  const info = os.app.getAppInfo(appId);
+  if (info?.title) return info.title;
+  return appId.charAt(0).toUpperCase() + appId.slice(1).replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+export function resolveAppIcon(appId) {
+  if (!appId) return null;
+  const info = os.app.getAppInfo(appId);
+  return info?.icon || null;
 }

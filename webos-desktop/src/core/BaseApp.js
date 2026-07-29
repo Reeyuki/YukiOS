@@ -1,6 +1,13 @@
 import { AppSource } from "../AppSource.js";
 import { os as _os } from "../os/index.js";
 
+export const PersistenceTypes = {
+  NONE: "none",
+  LOCAL_STORAGE: "localStorage",
+  SESSION_STORAGE: "sessionStorage",
+  MEMORY: "memory"
+};
+
 export class BaseApp {
   constructor(param = {}) {
     if (param.kernel) {

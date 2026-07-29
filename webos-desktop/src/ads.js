@@ -1,5 +1,5 @@
 import { StorageKeys, os } from "./framework.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 export function shouldEnableAds() {
   return true;

@@ -3,7 +3,7 @@ import { descriptionMap } from "./gameDescriptions.js";
 import { injectAdsterraAd } from "../ads.js";
 import { steamAudio } from "./steamAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 import { StorageKeys, os } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;

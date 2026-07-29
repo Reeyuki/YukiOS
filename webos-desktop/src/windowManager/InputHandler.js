@@ -3,7 +3,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { SystemUtilities } from "../system.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 
 import { StorageKeys, os } from "../framework.js";
 export class InputHandler {

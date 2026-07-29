@@ -3,7 +3,7 @@ import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
 import { os } from "../framework.js";
 import { openFileWith } from "../fileDisplay.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "./utils.js";
 
 const conversionHistory = [];
 

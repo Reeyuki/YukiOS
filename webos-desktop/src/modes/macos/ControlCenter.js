@@ -1,12 +1,12 @@
-import { audioMixer } from "../audioMixer.js";
-import { turboManager } from "../shared/turboManager.js";
-import { isTaskbarTop } from "../utils/utils.js";
-import { getTrayPosition } from "../tray/tray.js";
-import { BusEvents } from "../framework.js";
-import { parseBool } from "../shared/boolUtils.js";
-import { StorageKeys, os, MODES, $ } from "../framework.js";
-import { SystemUtilities } from "../system.js";
-import { MAC_WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
+import { audioMixer } from "../../audioMixer.js";
+import { turboManager } from "../../shared/turboManager.js";
+import { isTaskbarTop } from "../../utils/utils.js";
+import { getTrayPosition } from "../../tray/tray.js";
+import { BusEvents } from "../../framework.js";
+import { parseBool } from "../../utils/utils.js";
+import { StorageKeys, os, MODES, $ } from "../../framework.js";
+import { SystemUtilities } from "../../system.js";
+import { MAC_WALLPAPER_NAME_URL_PAIRS } from "../../wallpaperConfig.js";
 
 const ACCENT_COLORS = [
   { label: "Blue", value: "#3b82f6" },
@@ -327,7 +327,7 @@ class MacControlCenter {
     if (lockBtn) {
       lockBtn.addEventListener("click", () => {
         this.closePopup();
-        import("../desktopui/startMenu.js").then((m) => m.closeStartMenu());
+        import("../../desktopui/startMenu.js").then((m) => m.closeStartMenu());
         os.app.lockSession();
       });
     }

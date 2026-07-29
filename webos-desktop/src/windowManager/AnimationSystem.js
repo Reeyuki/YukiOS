@@ -1,4 +1,4 @@
-import { getRawSetting } from "../shared/settingsUtils.js";
+import { getRawSetting } from "../utils/utils.js";
 import { StorageKeys, os } from "../framework.js";
 export const OPEN_ANIMATIONS = {
   fade: "fade",

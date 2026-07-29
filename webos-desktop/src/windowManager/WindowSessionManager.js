@@ -1,5 +1,5 @@
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 
 import { StorageKeys, os } from "../framework.js";
 export class WindowSessionManager {

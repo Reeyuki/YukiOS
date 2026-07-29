@@ -15,6 +15,9 @@ import { liveActivityManager } from "./liveActivityManager.js";
 import { runBootPreview } from "./bootScreen.js";
 import { BOOT_ANIMATIONS } from "./bootAnimations.js";
 import { modeManager, MODES } from "./modeManager.js";
+import { applyMacSettings, disableMacSettings } from "./modes/macos/session.js";
+import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/session.js";
+import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -850,21 +853,21 @@ export class SessionManager {
     liveActivityManager.init();
 
     if (this.selectedSession === "Yuki Mac Desktop") {
-      this.applyMacSettings();
+      applyMacSettings();
     } else {
-      this.disableMacSettings();
+      disableMacSettings();
     }
 
     if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
-      this.applyTilingSettings();
+      applyTilingSettings();
     } else {
-      this.disableTilingSettings();
+      disableTilingSettings();
     }
 
     if (this.selectedSession === "Yuki Chrome OS") {
-      this.applyChromeOsSettings();
+      applyChromeOsSettings();
     } else {
-      this.disableChromeOsSettings();
+      disableChromeOsSettings();
     }
 
     if (this.selectedSession === "Yuki 3D Desktop") {
@@ -890,89 +893,6 @@ export class SessionManager {
     this.startIdleDetection();
   }
 
-  applyMacSettings() {
-    modeManager.enter(MODES.MAC);
-    os.storage.set(StorageKeys.dockEnabled, "true");
-    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
-    os.storage.set(StorageKeys.theme, "macos-fluent");
-    applyTheme("macos-fluent", () => os.storage.get(StorageKeys.customColors) || null);
-    os.storage.set(StorageKeys.taskbarPosition, "top");
-    taskbarPositionManager.setPosition("top");
-    os.storage.set(StorageKeys.taskbarAlignment, "center");
-    const taskbarWindows = $("#taskbar-windows");
-    const taskbar = $("#taskbar");
-    if (taskbarWindows && taskbar) {
-      const isHorizontal = taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
-      taskbarWindows.style.justifyContent = isHorizontal ? "center" : "center";
-    }
-    this.loadSfProFonts();
-  }
-
-  disableMacSettings() {
-    modeManager.exit(MODES.MAC);
-    os.storage.set(StorageKeys.dockEnabled, "false");
-    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
-    const currentTheme = os.storage.get(StorageKeys.theme);
-    if (currentTheme === "macos-fluent") {
-      os.storage.set(StorageKeys.theme, "yukios");
-      applyTheme("yukios", () => os.storage.get(StorageKeys.customColors) || null);
-    }
-    os.storage.set(StorageKeys.taskbarPosition, "bottom");
-    taskbarPositionManager.setPosition("bottom");
-    os.storage.set(StorageKeys.taskbarAlignment, "left");
-    const taskbarWindows = $("#taskbar-windows");
-    const taskbar = $("#taskbar");
-    if (taskbarWindows && taskbar) {
-      const isHorizontal = taskbar.classList.contains("position-bottom") || taskbar.classList.contains("position-top");
-      taskbarWindows.style.justifyContent = isHorizontal ? "flex-start" : "center";
-    }
-  }
-
-  applyTilingSettings() {
-    modeManager.enter(MODES.TILING);
-    os.tiling.setEnabled(true);
-    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
-
-    const tilingWallpapers = ["corndog.jpg", "end_4.jpg", "Kath.jpg", "Meptl.png"];
-    const pick = tilingWallpapers[Math.floor(Math.random() * tilingWallpapers.length)];
-    SystemUtilities.setWallpaper(`/static/wallpapers/${pick}`);
-  }
-
-  disableTilingSettings() {
-    modeManager.exit(MODES.TILING);
-    os.tiling.setEnabled(false);
-  }
-
-  applyChromeOsSettings() {
-    modeManager.enter(MODES.CHROME_OS);
-    os.events.emit(BusEvents.SETTINGS_CHANGED, {});
-    const chromeWallpapers = [
-      "Blues-Dark.jpg",
-      "Blues.jpg",
-      "Earth-Dark.jpg",
-      "Earth-Light.jpg",
-      "Fire-Dark.jpg",
-      "Fire-Light.jpg",
-      "Greens-Dark.jpg",
-      "Greens.jpg",
-      "Reds-Dark.jpg",
-      "Reds.jpg",
-      "Water-Dark.jpg",
-      "Water-Light.jpg",
-      "Wind-Dark.jpg",
-      "Wind-Light.jpg",
-      "Yellows-Dark.jpg",
-      "Yellows.jpg",
-      "chromeos-default.jpg"
-    ];
-    const pick = chromeWallpapers[Math.floor(Math.random() * chromeWallpapers.length)];
-    SystemUtilities.setWallpaper(`/static/wallpapers/chromeos-wallpapers/${pick}`);
-  }
-
-  disableChromeOsSettings() {
-    modeManager.exit(MODES.CHROME_OS);
-  }
-
   async apply3DSettings() {
     modeManager.enter(MODES["3D"]);
     const app = this.os.app.getInstance("room3dApp");
@@ -994,27 +914,6 @@ export class SessionManager {
     if (app) {
       app.exitSystemMode();
     }
-  }
-
-  loadSfProFonts() {
-    const base = "https://cdn.jsdelivr.net/gh/sahibjotsaggu/San-Francisco-Pro-Fonts@master";
-    const variants = [
-      { weight: "400", file: "SF-Pro-Display-Regular.otf" },
-      { weight: "500", file: "SF-Pro-Display-Medium.otf" },
-      { weight: "600", file: "SF-Pro-Display-Semibold.otf" },
-      { weight: "700", file: "SF-Pro-Display-Bold.otf" }
-    ];
-    variants.forEach(({ weight, file }) => {
-      const font = new FontFace("SF Pro Display", `url(${base}/${file})`, {
-        weight,
-        style: "normal",
-        display: "swap"
-      });
-      font
-        .load()
-        .then(() => document.fonts.add(font))
-        .catch(() => {});
-    });
   }
 
   launchStartupApps() {

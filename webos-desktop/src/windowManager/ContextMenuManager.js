@@ -1,5 +1,5 @@
 import { showStartStyleMenu } from "../shared/contextMenu.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 import { os } from "../framework.js";
 
 export class ContextMenuManager {

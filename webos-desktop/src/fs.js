@@ -8,7 +8,7 @@ import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
 import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 import { ISOFileSystem } from "./isoFS.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 

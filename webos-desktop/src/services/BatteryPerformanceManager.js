@@ -1,6 +1,6 @@
 import { $ } from "../shared/domUtils.js";
 import { turboManager } from "../shared/turboManager.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 import { StorageKeys, os } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 

@@ -1,10 +1,10 @@
-import { BusEvents } from "../core/EventBus.js";
-import { showDynamicContextMenu, hideMenu } from "../shared/contextMenu.js";
-import { getSetting } from "../shared/settingsUtils.js";
-import { $, $$, bindEvent, addClass, removeClass, toggleClass, setText, createElement } from "../shared/domUtils.js";
+import { BusEvents } from "../../core/EventBus.js";
+import { showDynamicContextMenu, hideMenu } from "../../shared/contextMenu.js";
+import { getSetting } from "../../utils/utils.js";
+import { $, $$, bindEvent, addClass, removeClass, toggleClass, setText, createElement } from "../../shared/domUtils.js";
 import { DEFAULT_SYSTEM_MENUS, APP_MENU_OVERRIDES } from "./appMenus.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { os, MODES } from "../framework.js";
+import { StorageKeys } from "../../StorageKeys.js";
+import { os, MODES } from "../../framework.js";
 
 export class MenuBarManager {
   constructor(os) {
@@ -39,7 +39,7 @@ export class MenuBarManager {
     if (appleBtn) {
       bindEvent(appleBtn, "click", (e) => {
         e.stopPropagation();
-        import("../desktopui/startMenu.js").then((m) => m.toggleStartMenu());
+        import("../../desktopui/startMenu.js").then((m) => m.toggleStartMenu());
       });
     }
   }

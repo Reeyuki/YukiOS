@@ -1,12 +1,13 @@
-import { os } from "../framework.js";
-import { modeManager, MODES } from "../modeManager.js";
-import { createElement } from "../shared/domUtils.js";
-import { resolveIconUrl } from "../shared/assetResolver.js";
-import { BusEvents } from "../core/EventBus.js";
-import { getSetting } from "../shared/settingsUtils.js";
-import { showStartStyleMenu } from "../shared/contextMenu.js";
-import { StorageKeys } from "../StorageKeys.js";
-import { KeybindManager } from "../keybindManager.js";
+import "./style.css";
+import { os } from "../../framework.js";
+import { modeManager, MODES } from "../../modeManager.js";
+import { createElement } from "../../shared/domUtils.js";
+import { resolveIconUrl } from "../../shared/assetResolver.js";
+import { BusEvents } from "../../core/EventBus.js";
+import { getSetting } from "../../utils/utils.js";
+import { showStartStyleMenu } from "../../shared/contextMenu.js";
+import { StorageKeys } from "../../StorageKeys.js";
+import { KeybindManager } from "../../keybindManager.js";
 
 const DEFAULT_DOCK_APPS = [
   { appId: "launchpadApp", title: "Launchpad", icon: "fas fa-th", color: "#888" },
@@ -271,7 +272,7 @@ export class MacDock {
         if (app.isFinder) {
           os.app.getInstance("commandPalette")?.open();
         } else if (app.isAudioMixer) {
-          import("../audioMixer.js").then((m) => m.audioMixer().toggle());
+          import("../../audioMixer.js").then((m) => m.audioMixer().toggle());
         } else if (app.isTrash) {
           os.app.getInstance("explorerApp")?.openTrash();
         } else {
@@ -297,7 +298,7 @@ export class MacDock {
             "Launch App",
             () => {
               if (app.isFinder) os.app.getInstance("commandPalette")?.open();
-              else if (app.isAudioMixer) import("../audioMixer.js").then((m) => m.audioMixer().toggle());
+              else if (app.isAudioMixer) import("../../audioMixer.js").then((m) => m.audioMixer().toggle());
               else if (app.isTrash) os.app.getInstance("explorerApp")?.openTrash();
               else os.app.launch(app.appId);
             },

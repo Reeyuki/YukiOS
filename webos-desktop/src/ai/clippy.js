@@ -1,6 +1,6 @@
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { $$ } from "../shared/domUtils.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";

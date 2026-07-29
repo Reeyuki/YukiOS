@@ -3,7 +3,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
 import { updateTransparency } from "./transparencyManager.js";
-import { getSetting } from "../shared/settingsUtils.js";
+import { getSetting } from "../utils/utils.js";
 import { os, MODES } from "../framework.js";
 
 export class WindowManagerUtils {

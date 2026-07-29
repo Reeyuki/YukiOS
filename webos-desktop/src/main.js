@@ -12,7 +12,7 @@ import { DesktopPeekManager } from "./desktopPeek.js";
 import { SettingsApp } from "./settings/settings.js";
 import { AppCreatorApp } from "./apps/appCreator.js";
 import { OfficeAppProxy } from "./office/officeLoader.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
@@ -40,8 +40,8 @@ import { showBootScreen } from "./bootScreen.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
 import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray/tray.js";
-import { MacControlCenter } from "./tray/macControlCenter.js";
-import { MenuBarManager } from "./menuBar/MenuBarManager.js";
+import { MacControlCenter } from "./modes/macos/ControlCenter.js";
+import { MenuBarManager } from "./modes/macos/MenuBarManager.js";
 
 registerPWA();
 

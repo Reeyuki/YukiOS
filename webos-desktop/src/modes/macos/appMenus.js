@@ -1,5 +1,5 @@
-import { os } from "../framework.js";
-import { $ } from "../shared/domUtils.js";
+import { os } from "../../framework.js";
+import { $ } from "../../shared/domUtils.js";
 
 function findAppEntry(winId) {
   const win = $(`#${winId}`);

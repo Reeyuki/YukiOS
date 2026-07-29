@@ -2,9 +2,8 @@ import { makeDraggable } from "./shared/dragUtils.js";
 import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
-import { getSetting } from "./shared/settingsUtils.js";
 import { $, createElement, setHTML, toggleClass, addClass, removeClass } from "./shared/domUtils.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { getSetting, parseBool } from "./utils/utils.js";
 
 import { APP_MANIFESTS, StorageKeys, os } from "./framework.js";
 function escapeHtml(str) {

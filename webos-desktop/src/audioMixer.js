@@ -1,6 +1,6 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { $, $$, createElement, setStyle } from "./shared/domUtils.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 import { StorageKeys, os, MODES } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
 import { getTrayPosition } from "./tray/tray.js";

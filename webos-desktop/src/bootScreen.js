@@ -5,7 +5,7 @@ import "./styles/bootScreen.css";
 import { pickAnimation } from "./bootAnimations.js";
 import { KeybindManager } from "./keybindManager.js";
 import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 const BRAND = "YUKiOS";
 const MIN_DURATION = 2500;

@@ -5,7 +5,7 @@ import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettings
 import { KeybindManager } from "../keybindManager.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
-import { resolveAppName } from "../shared/appNameResolver.js";
+import { resolveAppName } from "../utils/utils.js";
 import { appMap } from "./gamesList.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 

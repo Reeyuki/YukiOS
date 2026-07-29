@@ -1,7 +1,7 @@
 import "./styles/donationPopup.css";
 import { StorageKeys, os } from "./framework.js";
 import { $, bindEvent } from "./shared/domUtils.js";
-import { parseBool } from "./shared/boolUtils.js";
+import { parseBool } from "./utils/utils.js";
 
 const MONERO_ADDRESS =
   "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";

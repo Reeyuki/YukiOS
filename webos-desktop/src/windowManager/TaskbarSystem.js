@@ -4,7 +4,7 @@ import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 import { animateWindowOpen } from "./AnimationSystem.js";
-import { parseBool } from "../shared/boolUtils.js";
+import { parseBool } from "../utils/utils.js";
 
 import {
   $,
