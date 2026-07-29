@@ -42,7 +42,15 @@ import {
 import { handleFileUpload, uploadSingleFile, saveToWallpapers } from "./explorer/upload.js";
 import { showTrashView, renderTrashView } from "./explorer/trash.js";
 import { startInlineRename, spawnInlineItem } from "./explorer/inlineRename.js";
-import { pasteToPath, downloadItems, createArchiveFromItems } from "./explorer/transfer.js";
+import { pasteToPath, copyItem, downloadItems, createArchiveFromItems } from "./explorer/transfer.js";
+
+const sharedDragState = {
+  active: false,
+  items: [],
+  fileTypes: {},
+  sourcePath: null,
+  sourceWinId: null
+};
 
 export class ExplorerApp extends BaseApp {
   get viewMode() {
@@ -1660,6 +1668,7 @@ export class ExplorerApp extends BaseApp {
       let ghost = null;
       let dragging = false;
       let dragRafId = null;
+      let activeDropTarget = null;
 
       const onMouseMove = (ev) => {
         const dx = ev.clientX - startX;
@@ -1684,6 +1693,19 @@ export class ExplorerApp extends BaseApp {
           ghost.appendChild(label);
           setStyle(ghost, { left: ev.clientX - 50 + "px", top: ev.clientY - 30 + "px" });
           document.body.appendChild(ghost);
+
+          const selectedNames = inst.selectedItems.size > 0 ? [...inst.selectedItems] : [name];
+          sharedDragState.active = true;
+          sharedDragState.items = selectedNames;
+          sharedDragState.sourcePath = inst.currentPath;
+          sharedDragState.sourceWinId = inst.winId;
+          sharedDragState.fileTypes = {};
+          if (view) {
+            view.querySelectorAll(".file-item").forEach((el) => {
+              const n = el.querySelector("span")?.textContent;
+              if (n) sharedDragState.fileTypes[n] = el.dataset.isFile === "true";
+            });
+          }
         }
 
         if (dragging && ghost) {
@@ -1694,11 +1716,31 @@ export class ExplorerApp extends BaseApp {
             dragRafId = null;
             const explorerWin = $(`#${inst.winId}`);
             const overDesktop = !explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
+
+            const el = document.elementFromPoint(ev.clientX, ev.clientY);
+            const targetView = el?.closest(".explorer-main");
+            const overOtherExplorer = targetView && targetView.id !== `${inst.winId}-view`;
+
+            if (activeDropTarget && activeDropTarget !== targetView) {
+              removeClass(activeDropTarget, "explorer-drop-active");
+            }
+            if (overOtherExplorer) {
+              addClass(targetView, "explorer-drop-active");
+              activeDropTarget = targetView;
+            } else {
+              activeDropTarget = null;
+            }
+
             setStyle(ghost, {
-              borderColor: overDesktop ? "rgba(79,255,120,0.7)" : "rgba(79,158,255,0.55)",
-              boxShadow: overDesktop
-                ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
-                : "0 8px 32px rgba(0,0,0,0.5)"
+              borderColor: overOtherExplorer
+                ? "rgba(255,200,79,0.7)"
+                : overDesktop
+                  ? "rgba(79,255,120,0.7)"
+                  : "rgba(79,158,255,0.55)",
+              boxShadow:
+                overDesktop || overOtherExplorer
+                  ? "0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(79,255,120,0.3)"
+                  : "0 8px 32px rgba(0,0,0,0.5)"
             });
           });
         }
@@ -1708,11 +1750,72 @@ export class ExplorerApp extends BaseApp {
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
         if (ghost) ghost.remove();
+
+        if (activeDropTarget) {
+          removeClass(activeDropTarget, "explorer-drop-active");
+          activeDropTarget = null;
+        }
+        document
+          .querySelectorAll(".explorer-main.explorer-drop-active")
+          .forEach((el) => removeClass(el, "explorer-drop-active"));
+        sharedDragState.active = false;
+
         if (!dragging) return;
 
         const explorerWin = $(`#${inst.winId}`);
         const droppedOnExplorer = explorerWin?.contains(document.elementFromPoint(ev.clientX, ev.clientY));
-        if (droppedOnExplorer || !this.desktopUI?.dropFromExplorer) return;
+        if (droppedOnExplorer) return;
+
+        const dropTargets = document.elementsFromPoint(ev.clientX, ev.clientY);
+        const targetView = dropTargets.find(
+          (el) => el.classList.contains("explorer-main") && el.id !== `${inst.winId}-view`
+        );
+        if (targetView) {
+          const targetWinId = targetView.id.replace("-view", "");
+          const targetInst = this.instances.get(targetWinId);
+          if (targetInst) {
+            const isMove = ev.ctrlKey;
+            const itemsToMove = inst.selectedItems.size > 0 ? [...inst.selectedItems] : [name];
+
+            const win = $(`#${inst.winId}`);
+            const view = win?.querySelector(`#${inst.winId}-view`);
+
+            const nameToIsFile = {};
+            if (view) {
+              view.querySelectorAll(".file-item").forEach((el) => {
+                const n = el.querySelector("span")?.textContent;
+                if (n) nameToIsFile[n] = el.dataset.isFile === "true";
+              });
+            }
+
+            let count = 0;
+            for (const itemName of itemsToMove) {
+              const iF = nameToIsFile[itemName] ?? isFile;
+              try {
+                await copyItem(this, itemName, iF, inst.currentPath, targetInst.currentPath);
+                if (isMove) await os.fs.delete(inst.currentPath, itemName);
+                count++;
+              } catch {
+                os.notify.send(`Could not move/copy "${itemName}"`);
+              }
+            }
+
+            if (count > 0) {
+              os.notify.send(`${count} ${pluralize(count, "item")} ${isMove ? "moved" : "copied"}`);
+            }
+
+            view
+              ?.querySelectorAll(".file-item.explorer-selected")
+              .forEach((el) => el.classList.remove("explorer-selected"));
+            inst.selectedItems = new Set();
+            inst.selectedFile = null;
+            await this.renderInstance(inst);
+            if (targetInst !== inst) await this.renderInstance(targetInst);
+            return;
+          }
+        }
+
+        if (!this.desktopUI?.dropFromExplorer) return;
 
         const desktopEl = $("#desktop");
         if (!desktopEl) return;

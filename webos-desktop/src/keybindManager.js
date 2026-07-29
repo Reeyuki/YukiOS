@@ -1549,6 +1549,13 @@ export const KEYBIND_DEFINITIONS = [
     icon: "fab fa-apple"
   },
   {
+    id: "global.magnifier",
+    defaultKeys: ["Ctrl", "M"],
+    desc: "Toggle screen magnifier",
+    cat: "global",
+    icon: "fas fa-search-plus"
+  },
+  {
     id: "dock.launch10",
     defaultKeys: ["Alt", "0"],
     desc: "Launch or focus dock item 10",

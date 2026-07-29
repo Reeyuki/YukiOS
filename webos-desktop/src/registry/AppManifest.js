@@ -1362,5 +1362,20 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "Matrix-style terminal animation with cascading green characters and customizable effects."
+  },
+  {
+    serviceKey: "magnifierApp",
+    enhanced: true,
+    type: "system",
+    title: "Magnifier",
+    icon: "fas fa-search-plus",
+    launchType: "instance",
+    windowIdPatterns: ["magnifier"],
+    category: "utilities",
+    clippy: {
+      message: "Zoom in on any part of the screen with a movable lens-style magnifier.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Lens-style screen magnifier with adjustable 2x-16x zoom that follows your cursor."
   }
 ];

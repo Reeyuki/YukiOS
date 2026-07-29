@@ -47,6 +47,7 @@ import { NotepadApp } from "./apps/notepad.js";
 import { LavatApp } from "./apps/lavat.js";
 import { BtopApp } from "./apps/btop.js";
 import { CmatrixApp } from "./apps/cmatrix.js";
+import { MagnifierApp } from "./apps/magnifier.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -95,7 +96,8 @@ const APP_CLASS_MAP = {
   notepadApp: NotepadApp,
   lavatApp: LavatApp,
   btopApp: BtopApp,
-  cmatrixApp: CmatrixApp
+  cmatrixApp: CmatrixApp,
+  magnifierApp: MagnifierApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

@@ -6,6 +6,65 @@ import { $, $$, setStyle } from "../../shared/domUtils.js";
 import { pluralize } from "../../utils/utils.js";
 import { showArchiveDialog } from "./dialogs.js";
 
+export async function copyItem(explorer, name, isFile, srcPath, destPath) {
+  if (isFile) {
+    const kind = await explorer.fs.getFileKind(srcPath, name);
+    const isBinary = kind === FileKind.IMAGE || kind === FileKind.VIDEO || kind === FileKind.AUDIO;
+
+    const destDir = explorer.fs.resolveUserPath(destPath);
+    const destFilePath = explorer.fs.join(destDir, name);
+    const destExists = await os.fs.exists(destFilePath);
+
+    let finalName = name;
+    if (destExists) {
+      finalName = await explorer.fs.getUniqueFileName(destPath, name);
+    }
+
+    if (isBinary) {
+      const blob = await os.fs.readBinaryFile(srcPath, name);
+      await os.fs.writeBinaryFile(destPath, finalName, blob, kind, null);
+    } else {
+      const content = await explorer.fs.getFileContent(srcPath, name);
+      await os.fs.createFile(destPath, finalName, content, kind, null);
+    }
+
+    return finalName;
+  } else {
+    const uniqueName = await explorer.fs.getUniqueFileName(destPath, name);
+    await os.fs.mkdir([...destPath, uniqueName]);
+    const srcEntries = await os.fs.readdir([...srcPath, name]).catch(() => ({}));
+
+    for (const [childName, childData] of Object.entries(srcEntries)) {
+      if (childData?.type !== "file") continue;
+
+      const childPath = [...srcPath, name];
+      const childKind = await explorer.fs.getFileKind(childPath, childName);
+      const isChildBinary =
+        childKind === FileKind.IMAGE || childKind === FileKind.VIDEO || childKind === FileKind.AUDIO;
+
+      let childContent;
+      if (isChildBinary) {
+        childContent = await os.fs.readBinaryFile(childPath, childName);
+      } else {
+        childContent = await explorer.fs.getFileContent(childPath, childName);
+      }
+
+      const destFolderPath = [...destPath, uniqueName];
+      const destDir = explorer.fs.resolveUserPath(destFolderPath);
+      const childExists = await os.fs.exists(explorer.fs.join(destDir, childName));
+      const childFinalName = childExists ? await explorer.fs.getUniqueFileName(destFolderPath, childName) : childName;
+
+      if (isChildBinary) {
+        await os.fs.writeBinaryFile(destFolderPath, childFinalName, childContent, childKind, null);
+      } else {
+        await explorer.fs.createFile(destFolderPath, childFinalName, childContent, childKind, null);
+      }
+    }
+
+    return uniqueName;
+  }
+}
+
 export async function pasteToPath(explorer, destPath, inst) {
   const cb = explorer.getClipboard();
   if (!cb) return;

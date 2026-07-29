@@ -6,6 +6,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 29, 2026",
+    sections: [
+      {
+        icon: "fa-wand-magic-sparkles",
+        title: "New App",
+        items: [
+          [
+            "fa-search-plus",
+            "Magnifier App",
+            "Zoom in on any screen area with a lens-style magnifier that follows your cursor with zoom."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 26, 2026",
     sections: [
       {

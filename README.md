@@ -247,6 +247,7 @@ config editing.
 - Office Viewer
 - Evil Spotify
 - Yuki Blender
+- Magnifier
 - YouTube Utilities
 - Rhythms (Cavalier-like audio visualizer)
 - Screenshot (page capture, area selection, screen recording)
