@@ -37,6 +37,8 @@
   "dependencies": {
     "7z-wasm": "^1.2.0",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@mercuryworkshop/libcurl-transport": "^2.0.5",
+    "@mercuryworkshop/wisp-js": "^0.4.1",
     "@ruffle-rs/ruffle": "0.2.0-nightly.2026.5.15",
     "@webcontainer/api": "^1.6.4",
     "archive-wasm": "^1.7.1",
@@ -60,12 +62,11 @@
     "monaco-editor": "^0.45.0",
     "parse-torrent": "^11.0.21",
     "pdfjs-dist": "^3.11.174",
+    "tar": "7.5.19",
     "three": "^0.134.0",
     "vanta": "^0.5.24",
     "webtorrent": "^2.8.5",
-    "xlsx": "^0.18.5",
-    "@mercuryworkshop/libcurl-transport": "^2.0.5",
-    "@mercuryworkshop/wisp-js": "^0.4.1"
+    "xlsx": "^0.18.5"
   },
   "packageManager": "pnpm@11.6.0+sha512.9a36518224080c6fe5165afdcfe79bfa118c29be703f3f462b1e32efe1e98e47e8750b148e08286250aad4113cc7993ca413c4e2cd447752708c2ee5751bc95f"
 }
