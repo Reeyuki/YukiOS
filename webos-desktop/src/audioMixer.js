@@ -75,7 +75,7 @@ class AudioMixer {
     const ch = this.channels.get(winId);
     if (!ch) return;
 
-    const effectiveVolume = this.muted ? 0 : this.masterVolume * ch.volume;
+    const effectiveVolume = this.muted || ch.muted ? 0 : this.masterVolume * ch.volume;
     const win = document.getElementById(winId);
     if (!win) return;
     if (!win.querySelector("iframe, audio, video, ruffle-player")) return;
@@ -253,7 +253,7 @@ class AudioMixer {
 
   registerWindow(winId, title, iconHtml) {
     const savedVol = this.savedChannels[winId] ?? 1.0;
-    this.channels.set(winId, { title, iconHtml, volume: savedVol, nowPlaying: null, sendCommand: null });
+    this.channels.set(winId, { title, iconHtml, volume: savedVol, muted: false, nowPlaying: null, sendCommand: null });
     this.applyVolumeToWindow(winId);
     this.watchIframesInWindow(winId);
     if (this.panel) this.renderSliders();
@@ -327,6 +327,8 @@ class AudioMixer {
       this.iframeObservers.get(winId).disconnect();
       this.iframeObservers.delete(winId);
     }
+    this.intensityValues?.delete(winId);
+    this.analysers?.delete(winId);
     this.save();
     if (this.panel) this.renderSliders();
   }
@@ -343,6 +345,14 @@ class AudioMixer {
     const ch = this.channels.get(winId);
     if (!ch) return;
     ch.volume = value;
+    this.applyVolumeToWindow(winId);
+    this.save();
+  }
+
+  toggleChannelMute(winId) {
+    const ch = this.channels.get(winId);
+    if (!ch) return;
+    ch.muted = !ch.muted;
     this.applyVolumeToWindow(winId);
     this.save();
   }
@@ -491,7 +501,12 @@ class AudioMixer {
 
     const masterSlider = this.panel.querySelector(".am-master-slider");
     masterSlider.addEventListener("input", (e) => {
-      this.setMaster(parseInt(e.target.value) / 100);
+      const val = parseInt(e.target.value) / 100;
+      if (this.muted && val > 0) {
+        this.muted = false;
+        os.storage.set(StorageKeys.soundEnabled, "true");
+      }
+      this.setMaster(val);
     });
 
     const systemSlider = this.panel.querySelector(".am-system-slider");

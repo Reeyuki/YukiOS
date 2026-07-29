@@ -25,6 +25,7 @@ export class TaskbarSystem {
     setTimeout(() => this.initScrollHandling(), 0);
     this.onCloseBound = () => this.applyTaskbarLabels();
     os.events.on(BusEvents.WINDOW_CLOSED, this.onCloseBound);
+    this.audioIndicatorTimer = setInterval(() => this.updateAudioIndicators(), 600);
   }
 
   initScrollHandling() {
@@ -162,6 +163,13 @@ export class TaskbarSystem {
       const label = createElement("span", { className: "taskbar-item-label", text: title });
       taskbarItem.appendChild(label);
     }
+    const speakerIndicator = createElement("span", { className: "taskbar-speaker-indicator" });
+    speakerIndicator.innerHTML = '<i class="fas fa-volume-up"></i>';
+    speakerIndicator.addEventListener("click", (e) => {
+      e.stopPropagation();
+      audioMixer().toggleChannelMute(winId);
+    });
+    taskbarItem.appendChild(speakerIndicator);
     os.events.emit(BusEvents.WINDOW_CREATED, { winId });
 
     taskbarItem.onclick = () => {
@@ -326,6 +334,21 @@ export class TaskbarSystem {
     this.manager.taskbarPreviewHideTimer = setTimeout(() => {
       if (!this.manager.taskbarPreviewHovering) this.hideTaskbarPreview();
     }, 160);
+  }
+
+  updateAudioIndicators() {
+    const intensityValues = audioMixer().intensityValues;
+    if (!intensityValues) return;
+    this.manager.openWindows.forEach((_entry, winId) => {
+      const indicator = $(`#taskbar-${winId} .taskbar-speaker-indicator`);
+      if (!indicator) return;
+      const intensity = intensityValues.get(winId) || 0;
+      const channel = audioMixer().channels.get(winId);
+      const isExplicitlyPlaying = channel?.nowPlaying?.playbackState === "playing";
+      const isMuted = channel?.muted === true;
+      indicator.classList.toggle("visible", intensity > 0.5 || isExplicitlyPlaying || isMuted);
+      indicator.classList.toggle("muted", isMuted);
+    });
   }
 
   hideTaskbarPreview() {
