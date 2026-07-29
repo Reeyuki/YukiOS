@@ -298,13 +298,8 @@ html.chromeos-mode #chromeos-shelf {
   position: fixed;
   bottom: 60px;
   left: 0%;
-  transform: translateX(-50%) translateY(100%);
+  transform: translateX(-50%);
   z-index: 10000;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#chromeos-launcher.open {
-  transform: translateX(-50%) translateY(0);
 }
 
 .launcher-overlay {
@@ -312,7 +307,6 @@ html.chromeos-mode #chromeos-shelf {
   width: 35em;
   left: 52%;
   max-width: 90vw;
-  height: 75vh;
   backdrop-filter: blur(25px);
   border-radius: 16px;
   background-color: #000000a3;
@@ -323,6 +317,12 @@ html.chromeos-mode #chromeos-shelf {
   padding: 24px;
   box-sizing: border-box;
   overflow: hidden;
+  max-height: 15vh;
+  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#chromeos-launcher.open .launcher-overlay {
+  max-height: 80vh;
 }
 
 .launcher-search-wrapper {
@@ -362,7 +362,7 @@ html.chromeos-mode #chromeos-shelf {
   width: 100%;
   box-sizing: border-box;
   overflow-y: auto;
-  max-height: calc(70vh - 120px);
+  max-height: calc(80vh - 120px);
 }
 .launcher-grid {
   scrollbar-width: thin;
@@ -393,16 +393,13 @@ html.chromeos-mode #chromeos-shelf {
   gap: 8px;
   border-radius: 12px;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    transform 0.15s;
   width: 100%;
   box-sizing: border-box;
+  transition: background 0.15s;
 }
 
 .launcher-app-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
 }
 
 .launcher-app-icon {

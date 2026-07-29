@@ -111,7 +111,7 @@ export class WallpaperEngineApp extends BaseApp {
     this.fs = os.fs;
     this.winId = null;
     this.win = null;
-    this.currentCategory = "all";
+    this.currentCategory = "static";
     this.searchQuery = "";
     this.wallpaperItems = [];
     this.favorites = loadJSON(WE_KEYS.favorites, []);
@@ -320,7 +320,7 @@ export class WallpaperEngineApp extends BaseApp {
       ${categories
         .map(
           (c) => `
-        <div class="we-sidebar-item ${c.id === "all" ? "active" : ""}" data-cat="${c.id}">
+        <div class="we-sidebar-item ${c.id === "static" ? "active" : ""}" data-cat="${c.id}">
           <i class="${c.icon}"></i>
           <span>${c.label}</span>
         </div>
