@@ -1280,7 +1280,7 @@ export class GameOverlayController {
       "sandbox",
       "allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
     );
-    iframe.src = window.location.origin + "/scram/index.html";
+    iframe.src = window.location.origin + "/s/index.html";
 
     wrapper.appendChild(iframe);
     pane.innerHTML = "";

@@ -243,7 +243,7 @@ export class VirtualMachineManagerApp extends BaseApp {
     const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
     return (
       window.location.origin +
-      "/scram/index.html?wisp=" +
+      "/s/index.html?wisp=" +
       encodeURIComponent(wispUrl) +
       "&embed=1" +
       "#" +

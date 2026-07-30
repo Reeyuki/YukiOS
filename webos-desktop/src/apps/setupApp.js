@@ -988,7 +988,7 @@ Here's what you picked:
 - Notifications: ${this.userChoices.notifications ? "On" : "Off"}
 
 Quick tips to get going:
-• Click the Start Menu to find 80 apps and 2900+ games
+• Click the Start Menu to find 90 apps and 2900+ games
 • Right-click the desktop when you need quick options
 • Tweak anything later in the Settings app
 

@@ -81,7 +81,7 @@ export class BrowserApp extends BaseApp {
     const transportType = os.storage.get(StorageKeys.browserTransport) || "epoxy";
     iframe.src =
       window.location.origin +
-      "/scram/index.html" +
+      "/s/index.html" +
       incognitoParam +
       (incognitoParam ? "&" : "?") +
       "transport=" +
@@ -242,7 +242,7 @@ export class BrowserApp extends BaseApp {
       externalBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.open(window.location.origin + "/scram/index.html", "blank");
+        window.open(window.location.origin + "/s/index.html", "blank");
       });
   }
 

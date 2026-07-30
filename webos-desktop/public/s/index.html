@@ -14,11 +14,14 @@
       rel="stylesheet"
     />
     <script src="adblock.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js" defer></script>
+    <script src="./scramjet.js"></script>
+    <script src="./controller.api.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script type="module">
-      import * as BareMux from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.mjs";
-      window.BareMux = BareMux;
+      import { default as EpoxyTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
+      import { default as LibcurlTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs";
+      window.EpoxyTransport = EpoxyTransport;
+      window.LibcurlTransport = LibcurlTransport;
     </script>
     <style>
       :root {
@@ -2714,15 +2717,6 @@
         localStorage.setItem("proxServer", wispUrl);
       }
 
-      if (typeof BareMux === "undefined") {
-        BareMux = {
-          BareMuxConnection: class {
-            constructor() {}
-            setTransport() {}
-          }
-        };
-      }
-
       let scramjet;
       let tabs = [];
       let activeTabId = null;
@@ -3007,50 +3001,65 @@
       document.addEventListener("DOMContentLoaded", async function () {
         let basePath = location.pathname.replace(/[^/]*$/, "");
         if (!basePath.endsWith("/")) basePath += "/";
-        const { ScramjetController } = $scramjetLoadController();
-
-        scramjet = new ScramjetController({
-          prefix: basePath + "scramjet/",
-          files: {
-            wasm: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.wasm.wasm",
-            all: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.all.js",
-            sync: "https://cdn.jsdelivr.net/gh/Destroyed12121/Staticsj@main/JS/scramjet.sync.js"
-          }
-        });
-
-        await scramjet.init();
 
         if ("serviceWorker" in navigator) {
           const reg = await navigator.serviceWorker.register(basePath + "sw.js", { scope: basePath });
           await navigator.serviceWorker.ready;
+          const sw = reg.active || navigator.serviceWorker.controller;
 
           const wispUrl = hostWispUrl || localStorage.getItem("proxServer") || DEFAULT_WISP;
           const transportType = hostTransport || localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT;
-          const sw = reg.active || navigator.serviceWorker.controller;
 
-          if (sw) sw.postMessage({ type: "config", wispurl: wispUrl, transportType: transportType });
-
-          if (navigator.serviceWorker.controller && navigator.serviceWorker.controller !== sw) {
-            navigator.serviceWorker.controller.postMessage({
-              type: "config",
-              wispurl: wispUrl,
-              transportType: transportType
-            });
+          let TransportClass;
+          if (transportType === "libcurl" && typeof LibcurlTransport !== "undefined") {
+            TransportClass = LibcurlTransport;
+          } else if (typeof EpoxyTransport !== "undefined") {
+            TransportClass = EpoxyTransport;
           }
 
-          reg.update();
+          if (TransportClass) {
+            const rawTransport = new TransportClass({ wisp: wispUrl });
+            const transport = {
+              get ready() { return rawTransport.ready; },
+              async init() { return rawTransport.init(); },
+              async request(remote, method, body, headers, signal) {
+                const headersArr = Array.isArray(headers)
+                  ? headers
+                  : headers && typeof headers === "object"
+                    ? Object.entries(headers)
+                    : [];
+                const res = await rawTransport.request(remote, method, body, headersArr, signal);
+                const headersOut = Array.isArray(res.headers)
+                  ? res.headers
+                  : res.headers && typeof res.headers === "object"
+                    ? Object.entries(res.headers)
+                    : [];
+                return { ...res, headers: headersOut };
+              },
+              connect(url, protocols, requestHeaders, onopen, onmessage, onclose, onerror) {
+                const headersArr = Array.isArray(requestHeaders)
+                  ? requestHeaders
+                  : requestHeaders && typeof requestHeaders === "object"
+                    ? Object.entries(requestHeaders)
+                    : [];
+                return rawTransport.connect(url, protocols, headersArr, onopen, onmessage, onclose, onerror);
+              }
+            };
+            window.__scramjetTransport = transport;
 
-          window.bareMuxConnection = new BareMux.BareMuxConnection(basePath + "bareworker.js");
-          if (transportType === "libcurl") {
-            await window.bareMuxConnection.setTransport(
-              "/scram/libcurl-wrapper.mjs",
-              [{ wisp: wispUrl }]
-            );
-          } else {
-            await window.bareMuxConnection.setTransport(
-              "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
-              [{ wisp: wispUrl }]
-            );
+            const { Controller } = $scramjetController;
+            scramjet = new Controller({
+              config: {
+                prefix: basePath + "scramjet/",
+                wasmPath: basePath + "scramjet.wasm",
+                scramjetPath: basePath + "scramjet.js",
+                injectPath: basePath + "controller.inject.js"
+              },
+              transport,
+              serviceworker: sw
+            });
+
+            await scramjet.wait();
           }
         }
 
@@ -3239,8 +3248,8 @@
         });
         document.getElementById("fullscreen-btn").onclick = () => {
           const tab = getActiveTab();
-          if (!tab || !tab.frame || !tab.frame.frame) return;
-          const el = tab.frame.frame;
+          if (!tab || !tab.frame || !tab.frame.element) return;
+          const el = tab.frame.element;
           if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
           else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         };
@@ -3266,13 +3275,13 @@
               if (isEmbedded) {
                 sendToParent({ type: "browser-new-window", incognito: false });
               } else {
-                window.open(window.location.origin + "/scram/index.html", "_blank");
+                window.open(window.location.origin + "/s/index.html", "_blank");
               }
             } else if (action === "new-private-window") {
               if (isEmbedded) {
                 sendToParent({ type: "browser-new-window", incognito: true });
               } else {
-                window.open(window.location.origin + "/scram/index.html?incognito=true", "_blank");
+                window.open(window.location.origin + "/s/index.html?incognito=true", "_blank");
               }
             } else if (action === "downloads") openDownloadsPanel();
             else if (action === "history") openHistoryPanel();
@@ -3412,9 +3421,9 @@
           "allow-modals",
           "allow-fullscreen"
         ];
-        const existing = (frame.frame.getAttribute("sandbox") || "").split(/\s+/).filter(Boolean);
+        const existing = (frame.element.getAttribute("sandbox") || "").split(/\s+/).filter(Boolean);
         const combined = [...new Set([...existing, ...requiredPerms])].join(" ");
-        frame.frame.setAttribute("sandbox", combined);
+        frame.element.setAttribute("sandbox", combined);
         const tab = {
           id: nextTabId++,
           title: "Home",
@@ -3429,73 +3438,69 @@
         };
         _newTabId = tab.id;
 
-        if (isIncognito) frame.frame.src = "NT.html?incognito=true";
-        else frame.frame.src = "NT.html";
-
-        frame.addEventListener("urlchange", (e) => {
-          if (!e.url.includes("NT.html")) {
-            tab.url = e.url;
-            tab.title = "Browsing";
-          }
-          tab.loading = true;
-
-          if (tab.id === activeTabId) showIframeLoading(true, tab.url);
-
-          if (tab.id === activeTabId && e.url && !e.url.includes("NT.html")) {
-            adblockPageCount = 0;
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-              navigator.serviceWorker.controller.postMessage({ type: "adblock:pagechange" });
+        const wrapFrameGo = (f, t) => {
+          const orig = f.go.bind(f);
+          f.go = (url) => {
+            t.loading = true;
+            if (!url.includes("NT.html")) {
+              t.url = url;
+              try {
+                const urlObj = new URL(url);
+                t.title = urlObj.hostname;
+                t.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
+                addToHistory(url, t.title);
+              } catch {
+                t.title = url.split("/").pop() || url;
+                t.favicon = null;
+              }
             }
-          }
-
-          try {
-            const urlObj = new URL(e.url);
-            tab.title = urlObj.hostname;
-            tab.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
-            addToHistory(e.url, tab.title);
-          } catch {
-            tab.title = "Browsing";
-            tab.favicon = null;
-          }
-
-          updateTabsUI();
-          updateAddressBar();
-          updateLoadingBar(tab, 10);
-
-          if (tab.skipTimeout) clearTimeout(tab.skipTimeout);
-          tab.skipTimeout = setTimeout(() => {
-            if (tab.loading && tab.id === activeTabId) {
-              const skipBtn = document.getElementById("skip-btn");
-              if (skipBtn) skipBtn.classList.add("show");
+            if (t.id === activeTabId) showIframeLoading(true, t.url);
+            if (t.id === activeTabId && url && !url.includes("NT.html")) {
+              adblockPageCount = 0;
+              if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: "adblock:pagechange" });
+              }
             }
-          }, 1000);
-        });
+            updateTabsUI();
+            updateAddressBar();
+            updateLoadingBar(t, 10);
+            if (t.skipTimeout) clearTimeout(t.skipTimeout);
+            t.skipTimeout = setTimeout(() => {
+              if (t.loading && t.id === activeTabId) {
+                const skipBtn = document.getElementById("skip-btn");
+                if (skipBtn) skipBtn.classList.add("show");
+              }
+            }, 1000);
+            orig(url);
+          };
+        };
+        wrapFrameGo(frame, tab);
 
-        frame.frame.addEventListener("load", () => {
+        if (isIncognito) frame.element.src = "NT.html?incognito=true";
+        else frame.element.src = "NT.html";
+
+        frame.element.addEventListener("load", () => {
           tab.loading = false;
           if (tab.skipTimeout) clearTimeout(tab.skipTimeout);
           if (tab.id === activeTabId) showIframeLoading(false);
 
-          injectAudioDetector(frame.frame);
-
-          if (autoplayBlock) injectAutoplayBlocker(frame.frame);
-
+          injectAudioDetector(frame.element);
+          if (autoplayBlock) injectAutoplayBlocker(frame.element);
           if (darkModeEnabled) applyDarkModeToTab(tab);
-
           applyZoomToTab(tab);
 
           try {
-            const title = frame.frame.contentWindow.document.title;
+            const title = frame.element.contentWindow.document.title;
             if (title) tab.title = title;
           } catch {}
 
           try {
-            if (frame.frame.contentWindow.location.href.includes("NT.html")) {
+            if (frame.element.contentWindow.location.href.includes("NT.html")) {
               tab.title = "Home";
               tab.url = "yuki://home";
               tab.favicon = null;
             }
-          } catch {} // cross-origin iframe access blocked
+          } catch {}
 
           updateTabsUI();
           updateAddressBar();
@@ -3509,7 +3514,7 @@
         } else {
           tabs.push(tab);
         }
-        document.getElementById("iframe-container").appendChild(frame.frame);
+        document.getElementById("iframe-container").appendChild(frame.element);
         if (defaultZoom !== 1.0) applyZoomToTab(tab);
         if (makeActive) switchTab(tab.id);
         saveTabState();
@@ -3525,7 +3530,7 @@
         if (loader) {
           loader.style.display = show ? "flex" : "none";
           const tab = getActiveTab();
-          if (tab) tab.frame.frame.classList.toggle("loading", show);
+          if (tab) tab.frame.element.classList.toggle("loading", show);
           if (show) {
             title.textContent = "Connecting";
             urlText.textContent = url || "Loading content...";
@@ -3538,7 +3543,7 @@
         if (_yukiActive) closeYukiPage();
         activeTabId = tabId;
         const tab = getActiveTab();
-        tabs.forEach((t) => t.frame.frame.classList.toggle("hidden", t.id !== tabId));
+        tabs.forEach((t) => t.frame.element.classList.toggle("hidden", t.id !== tabId));
         if (tab) showIframeLoading(tab.loading, tab.url);
         updateTabsUI();
         updateAddressBar();
@@ -3561,7 +3566,7 @@
         if (tabEl) {
           tabEl.classList.add("removing");
           setTimeout(() => {
-            closed.frame.frame.remove();
+            closed.frame.element.remove();
             tabs.splice(idx, 1);
             if (activeTabId === tabId) {
               if (tabs.length > 0) switchTab(tabs[Math.max(0, idx - 1)].id);
@@ -3573,7 +3578,7 @@
             updateMenuBadges();
           }, 200);
         } else {
-          closed.frame.frame.remove();
+          closed.frame.element.remove();
           tabs.splice(idx, 1);
           if (activeTabId === tabId) {
             if (tabs.length > 0) switchTab(tabs[Math.max(0, idx - 1)].id);
@@ -4091,7 +4096,7 @@
         tab.title = page.charAt(0).toUpperCase() + page.slice(1).replace(/-/g, " ");
         tab.loading = false;
         _yukiActive = true;
-        tabs.forEach(function (t) { t.frame.frame.classList.add("hidden"); });
+        tabs.forEach(function (t) { t.frame.element.classList.add("hidden"); });
         var loadingEl = document.getElementById("loading");
         var errorEl = document.getElementById("error");
         if (loadingEl) loadingEl.style.display = "none";
@@ -4117,7 +4122,7 @@
             delete tab._prevUrl;
             delete tab._prevTitle;
           }
-          tab.frame.frame.classList.remove("hidden");
+          tab.frame.element.classList.remove("hidden");
           tab.loading = false;
           showIframeLoading(false);
           updateAddressBar();
@@ -5327,19 +5332,11 @@
           Notify.success("Proxy Changed", `Switching to ${serverName}...`);
         }
 
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: "config",
-            wispurl: url,
-            transportType: localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT
-          });
-        }
-
         setTimeout(() => location.reload(), 600);
       }
 
       function toggleDevTools() {
-        const win = getActiveTab()?.frame.frame.contentWindow;
+        const win = getActiveTab()?.frame.element.contentWindow;
         if (!win) return;
         if (win.eruda) {
           win.eruda.show();
@@ -5435,13 +5432,13 @@
       }
 
       function applyZoomToTab(tab) {
-        if (!tab || !tab.frame.frame) return;
+        if (!tab || !tab.frame.element) return;
         const transform = `scale(${zoomLevel})`;
-        tab.frame.frame.style.transform = transform;
-        tab.frame.frame.style.transformOrigin = "top left";
+        tab.frame.element.style.transform = transform;
+        tab.frame.element.style.transformOrigin = "top left";
         const inverseScale = 1 / zoomLevel;
-        tab.frame.frame.style.width = `${100 * inverseScale}%`;
-        tab.frame.frame.style.height = `${100 * inverseScale}%`;
+        tab.frame.element.style.width = `${100 * inverseScale}%`;
+        tab.frame.element.style.height = `${100 * inverseScale}%`;
       }
 
       function injectAutoplayBlocker(iframe) {
@@ -5541,14 +5538,14 @@
       function toggleTabMute(tab) {
         tab.isMuted = !tab.isMuted;
         try {
-          var doc = tab.frame.frame.contentWindow.document;
+          var doc = tab.frame.element.contentWindow.document;
           var media = doc.querySelectorAll("audio, video");
           if (tab.isMuted) {
             media.forEach(function (el) { el.muted = true; });
           } else {
             media.forEach(function (el) { el.muted = false; });
           }
-          tab.frame.frame.contentWindow.postMessage({ type: "scram-mute-toggle", muted: tab.isMuted }, "*");
+          tab.frame.element.contentWindow.postMessage({ type: "scram-mute-toggle", muted: tab.isMuted }, "*");
         } catch (e) {}
         updateTabsUI();
       }
@@ -5564,13 +5561,16 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         
         var fetchPromise;
-        if (typeof BareMux !== "undefined" && window.bareMuxConnection) {
-          fetchPromise = window.bareMuxConnection.fetch(url, {
-            method: "GET",
-            credentials: "include",
-            mode: "cors",
-            cache: "default"
-          });
+        if (window.__scramjetTransport) {
+          fetchPromise = (async () => {
+            const res = await window.__scramjetTransport.request(url, "GET", null, {}, null);
+            const headers = new Headers();
+            if (Array.isArray(res.headers)) {
+              res.headers.forEach(([k, v]) => headers.append(k, v));
+            }
+            const body = res.body instanceof ArrayBuffer ? res.body : new Uint8Array(res.body);
+            return new Response(body, { status: res.status, statusText: res.statusText, headers });
+          })();
         } else {
           fetchPromise = fetch(url);
         }
@@ -5639,9 +5639,9 @@
       }
 
       function applyDarkModeToTab(tab) {
-        if (!tab || !tab.frame.frame || !tab.frame.frame.contentDocument) return;
+        if (!tab || !tab.frame.element || !tab.frame.element.contentDocument) return;
         const styleId = "scramjet-darkmode-style";
-        let styleEl = tab.frame.frame.contentDocument.getElementById(styleId);
+        let styleEl = tab.frame.element.contentDocument.getElementById(styleId);
 
         if (!darkModeEnabled) {
           if (styleEl) styleEl.remove();
@@ -5650,7 +5650,7 @@
 
         let currentHost = "";
         try {
-          currentHost = new URL(tab.frame.frame.contentWindow.location.href).hostname;
+          currentHost = new URL(tab.frame.element.contentWindow.location.href).hostname;
         } catch (e) {}
 
         if (darkModeExclusions[currentHost]) {
@@ -5659,9 +5659,9 @@
         }
 
         if (!styleEl) {
-          styleEl = tab.frame.frame.contentDocument.createElement("style");
+          styleEl = tab.frame.element.contentDocument.createElement("style");
           styleEl.id = styleId;
-          tab.frame.frame.contentDocument.head.appendChild(styleEl);
+          tab.frame.element.contentDocument.head.appendChild(styleEl);
         }
 
         styleEl.textContent = `
@@ -5743,7 +5743,7 @@
 
         const container = document.getElementById("iframe-container");
 
-        tabs.forEach((t) => t.frame.frame.classList.add("hidden"));
+        tabs.forEach((t) => t.frame.element.classList.add("hidden"));
         const loadingEl = document.getElementById("loading");
         const errorEl = document.getElementById("error");
         if (loadingEl) loadingEl.style.display = "none";
@@ -5832,7 +5832,7 @@
         if (panel) panel.remove();
         const activeTab = getActiveTab();
         if (activeTab) {
-          activeTab.frame.frame.classList.remove("hidden");
+          activeTab.frame.element.classList.remove("hidden");
         }
       }
 
@@ -5984,7 +5984,7 @@
         var tab = getActiveTab();
         if (!tab) return;
         try {
-          var doc = tab.frame.frame.contentWindow.document;
+          var doc = tab.frame.element.contentWindow.document;
           var marks = doc.querySelectorAll(".yuki-find-mark");
           marks.forEach(function (m) { m.replaceWith(m.textContent); });
           doc.body.normalize();
@@ -6000,7 +6000,7 @@
         _findCurrent = -1;
         if (!query) { document.getElementById("find-count").textContent = "0/0"; return; }
         try {
-          var doc = tab.frame.frame.contentWindow.document;
+          var doc = tab.frame.element.contentWindow.document;
           var lowerQ = query.toLowerCase();
           var textNodes = [];
           var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
@@ -6271,8 +6271,8 @@
           return;
         }
         const tab = getActiveTab();
-        if (!tab || !tab.frame || !tab.frame.frame) return;
-        const iframe = tab.frame.frame;
+        if (!tab || !tab.frame || !tab.frame.element) return;
+        const iframe = tab.frame.element;
         html2canvas(iframe, { useCORS: true, allowTaint: true, backgroundColor: null }).then((canvas) => {
           canvas.toBlob((blob) => {
             const a = document.createElement("a");
