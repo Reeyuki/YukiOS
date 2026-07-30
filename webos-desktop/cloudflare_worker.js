@@ -1367,6 +1367,10 @@ canvas{width:100%!important;height:100%!important}
       <div class="nav-item" data-panel="data" onclick="switchPanel('data',this)">
         <i class="fa-solid fa-database"></i>Data Management
       </div>
+      <div class="nav-item" data-panel="downloadstelemetry" onclick="switchPanel('downloadstelemetry',this);loadDownloadsTelemetry()">
+        <i class="fa-solid fa-download"></i>Downloads & Telemetry
+      </div>
+
     </nav>
     <div class="sidebar-footer">
       <div class="live-badge"><span class="live-dot"></span>Live monitoring</div>
@@ -1574,6 +1578,25 @@ canvas{width:100%!important;height:100%!important}
         <div id="importStatus" style="margin-top:20px"></div>
       </div>
 
+      <div id="panel-downloadstelemetry" class="panel">
+        <div class="section-header">
+          <div class="section-title"><i class="fa-solid fa-download"></i>Downloads & Telemetry</div>
+          <div class="sort-bar">
+            <button class="sort-btn active" id="dtTabDownloads" onclick="switchDTTab('downloads')"><i class="fa-solid fa-download"></i>Downloads</button>
+            <button class="sort-btn" id="dtTabElectron" onclick="switchDTTab('electron')"><i class="fa-solid fa-microchip"></i>Electron Usage</button>
+            <span style="font-size:11px;color:var(--muted);margin-left:4px">|</span>
+            <button class="sort-btn" onclick="loadDownloadsTelemetry()"><i class="fa-solid fa-rotate"></i>Refresh</button>
+          </div>
+        </div>
+        <div class="flow-wrap" id="dtTableWrap">
+          <div id="dtEmpty" class="empty-state"><i class="fa-solid fa-download"></i>Loading data...</div>
+          <table class="flow-table" id="dtTable" style="display:none">
+            <thead id="dtThead"></thead>
+            <tbody id="dtTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1605,7 +1628,8 @@ var panelTitles={
   entryexit:"Entry / Exit Apps",
   exploration:"Exploration Stats",
   insights:"Insights",
-  data:"Data Management"
+  data:"Data Management",
+  downloadstelemetry:"Downloads & Telemetry"
 };
 
 function switchPanel(id,el){
@@ -1666,6 +1690,53 @@ function apiFetch(url, onSuccess, label) {
         }
       }, 5000);
     });
+}
+
+var _dtTab="downloads";
+var _dtData={downloads:[],electron:[]};
+
+function switchDTTab(tab){
+  _dtTab=tab;
+  document.querySelectorAll("#panel-downloadstelemetry .sort-btn[id^=dtTab]").forEach(function(b){b.classList.remove("active");});
+  document.getElementById("dtTab"+(tab==="downloads"?"Downloads":"Electron")).classList.add("active");
+  renderDTTable();
+}
+
+function loadDownloadsTelemetry(){
+  apiFetch("/admin/downloads?limit=100",function(d){_dtData.downloads=d.results||[];if(_dtTab==="downloads")renderDTTable();},"Downloads");
+  apiFetch("/admin/electron-usage?limit=100",function(d){_dtData.electron=d.results||[];if(_dtTab==="electron")renderDTTable();},"Electron");
+}
+
+function renderDTTable(){
+  var rows=_dtData[_dtTab];
+  var table=document.getElementById("dtTable");
+  var empty=document.getElementById("dtEmpty");
+  var thead=document.getElementById("dtThead");
+  var tbody=document.getElementById("dtTbody");
+  if(!rows||!rows.length){
+    table.style.display="none";
+    empty.style.display="block";
+    empty.innerHTML='<i class="fa-solid fa-download"></i>No records found.';
+    return;
+  }
+  table.style.display="";
+  empty.style.display="none";
+  if(_dtTab==="downloads"){
+    thead.innerHTML='<tr><th>App</th><th>File Name</th><th>Size</th><th>Type</th><th>Source</th><th>Timestamp</th></tr>';
+    tbody.innerHTML=rows.map(function(r){
+      var d=typeof r.data==="string"?JSON.parse(r.data):r.data;
+      var ts=r.timestamp?r.timestamp.slice(0,19).replace("T"," "):"-";
+      var sz=typeof d.fileSize==="number"?(d.fileSize>1048576?(d.fileSize/1048576).toFixed(1)+" MB":(d.fileSize>1024?(d.fileSize/1024).toFixed(1)+" KB":d.fileSize+" B")):"-";
+      return '<tr><td class="flow-from">'+displayApp(d.app||"-")+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(d.fileName||"-")+'</td><td>'+sz+'</td><td>'+(d.fileType||"-")+'</td><td>'+(d.source||"-")+'</td><td style="font-size:11px;color:var(--muted2)">'+ts+'</td></tr>';
+    }).join("");
+  } else {
+    thead.innerHTML='<tr><th>Action</th><th>Platform</th><th>Version</th><th>Details</th><th>Dev</th><th>Timestamp</th></tr>';
+    tbody.innerHTML=rows.map(function(r){
+      var d=typeof r.data==="string"?JSON.parse(r.data):r.data;
+      var ts=r.timestamp?r.timestamp.slice(0,19).replace("T"," "):"-";
+      return '<tr><td class="flow-from">'+(d.action||"-")+'</td><td>'+(d.platform||"-")+'</td><td>'+(d.version||"-")+'</td><td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(d.details||"-")+'</td><td>'+(d.isDev?"<span style='color:var(--green)'>Yes</span>":"No")+'</td><td style="font-size:11px;color:var(--muted2)">'+ts+'</td></tr>';
+    }).join("");
+  }
 }
 
 function loadAll(){

@@ -537,8 +537,8 @@ async function uploadAvatar() {
   input.click();
 }
 
-export function bindAccountsCategory(win) {
-  win = win;
+export function bindAccountsCategory(settingsWin) {
+  win = settingsWin;
 
   os.events.on(BusEvents.SESSION_INITIALIZED, () => {
     if (win && win.isConnected) {
