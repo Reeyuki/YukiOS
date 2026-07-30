@@ -290,6 +290,6 @@ jobs:
             exit 0
           fi
           gh release create "$TAG" \
-            release-files/* \
+            $(find release-files -maxdepth 1 -type f) \
             --title "$TAG" \
             --generate-notes
