@@ -261,6 +261,10 @@ jobs:
     if: needs.notify.outputs.has_changes == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download dist.zip
         uses: actions/download-artifact@v4
         with:
