@@ -301,6 +301,12 @@ export class SessionManager {
           </div>
         </div>
 
+        <div class="session-electron-banner" id="session-electron-banner">
+          <i class="fas fa-download"></i>
+          <span><strong>YukiOS now has a desktop app.</strong> Persistent storage, system tray, and remote desktop. The YukiOS you know, now as a real desktop application.</span>
+          <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-download-link"><i class="fas fa-download"></i> Download</a>
+        </div>
+
         <a href="/features.html" class="session-features-link">Explore Features</a>
       </div>
 
@@ -328,6 +334,11 @@ export class SessionManager {
     `;
 
     document.body.appendChild(this.container);
+
+    const electronBanner = this.container.querySelector("#session-electron-banner");
+    if (electronBanner && typeof window.electronAPI !== "undefined") {
+      electronBanner.style.display = "none";
+    }
 
     const carouselRow = this.container.querySelector("#user-carousel-row");
     if (carouselRow) {

@@ -451,6 +451,64 @@
     color 0.15s;
 }
 
+.session-electron-banner {
+  position: fixed;
+  top: 50%;
+  left: 32px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 20px 28px;
+  border-radius: 14px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  z-index: 10;
+  width: 280px;
+  text-align: center;
+  transition: opacity 0.3s ease;
+}
+
+.session-electron-banner > i {
+  color: var(--brand);
+  font-size: 28px;
+}
+
+.session-electron-banner span {
+  line-height: 1.5;
+}
+
+.session-electron-banner strong {
+  color: var(--text-primary);
+}
+
+.electron-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 10px 24px;
+  border-radius: 10px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.electron-download-link:hover {
+  background: var(--glass-hover);
+  text-decoration: none;
+}
+
+.electron-download-link i {
+  font-size: 14px;
+}
+
 .session-features-link {
   position: fixed;
   bottom: 14px;
@@ -801,6 +859,7 @@
 .session-content.extra-hidden .user-carousel-row,
 .session-content.extra-hidden .login-center-panel,
 .session-content.extra-hidden .session-selector,
+.session-content.extra-hidden .session-electron-banner,
 .session-content.extra-hidden .avatar-edit-modal {
   opacity: 0;
   pointer-events: none;
@@ -812,6 +871,7 @@
 .session-content.extra-visible .user-carousel-row,
 .session-content.extra-visible .login-center-panel,
 .session-content.extra-visible .session-selector,
+.session-content.extra-visible .session-electron-banner,
 .session-content.extra-visible .avatar-edit-modal {
   opacity: 1;
   pointer-events: auto;
