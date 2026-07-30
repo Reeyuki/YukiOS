@@ -304,7 +304,10 @@ export class SessionManager {
         <div class="session-electron-banner" id="session-electron-banner">
           <i class="fas fa-download"></i>
           <span><strong>YukiOS now has a desktop app.</strong> Persistent storage, system tray, and remote desktop. The YukiOS you know, now as a real desktop application.</span>
-          <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-download-link"><i class="fas fa-download"></i> Download</a>
+          <div class="electron-banner-actions">
+            <span class="electron-download-link" id="electron-download-btn"><i class="fas fa-download"></i> Download</span>
+            <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-releases-link">View all releases</a>
+          </div>
         </div>
 
         <a href="/features.html" class="session-features-link">Explore Features</a>
@@ -734,8 +737,75 @@ export class SessionManager {
     });
     await this.bindCarouselEvents();
 
+    const electronDownloadBtn = this.container.querySelector("#electron-download-btn");
+    if (electronDownloadBtn) {
+      electronDownloadBtn.addEventListener("click", () => this.handleElectronDownload());
+    }
+
     this.keyboardHandler = (e) => this.handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);
+  }
+
+  async handleElectronDownload() {
+    const btn = document.getElementById("electron-download-btn");
+    if (!btn) return;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Detecting...`;
+    btn.style.pointerEvents = "none";
+    btn.style.opacity = "0.6";
+
+    try {
+      const resp = await fetch("https://api.github.com/repos/reeyuki/yukios/releases/latest", {
+        headers: { Accept: "application/vnd.github.v3+json" }
+      });
+      if (!resp.ok) throw new Error(`GitHub API returned ${resp.status}`);
+      const release = await resp.json();
+
+      const os = this.detectElectronOS();
+      const asset = release.assets.find((a) => {
+        const name = a.name.toLowerCase();
+        if (os === "win") return name.endsWith(".exe") || name.endsWith(".exe");
+        if (os === "mac") return name.endsWith(".dmg");
+        if (os === "linux") return name.endsWith(".appimage");
+        return false;
+      });
+
+      if (!asset) {
+        window.open(release.html_url, "_blank");
+        return;
+      }
+
+      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading...`;
+      const a = document.createElement("a");
+      a.href = asset.browser_download_url;
+      a.download = asset.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      btn.innerHTML = `<i class="fas fa-check"></i> Downloaded`;
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.pointerEvents = "";
+        btn.style.opacity = "";
+      }, 3000);
+    } catch (e) {
+      btn.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Failed`;
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.pointerEvents = "";
+        btn.style.opacity = "";
+      }, 3000);
+      window.open("https://github.com/reeyuki/yukios/releases", "_blank");
+    }
+  }
+
+  detectElectronOS() {
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes("win") || ua.includes("windows")) return "win";
+    if (ua.includes("mac") || ua.includes("darwin")) return "mac";
+    if (ua.includes("linux")) return "linux";
+    return "win";
   }
 
   async bindCarouselEvents() {

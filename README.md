@@ -315,7 +315,7 @@ See the [Development Guide](DEVELOPMENT.md).
 
 # 🖥️ Electron Desktop App
 
-An native Electron wrapper for an enhanced desktop experience:
+A native Electron wrapper for an enhanced desktop experience:
 
 - Native game windows that launch in their own OS-level window with auto-hide menu bar
 - Remote host to stream your desktop with mouse and keyboard control from any device

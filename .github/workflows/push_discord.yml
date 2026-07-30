@@ -241,9 +241,9 @@ jobs:
         working-directory: webos-desktop
         run: pnpm install --frozen-lockfile
 
-      - name: Build web app
+      - name: Build web app for Electron
         working-directory: webos-desktop
-        run: pnpm build:single
+        run: pnpm build:electron
 
       - name: Build Electron package
         working-directory: webos-desktop

@@ -2,6 +2,10 @@
   "name": "yukios-desktop",
   "private": true,
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Reeyuki/YukiOS-Remote.git"
+  },
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -9,9 +13,10 @@
     "prebuild": "node scripts/validateRegistry.js",
     "build": "vite build",
     "build:dev": "VITE_DEV_BUILD=true vite build",
-    "build:single": "VITE_SINGLE_FILE=true vite build",
-    "build:dev:single": "VITE_SINGLE_FILE=true VITE_DEV_BUILD=true vite build",
-    "bd": "VITE_DEV_BUILD=true vite build",
+    "build:single": "cross-env VITE_SINGLE_FILE=true vite build",
+    "build:electron": "cross-env VITE_SINGLE_FILE=false VITE_ELECTRON=true vite build",
+    "build:dev:single": "cross-env VITE_SINGLE_FILE=true VITE_DEV_BUILD=true vite build",
+    "bd": "cross-env VITE_DEV_BUILD=true vite build",
     "b": "pnpm build && cp -r dist/* ../desktop/",
     "b:single": "pnpm build:single && cp -r dist/* ../desktop/",
     "bf": "pnpm format && pnpm build:dev && cp -r dist/* ../desktop/",
@@ -19,17 +24,18 @@
     "preview": "vite preview",
     "format": "git diff --name-only HEAD --diff-filter=ACMR | sed 's#^webos-desktop/##' | grep -E '\\.(js|jsx|css|json|html)$' | xargs -r pnpm exec prettier --write --cache --cache-location=.prettier-cache",
     "lint": "eslint . --ext .js,.jsx --fix",
-    "electron:dev": "VITE_ELECTRON=true vite build && electron .",
-    "electron:build": "VITE_ELECTRON=true vite build && electron-builder --config",
-    "electron:build:win": "VITE_ELECTRON=true vite build && electron-builder --win --config",
-    "electron:build:linux": "VITE_ELECTRON=true vite build && electron-builder --linux --config",
-    "electron:build:mac": "VITE_ELECTRON=true vite build && electron-builder --mac --config",
+    "electron:dev": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron .",
+    "electron:build": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --config",
+    "electron:build:win": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --win --config",
+    "electron:build:linux": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --linux --config",
+    "electron:build:mac": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --mac --config",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "cross-env": "^10.1.0",
     "electron": "^35.0.0",
     "electron-builder": "^25.0.0",
     "eslint": "^9.39.5",
@@ -77,6 +83,7 @@
   },
   "packageManager": "pnpm@11.6.0+sha512.9a36518224080c6fe5165afdcfe79bfa118c29be703f3f462b1e32efe1e98e47e8750b148e08286250aad4113cc7993ca413c4e2cd447752708c2ee5751bc95f",
   "build": {
+    "npmRebuild": false,
     "appId": "app.yukios.desktop",
     "productName": "YukiOS",
     "directories": {
@@ -105,14 +112,14 @@
       "target": [
         "dmg"
       ],
-      "icon": "dist/favicon.ico",
+      "icon": "dist/icons/icon-512.png",
       "category": "public.app-category.utilities"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
-      "icon": "dist/favicon.ico",
+      "icon": "dist/icons/icon-256.png",
       "category": "Utility"
     }
   }

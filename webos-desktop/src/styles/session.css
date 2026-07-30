@@ -485,6 +485,14 @@
   color: var(--text-primary);
 }
 
+.electron-banner-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .electron-download-link {
   display: inline-flex;
   align-items: center;
@@ -497,16 +505,28 @@
   background: var(--glass);
   border: 1px solid var(--glass-border);
   font-size: 14px;
-  margin-top: 4px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .electron-download-link:hover {
   background: var(--glass-hover);
-  text-decoration: none;
 }
 
 .electron-download-link i {
   font-size: 14px;
+}
+
+.electron-releases-link {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.electron-releases-link:hover {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: underline;
 }
 
 .session-features-link {
