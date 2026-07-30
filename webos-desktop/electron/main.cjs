@@ -11,6 +11,72 @@ const TRAY_ICON_PATH = path.join(__dirname, "..", "dist", "icon-16.png");
 
 const ANALYTICS_BASE = "https://analytics.liventcord-a60.workers.dev";
 
+function getFFmpegFilename() {
+  const key = `${process.platform}-${process.arch}`;
+  const map = {
+    "win32-x64": "win32-x64.exe",
+    "win32-ia32": "win32-ia32.exe",
+    "darwin-x64": "darwin-x64",
+    "darwin-arm64": "darwin-arm64",
+    "linux-x64": "linux-x64",
+    "linux-arm64": "linux-arm64"
+  };
+  return map[key];
+}
+
+function getFFmpegCachePath() {
+  const name = process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
+  return path.join(app.getPath("userData"), "ffmpeg-bin", name);
+}
+
+function getFFmpegDownloadURLs() {
+  const filename = getFFmpegFilename();
+  if (!filename) return [];
+  return [
+    `https://github.com/nickel-org/ffmpeg-static/releases/download/v5.1.0/${filename}`,
+    `https://github.com/eugeneware/ffmpeg-static/releases/download/v5.1.0/${filename}`
+  ];
+}
+
+async function ensureFFmpeg() {
+  const cachePath = getFFmpegCachePath();
+  if (fs.existsSync(cachePath)) {
+    try {
+      execSync(`"${cachePath}" -version`, { timeout: 5000 });
+      return cachePath;
+    } catch {}
+    fs.unlinkSync(cachePath);
+  }
+
+  const dir = path.dirname(cachePath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  const urls = getFFmpegDownloadURLs();
+  let downloaded = false;
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length < 1024 * 1024) continue;
+      fs.writeFileSync(cachePath, buf);
+      fs.chmodSync(cachePath, 0o755);
+      execSync(`"${cachePath}" -version`, { timeout: 5000 });
+      downloaded = true;
+      break;
+    } catch {}
+  }
+
+  if (!downloaded) {
+    throw new Error(
+      "Could not download FFmpeg. The file converter will use the browser-based (WASM) FFmpeg instead, which is slower but works."
+    );
+  }
+
+  return cachePath;
+}
+
 function sendAnalytics(endpoint, payload) {
   try {
     const body = JSON.stringify(Array.isArray(payload) ? payload : [payload]);
@@ -84,6 +150,7 @@ app.whenReady().then(() => {
   setupInputHandlers();
   setupRemoteHostHandlers();
   setupAnalyticsHandlers();
+  setupFFmpegHandlers();
 
   sendAnalytics(ANALYTICS_BASE + "/api/electron-usage", {
     action: "app:start",
@@ -841,6 +908,94 @@ function setupAnalyticsHandlers() {
       };
       sendAnalytics(ANALYTICS_BASE + "/api/electron-usage", payload);
       return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+}
+
+let _ffmpegPath = null;
+
+function setupFFmpegHandlers() {
+  ipcMain.handle("ffmpeg:ensure", async () => {
+    try {
+      if (!_ffmpegPath || !fs.existsSync(_ffmpegPath)) {
+        _ffmpegPath = await ensureFFmpeg();
+      }
+      return { success: true, path: _ffmpegPath };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle("ffmpeg:convert", async (event, { fileData, inputExt, outputExt, extraArgs }) => {
+    try {
+      if (!_ffmpegPath || !fs.existsSync(_ffmpegPath)) {
+        _ffmpegPath = await ensureFFmpeg();
+      }
+
+      const tmpDir = app.getPath("temp");
+      const inputFile = path.join(tmpDir, `ffmpeg-input-${Date.now()}.${inputExt}`);
+      const outputFile = path.join(tmpDir, `ffmpeg-output-${Date.now()}.${outputExt}`);
+
+      const buf = fileData.buffer
+        ? Buffer.from(fileData.buffer, fileData.byteOffset, fileData.byteLength)
+        : Buffer.from(fileData);
+      fs.writeFileSync(inputFile, buf);
+
+      const args = ["-y", "-i", inputFile, ...(extraArgs || []), outputFile];
+
+      await new Promise((resolve, reject) => {
+        const proc = spawn(_ffmpegPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+        let stderr = "";
+        proc.stderr.on("data", (d) => { stderr += d.toString(); });
+        proc.on("close", (code) => {
+          if (code === 0) resolve();
+          else reject(new Error(`FFmpeg exited with code ${code}: ${stderr.slice(-200)}`));
+        });
+        proc.on("error", reject);
+      });
+
+      const outBuf = fs.readFileSync(outputFile);
+
+      try { fs.unlinkSync(inputFile); } catch {}
+      try { fs.unlinkSync(outputFile); } catch {}
+
+      return { success: true, data: outBuf };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle("ffmpeg:probe", async (event, { fileData, inputExt }) => {
+    try {
+      if (!_ffmpegPath || !fs.existsSync(_ffmpegPath)) {
+        _ffmpegPath = await ensureFFmpeg();
+      }
+
+      const tmpDir = app.getPath("temp");
+      const inputFile = path.join(tmpDir, `ffmpeg-probe-${Date.now()}.${inputExt}`);
+      fs.writeFileSync(inputFile, Buffer.from(fileData));
+
+      const result = execSync(`"${_ffmpegPath}" -i "${inputFile}" 2>&1`, { timeout: 10000 }).toString();
+
+      try { fs.unlinkSync(inputFile); } catch {}
+
+      const info = {};
+      const dur = result.match(/Duration:\s*(\d+:\d+:\d+\.\d+)/);
+      if (dur) info.duration = dur[1];
+      const bitrate = result.match(/bitrate:\s*(\d+)\s*kb\/s/);
+      if (bitrate) info.bitrate = parseInt(bitrate[1]);
+      const videoStream = result.match(/Stream.*Video.*?(\d+x\d+)/);
+      if (videoStream) {
+        const [w, h] = videoStream[1].split("x").map(Number);
+        info.width = w;
+        info.height = h;
+      }
+      const audioStream = result.match(/Stream.*Audio/);
+      info.hasAudio = !!audioStream;
+
+      return { success: true, info };
     } catch (err) {
       return { success: false, error: err.message };
     }

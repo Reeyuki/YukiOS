@@ -469,9 +469,118 @@ function audioBufferToWav(buffer) {
   return arrayBuffer;
 }
 
+let ffmpegInstance = null;
+let ffmpegWasmLoading = false;
+let ffmpegWasmPromise = null;
+
+function isElectron() {
+  return typeof window !== "undefined" && window.electronAPI && window.electronAPI.ffmpeg;
+}
+
+async function ensureFFmpegWasm() {
+  if (ffmpegInstance) return ffmpegInstance;
+  if (ffmpegWasmPromise) return ffmpegWasmPromise;
+  ffmpegWasmLoading = true;
+  ffmpegWasmPromise = (async () => {
+    const { createFFmpeg } = await import("https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js");
+    const ffmpeg = createFFmpeg({
+      log: false,
+      corePath: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js"
+    });
+    await ffmpeg.load();
+    ffmpegInstance = ffmpeg;
+    ffmpegWasmLoading = false;
+    return ffmpeg;
+  })();
+  return ffmpegWasmPromise;
+}
+
+async function ffmpegConvert(inputData, inputExt, outputExt, extraArgs = []) {
+  if (isElectron()) {
+    const data = inputData instanceof Blob ? new Uint8Array(await inputData.arrayBuffer()) : inputData;
+    const result = await window.electronAPI.ffmpeg.convert(data, inputExt, outputExt, extraArgs);
+    return new Blob([result.data], { type: result.mime || "application/octet-stream" });
+  }
+
+  const ffmpeg = await ensureFFmpegWasm();
+  const inputName = `input.${inputExt}`;
+  const outputName = `output.${outputExt}`;
+
+  try {
+    ffmpeg.FS("unlink", inputName);
+  } catch (e) {}
+  try {
+    ffmpeg.FS("unlink", outputName);
+  } catch (e) {}
+
+  const data = inputData instanceof Blob ? new Uint8Array(await inputData.arrayBuffer()) : inputData;
+  ffmpeg.FS("writeFile", inputName, data);
+
+  await ffmpeg.run("-i", inputName, ...extraArgs, outputName);
+
+  const outData = ffmpeg.FS("readFile", outputName);
+  try {
+    ffmpeg.FS("unlink", inputName);
+  } catch (e) {}
+  try {
+    ffmpeg.FS("unlink", outputName);
+  } catch (e) {}
+
+  const mimeMap = {
+    mp3: "audio/mpeg",
+    wav: "audio/wav",
+    ogg: "audio/ogg",
+    flac: "audio/flac",
+    m4a: "audio/mp4",
+    aac: "audio/aac",
+    opus: "audio/opus",
+    mp4: "video/mp4",
+    webm: "video/webm",
+    mov: "video/quicktime",
+    avi: "video/x-msvideo",
+    mkv: "video/x-matroska",
+    gif: "image/gif",
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    webp: "image/webp",
+    tiff: "image/tiff",
+    bmp: "image/bmp"
+  };
+  return new Blob([outData.buffer], { type: mimeMap[outputExt] || "application/octet-stream" });
+}
+
+async function ffmpegProbe(inputData, inputExt) {
+  if (isElectron()) {
+    const data = inputData instanceof Blob ? new Uint8Array(await inputData.arrayBuffer()) : inputData;
+    return window.electronAPI.ffmpeg.probe(data, inputExt);
+  }
+
+  const ffmpeg = await ensureFFmpegWasm();
+  const inputName = `input.${inputExt}`;
+  try {
+    ffmpeg.FS("unlink", inputName);
+  } catch (e) {}
+
+  const data = inputData instanceof Blob ? new Uint8Array(await inputData.arrayBuffer()) : inputData;
+  ffmpeg.FS("writeFile", inputName, data);
+
+  ffmpeg.setLogger(({ type, msg }) => {
+    if (type === "fferr") console.debug("[FFmpeg]", msg);
+  });
+  await ffmpeg.run("-i", inputName);
+  ffmpeg.setLogger(null);
+
+  try {
+    ffmpeg.FS("unlink", inputName);
+  } catch (e) {}
+  return {};
+}
+
 async function convertAudioFormat(blob, targetFormat, bitrate) {
   if (targetFormat === "wav") return blob;
-  return blob;
+  const bitrateArg = bitrate ? [`-b:a`, `${Math.round(bitrate / 1000)}k`] : [];
+  return ffmpegConvert(blob, "wav", targetFormat, bitrateArg);
 }
 
 function getVideoMimeType(format, codec) {
@@ -867,6 +976,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
       </div>
 
       <div class="converter-footer">
+        <div class="ffmpeg-backend-label" id="${winId}-backend-label" style="font-size:11px;color:rgba(255,255,255,0.35);padding:0 0 4px 2px;font-family:monospace;"></div>
         <div class="progress-container" id="${winId}-progress-container">
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" id="${winId}-progress-fill"></div>
@@ -950,8 +1060,12 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
     videoAudioCodec: win.querySelector(`#${winId}-video-audio-codec`),
     videoMute: win.querySelector(`#${winId}-video-mute`),
     videoFaststart: win.querySelector(`#${winId}-video-faststart`),
-    videoPreview: win.querySelector(`#${winId}-video-preview`)
+    videoPreview: win.querySelector(`#${winId}-video-preview`),
+    backendLabel: win.querySelector(`#${winId}-backend-label`)
   };
+
+  const backend = isElectron() ? "native" : "wasm";
+  dom.backendLabel.textContent = backend === "native" ? "⚡ FFmpeg native" : "🐌 FFmpeg WASM (slower)";
 
   let fileContentStr = "";
   let fileContentBlob = null;
@@ -1444,7 +1558,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
             outputBlob = await convertAudioFormat(outputBlob, targetFormat, parseInt(dom.audioBitrate.value) * 1000);
           }
         } else if (category === "video") {
-          if (!videoElement) throw new Error("Video not fully loaded.");
+          if (!fileContentBlob) throw new Error("Video source not available.");
 
           dom.progressFill.style.width = "50%";
           dom.progressText.textContent = "Processing video...";
@@ -1456,77 +1570,49 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
           const audioCodec = dom.videoAudioCodec.value;
           const mute = dom.videoMute.checked;
 
-          let targetWidth = videoElement.videoWidth;
-          let targetHeight = videoElement.videoHeight;
-          let targetFps = 30;
+          const args = [];
 
           if (resolution !== "original") {
-            const [w, h] = resolution.split("x").map(Number);
-            targetWidth = w;
-            targetHeight = h;
+            args.push("-vf", `scale=${resolution}`);
           }
 
           if (fps !== "original") {
-            targetFps = parseInt(fps);
+            args.push("-r", fps);
           }
 
-          const canvas = document.createElement("canvas");
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          const ctx = canvas.getContext("2d");
-
-          const stream = canvas.captureStream(targetFps);
-          let audioTrack = null;
-
-          if (!mute && audioCodec !== "none") {
-            try {
-              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-              const source = audioCtx.createMediaElementSource(videoElement);
-              const destination = audioCtx.createMediaStreamDestination();
-              source.connect(destination);
-              audioTrack = destination.stream.getAudioTracks()[0];
-              stream.addTrack(audioTrack);
-            } catch (e) {
-              console.error("[FileConverter]", e);
-            }
+          if (bitrate > 0) {
+            args.push("-b:v", `${bitrate}`);
           }
 
-          const mimeType = getVideoMimeType(targetFormat, codec);
-          const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: mimeType,
-            videoBitsPerSecond: bitrate
-          });
+          if (mute || audioCodec === "none") {
+            args.push("-an");
+          } else {
+            args.push("-c:a", "aac", "-b:a", "128k");
+          }
 
-          const chunks = [];
-          mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) chunks.push(e.data);
-          };
+          let outputExt = targetFormat;
+          switch (codec) {
+            case "h264_nvenc":
+            case "h264_amf":
+              args.push("-c:v", "libx264");
+              break;
+            case "h264":
+              args.push("-c:v", "libx264");
+              break;
+            case "vp9":
+              args.push("-c:v", "libvpx-vp9");
+              outputExt = "webm";
+              break;
+            case "hevc":
+              args.push("-c:v", "libx265");
+              outputExt = "mp4";
+              break;
+            default:
+              args.push("-c:v", "libx264");
+          }
 
-          videoElement.currentTime = 0;
-          videoElement.muted = mute;
-          await videoElement.play();
-
-          mediaRecorder.start();
-
-          const drawFrame = () => {
-            if (videoElement.paused || videoElement.ended) return;
-            ctx.drawImage(videoElement, 0, 0, targetWidth, targetHeight);
-            requestAnimationFrame(drawFrame);
-          };
-          drawFrame();
-
-          await new Promise((resolve) => {
-            videoElement.onended = resolve;
-          });
-
-          mediaRecorder.stop();
-
-          await new Promise((resolve) => {
-            mediaRecorder.onstop = resolve;
-          });
-
-          outputBlob = new Blob(chunks, { type: mimeType });
-          videoElement.pause();
+          dom.progressText.textContent = "Running FFmpeg conversion...";
+          outputBlob = await ffmpegConvert(fileContentBlob, sourceExt, outputExt, args);
         }
 
         dom.progressFill.style.width = "90%";

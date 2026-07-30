@@ -41,6 +41,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
     trackElectronUsage: (info) => ipcRenderer.invoke("analytics:track-electron-usage", info)
   },
 
+  ffmpeg: {
+    ensure: () => ipcRenderer.invoke("ffmpeg:ensure"),
+    convert: (fileData, inputExt, outputExt, extraArgs) =>
+      ipcRenderer.invoke("ffmpeg:convert", { fileData, inputExt, outputExt, extraArgs }),
+    probe: (fileData, inputExt) =>
+      ipcRenderer.invoke("ffmpeg:probe", { fileData, inputExt })
+  },
+
   electronFs: {
     init: (sessionKey) => ipcRenderer.invoke("fs:init", { sessionKey }),
     writeFile: (filePath, content) => {
