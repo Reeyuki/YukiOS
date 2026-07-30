@@ -64,6 +64,8 @@ app.whenReady().then(() => {
         focused.webContents.toggleDevTools();
       }
     });
+  } else {
+    Menu.setApplicationMenu(null);
   }
 
   setupInputHandlers();
