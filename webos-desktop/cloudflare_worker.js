@@ -659,6 +659,84 @@ export default {
       return jsonResponse({ success: true });
     }
 
+    if (url.pathname === "/api/download" && request.method === "POST") {
+      if (ipBlocked(env, clientIP)) {
+        return jsonResponse({ error: "Forbidden" }, 403);
+      }
+
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+
+      const events = Array.isArray(payload) ? payload : [payload];
+      const timestamp = new Date().toISOString();
+      const dailyId = await deriveDailyId(env, clientIP);
+
+      const inserts = events.map((event) => {
+        const data = {
+          event: "download",
+          app: event.app ? normalizeApp(event.app) : "unknown",
+          fileName: typeof event.fileName === "string" ? event.fileName.slice(0, 255) : "",
+          fileSize: typeof event.fileSize === "number" ? event.fileSize : 0,
+          fileType: typeof event.fileType === "string" ? event.fileType.slice(0, 64) : "",
+          source: typeof event.source === "string" ? event.source.slice(0, 32) : "",
+          timestamp: event.timestamp || Date.now()
+        };
+        const id = crypto.randomUUID();
+        return env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
+          id,
+          dailyId,
+          timestamp,
+          JSON.stringify(data)
+        );
+      });
+
+      await env.DB.batch(inserts);
+      return jsonResponse({ status: "ok", count: events.length });
+    }
+
+    if (url.pathname === "/api/electron-usage" && request.method === "POST") {
+      if (ipBlocked(env, clientIP)) {
+        return jsonResponse({ error: "Forbidden" }, 403);
+      }
+
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+
+      const events = Array.isArray(payload) ? payload : [payload];
+      const timestamp = new Date().toISOString();
+      const dailyId = await deriveDailyId(env, clientIP);
+
+      const inserts = events.map((event) => {
+        const data = {
+          event: "electron_usage",
+          action: typeof event.action === "string" ? event.action.slice(0, 64) : "unknown",
+          platform: typeof event.platform === "string" ? event.platform.slice(0, 32) : "",
+          version: typeof event.version === "string" ? event.version.slice(0, 32) : "",
+          details: typeof event.details === "string" ? event.details.slice(0, 512) : "",
+          isDev: !!event.isDev,
+          timestamp: event.timestamp || Date.now()
+        };
+        const id = crypto.randomUUID();
+        return env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
+          id,
+          dailyId,
+          timestamp,
+          JSON.stringify(data)
+        );
+      });
+
+      await env.DB.batch(inserts);
+      return jsonResponse({ status: "ok", count: events.length });
+    }
+
     if (url.pathname === "/live/activity" && request.method === "POST") {
       if (ipBlocked(env, clientIP)) {
         return jsonResponse({ error: "Forbidden" }, 403);
@@ -774,6 +852,83 @@ export default {
       const result = await env.DB.prepare(
         `SELECT id, daily_id, timestamp, data
          FROM analytics
+         ORDER BY timestamp DESC
+         LIMIT ? OFFSET ?`
+      )
+        .bind(limit, offset)
+        .all();
+      return jsonResponse({ results: result.results });
+    }
+
+    if (url.pathname === "/admin/downloads" && request.method === "GET") {
+      const limit = Math.min(parseInt(url.searchParams.get("limit") || "50"), 100);
+      const offset = parseInt(url.searchParams.get("offset") || "0");
+      const result = await env.DB.prepare(
+        `SELECT id, daily_id, timestamp, data
+         FROM analytics
+         WHERE json_extract(data, '$.event') = 'download'
+         ORDER BY timestamp DESC
+         LIMIT ? OFFSET ?`
+      )
+        .bind(limit, offset)
+        .all();
+      return jsonResponse({ results: result.results });
+    }
+
+    if (url.pathname === "/admin/downloads/stats" && request.method === "GET") {
+      const range = url.searchParams.get("range") || "30d";
+      let days = range === "7d" ? 7 : range === "90d" ? 90 : range === "1y" ? 365 : 30;
+
+      const total = await env.DB.prepare(
+        `SELECT COUNT(*) AS count,
+                COUNT(DISTINCT daily_id) AS unique_users
+         FROM analytics
+         WHERE json_extract(data, '$.event') = 'download'
+           AND timestamp >= datetime('now', '-' || ? || ' days')`
+      )
+        .bind(days)
+        .first();
+
+      const topFiles = await env.DB.prepare(
+        `SELECT json_extract(data, '$.fileName') AS fileName,
+                json_extract(data, '$.app') AS app,
+                COUNT(*) AS count
+         FROM analytics
+         WHERE json_extract(data, '$.event') = 'download'
+           AND timestamp >= datetime('now', '-' || ? || ' days')
+         GROUP BY fileName, app
+         ORDER BY count DESC
+         LIMIT 20`
+      )
+        .bind(days)
+        .all();
+
+      const byDay = await env.DB.prepare(
+        `SELECT date(timestamp) AS day, COUNT(*) AS count
+         FROM analytics
+         WHERE json_extract(data, '$.event') = 'download'
+           AND timestamp >= datetime('now', '-' || ? || ' days')
+         GROUP BY day
+         ORDER BY day DESC`
+      )
+        .bind(days)
+        .all();
+
+      return jsonResponse({
+        total: total?.count || 0,
+        unique_users: total?.unique_users || 0,
+        top_files: topFiles.results || [],
+        by_day: byDay.results || []
+      });
+    }
+
+    if (url.pathname === "/admin/electron-usage" && request.method === "GET") {
+      const limit = Math.min(parseInt(url.searchParams.get("limit") || "50"), 100);
+      const offset = parseInt(url.searchParams.get("offset") || "0");
+      const result = await env.DB.prepare(
+        `SELECT id, daily_id, timestamp, data
+         FROM analytics
+         WHERE json_extract(data, '$.event') = 'electron_usage'
          ORDER BY timestamp DESC
          LIMIT ? OFFSET ?`
       )

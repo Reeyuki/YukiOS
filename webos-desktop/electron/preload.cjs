@@ -36,6 +36,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   gstreamerStop: () => ipcRenderer.invoke("remote-host:gstreamer-stop"),
   openNativeWindow: (opts) => ipcRenderer.invoke("native-window:open-url", opts),
 
+  analytics: {
+    trackDownload: (info) => ipcRenderer.invoke("analytics:track-download", info),
+    trackElectronUsage: (info) => ipcRenderer.invoke("analytics:track-electron-usage", info)
+  },
+
   electronFs: {
     init: (sessionKey) => ipcRenderer.invoke("fs:init", { sessionKey }),
     writeFile: (filePath, content) => {

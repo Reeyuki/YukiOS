@@ -290,7 +290,13 @@ jobs:
             exit 0
           fi
           files=()
-          while IFS= read -r -d '' f; do files+=("$f"); done < <(find release-files -maxdepth 1 -type f -print0)
+          while IFS= read -r -d '' f; do
+            base=$(basename "$f")
+            case "$base" in
+              builder-debug.yml|latest-linux.yml|latest-mac.yml|latest.yml|*.blockmap) ;;
+              *) files+=("$f") ;;
+            esac
+          done < <(find release-files -maxdepth 1 -type f -print0)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No release files found, skipping"
             exit 0

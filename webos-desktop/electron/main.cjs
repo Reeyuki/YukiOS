@@ -9,6 +9,19 @@ const isDev = !app.isPackaged;
 const ICON_PATH = path.join(__dirname, "..", "dist", "icon-32.png");
 const TRAY_ICON_PATH = path.join(__dirname, "..", "dist", "icon-16.png");
 
+const ANALYTICS_BASE = "https://analytics.liventcord-a60.workers.dev";
+
+function sendAnalytics(endpoint, payload) {
+  try {
+    const body = JSON.stringify(Array.isArray(payload) ? payload : [payload]);
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body
+    }).catch(() => {});
+  } catch {}
+}
+
 let mainWindow = null;
 let remoteHostWindow = null;
 let fsRoot = null;
@@ -70,6 +83,27 @@ app.whenReady().then(() => {
 
   setupInputHandlers();
   setupRemoteHostHandlers();
+  setupAnalyticsHandlers();
+
+  sendAnalytics(ANALYTICS_BASE + "/api/electron-usage", {
+    action: "app:start",
+    platform: process.platform,
+    version: app.getVersion(),
+    details: "Electron app started",
+    isDev,
+    timestamp: Date.now()
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    sendAnalytics(ANALYTICS_BASE + "/api/electron-usage", {
+      action: "app:ready",
+      platform: process.platform,
+      version: app.getVersion(),
+      details: "Main window loaded",
+      isDev,
+      timestamp: Date.now()
+    });
+  });
 
   globalShortcut.register("Alt+Space", () => {
     if (mainWindow.isVisible()) {
@@ -110,6 +144,14 @@ app.on("before-quit", () => {
     remoteHostWindow.close();
     remoteHostWindow = null;
   }
+  sendAnalytics(ANALYTICS_BASE + "/api/electron-usage", {
+    action: "app:quit",
+    platform: process.platform,
+    version: app.getVersion(),
+    details: "Electron app quitting",
+    isDev,
+    timestamp: Date.now()
+  });
 });
 
 // ---- Input Simulation ----
@@ -769,6 +811,42 @@ function setupInputHandlers() {
   ipcMain.handle("remote-host:turn-creds", () => getTurnCreds());
 }
 
+function setupAnalyticsHandlers() {
+  ipcMain.handle("analytics:track-download", async (event, info) => {
+    try {
+      const payload = {
+        app: info.app || "electron",
+        fileName: info.fileName || "unknown",
+        fileSize: typeof info.fileSize === "number" ? info.fileSize : 0,
+        fileType: info.fileType || "",
+        source: info.source || "electron-filesave",
+        timestamp: Date.now()
+      };
+      sendAnalytics(ANALYTICS_BASE + "/api/download", payload);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle("analytics:track-electron-usage", async (event, info) => {
+    try {
+      const payload = {
+        action: info.action || "unknown",
+        platform: process.platform,
+        version: app.getVersion(),
+        details: info.details || "",
+        isDev,
+        timestamp: Date.now()
+      };
+      sendAnalytics(ANALYTICS_BASE + "/api/electron-usage", payload);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+}
+
 function setupRemoteHostHandlers() {
   ipcMain.on("remote-host:event", (event, data) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -881,11 +959,24 @@ function setupRemoteHostHandlers() {
     return { success: true };
   });
 
-  ipcMain.handle("file:save", async (event, { fileName, data }) => {
+  ipcMain.handle("file:save", async (event, { fileName, data, analytics }) => {
     try {
       const downloads = app.getPath("downloads");
       const filePath = path.join(downloads, fileName);
       fs.writeFileSync(filePath, Buffer.from(data));
+
+      if (analytics !== false) {
+        const ext = path.extname(fileName).replace(".", "").toLowerCase();
+        sendAnalytics(ANALYTICS_BASE + "/api/download", {
+          app: (analytics && analytics.app) || "electron",
+          fileName,
+          fileSize: Buffer.from(data).length,
+          fileType: ext || "unknown",
+          source: (analytics && analytics.source) || "electron-filesave",
+          timestamp: Date.now()
+        });
+      }
+
       return { success: true, path: filePath };
     } catch (err) {
       return { success: false, error: err.message };

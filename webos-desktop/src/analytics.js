@@ -6,6 +6,8 @@ import { parseBool } from "./utils/utils.js";
 
 const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
 const ENDPOINT = ENDPOINT_BASE + "/analytics";
+const DOWNLOAD_ENDPOINT = ENDPOINT_BASE + "/api/download";
+const ELECTRON_USAGE_ENDPOINT = ENDPOINT_BASE + "/api/electron-usage";
 const hostname = window.location.hostname;
 const ANALYTICS_DISABLED = () => parseBool(os.storage.get(StorageKeys.analyticsDisabled));
 const FLUSH_INTERVAL_MS = 30000;
@@ -192,4 +194,66 @@ export async function fetchLiveStats() {
     }
   })();
   return liveStatsPromise;
+}
+
+export function trackDownload(event) {
+  if (ANALYTICS_DISABLED()) return;
+  if (!event || !event.fileName) return;
+  const payload = {
+    app: event.app || "unknown",
+    fileName: event.fileName,
+    fileSize: typeof event.fileSize === "number" ? event.fileSize : 0,
+    fileType: event.fileType || "",
+    source: event.source || "browser",
+    timestamp: Date.now()
+  };
+  const body = JSON.stringify([payload]);
+  const sent = navigator.sendBeacon ? navigator.sendBeacon(DOWNLOAD_ENDPOINT, body) : false;
+  if (!sent) {
+    fetch(DOWNLOAD_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body
+    }).catch(() => {});
+  }
+}
+
+export function trackElectronUsage(event) {
+  if (ANALYTICS_DISABLED()) return;
+  if (!event || !event.action) return;
+  const payload = {
+    action: event.action,
+    platform: event.platform || "",
+    version: event.version || "",
+    details: event.details || "",
+    isDev: !!event.isDev,
+    timestamp: Date.now()
+  };
+  const body = JSON.stringify([payload]);
+  const sent = navigator.sendBeacon ? navigator.sendBeacon(ELECTRON_USAGE_ENDPOINT, body) : false;
+  if (!sent) {
+    fetch(ELECTRON_USAGE_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body
+    }).catch(() => {});
+  }
+}
+
+export function trackElectronUsageFromMain(event) {
+  if (!event || !event.action) return;
+  const payload = {
+    action: event.action,
+    platform: event.platform || "",
+    version: event.version || "",
+    details: event.details || "",
+    isDev: !!event.isDev,
+    timestamp: Date.now()
+  };
+  const body = JSON.stringify([payload]);
+  fetch(ELECTRON_USAGE_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body
+  }).catch(() => {});
 }
