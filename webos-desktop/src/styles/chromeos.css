@@ -323,6 +323,7 @@ html.chromeos-mode #chromeos-shelf {
 
 #chromeos-launcher.open .launcher-overlay {
   max-height: 80vh;
+  height: 80vh;
 }
 
 .launcher-search-wrapper {

@@ -1159,7 +1159,7 @@ export const APP_MANIFESTS = [
     title: "Blender",
     source: "https://developer.puter.com/labs/blender-web",
     icon: `${CDN_BASE}/static/icons/blender.webp`,
-    launchType: "iframe",
+    launchType: "remote",
     windowIdPatterns: ["blender"],
     category: "graphics",
     description: "Full 3D modeling directly in your browser using Blender's web-based editor."

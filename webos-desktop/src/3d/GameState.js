@@ -13,7 +13,6 @@ export const GENRES = {
 export const GAME_GENRES = {
   tabs: "strategy",
   plagueIncEvolved: "strategy",
-  seaSweeper: "casual",
   angryBirds2: "action",
   deltaruneCh5: "rpg",
   slimeRancher: "casual",

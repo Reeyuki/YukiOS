@@ -380,7 +380,7 @@
   position: fixed;
   bottom: 32px;
   left: 32px;
-  z-index: 2;
+  z-index: 20;
 }
 
 .session-selector-btn {
@@ -426,6 +426,7 @@
   overflow: hidden;
   backdrop-filter: blur(32px);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  z-index: 20;
 
   opacity: 0;
   transform: translateY(10px);
@@ -731,24 +732,13 @@
   }
 }
 
-@keyframes sessionBannerReveal {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 .session-electron-banner--hidden {
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
 .session-electron-banner--reveal {
-  animation: sessionBannerReveal 0.35s ease forwards;
+  opacity: 1;
 }
 
 .preview-name {

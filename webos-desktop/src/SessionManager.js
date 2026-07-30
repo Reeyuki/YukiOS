@@ -548,9 +548,6 @@ export class SessionManager {
       bootPreviewModal.style.display = "none";
       if (electronBanner) {
         electronBanner.classList.remove("session-electron-banner--hidden");
-        electronBanner.classList.remove("session-electron-banner--reveal");
-        void electronBanner.offsetWidth;
-        electronBanner.classList.add("session-electron-banner--reveal");
       }
     };
 
