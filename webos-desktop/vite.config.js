@@ -227,6 +227,7 @@ function pageGenerator() {
   return {
     name: "page-generator",
     closeBundle() {
+      if (isDevBuild) return;
       runGenerator();
     },
     configureServer(server) {

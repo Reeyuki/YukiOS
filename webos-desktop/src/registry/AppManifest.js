@@ -1155,6 +1155,24 @@ export const APP_MANIFESTS = [
     description: "Advanced photo editor with layers, filters, and PSD support."
   },
   {
+    serviceKey: "blenderApp",
+    enhanced: true,
+    type: "system",
+    title: "Blender",
+    icon: `${CDN_BASE}/static/icons/blender.webp`,
+    launchType: "instance",
+    windowIdPatterns: ["blender"],
+    category: "graphics",
+    persistContentState: false,
+    clippy: {
+      message: "Model 3D objects right in your browser with a full Blender-like editor.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Full 3D modeling directly in your browser using Blender's web-based editor.",
+    targetUrl: "https://developer.puter.com/labs/blender-web",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
     type: "system",
     title: "Vs Code",
     source: "https://emupedia.net/emupedia-app-vscode",

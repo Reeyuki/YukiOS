@@ -6,6 +6,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 31, 2026",
+    sections: [
+      {
+        icon: "fa-cube",
+        title: "Blender",
+        items: [
+          [
+            "fa-cube",
+            "Blender Web Editor",
+            "Model 3D objects right in your browser with a full Blender-like editor compiled to wasm by puter labs."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 30, 2026",
     sections: [
       {
