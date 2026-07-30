@@ -1,632 +1,812 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; background: #111; overflow: hidden; }
-#capture { display: none; }
-#errorBox {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  height: 100%; padding: 16px; text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-#errorBox h2 { font-size: 14px; font-weight: 600; color: #e8e8ed; margin-bottom: 8px; }
-#errorBox p { font-size: 12px; color: #888899; line-height: 1.4; }
-#errorBox .err { color: #ff6b6b; font-size: 11px; margin-top: 8px; word-break: break-all; }
-#errorBox .ok { color: #51cf66; font-size: 11px; margin-top: 8px; }
-</style>
-</head>
-<body>
-<video id="capture" autoplay playsinline muted></video>
-<div id="errorBox">
-  <h2>Yuki Remote Desktop</h2>
-  <p id="statusMsg">Initializing...</p>
-  <p id="detailMsg" class=""></p>
-</div>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: #111;
+        overflow: hidden;
+      }
+      #capture {
+        display: none;
+      }
+      #errorBox {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 16px;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      #errorBox h2 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #e8e8ed;
+        margin-bottom: 8px;
+      }
+      #errorBox p {
+        font-size: 12px;
+        color: #888899;
+        line-height: 1.4;
+      }
+      #errorBox .err {
+        color: #ff6b6b;
+        font-size: 11px;
+        margin-top: 8px;
+        word-break: break-all;
+      }
+      #errorBox .ok {
+        color: #51cf66;
+        font-size: 11px;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <video id="capture" autoplay playsinline muted></video>
+    <div id="errorBox">
+      <h2>Yuki Remote Desktop</h2>
+      <p id="statusMsg">Initializing...</p>
+      <p id="detailMsg" class=""></p>
+    </div>
 
-<script>
-function setStatus(msg, type) {
-  document.getElementById("statusMsg").textContent = msg;
-  const el = document.getElementById("detailMsg");
-  el.textContent = msg;
-  el.className = type || "";
-}
+    <script>
+      function setStatus(msg, type) {
+        document.getElementById("statusMsg").textContent = msg;
+        const el = document.getElementById("detailMsg");
+        el.textContent = msg;
+        el.className = type || "";
+      }
 
-function flashError(msg) {
-  document.getElementById("detailMsg").textContent = msg;
-  document.getElementById("detailMsg").className = "err";
-}
+      function flashError(msg) {
+        document.getElementById("detailMsg").textContent = msg;
+        document.getElementById("detailMsg").className = "err";
+      }
 
-const API = window.electronAPI;
-if (!API || !API.sendRemoteHostEvent) {
-  setStatus("electronAPI not available", "err");
-  throw new Error("electronAPI not available in preload");
-}
+      const API = window.electronAPI;
+      if (!API || !API.sendRemoteHostEvent) {
+        setStatus("electronAPI not available", "err");
+        throw new Error("electronAPI not available in preload");
+      }
 
-const SIGNALING_BASE = "wss://yukios-remote-signaling.liventcord-a60.workers.dev";
-let ws = null;
-let pc = null;
-let captureStream = null;
-let dataChannel = null;
-let fileChannel = null;
-let roomCode = null;
-let roomId = null;
-let reconnectAttempts = 0;
-let reconnectTimer = null;
-let isIntentionalDisconnect = false;
-let persistedRoomId = null;
-const MAX_RECONNECT = 20;
-let settings = {};
-let useWebCodecs = false;
-let videoEncoder = null;
-let encoderReader = null;
+      const SIGNALING_BASE = "wss://yukios-remote-signaling.liventcord-a60.workers.dev";
+      let ws = null;
+      let pc = null;
+      let captureStream = null;
+      let dataChannel = null;
+      let fileChannel = null;
+      let roomCode = null;
+      let roomId = null;
+      let reconnectAttempts = 0;
+      let reconnectTimer = null;
+      let isIntentionalDisconnect = false;
+      let persistedRoomId = null;
+      const MAX_RECONNECT = 20;
+      let settings = {};
+      let useWebCodecs = false;
+      let videoEncoder = null;
+      let encoderReader = null;
 
-function sendEvent(data) {
-  API.sendRemoteHostEvent(data);
-}
+      function sendEvent(data) {
+        API.sendRemoteHostEvent(data);
+      }
 
-let hostAudioEnabled = true;
-let audioTrack = null;
+      let hostAudioEnabled = true;
+      let audioTrack = null;
+      let fallbackMode = false;
+      let fallbackInterval = null;
+      let iceRestartAttempted = false;
+      let connectionTimeout = null;
 
-function setAudioEnabled(enabled) {
-  hostAudioEnabled = enabled;
-  if (audioTrack) {
-    audioTrack.enabled = enabled;
-  }
-  sendEvent({ type: "audio-state", enabled });
-}
+      const STUN_SERVERS = [
+        { urls: "stun:stun.cloudflare.com:3478" },
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+        { urls: "stun:stun2.l.google.com:19302" },
+        { urls: "stun:stun3.l.google.com:19302" },
+        { urls: "stun:stun4.l.google.com:19302" }
+      ];
+      function getIceConfig() {
+        return { iceServers: STUN_SERVERS, iceCandidatePoolSize: 5 };
+      }
 
-async function captureScreen(res, frameRate) {
-  let sources;
-  try {
-    sources = await API.getScreenSources();
-  } catch (e) {
-  }
+      function setAudioEnabled(enabled) {
+        hostAudioEnabled = enabled;
+        if (audioTrack) {
+          audioTrack.enabled = enabled;
+        }
+        sendEvent({ type: "audio-state", enabled });
+      }
 
-  let videoOnly = false;
-  let stream;
+      async function captureScreen(res, frameRate) {
+        let sources;
+        try {
+          sources = await API.getScreenSources();
+        } catch (e) {}
 
-  if (sources && sources.length > 0) {
-    const source = sources.find(s =>
-      s.name && (s.name.toLowerCase().includes("entire") || s.name.toLowerCase().includes("screen"))
-    ) || sources[0];
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          mandatory: {
-            chromeMediaSource: "desktop",
-            chromeMediaSourceId: source.id
-          }
-        },
-        video: {
-          mandatory: {
-            chromeMediaSource: "desktop",
-            chromeMediaSourceId: source.id,
-            minWidth: res.w, maxWidth: res.w,
-            minHeight: res.h, maxHeight: res.h,
-            minFrameRate: frameRate, maxFrameRate: frameRate
+        let videoOnly = false;
+        let stream;
+
+        if (sources && sources.length > 0) {
+          const source =
+            sources.find(
+              (s) => s.name && (s.name.toLowerCase().includes("entire") || s.name.toLowerCase().includes("screen"))
+            ) || sources[0];
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                mandatory: {
+                  chromeMediaSource: "desktop",
+                  chromeMediaSourceId: source.id
+                }
+              },
+              video: {
+                mandatory: {
+                  chromeMediaSource: "desktop",
+                  chromeMediaSourceId: source.id,
+                  minWidth: res.w,
+                  maxWidth: res.w,
+                  minHeight: res.h,
+                  maxHeight: res.h,
+                  minFrameRate: frameRate,
+                  maxFrameRate: frameRate
+                }
+              }
+            });
+          } catch (e) {
+            try {
+              stream = await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                  mandatory: {
+                    chromeMediaSource: "desktop",
+                    chromeMediaSourceId: source.id,
+                    minWidth: res.w,
+                    maxWidth: res.w,
+                    minHeight: res.h,
+                    maxHeight: res.h,
+                    minFrameRate: frameRate,
+                    maxFrameRate: frameRate
+                  }
+                }
+              });
+              videoOnly = true;
+            } catch (e2) {}
           }
         }
-      });
-    } catch (e) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            mandatory: {
-              chromeMediaSource: "desktop",
-              chromeMediaSourceId: source.id,
-              minWidth: res.w, maxWidth: res.w,
-              minHeight: res.h, maxHeight: res.h,
-              minFrameRate: frameRate, maxFrameRate: frameRate
+
+        if (!stream) {
+          try {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { width: { ideal: res.w }, height: { ideal: res.h }, frameRate: { ideal: frameRate } },
+              audio: true
+            });
+            if (stream.getAudioTracks().length === 0) videoOnly = true;
+          } catch (e) {
+            stream = await navigator.mediaDevices.getDisplayMedia({
+              video: { width: { ideal: res.w }, height: { ideal: res.h }, frameRate: { ideal: frameRate } },
+              audio: false
+            });
+            videoOnly = true;
+          }
+        }
+
+        if (stream) {
+          const at = stream.getAudioTracks()[0];
+          if (at) {
+            audioTrack = at;
+            sendEvent({ type: "audio-state", enabled: hostAudioEnabled, source: "system" });
+          }
+        }
+
+        return stream;
+      }
+
+      function getQueryParams() {
+        const p = new URLSearchParams(window.location.search);
+        return {
+          quality: p.get("quality") || null,
+          fps: p.get("fps") ? parseInt(p.get("fps")) : null,
+          maxWidth: p.get("mw") ? parseInt(p.get("mw")) : null,
+          maxHeight: p.get("mh") ? parseInt(p.get("mh")) : null
+        };
+      }
+
+      async function init() {
+        setStatus("Getting settings...");
+
+        const qp = getQueryParams();
+
+        try {
+          settings = await API.getRemoteHostSettings();
+        } catch {
+          settings = { quality: "720p", fps: 30 };
+        }
+
+        if (qp.quality) settings.quality = qp.quality;
+        if (qp.fps) settings.fps = qp.fps;
+        if (qp.maxWidth) settings.maxWidth = qp.maxWidth;
+        if (qp.maxHeight) settings.maxHeight = qp.maxHeight;
+
+        try {
+          const roomData = await API.getPersistentRoom();
+          if (roomData && roomData.roomId) persistedRoomId = roomData.roomId;
+        } catch {}
+
+        let res;
+        if (settings.quality === "max") {
+          const mw = settings.maxWidth || settings.primaryBounds?.width;
+          const mh = settings.maxHeight || settings.primaryBounds?.height;
+          res = mw && mh ? { w: mw, h: mh } : { w: 1920, h: 1080 };
+        } else if (settings.quality === "1080p") {
+          res = { w: 1920, h: 1080 };
+        } else {
+          res = { w: 1280, h: 720 };
+        }
+        const frameRate = settings.fps || 30;
+
+        setStatus("Capturing screen...");
+
+        try {
+          const stream = await Promise.race([
+            captureScreen(res, frameRate),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Screen capture timed out after 10s")), 10000))
+          ]);
+          captureStream = stream;
+        } catch (err) {
+          const msg = err.message || String(err);
+          if (msg.includes("Permission") || msg.includes("denied") || msg.includes("not allowed")) {
+            flashError("Screen capture permission denied");
+            sendEvent({ type: "error", message: "Screen capture permission denied" });
+            return;
+          }
+          flashError("Screen capture failed: " + msg);
+          sendEvent({ type: "error", message: "Screen capture failed: " + msg });
+          return;
+        }
+
+        try {
+          if (typeof MediaStreamTrackProcessor !== "undefined" && typeof VideoEncoder !== "undefined") {
+            const testConfig = {
+              codec: "avc1.42001E",
+              width: 640,
+              height: 480,
+              bitrate: 1_000_000,
+              framerate: 30,
+              hardwareAcceleration: "prefer-hardware",
+              avc: { format: "annexb" }
+            };
+            const support = await VideoEncoder.isConfigSupported(testConfig);
+            if (support.supported) {
+              useWebCodecs = true;
             }
           }
-        });
-        videoOnly = true;
-      } catch (e2) {
-      }
-    }
-  }
-
-  if (!stream) {
-    try {
-      stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: res.w }, height: { ideal: res.h }, frameRate: { ideal: frameRate } },
-        audio: true
-      });
-      if (stream.getAudioTracks().length === 0) videoOnly = true;
-    } catch (e) {
-      stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: res.w }, height: { ideal: res.h }, frameRate: { ideal: frameRate } },
-        audio: false
-      });
-      videoOnly = true;
-    }
-  }
-
-  if (stream) {
-    const at = stream.getAudioTracks()[0];
-    if (at) {
-      audioTrack = at;
-      sendEvent({ type: "audio-state", enabled: hostAudioEnabled, source: "system" });
-    }
-  }
-
-  return stream;
-}
-
-function getQueryParams() {
-  const p = new URLSearchParams(window.location.search);
-  return {
-    quality: p.get("quality") || null,
-    fps: p.get("fps") ? parseInt(p.get("fps")) : null,
-    maxWidth: p.get("mw") ? parseInt(p.get("mw")) : null,
-    maxHeight: p.get("mh") ? parseInt(p.get("mh")) : null
-  };
-}
-
-async function init() {
-  setStatus("Getting settings...");
-
-  const qp = getQueryParams();
-
-  try {
-    settings = await API.getRemoteHostSettings();
-  } catch {
-    settings = { quality: "720p", fps: 30 };
-  }
-
-  if (qp.quality) settings.quality = qp.quality;
-  if (qp.fps) settings.fps = qp.fps;
-  if (qp.maxWidth) settings.maxWidth = qp.maxWidth;
-  if (qp.maxHeight) settings.maxHeight = qp.maxHeight;
-
-  try {
-    const roomData = await API.getPersistentRoom();
-    if (roomData && roomData.roomId) persistedRoomId = roomData.roomId;
-  } catch {}
-
-  let res;
-  if (settings.quality === "max") {
-    const mw = settings.maxWidth || settings.primaryBounds?.width;
-    const mh = settings.maxHeight || settings.primaryBounds?.height;
-    res = mw && mh ? { w: mw, h: mh } : { w: 1920, h: 1080 };
-  } else if (settings.quality === "1080p") {
-    res = { w: 1920, h: 1080 };
-  } else {
-    res = { w: 1280, h: 720 };
-  }
-  const frameRate = settings.fps || 30;
-
-  setStatus("Capturing screen...");
-
-  try {
-    const stream = await Promise.race([
-      captureScreen(res, frameRate),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Screen capture timed out after 10s")), 10000))
-    ]);
-    captureStream = stream;
-  } catch (err) {
-    const msg = err.message || String(err);
-    if (msg.includes("Permission") || msg.includes("denied") || msg.includes("not allowed")) {
-      flashError("Screen capture permission denied");
-      sendEvent({ type: "error", message: "Screen capture permission denied" });
-      return;
-    }
-    flashError("Screen capture failed: " + msg);
-    sendEvent({ type: "error", message: "Screen capture failed: " + msg });
-    return;
-  }
-
-  try {
-    if (typeof MediaStreamTrackProcessor !== "undefined" && typeof VideoEncoder !== "undefined") {
-      const testConfig = {
-        codec: "avc1.42001E",
-        width: 640,
-        height: 480,
-        bitrate: 1_000_000,
-        framerate: 30,
-        hardwareAcceleration: "prefer-hardware",
-        avc: { format: "annexb" }
-      };
-      const support = await VideoEncoder.isConfigSupported(testConfig);
-      if (support.supported) {
-        useWebCodecs = true;
-      }
-    }
-  } catch (e) {
-    useWebCodecs = false;
-  }
-
-  setStatus("Captured screen, connecting to signaling...", "ok");
-
-  const video = document.getElementById("capture");
-  video.srcObject = captureStream;
-  connectSignaling();
-}
-
-function connectSignaling() {
-  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
-  reconnectAttempts = 0;
-  isIntentionalDisconnect = false;
-
-  if (persistedRoomId) {
-    roomId = persistedRoomId;
-  } else {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const bytes = new Uint8Array(6);
-    crypto.getRandomValues(bytes);
-    roomId = Array.from(bytes).map(b => chars[b % chars.length]).join("");
-  }
-  const displayCode = roomId.slice(0, 3) + "-" + roomId.slice(3);
-  setStatus("Code: " + displayCode, "ok");
-  const wsUrl = SIGNALING_BASE + "?room=" + roomId;
-  ws = new WebSocket(wsUrl);
-  setStatus("Connecting to signaling server...");
-
-  const connTimeout = setTimeout(() => {
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      flashError("Signaling server unreachable after 10s");
-      sendEvent({ type: "error", message: "Signaling server unreachable" });
-    }
-  }, 10000);
-
-  ws.onopen = () => {
-    clearTimeout(connTimeout);
-    setStatus("Connected, registering as host...", "ok");
-    ws.send(JSON.stringify({ type: "register-host" }));
-  };
-
-  ws.onmessage = async (event) => {
-    try {
-      const msg = JSON.parse(event.data);
-      await handleSignalingMessage(msg);
-    } catch (err) {
-      console.error("Signaling error:", err);
-    }
-  };
-
-  ws.onerror = () => {
-    clearTimeout(connTimeout);
-    flashError("Signaling connection failed");
-    sendEvent({ type: "error", message: "Signaling connection failed" });
-  };
-
-  ws.onclose = () => {
-    clearTimeout(connTimeout);
-    if (!isIntentionalDisconnect && roomId && reconnectAttempts < MAX_RECONNECT) {
-      startReconnect();
-      return;
-    }
-    cleanup();
-    sendEvent({ type: "disconnected" });
-  };
-}
-
-function startReconnect() {
-  reconnectAttempts++;
-  const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
-  const secs = (delay / 1000).toFixed(0);
-  setStatus("Reconnecting in " + secs + "s... (attempt " + reconnectAttempts + "/" + MAX_RECONNECT + ")");
-  sendEvent({ type: "reconnecting", attempt: reconnectAttempts });
-
-  reconnectTimer = setTimeout(() => {
-    const reconnectWs = new WebSocket(SIGNALING_BASE + "?room=" + roomId);
-    setStatus("Reconnecting...");
-
-    reconnectWs.onopen = () => {
-      clearTimeout(reconnectTimer);
-      setStatus("Reconnected, registering as host...", "ok");
-      sendEvent({ type: "reconnected" });
-      ws = reconnectWs;
-      reconnectAttempts = 0;
-
-      ws.onmessage = async (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          await handleSignalingMessage(msg);
-        } catch (err) {
-          console.error("Signaling error:", err);
+        } catch (e) {
+          useWebCodecs = false;
         }
-      };
 
-      ws.onerror = () => {
-        flashError("Reconnect failed");
-      };
+        setStatus("Captured screen, connecting to signaling...", "ok");
 
-      ws.onclose = () => {
-        if (!isIntentionalDisconnect && roomId && reconnectAttempts < MAX_RECONNECT) {
-          startReconnect();
+        const video = document.getElementById("capture");
+        video.srcObject = captureStream;
+        connectSignaling();
+      }
+
+      function connectSignaling() {
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+        reconnectAttempts = 0;
+        isIntentionalDisconnect = false;
+
+        if (persistedRoomId) {
+          roomId = persistedRoomId;
         } else {
+          const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+          const bytes = new Uint8Array(6);
+          crypto.getRandomValues(bytes);
+          roomId = Array.from(bytes)
+            .map((b) => chars[b % chars.length])
+            .join("");
+        }
+        const displayCode = roomId.slice(0, 3) + "-" + roomId.slice(3);
+        setStatus("Code: " + displayCode, "ok");
+        const wsUrl = SIGNALING_BASE + "?room=" + roomId;
+        ws = new WebSocket(wsUrl);
+        setStatus("Connecting to signaling server...");
+
+        const connTimeout = setTimeout(() => {
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            flashError("Signaling server unreachable after 10s");
+            sendEvent({ type: "error", message: "Signaling server unreachable" });
+          }
+        }, 10000);
+
+        ws.onopen = () => {
+          clearTimeout(connTimeout);
+          setStatus("Connected, registering as host...", "ok");
+          ws.send(JSON.stringify({ type: "register-host" }));
+        };
+
+        ws.onmessage = async (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            await handleSignalingMessage(msg);
+          } catch (err) {
+            console.error("Signaling error:", err);
+          }
+        };
+
+        ws.onerror = () => {
+          clearTimeout(connTimeout);
+          flashError("Signaling connection failed");
+          sendEvent({ type: "error", message: "Signaling connection failed" });
+        };
+
+        ws.onclose = () => {
+          clearTimeout(connTimeout);
+          if (!isIntentionalDisconnect && roomId && reconnectAttempts < MAX_RECONNECT) {
+            startReconnect();
+            return;
+          }
           cleanup();
           sendEvent({ type: "disconnected" });
-        }
-      };
-
-      ws.send(JSON.stringify({ type: "register-host" }));
-    };
-
-    reconnectWs.onerror = () => {
-      flashError("Reconnect attempt failed");
-      startReconnect();
-    };
-
-    reconnectWs.onclose = () => {
-      if (reconnectAttempts < MAX_RECONNECT) {
-        startReconnect();
-      } else {
-        flashError("Max reconnection attempts reached");
-        cleanup();
-        sendEvent({ type: "error", message: "Max reconnection attempts reached" });
+        };
       }
-    };
-  }, delay);
-}
 
-async function handleSignalingMessage(msg) {
-  switch (msg.type) {
-    case "host-registered":
-      roomCode = msg.room;
-      setStatus("Room: " + msg.room, "ok");
-      sendEvent({ type: "room-ready", room: roomCode });
-      API.savePersistentRoom(roomId);
-      initWebRTC();
-      break;
+      function startReconnect() {
+        reconnectAttempts++;
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
+        const secs = (delay / 1000).toFixed(0);
+        setStatus("Reconnecting in " + secs + "s... (attempt " + reconnectAttempts + "/" + MAX_RECONNECT + ")");
+        sendEvent({ type: "reconnecting", attempt: reconnectAttempts });
 
-    case "client-joined":
-      sendEvent({ type: "client-joined" });
-      await startStreaming();
-      break;
+        reconnectTimer = setTimeout(() => {
+          const reconnectWs = new WebSocket(SIGNALING_BASE + "?room=" + roomId);
+          setStatus("Reconnecting...");
 
-    case "answer":
-      if (useWebCodecs) break;
-      if (pc && pc.localDescription && pc.localDescription.type === "offer") {
-        try {
-          await pc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: msg.sdp }));
-        } catch (err) {
-          console.error("Failed to set remote description:", err);
-        }
-      }
-      break;
+          reconnectWs.onopen = () => {
+            clearTimeout(reconnectTimer);
+            setStatus("Reconnected, registering as host...", "ok");
+            sendEvent({ type: "reconnected" });
+            ws = reconnectWs;
+            reconnectAttempts = 0;
 
-    case "ice-candidate":
-      if (useWebCodecs) break;
-      if (pc && msg.candidate) {
-        try {
-          await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
-        } catch (err) {
-          console.error("Failed to add ICE candidate:", err);
-        }
-      }
-      break;
+            ws.onmessage = async (event) => {
+              try {
+                const msg = JSON.parse(event.data);
+                await handleSignalingMessage(msg);
+              } catch (err) {
+                console.error("Signaling error:", err);
+              }
+            };
 
-    case "input-event":
-      API.simulateInput(msg.input);
-      break;
+            ws.onerror = () => {
+              flashError("Reconnect failed");
+            };
 
-    case "client-disconnected":
-      sendEvent({ type: "client-disconnected" });
-      break;
-  }
-}
+            ws.onclose = () => {
+              if (!isIntentionalDisconnect && roomId && reconnectAttempts < MAX_RECONNECT) {
+                startReconnect();
+              } else {
+                cleanup();
+                sendEvent({ type: "disconnected" });
+              }
+            };
 
-function initWebRTC() {
-  const config = {
-    iceServers: [
-      { urls: "stun:stun.cloudflare.com:3478" },
-      { urls: "stun:stun.l.google.com:19302" }
-    ]
-  };
+            ws.send(JSON.stringify({ type: "register-host" }));
+          };
 
-  pc = new RTCPeerConnection(config);
+          reconnectWs.onerror = () => {
+            flashError("Reconnect attempt failed");
+            startReconnect();
+          };
 
-  pc.onicecandidate = (event) => {
-    if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "ice-candidate", candidate: event.candidate.toJSON(), from: "host" }));
-    }
-  };
-
-  pc.onconnectionstatechange = () => {
-    sendEvent({ type: "connection-state", state: pc.connectionState });
-  };
-
-  dataChannel = pc.createDataChannel("relay");
-  dataChannel.binaryType = "arraybuffer";
-  dataChannel.onmessage = (event) => {
-    if (typeof event.data === "string") {
-      try {
-        const input = JSON.parse(event.data);
-        API.simulateInput(input);
-      } catch (err) {
-        console.error("Failed to parse input:", err);
-      }
-    }
-  };
-
-  let fileBuffer = [];
-  let fileMeta = null;
-  fileChannel = pc.createDataChannel("file-transfer");
-  fileChannel.binaryType = "arraybuffer";
-  fileChannel.onmessage = (event) => {
-    if (typeof event.data === "string") {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === "file-start") {
-          fileMeta = msg;
-          fileBuffer = [];
-        } else if (msg.type === "file-end") {
-          if (fileMeta) {
-            const total = fileBuffer.reduce((s, c) => s + c.byteLength, 0);
-            const data = new Uint8Array(total);
-            let off = 0;
-            for (const chunk of fileBuffer) {
-              data.set(new Uint8Array(chunk), off);
-              off += chunk.byteLength;
+          reconnectWs.onclose = () => {
+            if (reconnectAttempts < MAX_RECONNECT) {
+              startReconnect();
+            } else {
+              flashError("Max reconnection attempts reached");
+              cleanup();
+              sendEvent({ type: "error", message: "Max reconnection attempts reached" });
             }
-            API.saveFile({ fileName: fileMeta.name, data: Array.from(data) });
-            fileMeta = null;
-            fileBuffer = [];
+          };
+        }, delay);
+      }
+
+      async function handleSignalingMessage(msg) {
+        switch (msg.type) {
+          case "host-registered":
+            roomCode = msg.room;
+            setStatus("Room: " + msg.room, "ok");
+            sendEvent({ type: "room-ready", room: roomCode });
+            API.savePersistentRoom(roomId);
+            initWebRTC();
+            break;
+
+          case "client-joined":
+            sendEvent({ type: "client-joined" });
+            await startStreaming();
+            break;
+
+          case "answer":
+            if (useWebCodecs) break;
+            if (pc && pc.localDescription && pc.localDescription.type === "offer") {
+              try {
+                await pc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: msg.sdp }));
+              } catch (err) {
+                console.error("Failed to set remote description:", err);
+              }
+            }
+            break;
+
+          case "ice-candidate":
+            if (useWebCodecs) break;
+            if (pc && msg.candidate) {
+              try {
+                await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+              } catch (err) {
+                console.error("Failed to add ICE candidate:", err);
+              }
+            }
+            break;
+
+          case "input-event":
+            API.simulateInput(msg.input);
+            break;
+
+          case "client-disconnected":
+            sendEvent({ type: "client-disconnected" });
+            break;
+        }
+      }
+
+      function initWebRTC() {
+        pc = new RTCPeerConnection(getIceConfig());
+        pc.oniceconnectionstatechange = () => {
+          const state = pc.iceConnectionState;
+          if (state === "failed" && !iceRestartAttempted) {
+            iceRestartAttempted = true;
+            setStatus("P2P failed, retrying ICE...");
+            restartIce();
+          } else if (state === "failed" && iceRestartAttempted && !fallbackMode) {
+            activateFallback();
+          }
+        };
+        connectionTimeout = setTimeout(() => {
+          if (pc && pc.iceConnectionState !== "connected" && pc.iceConnectionState !== "completed") {
+            if (!iceRestartAttempted) {
+              iceRestartAttempted = true;
+              setStatus("P2P timed out, retrying ICE...");
+              restartIce();
+            } else if (!fallbackMode) {
+              activateFallback();
+            }
+          }
+        }, 15000);
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "ice-candidate", candidate: event.candidate.toJSON(), from: "host" }));
+          }
+        };
+
+        pc.onconnectionstatechange = () => {
+          sendEvent({ type: "connection-state", state: pc.connectionState });
+        };
+
+        dataChannel = pc.createDataChannel("relay");
+        dataChannel.binaryType = "arraybuffer";
+        dataChannel.onmessage = (event) => {
+          if (typeof event.data === "string") {
+            try {
+              const input = JSON.parse(event.data);
+              API.simulateInput(input);
+            } catch (err) {
+              console.error("Failed to parse input:", err);
+            }
+          }
+        };
+
+        let fileBuffer = [];
+        let fileMeta = null;
+        fileChannel = pc.createDataChannel("file-transfer");
+        fileChannel.binaryType = "arraybuffer";
+        fileChannel.onmessage = (event) => {
+          if (typeof event.data === "string") {
+            try {
+              const msg = JSON.parse(event.data);
+              if (msg.type === "file-start") {
+                fileMeta = msg;
+                fileBuffer = [];
+              } else if (msg.type === "file-end") {
+                if (fileMeta) {
+                  const total = fileBuffer.reduce((s, c) => s + c.byteLength, 0);
+                  const data = new Uint8Array(total);
+                  let off = 0;
+                  for (const chunk of fileBuffer) {
+                    data.set(new Uint8Array(chunk), off);
+                    off += chunk.byteLength;
+                  }
+                  API.saveFile({ fileName: fileMeta.name, data: Array.from(data) });
+                  fileMeta = null;
+                  fileBuffer = [];
+                }
+              }
+            } catch (err) {
+              console.error("Failed to parse file message:", err);
+            }
+          } else if (event.data instanceof ArrayBuffer) {
+            fileBuffer.push(event.data);
+          }
+        };
+      }
+
+      async function startWebCodecsStream(track) {
+        const settings = track.getSettings();
+        const width = settings.width || 1280;
+        const height = settings.height || 720;
+        const frameRate = settings.frameRate || 30;
+
+        const totalPixels = width * height;
+        const bitrate = Math.min(Math.max(Math.round((totalPixels / (1280 * 720)) * 2_500_000), 1_000_000), 20_000_000);
+
+        const encoderConfig = {
+          codec: "avc1.42001E",
+          width: width,
+          height: height,
+          bitrate: bitrate,
+          framerate: frameRate,
+          hardwareAcceleration: "prefer-hardware",
+          avc: { format: "annexb" }
+        };
+
+        const support = await VideoEncoder.isConfigSupported(encoderConfig);
+        if (!support.supported) {
+          encoderConfig.hardwareAcceleration = "prefer-software";
+          const swSupport = await VideoEncoder.isConfigSupported(encoderConfig);
+          if (!swSupport.supported) {
+            throw new Error("H.264 encoding not supported");
           }
         }
-      } catch (err) {
-        console.error("Failed to parse file message:", err);
+
+        videoEncoder = new VideoEncoder({
+          output: (chunk) => {
+            if (dataChannel && dataChannel.readyState === "open") {
+              const raw = new Uint8Array(chunk.byteLength);
+              chunk.copyTo(raw);
+              const typeByte = chunk.type === "key" ? 1 : 0;
+              const tsView = new DataView(new ArrayBuffer(4));
+              tsView.setUint32(0, chunk.timestamp, true);
+              const durView = new DataView(new ArrayBuffer(4));
+              durView.setUint32(0, chunk.duration || 33000, true);
+              const header = new Uint8Array([
+                typeByte,
+                ...new Uint8Array(tsView.buffer),
+                ...new Uint8Array(durView.buffer)
+              ]);
+              const merged = new Uint8Array(header.length + raw.length);
+              merged.set(header);
+              merged.set(raw, header.length);
+              dataChannel.send(merged.buffer);
+            }
+          },
+          error: (err) => console.error("VideoEncoder error:", err)
+        });
+
+        videoEncoder.configure(encoderConfig);
+
+        const processor = new MediaStreamTrackProcessor({ track });
+        encoderReader = processor.readable.getReader();
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription.sdp, codec: "h264" }));
+        sendEvent({ type: "stream-started" });
+
+        readEncoderFrames();
       }
-    } else if (event.data instanceof ArrayBuffer) {
-      fileBuffer.push(event.data);
-    }
-  };
-}
 
-async function startWebCodecsStream(track) {
-  const settings = track.getSettings();
-  const width = settings.width || 1280;
-  const height = settings.height || 720;
-  const frameRate = settings.frameRate || 30;
-
-  const totalPixels = width * height;
-  const bitrate = Math.min(Math.max(Math.round(totalPixels / (1280 * 720) * 2_500_000), 1_000_000), 20_000_000);
-
-  const encoderConfig = {
-    codec: "avc1.42001E",
-    width: width,
-    height: height,
-    bitrate: bitrate,
-    framerate: frameRate,
-    hardwareAcceleration: "prefer-hardware",
-    avc: { format: "annexb" }
-  };
-
-  const support = await VideoEncoder.isConfigSupported(encoderConfig);
-  if (!support.supported) {
-    encoderConfig.hardwareAcceleration = "prefer-software";
-    const swSupport = await VideoEncoder.isConfigSupported(encoderConfig);
-    if (!swSupport.supported) {
-      throw new Error("H.264 encoding not supported");
-    }
-  }
-
-  videoEncoder = new VideoEncoder({
-    output: (chunk) => {
-      if (dataChannel && dataChannel.readyState === "open") {
-        const raw = new Uint8Array(chunk.byteLength);
-        chunk.copyTo(raw);
-        const typeByte = chunk.type === "key" ? 1 : 0;
-        const tsView = new DataView(new ArrayBuffer(4));
-        tsView.setUint32(0, chunk.timestamp, true);
-        const durView = new DataView(new ArrayBuffer(4));
-        durView.setUint32(0, chunk.duration || 33000, true);
-        const header = new Uint8Array([typeByte, ...new Uint8Array(tsView.buffer), ...new Uint8Array(durView.buffer)]);
-        const merged = new Uint8Array(header.length + raw.length);
-        merged.set(header);
-        merged.set(raw, header.length);
-        dataChannel.send(merged.buffer);
+      async function readEncoderFrames() {
+        try {
+          while (videoEncoder && videoEncoder.state !== "closed") {
+            const { done, value: frame } = await encoderReader.read();
+            if (done) break;
+            videoEncoder.encode(frame);
+            frame.close();
+          }
+        } catch (err) {
+          console.error("Encoder read loop error:", err);
+        } finally {
+          if (encoderReader) {
+            try {
+              await encoderReader.cancel();
+            } catch (e) {}
+            encoderReader = null;
+          }
+        }
       }
-    },
-    error: (err) => console.error("VideoEncoder error:", err)
-  });
 
-  videoEncoder.configure(encoderConfig);
-
-  const processor = new MediaStreamTrackProcessor({ track });
-  encoderReader = processor.readable.getReader();
-
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription.sdp, codec: "h264" }));
-  sendEvent({ type: "stream-started" });
-
-  readEncoderFrames();
-}
-
-async function readEncoderFrames() {
-  try {
-    while (videoEncoder && videoEncoder.state !== "closed") {
-      const { done, value: frame } = await encoderReader.read();
-      if (done) break;
-      videoEncoder.encode(frame);
-      frame.close();
-    }
-  } catch (err) {
-    console.error("Encoder read loop error:", err);
-  } finally {
-    if (encoderReader) {
-      try { await encoderReader.cancel(); } catch (e) {}
-      encoderReader = null;
-    }
-  }
-}
-
-async function startStreaming() {
-  if (!captureStream) return;
-
-  const track = captureStream.getVideoTracks()[0];
-  if (!track) return;
-
-  audioTrack = captureStream.getAudioTracks()[0] || null;
-  if (audioTrack) {
-    audioTrack.enabled = hostAudioEnabled;
-  }
-  sendEvent({ type: "audio-state", enabled: hostAudioEnabled, muted: !hostAudioEnabled, hasAudio: !!audioTrack });
-
-  if (useWebCodecs) {
-    try {
-      await startWebCodecsStream(track);
-      const audioTracks = captureStream.getAudioTracks();
-      for (const t of audioTracks) {
-        pc.addTrack(t, captureStream);
+      function restartIce() {
+        if (!pc) return;
+        try {
+          pc.restartIce();
+          if (connectionTimeout) clearTimeout(connectionTimeout);
+          connectionTimeout = setTimeout(() => {
+            if (pc && pc.iceConnectionState !== "connected" && pc.iceConnectionState !== "completed" && !fallbackMode) {
+              activateFallback();
+            }
+          }, 15000);
+        } catch (e) {
+          if (!fallbackMode) activateFallback();
+        }
       }
-      return;
-    } catch (err) {
-      console.error("WebCodecs failed, falling back to WebRTC track:", err);
-      sendEvent({ type: "stream-started" });
-    }
-  }
 
-  const tracks = captureStream.getTracks();
-  for (const t of tracks) {
-    pc.addTrack(t, captureStream);
-  }
+      function activateFallback() {
+        if (fallbackMode) return;
+        fallbackMode = true;
+        setStatus("P2P blocked by network, fallback mode (1fps, low quality)");
+        sendEvent({ type: "connection-state", state: "fallback" });
 
-  try {
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription.sdp }));
-    sendEvent({ type: "stream-started" });
-  } catch (err) {
-    sendEvent({ type: "error", message: "Failed to create offer: " + err.message });
-  }
-}
+        const video = document.getElementById("capture");
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 240;
+        const ctx = canvas.getContext("2d");
 
-function cleanup() {
-  isIntentionalDisconnect = true;
-  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
-  if (encoderReader) {
-    try { encoderReader.cancel(); } catch (e) {}
-    encoderReader = null;
-  }
-  if (videoEncoder) {
-    try { videoEncoder.close(); } catch (e) {}
-    videoEncoder = null;
-  }
-  if (dataChannel) { dataChannel.close(); dataChannel = null; }
-  if (fileChannel) { fileChannel.close(); fileChannel = null; }
-  if (pc) { pc.close(); pc = null; }
-  if (captureStream) { captureStream.getTracks().forEach(t => t.stop()); captureStream = null; }
-  if (ws) { ws.close(); ws = null; }
-  roomCode = null;
-  roomId = null;
-  reconnectAttempts = 0;
-  useWebCodecs = false;
-}
+        fallbackInterval = setInterval(() => {
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            stopFallback();
+            return;
+          }
+          try {
+            ctx.drawImage(video, 0, 0, 320, 240);
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  if (ws && ws.readyState === WebSocket.OPEN && !isIntentionalDisconnect) {
+                    ws.send(
+                      JSON.stringify({
+                        type: "frame-data",
+                        data: reader.result,
+                        ts: Date.now(),
+                        from: "host"
+                      })
+                    );
+                  }
+                };
+                reader.readAsDataURL(blob);
+              },
+              "image/jpeg",
+              0.3
+            );
+          } catch (e) {
+            console.error("Fallback capture error:", e);
+          }
+        }, 1000);
+        sendEvent({ type: "stream-started" });
+      }
 
-window.addEventListener("beforeunload", cleanup);
+      function stopFallback() {
+        if (fallbackInterval) {
+          clearInterval(fallbackInterval);
+          fallbackInterval = null;
+        }
+      }
 
-init().catch((err) => {
-  flashError(err.message || String(err));
-  try { API.sendRemoteHostEvent({ type: "error", message: "Init failed: " + (err.message || String(err)) }); } catch {}
-});
-</script>
-</body>
+      async function startStreaming() {
+        if (!captureStream) return;
+
+        const track = captureStream.getVideoTracks()[0];
+        if (!track) return;
+
+        audioTrack = captureStream.getAudioTracks()[0] || null;
+        if (audioTrack) {
+          audioTrack.enabled = hostAudioEnabled;
+        }
+        sendEvent({ type: "audio-state", enabled: hostAudioEnabled, muted: !hostAudioEnabled, hasAudio: !!audioTrack });
+
+        if (useWebCodecs) {
+          try {
+            await startWebCodecsStream(track);
+            const audioTracks = captureStream.getAudioTracks();
+            for (const t of audioTracks) {
+              pc.addTrack(t, captureStream);
+            }
+            return;
+          } catch (err) {
+            console.error("WebCodecs failed, falling back to WebRTC track:", err);
+            sendEvent({ type: "stream-started" });
+          }
+        }
+
+        const tracks = captureStream.getTracks();
+        for (const t of tracks) {
+          pc.addTrack(t, captureStream);
+        }
+
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription.sdp }));
+          sendEvent({ type: "stream-started" });
+        } catch (err) {
+          sendEvent({ type: "error", message: "Failed to create offer: " + err.message });
+        }
+      }
+
+      function cleanup() {
+        isIntentionalDisconnect = true;
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+          connectionTimeout = null;
+        }
+        stopFallback();
+        if (encoderReader) {
+          try {
+            encoderReader.cancel();
+          } catch (e) {}
+          encoderReader = null;
+        }
+        if (videoEncoder) {
+          try {
+            videoEncoder.close();
+          } catch (e) {}
+          videoEncoder = null;
+        }
+        if (dataChannel) {
+          dataChannel.close();
+          dataChannel = null;
+        }
+        if (fileChannel) {
+          fileChannel.close();
+          fileChannel = null;
+        }
+        if (pc) {
+          pc.close();
+          pc = null;
+        }
+        if (captureStream) {
+          captureStream.getTracks().forEach((t) => t.stop());
+          captureStream = null;
+        }
+        if (ws) {
+          ws.close();
+          ws = null;
+        }
+        roomCode = null;
+        roomId = null;
+        reconnectAttempts = 0;
+        useWebCodecs = false;
+        fallbackMode = false;
+        iceRestartAttempted = false;
+      }
+
+      window.addEventListener("beforeunload", cleanup);
+
+      init().catch((err) => {
+        flashError(err.message || String(err));
+        try {
+          API.sendRemoteHostEvent({ type: "error", message: "Init failed: " + (err.message || String(err)) });
+        } catch {}
+      });
+    </script>
+  </body>
 </html>

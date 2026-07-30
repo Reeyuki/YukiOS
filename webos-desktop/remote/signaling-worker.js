@@ -81,6 +81,20 @@ export class Room extends DurableObject {
           this.host.send(JSON.stringify({ type: "input-event", input: msg.input }));
         }
         break;
+
+      case "frame-data":
+        const fdTarget = msg.from === "host" ? this.client : this.host;
+        if (fdTarget) {
+          fdTarget.send(
+            JSON.stringify({
+              type: "frame-data",
+              data: msg.data,
+              ts: msg.ts,
+              from: msg.from
+            })
+          );
+        }
+        break;
     }
   }
 

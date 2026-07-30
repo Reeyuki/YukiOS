@@ -1,8 +1,16 @@
 const SIGNALING_BASE = "wss://yukios-remote-signaling.liventcord-a60.workers.dev";
 const STUN_SERVERS = [
   { urls: "stun:stun.cloudflare.com:3478" },
-  { urls: "stun:stun.l.google.com:19302" }
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
+  { urls: "stun:stun4.l.google.com:19302" }
 ];
+
+function getIceConfig() {
+  return { iceServers: STUN_SERVERS, iceCandidatePoolSize: 5 };
+}
 
 class RemoteHostCore {
   constructor(options) {
@@ -20,6 +28,11 @@ class RemoteHostCore {
     this.roomCode = null;
     this.useWebCodecs = false;
     this.cleaned = false;
+    this.fallbackMode = false;
+    this.fallbackInterval = null;
+    this.iceRestartAttempted = false;
+    this.connectionTimeout = null;
+    this.consecutiveFailedAttempts = 0;
   }
 
   async start(quality, fps) {
@@ -67,7 +80,9 @@ class RemoteHostCore {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const bytes = new Uint8Array(6);
     crypto.getRandomValues(bytes);
-    this.roomId = Array.from(bytes).map(b => chars[b % chars.length]).join("");
+    this.roomId = Array.from(bytes)
+      .map((b) => chars[b % chars.length])
+      .join("");
 
     try {
       const connected = await this.connectSignaling();
@@ -146,12 +161,89 @@ class RemoteHostCore {
     });
   }
 
+  restartIce() {
+    if (!this.pc) return;
+    try {
+      this.pc.restartIce();
+      this.consecutiveFailedAttempts++;
+      this.connectionTimeout = setTimeout(() => {
+        if (this.pc && this.pc.iceConnectionState !== "connected" && this.pc.iceConnectionState !== "completed") {
+          if (!this.fallbackMode) this.activateFallback();
+        }
+      }, 15000);
+    } catch (e) {
+      if (!this.fallbackMode) this.activateFallback();
+    }
+  }
+
+  activateFallback() {
+    if (this.fallbackMode) return;
+    this.fallbackMode = true;
+    this.options.onStatus("P2P blocked by network, fallback mode active (1fps, low quality)");
+    if (this.options.onConnectionState) this.options.onConnectionState("fallback");
+
+    const video = document.createElement("video");
+    video.srcObject = this.captureStream;
+    video.muted = true;
+    video.playsInline = true;
+    video.style.display = "none";
+    document.body.appendChild(video);
+    video.play();
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 320;
+    canvas.height = 240;
+    const ctx = canvas.getContext("2d");
+
+    this.fallbackInterval = setInterval(() => {
+      if (this.cleaned || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        this.stopFallback();
+        return;
+      }
+      try {
+        ctx.drawImage(video, 0, 0, 320, 240);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob || this.cleaned) return;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              if (this.ws && this.ws.readyState === WebSocket.OPEN && !this.cleaned) {
+                this.ws.send(
+                  JSON.stringify({
+                    type: "frame-data",
+                    data: reader.result,
+                    ts: Date.now(),
+                    from: "host"
+                  })
+                );
+              }
+            };
+            reader.readAsDataURL(blob);
+          },
+          "image/jpeg",
+          0.3
+        );
+      } catch (e) {
+        console.error("Fallback capture error:", e);
+      }
+    }, 1000);
+  }
+
+  stopFallback() {
+    if (this.fallbackInterval) {
+      clearInterval(this.fallbackInterval);
+      this.fallbackInterval = null;
+    }
+  }
+
   handleSignalingMsg(msg) {
     switch (msg.type) {
       case "answer":
         if (this.useWebCodecs) break;
         if (this.pc && this.pc.localDescription && this.pc.localDescription.type === "offer") {
-          this.pc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: msg.sdp })).catch(console.error);
+          this.pc
+            .setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp: msg.sdp }))
+            .catch(console.error);
         }
         break;
       case "ice-candidate":
@@ -159,11 +251,34 @@ class RemoteHostCore {
           this.pc.addIceCandidate(new RTCIceCandidate(msg.candidate)).catch(console.error);
         }
         break;
+      case "frame-data":
+        break;
     }
   }
 
   initWebRTC() {
-    this.pc = new RTCPeerConnection({ iceServers: STUN_SERVERS });
+    this.pc = new RTCPeerConnection(getIceConfig());
+    this.pc.oniceconnectionstatechange = () => {
+      const state = this.pc.iceConnectionState;
+      if (state === "failed" && !this.iceRestartAttempted) {
+        this.iceRestartAttempted = true;
+        this.options.onStatus("P2P connection failed, retrying...");
+        this.restartIce();
+      } else if (state === "failed" && this.iceRestartAttempted && !this.fallbackMode) {
+        this.activateFallback();
+      }
+    };
+    this.connectionTimeout = setTimeout(() => {
+      if (this.pc && this.pc.iceConnectionState !== "connected" && this.pc.iceConnectionState !== "completed") {
+        if (!this.iceRestartAttempted) {
+          this.iceRestartAttempted = true;
+          this.options.onStatus("P2P timed out, retrying...");
+          this.restartIce();
+        } else if (!this.fallbackMode) {
+          this.activateFallback();
+        }
+      }
+    }, 15000);
 
     this.pc.onicecandidate = (event) => {
       if (event.candidate && this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -235,11 +350,13 @@ class RemoteHostCore {
         framerate: 30,
         hardwareAcceleration: "prefer-hardware",
         avc: { format: "annexb" }
-      }).then((support) => {
-        if (support.supported) {
-          this.useWebCodecs = true;
-        }
-      }).catch(() => {});
+      })
+        .then((support) => {
+          if (support.supported) {
+            this.useWebCodecs = true;
+          }
+        })
+        .catch(() => {});
     }
   }
 
@@ -280,7 +397,7 @@ class RemoteHostCore {
     const height = s.height || 720;
     const frameRate = s.frameRate || 30;
     const totalPixels = width * height;
-    const bitrate = Math.min(Math.max(Math.round(totalPixels / (1280 * 720) * 2_500_000), 1_000_000), 20_000_000);
+    const bitrate = Math.min(Math.max(Math.round((totalPixels / (1280 * 720)) * 2_500_000), 1_000_000), 20_000_000);
 
     const encoderConfig = {
       codec: "avc1.42001E",
@@ -309,7 +426,11 @@ class RemoteHostCore {
           tsView.setUint32(0, chunk.timestamp, true);
           const durView = new DataView(new ArrayBuffer(4));
           durView.setUint32(0, chunk.duration || 33000, true);
-          const header = new Uint8Array([typeByte, ...new Uint8Array(tsView.buffer), ...new Uint8Array(durView.buffer)]);
+          const header = new Uint8Array([
+            typeByte,
+            ...new Uint8Array(tsView.buffer),
+            ...new Uint8Array(durView.buffer)
+          ]);
           const merged = new Uint8Array(header.length + raw.length);
           merged.set(header);
           merged.set(raw, header.length);
@@ -342,7 +463,9 @@ class RemoteHostCore {
       console.error("Encoder read loop error:", err);
     } finally {
       if (this.encoderReader) {
-        try { await this.encoderReader.cancel(); } catch (e) {}
+        try {
+          await this.encoderReader.cancel();
+        } catch (e) {}
         this.encoderReader = null;
       }
     }
@@ -363,24 +486,55 @@ class RemoteHostCore {
 
   cleanupResources() {
     if (this.encoderReader) {
-      try { this.encoderReader.cancel(); } catch (e) {}
+      try {
+        this.encoderReader.cancel();
+      } catch (e) {}
       this.encoderReader = null;
     }
     if (this.videoEncoder) {
-      try { this.videoEncoder.close(); } catch (e) {}
+      try {
+        this.videoEncoder.close();
+      } catch (e) {}
       this.videoEncoder = null;
     }
-    if (this.dataChannel) { try { this.dataChannel.close(); } catch (e) {} this.dataChannel = null; }
-    if (this.fileChannel) { try { this.fileChannel.close(); } catch (e) {} this.fileChannel = null; }
-    if (this.pc) { try { this.pc.close(); } catch (e) {} this.pc = null; }
+    this.stopFallback();
+    if (this.dataChannel) {
+      try {
+        this.dataChannel.close();
+      } catch (e) {}
+      this.dataChannel = null;
+    }
+    if (this.fileChannel) {
+      try {
+        this.fileChannel.close();
+      } catch (e) {}
+      this.fileChannel = null;
+    }
+    if (this.pc) {
+      try {
+        this.pc.close();
+      } catch (e) {}
+      this.pc = null;
+    }
     if (this.captureStream) {
-      this.captureStream.getTracks().forEach(t => t.stop());
+      this.captureStream.getTracks().forEach((t) => t.stop());
       this.captureStream = null;
     }
-    if (this.ws) { try { this.ws.close(); } catch (e) {} this.ws = null; }
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch (e) {}
+      this.ws = null;
+    }
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
     this.roomId = null;
     this.roomCode = null;
     this.useWebCodecs = false;
+    this.fallbackMode = false;
+    this.iceRestartAttempted = false;
   }
 }
 

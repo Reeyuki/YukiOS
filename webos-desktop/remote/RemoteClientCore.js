@@ -1,9 +1,17 @@
 const SIGNALING_URL = "wss://yukios-remote-signaling.liventcord-a60.workers.dev";
 const STUN_SERVERS = [
   { urls: "stun:stun.cloudflare.com:3478" },
-  { urls: "stun:stun.l.google.com:19302" }
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
+  { urls: "stun:stun4.l.google.com:19302" }
 ];
 const MAX_RECONNECT = 20;
+
+function getIceConfig() {
+  return { iceServers: STUN_SERVERS, iceCandidatePoolSize: 5 };
+}
 
 class RemoteClientCore {
   constructor(options) {
@@ -21,6 +29,11 @@ class RemoteClientCore {
     this.reconnectAttempts = 0;
     this.reconnectTimer = null;
     this.isIntentionalDisconnect = false;
+    this.iceRestartAttempted = false;
+    this.connectionTimeout = null;
+    this.fallbackMode = false;
+    this.fallbackCanvas = null;
+    this.fallbackCtx = null;
   }
 
   connect(code) {
@@ -77,6 +90,49 @@ class RemoteClientCore {
     };
   }
 
+  restartIce() {
+    if (!this.pc) return;
+    try {
+      this.pc.restartIce();
+      if (this.connectionTimeout) clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = setTimeout(() => {
+        if (this.pc && this.pc.iceConnectionState !== "connected" && this.pc.iceConnectionState !== "completed") {
+          this.options.onStatus("P2P unavailable, waiting for host fallback...", false);
+        }
+      }, 15000);
+    } catch (e) {
+      this.options.onStatus("ICE restart failed, waiting for host fallback...", false);
+    }
+  }
+
+  renderFallbackFrame(dataUrl) {
+    if (!this.fallbackCanvas) {
+      const parent = this.options.videoElement ? this.options.videoElement.parentElement : null;
+      if (!parent) return;
+      this.fallbackCanvas = document.createElement("canvas");
+      this.fallbackCanvas.className = "decoder-canvas";
+      this.fallbackCanvas.style.maxWidth = "100%";
+      this.fallbackCanvas.style.maxHeight = "100%";
+      this.fallbackCanvas.style.objectFit = "contain";
+      parent.insertBefore(this.fallbackCanvas, this.options.videoElement);
+      this.fallbackCtx = this.fallbackCanvas.getContext("2d");
+    }
+    const img = new Image();
+    img.onload = () => {
+      if (!this.fallbackCtx) return;
+      this.fallbackCanvas.width = img.width;
+      this.fallbackCanvas.height = img.height;
+      this.fallbackCtx.drawImage(img, 0, 0);
+      if (this.options.videoElement) this.options.videoElement.style.display = "none";
+      this.options.onOverlay(false);
+      if (!this.fallbackMode) {
+        this.fallbackMode = true;
+        this.options.onStatus("Fallback mode (1fps, low quality)", true);
+      }
+    };
+    img.src = dataUrl;
+  }
+
   handleSignaling(msg) {
     switch (msg.type) {
       case "room-joined":
@@ -87,7 +143,8 @@ class RemoteClientCore {
 
       case "offer":
         if (!this.pc) this.initWebRTC();
-        this.pc.setRemoteDescription(new RTCSessionDescription({ type: "offer", sdp: msg.sdp }))
+        this.pc
+          .setRemoteDescription(new RTCSessionDescription({ type: "offer", sdp: msg.sdp }))
           .then(() => this.pc.createAnswer())
           .then((answer) => this.pc.setLocalDescription(answer))
           .then(() => {
@@ -110,6 +167,10 @@ class RemoteClientCore {
         }
         break;
 
+      case "frame-data":
+        if (msg.data) this.renderFallbackFrame(msg.data);
+        break;
+
       case "host-disconnected":
         this.options.onError("Host disconnected");
         this.disconnect();
@@ -123,11 +184,33 @@ class RemoteClientCore {
 
   initWebRTC() {
     try {
-      this.pc = new RTCPeerConnection({ iceServers: STUN_SERVERS });
+      this.pc = new RTCPeerConnection(getIceConfig());
     } catch (err) {
       this.options.onError("WebRTC not supported in this browser");
       return;
     }
+
+    this.pc.oniceconnectionstatechange = () => {
+      const state = this.pc.iceConnectionState;
+      if (state === "failed" && !this.iceRestartAttempted) {
+        this.iceRestartAttempted = true;
+        this.options.onStatus("P2P failed, retrying ICE...", false);
+        this.restartIce();
+      } else if (state === "failed" && this.iceRestartAttempted && !this.fallbackMode) {
+        this.options.onStatus("P2P failed, waiting for host fallback...", false);
+      }
+    };
+    this.connectionTimeout = setTimeout(() => {
+      if (this.pc && this.pc.iceConnectionState !== "connected" && this.pc.iceConnectionState !== "completed") {
+        if (!this.iceRestartAttempted) {
+          this.iceRestartAttempted = true;
+          this.options.onStatus("P2P timed out, retrying ICE...", false);
+          this.restartIce();
+        } else {
+          this.options.onStatus("P2P unavailable, waiting for host fallback...", false);
+        }
+      }
+    }, 15000);
 
     this.pc.ontrack = (event) => {
       if (this.options.videoElement && !this.options.videoElement.srcObject) {
@@ -331,12 +414,14 @@ class RemoteClientCore {
       const data = new Uint8Array(reader.result);
       const chunkSize = 16384;
 
-      channel.send(JSON.stringify({
-        type: "file-start",
-        name: file.name,
-        size: file.size,
-        mime: file.type || "application/octet-stream"
-      }));
+      channel.send(
+        JSON.stringify({
+          type: "file-start",
+          name: file.name,
+          size: file.size,
+          mime: file.type || "application/octet-stream"
+        })
+      );
 
       for (let offset = 0; offset < data.length; offset += chunkSize) {
         const end = Math.min(offset + chunkSize, data.length);
@@ -374,12 +459,28 @@ class RemoteClientCore {
         return;
       }
       e.preventDefault();
-      this.sendInput({ type: "keydown", key: e.key, code: e.code, alt: e.altKey, ctrl: e.ctrlKey, shift: e.shiftKey, meta: e.metaKey });
+      this.sendInput({
+        type: "keydown",
+        key: e.key,
+        code: e.code,
+        alt: e.altKey,
+        ctrl: e.ctrlKey,
+        shift: e.shiftKey,
+        meta: e.metaKey
+      });
     };
     this.docKeyup = (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
       e.preventDefault();
-      this.sendInput({ type: "keyup", key: e.key, code: e.code, alt: e.altKey, ctrl: e.ctrlKey, shift: e.shiftKey, meta: e.metaKey });
+      this.sendInput({
+        type: "keyup",
+        key: e.key,
+        code: e.code,
+        alt: e.altKey,
+        ctrl: e.ctrlKey,
+        shift: e.shiftKey,
+        meta: e.metaKey
+      });
     };
     this.docContextMenu = (e) => {
       if (this.options.onContextMenu) {
@@ -410,7 +511,10 @@ class RemoteClientCore {
     this.reconnectAttempts++;
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 30000);
     const secs = (delay / 1000).toFixed(0);
-    this.options.onStatus("Reconnecting in " + secs + "s... (" + this.reconnectAttempts + "/" + MAX_RECONNECT + ")", false);
+    this.options.onStatus(
+      "Reconnecting in " + secs + "s... (" + this.reconnectAttempts + "/" + MAX_RECONNECT + ")",
+      false
+    );
     this.options.onOverlay(true);
 
     this.reconnectTimer = setTimeout(() => {
@@ -427,7 +531,10 @@ class RemoteClientCore {
 
       newWs.onopen = () => {
         this.reconnectAttempts = 0;
-        if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+        if (this.reconnectTimer) {
+          clearTimeout(this.reconnectTimer);
+          this.reconnectTimer = null;
+        }
         this.ws = newWs;
         this.options.onStatus("Joining room...", false);
         this.ws.send(JSON.stringify({ type: "join-as-client" }));
@@ -495,20 +602,31 @@ class RemoteClientCore {
 
   disconnect() {
     this.isIntentionalDisconnect = true;
-    if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
     this.reconnectAttempts = 0;
     this.removeInputListeners();
     if (this.videoDecoder) {
-      try { this.videoDecoder.close(); } catch (e) {}
+      try {
+        this.videoDecoder.close();
+      } catch (e) {}
       this.videoDecoder = null;
     }
     this.useWebCodecs = false;
     const existingCanvas = this.options.videoElement
-      ? this.options.videoElement.parentElement?.querySelector(".decoder-canvas")
+      ? this.options.videoElement.parentElement?.querySelectorAll(".decoder-canvas")
       : null;
-    if (existingCanvas) existingCanvas.remove();
+    if (existingCanvas) existingCanvas.forEach((c) => c.remove());
     this.decoderCanvas = null;
     this.decoderCtx = null;
+    this.fallbackCanvas = null;
+    this.fallbackCtx = null;
     if (this.dataChannel) {
       this.dataChannel.close();
       this.dataChannel = null;
@@ -527,6 +645,8 @@ class RemoteClientCore {
     }
     this.connected = false;
     this.roomCode = null;
+    this.fallbackMode = false;
+    this.iceRestartAttempted = false;
     if (this.options.videoElement) {
       this.options.videoElement.srcObject = null;
     }
