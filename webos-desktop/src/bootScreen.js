@@ -7,7 +7,7 @@ import { KeybindManager } from "./keybindManager.js";
 import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
 
-const BRAND = "YUKiOS";
+const BRAND = "YukiOS";
 const MIN_DURATION = 2500;
 
 export function showBootScreen() {

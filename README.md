@@ -30,7 +30,7 @@ Its built entirely in vanilla javascript/typescript without any frameworks.
 | ![ChromeOS Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/chromeos.png)                | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)    |
 | ![Start Menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)                  | ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png) |
 | ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)                 | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)       |
-| ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) |                                                                                             |
+| ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) | ![Remote Desktop](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/remote.png) |
 | ![3D Os Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/3d.png)                         |                                                                                             |
 
 # Desktop Experience
@@ -318,7 +318,7 @@ See the [Development Guide](DEVELOPMENT.md).
 A native Electron wrapper for an enhanced desktop experience:
 
 - Native game windows that launch in their own OS-level window with auto-hide menu bar
-- Remote host to stream your desktop with mouse and keyboard control from any device
+- Remote host to stream your real desktop with mouse and keyboard control from any device
 - Autostart YukiOS on system startup via a settings toggle
 - Browse your real files with your home directory appearing as a drive in Explorer
 

@@ -26,6 +26,7 @@ const clippySpeak = speak;
 import { GameOverlayController } from "./gameOverlay.js";
 import "./styles/gameOverlay.css";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
+import { maybeTriggerSmartlink } from "./ads.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steam.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
@@ -312,6 +313,7 @@ export class AppLauncher {
       await handler();
     }
 
+    maybeTriggerSmartlink();
     os.events.emit("app:launched", { appId: app });
   }
 

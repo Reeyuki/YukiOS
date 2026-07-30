@@ -3,6 +3,7 @@ import { BaseApp, StorageKeys, os, BusEvents } from "../framework.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 import { PROXIES } from "../proxies.js";
 import { $, setStyle, createElement, addClass, removeClass } from "../shared/domUtils.js";
+import { maybeTriggerSmartlink } from "../ads.js";
 
 const THEME_VARS = [
   "--brand",
@@ -360,6 +361,7 @@ export class BrowserApp extends BaseApp {
   }
 
   navigateToUrl(iframe, url) {
+    maybeTriggerSmartlink();
     if (this.isTorUrl(url)) {
       this.loadWithTor(url);
       return;

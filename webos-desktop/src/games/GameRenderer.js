@@ -5,7 +5,7 @@ import { SteamSettings } from "./steam.js";
 import { lazyImg, observeLazyImages, getCdnBase } from "./games.js";
 import { fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { $, $$ } from "../shared/domUtils.js";
-import { shouldEnableAds, injectAdsterraAd } from "../ads.js";
+import { injectAdsterraAd, injectNativeAd } from "../ads.js";
 
 const AD_KEYS = {
   leaderboard: "28c33f91ee21bcf1063e489aae3024f8",
@@ -186,6 +186,7 @@ export class GameRenderer {
             <div style="color: var(--text-secondary); font-size: 13px;">None of your friends have played this game.</div>
           </div>
           <div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="overview-ad-slot"></div></div>
+          <div id="container-5f797791a9771b6940fb9385a69ce168" style="margin-top:20px;"></div>
         </div>
       </div>
     </div>
@@ -194,6 +195,7 @@ export class GameRenderer {
     this.injectReeyukiStyle(target);
 
     injectAdsterraAd("overview-ad-slot", AD_KEYS.rectangle, 300, 250, 200);
+    injectNativeAd("container-5f797791a9771b6940fb9385a69ce168");
 
     target.querySelector(".steam-play-btn").onclick = () => onLaunch(appId);
     this.renderer.setActiveSidebarItem(container, appId);
@@ -251,12 +253,14 @@ export class GameRenderer {
                <div style="color: var(--text-secondary); font-size: 13px;">None of your friends have played this game.</div>
              </div>
              <div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="archive-overview-ad-slot"></div></div>
+             <div id="container-5f797791a9771b6940fb9385a69ce168" style="margin-top:20px;"></div>
           </div>
         </div>
       </div>
     `;
 
     injectAdsterraAd("archive-overview-ad-slot", AD_KEYS.rectangle, 300, 250, 200);
+    injectNativeAd("container-5f797791a9771b6940fb9385a69ce168");
 
     target.querySelector(".steam-play-btn").onclick = () =>
       this.renderer.showGameOverlay(archiveGame.title, archiveGame.url);
@@ -299,8 +303,6 @@ export class GameRenderer {
 
     const isNewsExpanded = collapsed.includes("What's New");
 
-    const showAds = shouldEnableAds();
-
     const shellHtml = `
       <div class="steam-grid-controls-bar" style="margin-bottom: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
         <div class="steam-grid-filters" style="display: flex; align-items: center; gap: 15px;">
@@ -317,7 +319,7 @@ export class GameRenderer {
           </button>
         </div>
       </div>
-      ${showAds ? `<div class="store-ad-block"><div class="store-ad-label">Advertisement</div><div id="ad-library-top"></div></div>` : ""}
+      <div class="store-ad-block"><div class="store-ad-label">Advertisement</div><div id="ad-library-top"></div></div>
       <div class="steam-yukios-content">
         <div class="steam-whats-new">
           <div class="steam-whats-new-header steam-section-header" data-title="What's New" style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
@@ -341,7 +343,7 @@ export class GameRenderer {
           </div>
         </div>
         <div id="steam-sections-host" style="min-height:200px;content-visibility:auto"></div>
-        ${showAds ? `<div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="ad-library-bottom"></div></div>` : ""}
+        <div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="ad-library-bottom"></div></div>
       </div>
     `;
 
@@ -387,10 +389,8 @@ export class GameRenderer {
     this.renderer.loadArchiveSection(container, onLaunch, collapsed);
     this.renderer.loadLuminSDKSection(container, collapsed);
 
-    if (showAds) {
-      injectAdsterraAd("ad-library-top", AD_KEYS.leaderboard, 728, 90, 0);
-      injectAdsterraAd("ad-library-bottom", AD_KEYS.rectangle, 300, 250, 500);
-    }
+    injectAdsterraAd("ad-library-top", AD_KEYS.leaderboard, 728, 90, 0);
+    injectAdsterraAd("ad-library-bottom", AD_KEYS.rectangle, 300, 250, 500);
 
     const sidebar = container.querySelector(".steam-library-sidebar");
     const mainContent = container.querySelector(".steam-main-content");

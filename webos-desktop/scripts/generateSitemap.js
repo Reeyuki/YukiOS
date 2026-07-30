@@ -600,7 +600,7 @@ const featurePages = [
     rootFile: "features.html",
     title: "YukiOS Features - Desktop Environment in Your Browser",
     description:
-      "YukiOS is a full browser-based desktop environment with a tiling window manager, Mac desktop mode, 2900 free games, a terminal with Python and Git, retro emulators for DOS/Flash/x86/3DS, and 80+ built-in apps - all running directly in your browser with no installation."
+      "YukiOS is a full browser-based desktop environment with a tiling window manager, Mac desktop mode, 2900 free games, a terminal with Python and Git, retro emulators for DOS/Flash/x86/3DS, and 90+ built-in apps - all running directly in your browser with no installation."
   },
   {
     key: "tiling",
@@ -667,6 +667,12 @@ const featurePages = [
     title: "User Accounts & Multi-Profile",
     description:
       "Create multiple user profiles with custom nicknames, avatars, and desktop configurations. Lock screen with idle timeout, session switching, and per-profile wallpaper and theme persistence."
+  },
+  {
+    key: "remote-desktop",
+    title: "Remote Desktop - Access Your Computer from Anywhere",
+    description:
+      "Turn any browser into a full remote desktop client. Access your home or work computer from school Chromebooks, public terminals, or mobile devices with low latency, clipboard sync, and full keyboard support - no install needed."
   }
 ];
 
@@ -692,7 +698,7 @@ function resolveGameUrl(url, type) {
 const galleryImages = [
   { src: `${GH}/tiling.png`, featureKey: "tiling" },
   { src: `${GH}/tiling-2.png`, featureKey: "tiling" },
-  { src: `${GH}/mac.png`, featureKey: "mac-mode" },
+  { src: `${GH}/chromeos.png`, featureKey: "mac-mode" },
   { src: `${GH}/btop-lavat-cmatrix.png`, featureKey: "terminal" },
   { src: `${GH}/overlay.png`, featureKey: "emulators" },
   { src: `${GH}/steam.png`, featureKey: "games" },
@@ -701,7 +707,8 @@ const galleryImages = [
   { src: `${GH}/workspaces.png`, featureKey: "workspaces" },
   { src: `${GH}/widgets.png`, featureKey: "widgets" },
   { src: `${GH}/audio1.png`, featureKey: "audio-mixer" },
-  { src: `${GH}/login.png`, featureKey: "user-accounts" }
+  { src: `${GH}/login.png`, featureKey: "user-accounts" },
+  { src: `${GH}/chromeos.png`, featureKey: "remote-desktop" }
 ];
 
 function buildSitemap(apps, games, gameDescs, featurePages) {
@@ -722,10 +729,10 @@ function buildSitemap(apps, games, gameDescs, featurePages) {
   lines.push(
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'
   );
-  lines.push(entry(BASE, `${GH}/mac.png`, 1.0, "daily"));
-  lines.push(entry(`${BASE}/apps.html`, `${GH}/mac.png`, 0.9, "weekly"));
+  lines.push(entry(BASE, `${GH}/chromeos.png`, 1.0, "daily"));
+  lines.push(entry(`${BASE}/apps.html`, `${GH}/chromeos.png`, 0.9, "weekly"));
   lines.push(entry(`${BASE}/games.html`, `${GH}/steam.png`, 0.9, "daily"));
-  lines.push(entry(`${BASE}/features.html`, `${GH}/mac.png`, 0.8, "weekly"));
+  lines.push(entry(`${BASE}/features.html`, `${GH}/chromeos.png`, 0.8, "weekly"));
   const sitemapGenreMap = {};
   for (const g of games) {
     for (const gn of g.genre) {
@@ -741,11 +748,11 @@ function buildSitemap(apps, games, gameDescs, featurePages) {
     for (const f of featurePages) {
       if (f.rootFile) continue;
       const img = galleryImages.find((i) => i.featureKey === f.key);
-      lines.push(entry(`${BASE}/feature/${f.key}.html`, img ? img.src : `${GH}/mac.png`, 0.6, "monthly"));
+      lines.push(entry(`${BASE}/feature/${f.key}.html`, img ? img.src : `${GH}/chromeos.png`, 0.6, "monthly"));
     }
   }
   for (const a of apps) {
-    lines.push(entry(`${BASE}/app/${a.key}.html`, `${GH}/mac.png`, 0.6, "monthly"));
+    lines.push(entry(`${BASE}/app/${a.key}.html`, `${GH}/chromeos.png`, 0.6, "monthly"));
   }
   for (const g of games) {
     lines.push(entry(`${BASE}/class/${g.key}.html`, `${GH}/steam.png`, 0.5, "monthly"));
@@ -774,9 +781,13 @@ const landingStyle = `<style>
 .seo-screenshot{width:100%;max-width:900px;margin-bottom:48px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 64px rgba(0,0,0,0.5)}
 .slideshow-container{position:relative;width:100%;aspect-ratio:16/9;background:#000}
 .slideshow-wrapper{position:relative;width:100%;height:100%}
-.slideshow-wrapper img{width:100%;height:100%;object-fit:cover;display:block}
-.slideshow-btn{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;transition:background .2s,border-color .2s;z-index:2;display:flex;align-items:center;justify-content:center}
-.slideshow-btn:hover{background:rgba(217,119,6,0.8);border-color:#d97706}
+.slideshow-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.5s ease}
+.slideshow-img-front{z-index:1;opacity:1}
+.slideshow-img-back{z-index:0;opacity:0}
+@keyframes slideshow-pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,119,6,0.3)}50%{box-shadow:0 0 0 8px rgba(217,119,6,0)}}
+.slideshow-btn{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;transition:background .2s,border-color .2s,transform .2s;z-index:2;display:flex;align-items:center;justify-content:center;animation:slideshow-pulse 2.5s ease-in-out infinite}
+.slideshow-btn:hover{background:rgba(217,119,6,0.8);border-color:#d97706;transform:translateY(-50%) scale(1.12);animation:none}
+.slideshow-btn:active{transform:translateY(-50%) scale(0.95)}
 .slideshow-btn-prev{left:12px}
 .slideshow-btn-next{right:12px}
 .slideshow-dots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2}
@@ -832,7 +843,8 @@ function makeStandalonePage(title, desc, jsonld, canonicalUrl, ogImage, extraCon
   <div class="slideshow-container">
     <button class="slideshow-btn slideshow-btn-prev" onclick="changeSlide(-1)"><i class="fas fa-chevron-left"></i></button>
     <div class="slideshow-wrapper">
-      <img id="slideshow-img" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
+      <img id="slideshow-img-front" class="slideshow-img slideshow-img-front" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
+      <img id="slideshow-img-back" class="slideshow-img slideshow-img-back" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
       <div class="slideshow-dots" id="slideshow-dots"></div>
     </div>
     <button class="slideshow-btn slideshow-btn-next" onclick="changeSlide(1)"><i class="fas fa-chevron-right"></i></button>
@@ -842,18 +854,29 @@ function makeStandalonePage(title, desc, jsonld, canonicalUrl, ogImage, extraCon
 const slideshowImages = ${galleryImagesJson};
 let currentSlide = 0;
 let slideshowInterval;
+let activeIsFront = true;
 
 function showSlide(index) {
-  const img = document.getElementById('slideshow-img');
-  if (!img) return;
+  const front = document.getElementById('slideshow-img-front');
+  const back = document.getElementById('slideshow-img-back');
+  if (!front || !back) return;
   currentSlide = (index + slideshowImages.length) % slideshowImages.length;
-  img.src = slideshowImages[currentSlide];
+  if (activeIsFront) {
+    back.src = slideshowImages[currentSlide];
+    back.style.opacity = '1';
+    front.style.opacity = '0';
+  } else {
+    front.src = slideshowImages[currentSlide];
+    front.style.opacity = '1';
+    back.style.opacity = '0';
+  }
+  activeIsFront = !activeIsFront;
   updateDots();
 }
 
 function changeSlide(direction) {
   showSlide(currentSlide + direction);
-  resetSlideshow();
+  stopSlideshow();
 }
 
 function updateDots() {
@@ -863,24 +886,19 @@ function updateDots() {
   slideshowImages.forEach((_, index) => {
     const dot = document.createElement('span');
     dot.className = 'slideshow-dot' + (index === currentSlide ? ' active' : '');
-    dot.onclick = () => { showSlide(index); resetSlideshow(); };
+    dot.onclick = () => { showSlide(index); stopSlideshow(); };
     dotsContainer.appendChild(dot);
   });
 }
 
+function stopSlideshow() {
+  clearInterval(slideshowInterval);
+}
+
 function startSlideshow() {
+  stopSlideshow();
   slideshowInterval = setInterval(() => changeSlide(1), 5000);
 }
-
-function resetSlideshow() {
-  clearInterval(slideshowInterval);
-  startSlideshow();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateDots();
-  startSlideshow();
-});
 </script>`;
   return `<!DOCTYPE html>
 <html lang="en">
@@ -947,7 +965,8 @@ function makeLanding(title, desc, extraContent, imageUrl) {
   <div class="slideshow-container">
     <button class="slideshow-btn slideshow-btn-prev" onclick="changeSlide(-1)"><i class="fas fa-chevron-left"></i></button>
     <div class="slideshow-wrapper">
-      <img id="slideshow-img" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
+      <img id="slideshow-img-front" class="slideshow-img slideshow-img-front" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
+      <img id="slideshow-img-back" class="slideshow-img slideshow-img-back" src="${galleryImages[0].src}" alt="YukiOS Screenshot" loading="lazy" />
       <div class="slideshow-dots" id="slideshow-dots"></div>
     </div>
     <button class="slideshow-btn slideshow-btn-next" onclick="changeSlide(1)"><i class="fas fa-chevron-right"></i></button>
@@ -957,18 +976,29 @@ function makeLanding(title, desc, extraContent, imageUrl) {
 const slideshowImages = ${galleryImagesJson};
 let currentSlide = 0;
 let slideshowInterval;
+let activeIsFront = true;
 
 function showSlide(index) {
-  const img = document.getElementById('slideshow-img');
-  if (!img) return;
+  const front = document.getElementById('slideshow-img-front');
+  const back = document.getElementById('slideshow-img-back');
+  if (!front || !back) return;
   currentSlide = (index + slideshowImages.length) % slideshowImages.length;
-  img.src = slideshowImages[currentSlide];
+  if (activeIsFront) {
+    back.src = slideshowImages[currentSlide];
+    back.style.opacity = '1';
+    front.style.opacity = '0';
+  } else {
+    front.src = slideshowImages[currentSlide];
+    front.style.opacity = '1';
+    back.style.opacity = '0';
+  }
+  activeIsFront = !activeIsFront;
   updateDots();
 }
 
 function changeSlide(direction) {
   showSlide(currentSlide + direction);
-  resetSlideshow();
+  stopSlideshow();
 }
 
 function updateDots() {
@@ -978,24 +1008,19 @@ function updateDots() {
   slideshowImages.forEach((_, index) => {
     const dot = document.createElement('span');
     dot.className = 'slideshow-dot' + (index === currentSlide ? ' active' : '');
-    dot.onclick = () => { showSlide(index); resetSlideshow(); };
+    dot.onclick = () => { showSlide(index); stopSlideshow(); };
     dotsContainer.appendChild(dot);
   });
 }
 
+function stopSlideshow() {
+  clearInterval(slideshowInterval);
+}
+
 function startSlideshow() {
+  stopSlideshow();
   slideshowInterval = setInterval(() => changeSlide(1), 5000);
 }
-
-function resetSlideshow() {
-  clearInterval(slideshowInterval);
-  startSlideshow();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateDots();
-  startSlideshow();
-});
 </script>`;
   return `${landingStyle}
 <div class="seo-overlay" id="seo-overlay" role="main">
@@ -1037,7 +1062,7 @@ function generateBullets(description, minBullets) {
     .map((s) => s.replace(/\.+$/, "").trim());
   const fallbacks = [
     "Available directly in your browser with no downloads or installation required",
-    "Part of the YukiOS desktop environment with 80+ built-in applications and 2900 games",
+    "Part of the YukiOS desktop environment with 90+ built-in applications and 2900 games",
     "Accessible from the Start Menu and compatible with the full YukiOS ecosystem"
   ];
   for (const fb of fallbacks) {
@@ -1541,7 +1566,7 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/mac.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/chromeos.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://yukios.netlify.app/${itemType}s.html">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -1836,8 +1861,8 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
           .map((n) => `<a href="/app/${n.key}.html">${n.title}</a>`)
           .join(", ")}</p>`
       : "";
-    const extra = `${bullets}<p class="seo-cta">${a.title} is part of YukiOS - a free browser-based desktop environment with 80+ apps, 2900 games, and no downloads or sign-ups required. Launch it directly from the Start Menu or bookmark this page for quick access.</p>${relatedApps}`;
-    const html = makeStandalonePage(a.title, desc, jsonld, url, `${GH}/mac.png`, extra, `/?app=${a.key}`);
+    const extra = `${bullets}<p class="seo-cta">${a.title} is part of YukiOS - a free browser-based desktop environment with 90+ apps, 2900 games, and no downloads or sign-ups required. Launch it directly from the Start Menu or bookmark this page for quick access.</p>${relatedApps}`;
+    const html = makeStandalonePage(a.title, desc, jsonld, url, `${GH}/chromeos.png`, extra, `/?app=${a.key}`);
     writeFileSync(resolve(appDir, `${a.key}.html`), html, "utf-8");
   }
 
@@ -1985,7 +2010,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
     const relatedLinks = related.length
       ? `<p class="seo-more">Explore more: ${related.map((r) => `<a href="/feature/${r.key}.html">${r.title}</a>`).join(", ")}</p>`
       : "";
-    const ogImage = (galleryImages.find((i) => i.featureKey === f.key) || {}).src || `${GH}/mac.png`;
+    const ogImage = (galleryImages.find((i) => i.featureKey === f.key) || {}).src || `${GH}/chromeos.png`;
     let extra;
     if (f.rootFile) {
       const featureTitleMap = Object.fromEntries(
@@ -1999,7 +2024,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
         .join("");
       extra = `
 <div class="seo-stats">
-  <div class="seo-stat"><span class="seo-stat-num">80+</span><span class="seo-stat-label">Built-in Apps</span></div>
+  <div class="seo-stat"><span class="seo-stat-num">90+</span><span class="seo-stat-label">Built-in Apps</span></div>
   <div class="seo-stat"><span class="seo-stat-num">3,700+</span><span class="seo-stat-label">Free Games</span></div>
   <div class="seo-stat"><span class="seo-stat-num">40+</span><span class="seo-stat-label">Themes</span></div>
   <div class="seo-stat"><span class="seo-stat-num">4</span><span class="seo-stat-label">Desktop Modes</span></div>
@@ -2059,7 +2084,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
       <div class="seo-feature">
         <div class="seo-feature-icon"><i class="fas fa-th-large"></i></div>
         <div class="seo-feature-body">
-          <h3>80+ Built-in Applications</h3>
+          <h3>90+ Built-in Applications</h3>
           <p>Terminal with Python REPL via Pyodide, Node.js REPL via WebContainers, and full Git integration. Code editor with Monaco/VS Code, media player, web browser with Tor, office viewer, weather, and system settings.</p>
         </div>
       </div>
@@ -2113,7 +2138,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
 </div>
 <div class="seo-cta-row">
   <a href="/apps.html" class="seo-cta-card">
-    <span class="cta-count">80+</span>
+    <span class="cta-count">90+</span>
     <h3>Browse Apps</h3>
     <p>Explore the full catalog of built-in applications</p>
   </a>

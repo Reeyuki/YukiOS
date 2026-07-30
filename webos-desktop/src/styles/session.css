@@ -731,6 +731,26 @@
   }
 }
 
+@keyframes sessionBannerReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.session-electron-banner--hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.session-electron-banner--reveal {
+  animation: sessionBannerReveal 0.35s ease forwards;
+}
+
 .preview-name {
   font-size: 16px;
   font-weight: 700;

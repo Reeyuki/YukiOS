@@ -25,32 +25,34 @@ const outDir = resolve(__dirname, "dist");
 const staticDir = resolve(__dirname, "../static");
 const remoteDir = resolve(__dirname, "remote");
 
-function serveStaticDev() {
-  const mimes = {
-    html: "text/html",
-    png: "image/png",
-    jpg: "image/jpeg",
-    gif: "image/gif",
-    svg: "image/svg+xml",
-    ico: "image/x-icon",
-    js: "application/javascript",
-    css: "text/css",
-    wasm: "application/wasm"
+const MIME_MAP = {
+  html: "text/html",
+  png: "image/png",
+  jpg: "image/jpeg",
+  gif: "image/gif",
+  svg: "image/svg+xml",
+  ico: "image/x-icon",
+  js: "application/javascript",
+  css: "text/css",
+  wasm: "application/wasm"
+};
+
+function serveDir(basePath, dir) {
+  return (req, res, next) => {
+    const filePath = join(dir, req.url.replace(new RegExp("^" + basePath), "") || "index.html");
+    try {
+      const content = readFileSync(filePath);
+      const ext = filePath.split(".").pop();
+      res.setHeader("Content-Type", MIME_MAP[ext] || "application/octet-stream");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.end(content);
+    } catch {
+      next();
+    }
   };
-  function serveDir(basePath, dir) {
-    return (req, res, next) => {
-      const filePath = join(dir, req.url.replace(new RegExp("^" + basePath), "") || "index.html");
-      try {
-        const content = readFileSync(filePath);
-        const ext = filePath.split(".").pop();
-        res.setHeader("Content-Type", mimes[ext] || "application/octet-stream");
-        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-        res.end(content);
-      } catch {
-        next();
-      }
-    };
-  }
+}
+
+function serveStaticDev() {
   return {
     name: "serve-static-dev",
     configureServer(server) {
@@ -213,16 +215,30 @@ function copyRemoteClient() {
 }
 
 function pageGenerator() {
+  function runGenerator() {
+    const result = spawnSync("node", ["scripts/generateSitemap.js"], {
+      cwd: __dirname,
+      stdio: "inherit"
+    });
+    if (result.status !== 0) {
+      throw new Error("Page generation failed");
+    }
+  }
   return {
     name: "page-generator",
     closeBundle() {
-      const result = spawnSync("node", ["scripts/generateSitemap.js"], {
-        cwd: __dirname,
-        stdio: "inherit"
-      });
-      if (result.status !== 0) {
-        throw new Error("Page generation failed");
-      }
+      runGenerator();
+    },
+    configureServer(server) {
+      server.middlewares.use("/features.html", serveDir("/", outDir));
+      server.middlewares.use("/apps.html", serveDir("/", outDir));
+      server.middlewares.use("/games.html", serveDir("/", outDir));
+      server.middlewares.use("/404.html", serveDir("/", outDir));
+      server.middlewares.use("/sitemap.xml", serveDir("/", outDir));
+      server.middlewares.use("/app/", serveDir("/app/", outDir));
+      server.middlewares.use("/class/", serveDir("/class/", outDir));
+      server.middlewares.use("/games/", serveDir("/games/", outDir));
+      server.middlewares.use("/feature/", serveDir("/feature/", outDir));
     }
   };
 }
@@ -267,9 +283,7 @@ if (isVisualize) {
 }
 plugins.push(staticCdnRewrite());
 plugins.push(removeCosmicFolder());
-if (!isDevBuild) {
-  plugins.push(pageGenerator());
-}
+plugins.push(pageGenerator());
 plugins.push(copyRemoteClient());
 
 export default defineConfig({

@@ -38,6 +38,7 @@ import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
 import { showBootScreen } from "./bootScreen.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
+import { initPopunder } from "./ads.js";
 import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray/tray.js";
 import { MacControlCenter } from "./modes/macos/ControlCenter.js";
@@ -176,6 +177,7 @@ async function start() {
   versionChecker.start();
   menuBar.init();
   setTimeout(() => checkAndShowDonationPopup(), 4000);
+  setTimeout(() => initPopunder(), 5000);
 
   const url = new URL(location.href);
 

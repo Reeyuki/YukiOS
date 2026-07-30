@@ -534,6 +534,25 @@ export class SessionManager {
     const bootPreviewBtn = this.container.querySelector("#session-boot-preview-btn");
     const bootPreviewModal = this.container.querySelector("#session-boot-preview-modal");
     const bootPreviewList = this.container.querySelector("#boot-preview-list");
+    const electronBanner = this.container.querySelector("#session-electron-banner");
+
+    const showBootModal = () => {
+      bootPreviewModal.style.display = "block";
+      if (electronBanner) {
+        electronBanner.classList.add("session-electron-banner--hidden");
+        electronBanner.classList.remove("session-electron-banner--reveal");
+      }
+    };
+
+    const hideBootModal = () => {
+      bootPreviewModal.style.display = "none";
+      if (electronBanner) {
+        electronBanner.classList.remove("session-electron-banner--hidden");
+        electronBanner.classList.remove("session-electron-banner--reveal");
+        void electronBanner.offsetWidth;
+        electronBanner.classList.add("session-electron-banner--reveal");
+      }
+    };
 
     const savedAnimId = os.storage.get(StorageKeys.selectedBootAnimation);
     BOOT_ANIMATIONS.forEach((anim) => {
@@ -550,7 +569,7 @@ export class SessionManager {
         } else {
           os.storage.remove(StorageKeys.selectedBootAnimation);
         }
-        bootPreviewModal.style.display = "none";
+        hideBootModal();
         runBootPreview(anim);
       });
       bootPreviewList.appendChild(item);
@@ -660,7 +679,7 @@ export class SessionManager {
     });
 
     infoBtn.addEventListener("click", () => {
-      bootPreviewModal.style.display = "none";
+      hideBootModal();
       const isVisible = infoModal.style.display !== "none";
       infoModal.style.display = isVisible ? "none" : "block";
     });
@@ -668,7 +687,11 @@ export class SessionManager {
     bootPreviewBtn.addEventListener("click", () => {
       infoModal.style.display = "none";
       const isVisible = bootPreviewModal.style.display !== "none";
-      bootPreviewModal.style.display = isVisible ? "none" : "block";
+      if (isVisible) {
+        hideBootModal();
+      } else {
+        showBootModal();
+      }
     });
 
     document.addEventListener("click", (e) => {
@@ -676,7 +699,7 @@ export class SessionManager {
         infoModal.style.display = "none";
       }
       if (!bootPreviewBtn.contains(e.target) && !bootPreviewModal.contains(e.target)) {
-        bootPreviewModal.style.display = "none";
+        hideBootModal();
       }
     });
 
