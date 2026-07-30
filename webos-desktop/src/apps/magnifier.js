@@ -91,10 +91,12 @@ export class MagnifierApp extends BaseApp {
       if (!dragging) return;
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      setStyle(el, { left: (origX + dx) + "px", top: (origY + dy) + "px" });
+      setStyle(el, { left: origX + dx + "px", top: origY + dy + "px" });
     };
 
-    const onUp = () => { dragging = false; };
+    const onUp = () => {
+      dragging = false;
+    };
 
     header.addEventListener("mousedown", onDown);
     document.addEventListener("mousemove", onMove);
@@ -104,7 +106,10 @@ export class MagnifierApp extends BaseApp {
   setupEvents() {
     if (!this.panel) return;
     this.panel.querySelector("#magnifier-zoom-in").addEventListener("click", () => {
-      if (this.zoom === 1) { this.setZoom(2); return; }
+      if (this.zoom === 1) {
+        this.setZoom(2);
+        return;
+      }
       const levels = [2, 4, 8, 16];
       const idx = levels.indexOf(this.zoom);
       if (idx < levels.length - 1) this.setZoom(levels[idx + 1]);
@@ -113,7 +118,10 @@ export class MagnifierApp extends BaseApp {
       if (this.zoom === 1) return;
       const levels = [2, 4, 8, 16];
       const idx = levels.indexOf(this.zoom);
-      if (idx === 0) { this.setZoom(1); return; }
+      if (idx === 0) {
+        this.setZoom(1);
+        return;
+      }
       if (idx > 0) this.setZoom(levels[idx - 1]);
     });
   }
@@ -129,7 +137,7 @@ export class MagnifierApp extends BaseApp {
   setZoom(level) {
     this.zoom = level;
     const label = $("#magnifier-zoom-level");
-    if (label) label.textContent = (level * 100) + "%";
+    if (label) label.textContent = level * 100 + "%";
     this.applyTransform();
   }
 

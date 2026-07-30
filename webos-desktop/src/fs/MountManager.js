@@ -78,6 +78,15 @@ export class MountManager {
     return mountPoint;
   }
 
+  registerInternalPath(realPath, label) {
+    const mountPoint = `${MOUNTS_BASE}/${this.sanitizeLabel(label)}`;
+    if (this.mounts.has(mountPoint)) {
+      throw new Error(`A mount named "${label}" already exists`);
+    }
+    this.mounts.set(mountPoint, { label, mountPoint, path: realPath, internal: true, readOnly: true });
+    return mountPoint;
+  }
+
   unmount(labelOrMountPoint) {
     let key = null;
     for (const [mp, entry] of this.mounts) {
@@ -122,6 +131,9 @@ export class MountManager {
   }
 
   async readdir(mount, relPath) {
+    if (mount.internal) {
+      return this.internalReaddir(mount, relPath);
+    }
     const dirHandle = relPath ? await this.getDirHandle(mount.handle, relPath) : mount.handle;
     const result = {};
     for await (const entry of dirHandle.values()) {
@@ -143,18 +155,28 @@ export class MountManager {
   }
 
   async readFile(mount, relPath) {
+    if (mount.internal) {
+      return this.internalReadFile(mount, relPath);
+    }
     const fileHandle = await this.getFileHandle(mount.handle, relPath);
     const file = await fileHandle.getFile();
     return await file.text();
   }
 
   async readFileBinary(mount, relPath) {
+    if (mount.internal) {
+      return this.internalReadFileBinary(mount, relPath);
+    }
     const fileHandle = await this.getFileHandle(mount.handle, relPath);
     const file = await fileHandle.getFile();
     return file.type ? file : new Blob([file], { type: mimeFromName(relPath.split("/").pop() || "") });
   }
 
   async writeFile(mount, relPath, content) {
+    this.assertWritable(mount);
+    if (mount.internal) {
+      return this.internalWriteFile(mount, relPath, content);
+    }
     const fileHandle = await this.getFileHandle(mount.handle, relPath, true);
     const writable = await fileHandle.createWritable();
     try {
@@ -165,6 +187,10 @@ export class MountManager {
   }
 
   async deleteFile(mount, relPath) {
+    this.assertWritable(mount);
+    if (mount.internal) {
+      return this.internalDeleteFile(mount, relPath);
+    }
     const dir = this.parentPath(relPath);
     const name = this.baseName(relPath);
     const dirHandle = dir ? await this.getDirHandle(mount.handle, dir) : mount.handle;
@@ -172,6 +198,10 @@ export class MountManager {
   }
 
   async deleteDirectory(mount, relPath) {
+    this.assertWritable(mount);
+    if (mount.internal) {
+      return this.internalDeleteDirectory(mount, relPath);
+    }
     const dir = this.parentPath(relPath);
     const name = this.baseName(relPath);
     const dirHandle = dir ? await this.getDirHandle(mount.handle, dir) : mount.handle;
@@ -179,6 +209,10 @@ export class MountManager {
   }
 
   async rename(mount, oldRelPath, newRelPath) {
+    this.assertWritable(mount);
+    if (mount.internal) {
+      return this.internalRename(mount, oldRelPath, newRelPath);
+    }
     const oldDir = this.parentPath(oldRelPath);
     const oldName = this.baseName(oldRelPath);
     const newDir = this.parentPath(newRelPath);
@@ -212,6 +246,10 @@ export class MountManager {
   }
 
   async mkdir(mount, relPath) {
+    this.assertWritable(mount);
+    if (mount.internal) {
+      return this.internalMkdir(mount, relPath);
+    }
     const parts = relPath.split("/").filter(Boolean);
     let current = mount.handle;
     for (const part of parts) {
@@ -220,6 +258,9 @@ export class MountManager {
   }
 
   async exists(mount, relPath) {
+    if (mount.internal) {
+      return this.internalExists(mount, relPath);
+    }
     try {
       const fileHandle = await this.getFileHandle(mount.handle, relPath);
       await fileHandle.getFile();
@@ -235,6 +276,9 @@ export class MountManager {
   }
 
   async isFile(mount, relPath) {
+    if (mount.internal) {
+      return this.internalIsFile(mount, relPath);
+    }
     try {
       const fileHandle = await this.getFileHandle(mount.handle, relPath);
       await fileHandle.getFile();
@@ -246,6 +290,101 @@ export class MountManager {
 
   sanitizeLabel(label) {
     return label.replace(/[^a-zA-Z0-9_\-. ]/g, "_").trim();
+  }
+
+  assertWritable(mount) {
+    if (mount.readOnly) {
+      throw new Error("This mount is read-only");
+    }
+  }
+
+  internalReaddir(mount, relPath) {
+    const dirPath = relPath ? mount.path + "/" + relPath : mount.path;
+    if (!dirPath) return Promise.resolve({});
+    return window.electronAPI.electronFs
+      .readdirAbsolute(dirPath)
+      .then((res) => {
+        if (!res || !res.success || !Array.isArray(res.entries)) return {};
+        const result = {};
+        for (const name of res.entries) {
+          result[name] = {};
+        }
+        const statPromises = res.entries.map((name) => {
+          const fullPath = dirPath + "/" + name;
+          return window.electronAPI.electronFs
+            .statAbsolute(fullPath)
+            .then((statRes) => {
+              if (statRes.success && !statRes.stat.isDirectory) {
+                const kind = inferKind(name);
+                result[name] = {
+                  type: "file",
+                  kind,
+                  icon: "static/icons/file.webp",
+                  faIcon: null,
+                  content: "",
+                  size: statRes.stat.size
+                };
+              }
+            })
+            .catch(() => {});
+        });
+        return Promise.all(statPromises).then(() => result);
+      })
+      .catch(() => ({}));
+  }
+
+  internalReadFile(mount, relPath) {
+    const filePath = mount.path + "/" + relPath;
+    return window.electronAPI.electronFs.readFileAbsolute(filePath, "utf8").then((res) => {
+      if (!res.success) throw new Error(res.error);
+      return res.data;
+    });
+  }
+
+  internalReadFileBinary(mount, relPath) {
+    const filePath = mount.path + "/" + relPath;
+    return window.electronAPI.electronFs.readFileAbsolute(filePath, "base64").then((res) => {
+      if (!res.success) throw new Error(res.error);
+      const binaryStr = atob(res.data);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      const name = relPath.split("/").pop() || "file";
+      return new Blob([bytes], { type: mimeFromName(name) });
+    });
+  }
+
+  internalWriteFile(mount, relPath, content) {
+    throw new Error("Cannot write to a read-only mount");
+  }
+
+  internalDeleteFile(mount, relPath) {
+    throw new Error("Cannot delete from a read-only mount");
+  }
+
+  internalDeleteDirectory(mount, relPath) {
+    throw new Error("Cannot delete from a read-only mount");
+  }
+
+  internalRename(mount, oldRelPath, newRelPath) {
+    throw new Error("Cannot rename on a read-only mount");
+  }
+
+  internalMkdir(mount, relPath) {
+    throw new Error("Cannot create directory on a read-only mount");
+  }
+
+  internalExists(mount, relPath) {
+    const filePath = relPath ? mount.path + "/" + relPath : mount.path;
+    return window.electronAPI.electronFs.existsAbsolute(filePath).then((res) => {
+      return res.success && res.exists;
+    });
+  }
+
+  internalIsFile(mount, relPath) {
+    const filePath = mount.path + "/" + relPath;
+    return window.electronAPI.electronFs.statAbsolute(filePath).then((res) => {
+      return res.success && res.stat.isFile;
+    });
   }
 
   async getFileHandle(dirHandle, relPath, create = false) {
@@ -281,6 +420,7 @@ export class MountManager {
   async persist() {
     const meta = [];
     for (const [, entry] of this.mounts) {
+      if (entry.internal) continue;
       meta.push({ label: entry.label, mountPoint: entry.mountPoint });
     }
     os.storage.set(StorageKeys.storageMounts, meta);
@@ -289,6 +429,7 @@ export class MountManager {
     const store = tx.objectStore(HANDLE_STORE);
     store.clear();
     for (const [, entry] of this.mounts) {
+      if (entry.internal) continue;
       store.put({ mountPoint: entry.mountPoint, handle: entry.handle });
     }
     await new Promise((resolve, reject) => {

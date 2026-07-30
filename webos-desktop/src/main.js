@@ -235,6 +235,96 @@ async function start() {
     }, 0);
   }
   setupStartMenu(sessionManager);
+
+  if (window.electronAPI && window.electronAPI.onTrayAction) {
+    import("./audioMixer.js").then(({ audioMixer }) => {
+      import("./shared/turboManager.js").then(({ turboManager }) => {
+        import("./modeManager.js").then(({ modeManager, MODES }) => {
+          const getSessionMode = () => {
+            const active = modeManager.getActiveModes();
+            if (active.length === 0) return "normal";
+            const m = active[0];
+            if (m === MODES.MAC) return "mac";
+            if (m === MODES.TILING) return "tiling";
+            if (m === MODES.CHROME_OS) return "chromeos";
+            return m;
+          };
+
+          const syncState = () => {
+            const mixer = audioMixer();
+            const remoteApp = os.app.getInstance("remoteHostApp");
+            window.electronAPI.sendTrayState({
+              dnd: os.notify.getDoNotDisturb(),
+              muted: mixer ? mixer.muted : false,
+              powerMode: turboManager.getMode(),
+              sessionMode: getSessionMode(),
+              remoteDesktopActive: !!(remoteApp && remoteApp.hostStreaming),
+              remoteDesktopCode: (remoteApp && remoteApp.hostRoomCode) || null
+            });
+          };
+
+          window.electronAPI.onTrayAction(async ({ action, value }) => {
+            switch (action) {
+              case "toggle-dnd": {
+                const current = os.notify.getDoNotDisturb();
+                os.notify.setDoNotDisturb(!current);
+                window.electronAPI.sendTrayState({ dnd: !current });
+                break;
+              }
+              case "toggle-mute": {
+                const mixer = audioMixer();
+                if (mixer) {
+                  mixer.muted = !mixer.muted;
+                  mixer.applyMasterToAll();
+                  mixer.save();
+                  window.electronAPI.sendTrayState({ muted: mixer.muted });
+                }
+                break;
+              }
+              case "lock-screen": {
+                os.app.lockSession();
+                break;
+              }
+              case "set-power-mode": {
+                turboManager.setMode(value);
+                window.electronAPI.sendTrayState({ powerMode: value });
+                break;
+              }
+              case "set-session-mode": {
+                modeManager.exitAll();
+                const modeMap = { mac: MODES.MAC, chromeos: MODES.CHROME_OS, tiling: MODES.TILING };
+                const modeId = modeMap[value];
+                if (modeId) modeManager.enter(modeId);
+                window.electronAPI.sendTrayState({ sessionMode: value });
+                break;
+              }
+              case "remote-stop": {
+                try {
+                  await window.electronAPI.stopRemoteHost();
+                } catch {}
+                window.electronAPI.sendTrayState({
+                  remoteDesktopActive: false,
+                  remoteDesktopCode: null
+                });
+                break;
+              }
+            }
+          });
+
+          syncState();
+          setInterval(() => {
+            const remoteApp = os.app.getInstance("remoteHostApp");
+            const active = !!(remoteApp && remoteApp.hostStreaming);
+            const code = (remoteApp && remoteApp.hostRoomCode) || null;
+            window.electronAPI.sendTrayState({
+              remoteDesktopActive: active,
+              remoteDesktopCode: code
+            });
+          }, 5000);
+        });
+      });
+    });
+  }
 }
 
 start();

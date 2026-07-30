@@ -1,6 +1,7 @@
 import { CDN_BASES, resolveIconUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
 import { StorageAdapter } from "./fs/StorageAdapter.js";
+import { ElectronFSAdapter } from "./fs/ElectronFSAdapter.js";
 import { MetadataManager } from "./fs/MetadataManager.js";
 import { PathResolver } from "./fs/PathResolver.js";
 import { FileKind, inferKind, mimeFromName, isBinaryName } from "./shared/fileKindDetector.js";
@@ -253,7 +254,16 @@ export class FileSystemManager {
     this.sessionKey = "guest";
     this.desktopUI = null;
 
-    this.storage = new StorageAdapter(this.CONFIG);
+    this.isElectron =
+      typeof window !== "undefined" && typeof window.electronAPI !== "undefined" && !!window.electronAPI.electronFs;
+
+    if (this.isElectron) {
+      this.storage = new ElectronFSAdapter(this.CONFIG);
+      this.noopBlobs();
+    } else {
+      this.storage = new StorageAdapter(this.CONFIG);
+    }
+
     this.metadata = new MetadataManager(this.storage, this.CONFIG);
     this.paths = new PathResolver(this.CONFIG);
 
@@ -264,6 +274,18 @@ export class FileSystemManager {
 
     this.fsReady = this.storage.fsReady;
     this.resolveFs = this.storage.resolveFs;
+  }
+
+  noopBlobs() {
+    const noop = {
+      initBlobDB: () => Promise.resolve(),
+      clearBlobStore: () => Promise.resolve(),
+      putBlob: () => Promise.resolve(),
+      getBlobByFullPath: () => Promise.resolve(null),
+      deleteBlobByFullPath: () => Promise.resolve(),
+      renameBlobByFullPath: () => Promise.resolve()
+    };
+    this.blobs = noop;
   }
 
   uint8ToBase64(uint8) {
@@ -325,7 +347,16 @@ export class FileSystemManager {
     const attemptInit = async () => {
       try {
         await this.storage.initFS(sessionKey);
-        await this.blobs.initBlobDB();
+        if (this.isElectron && this.storage.homeDir) {
+          try {
+            this.mountManager.registerInternalPath(this.storage.homeDir, "Local Disk");
+          } catch (e) {
+            // mount already registered, ignore
+          }
+        }
+        if (!this.isElectron) {
+          await this.blobs.initBlobDB();
+        }
         await this.ensureDefaults();
         await this.trash.init();
         await this.mountManager.init();
@@ -475,17 +506,19 @@ export class FileSystemManager {
           continue;
         }
 
-        const blob = await this.blobs.getBlobByFullPath(fullPath).catch(() => null);
-        if (blob) {
-          const bytes = new Uint8Array(await blob.arrayBuffer());
-          entries.push({
-            type: "file",
-            path: fullPath,
-            isBlob: true,
-            mime: blob.type || "application/octet-stream",
-            dataB64: this.uint8ToBase64(bytes)
-          });
-          continue;
+        if (!this.isElectron) {
+          const blob = await this.blobs.getBlobByFullPath(fullPath).catch(() => null);
+          if (blob) {
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            entries.push({
+              type: "file",
+              path: fullPath,
+              isBlob: true,
+              mime: blob.type || "application/octet-stream",
+              dataB64: this.uint8ToBase64(bytes)
+            });
+            continue;
+          }
         }
 
         let data;
@@ -520,7 +553,9 @@ export class FileSystemManager {
     }
 
     if (wipe) {
-      await this.blobs.clearBlobStore();
+      if (!this.isElectron) {
+        await this.blobs.clearBlobStore();
+      }
       const rootStatOk = await this.exists(this.CONFIG.ROOT).catch(() => false);
       if (rootStatOk) {
         await this.deleteDirectoryRecursive(this.CONFIG.ROOT).catch(() => {});
@@ -540,13 +575,17 @@ export class FileSystemManager {
       await this.p("mkdir", this.paths.dirname(f.path), { recursive: true }).catch(() => {});
       const bytes = this.base64ToUint8(f.dataB64 || "");
       if (f.isBlob) {
-        try {
-          await this.safeWriteFile(f.path, new Uint8Array([0]));
-          const mime = typeof f.mime === "string" && f.mime ? f.mime : "application/octet-stream";
-          await this.blobs.putBlob(f.path, new Blob([bytes], { type: mime }));
-        } catch (e) {
-          console.warn(`Failed to import blob file ${f.path}:`, e);
+        if (this.isElectron) {
           await this.safeWriteFile(f.path, bytes);
+        } else {
+          try {
+            await this.safeWriteFile(f.path, new Uint8Array([0]));
+            const mime = typeof f.mime === "string" && f.mime ? f.mime : "application/octet-stream";
+            await this.blobs.putBlob(f.path, new Blob([bytes], { type: mime }));
+          } catch (e) {
+            console.warn(`Failed to import blob file ${f.path}:`, e);
+            await this.safeWriteFile(f.path, bytes);
+          }
         }
       } else {
         await this.safeWriteFile(f.path, bytes);
@@ -763,12 +802,29 @@ export class FileSystemManager {
         const exists = await this.exists(fullPath);
         if (!exists) {
           await this.p("mkdir", this.paths.dirname(fullPath), { recursive: true }).catch(() => {});
-          await this.p("writeFile", fullPath, value.content ?? "");
+          let content = value.content ?? "";
+          if (
+            this.isElectron &&
+            typeof content === "string" &&
+            (content.startsWith("http://") || content.startsWith("https://"))
+          ) {
+            try {
+              const resp = await fetch(content);
+              const buf = await resp.arrayBuffer();
+              content = new Uint8Array(buf);
+            } catch (e) {
+              console.warn(`Failed to download default file ${key} from ${content}:`, e);
+              content = "";
+            }
+          }
+          await this.p("writeFile", fullPath, content);
+          const size = typeof content === "string" ? content.length : content.byteLength;
           await this.metadata.writeMeta(this.paths.dirname(fullPath), key, {
-            ...value,
-            size: (value.content ?? "").length
+            kind: value.kind,
+            icon: value.icon,
+            faIcon: value.faIcon,
+            size
           });
-        } else {
         }
       } else {
         const exists = await this.exists(fullPath);
@@ -924,7 +980,7 @@ export class FileSystemManager {
 
       const zeroSizeFiles = fileResults.filter((f) => f.fileSize === 0);
 
-      if (zeroSizeFiles.length > 0) {
+      if (!this.isElectron && zeroSizeFiles.length > 0) {
         const blobSizes = await Promise.all(
           zeroSizeFiles.map(async (f) => {
             try {
@@ -1014,9 +1070,25 @@ export class FileSystemManager {
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     if (isBlob(content)) {
       const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(uniqueName) });
-      await this.p("writeFile", filePath2, "");
-      await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: typedBlob.size });
-      await this.blobs.putBlob(filePath2, typedBlob);
+      if (this.isElectron) {
+        const bytes = new Uint8Array(await typedBlob.arrayBuffer());
+        await this.p("writeFile", filePath2, bytes);
+        await this.metadata.writeMeta(dir, uniqueName, {
+          kind: fileKind,
+          icon: fileIcon,
+          faIcon,
+          size: typedBlob.size
+        });
+      } else {
+        await this.p("writeFile", filePath2, "");
+        await this.metadata.writeMeta(dir, uniqueName, {
+          kind: fileKind,
+          icon: fileIcon,
+          faIcon,
+          size: typedBlob.size
+        });
+        await this.blobs.putBlob(filePath2, typedBlob);
+      }
     } else {
       await this.p("writeFile", filePath2, content);
       await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: content.length });
@@ -1065,7 +1137,9 @@ export class FileSystemManager {
     } else {
       await this.p("unlink", target);
       await this.metadata.removeMeta(dir, name);
-      await this.blobs.deleteBlobByFullPath(this.paths.join(dir, name));
+      if (!this.isElectron) {
+        await this.blobs.deleteBlobByFullPath(this.paths.join(dir, name));
+      }
     }
     await this.notifyDesktopChange(path);
   }
@@ -1079,7 +1153,9 @@ export class FileSystemManager {
         await this.deleteDirectoryRecursive(fullPath);
       } else {
         await this.p("unlink", fullPath);
-        await this.blobs.deleteBlobByFullPath(fullPath);
+        if (!this.isElectron) {
+          await this.blobs.deleteBlobByFullPath(fullPath);
+        }
       }
     }
     await this.p("rmdir", dirPath);
@@ -1118,7 +1194,9 @@ export class FileSystemManager {
       release();
     }
 
-    await this.blobs.renameBlobByFullPath(oldPath, newPath);
+    if (!this.isElectron) {
+      await this.blobs.renameBlobByFullPath(oldPath, newPath);
+    }
     if (!skipNotify) await this.notifyDesktopChange(path);
   }
 
@@ -1140,8 +1218,13 @@ export class FileSystemManager {
       await this.createFile(path, name, content, kind, icon);
     } else if (isBlob(content)) {
       const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(name) });
-      await this.p("writeFile", filePath, "");
-      await this.blobs.putBlob(filePath, typedBlob);
+      if (this.isElectron) {
+        const bytes = new Uint8Array(await typedBlob.arrayBuffer());
+        await this.p("writeFile", filePath, bytes);
+      } else {
+        await this.p("writeFile", filePath, "");
+        await this.blobs.putBlob(filePath, typedBlob);
+      }
       await this.metadata.writeMeta(dir, name, { size: typedBlob.size });
       await this.notifyDesktopChange(path);
     } else {
@@ -1188,12 +1271,28 @@ export class FileSystemManager {
       }
     }
 
-    const blob = await this.blobs.getBlobByFullPath(fullPath);
-    if (blob) {
-      return blob.type ? blob : new Blob([blob], { type: mimeFromName(name) });
+    if (!this.isElectron) {
+      const blob = await this.blobs.getBlobByFullPath(fullPath);
+      if (blob) {
+        return blob.type ? blob : new Blob([blob], { type: mimeFromName(name) });
+      }
     }
 
     try {
+      if (this.isElectron) {
+        const text = await this.pRead("readFile", fullPath, "utf8");
+        if (text) {
+          if (text.startsWith("data:") || text.startsWith("http") || text.startsWith("/")) {
+            return resolveIconUrl(text);
+          }
+          if (!this.isBinaryName(name)) {
+            return text;
+          }
+        }
+        const raw = await this.pRead("readFile", fullPath);
+        if (raw) return new Blob([raw], { type: mimeFromName(name) });
+        return null;
+      }
       const text = await this.pRead("readFile", fullPath, "utf8");
 
       if (!text) {
@@ -1372,9 +1471,14 @@ export class FileSystemManager {
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
     const typedBlob = isBlob(blob) && !blob.type ? new Blob([blob], { type: mimeFromName(name) }) : blob;
-    await this.p("writeFile", fullPath2, "");
+    if (this.isElectron) {
+      const bytes = new Uint8Array(await typedBlob.arrayBuffer());
+      await this.p("writeFile", fullPath2, bytes);
+    } else {
+      await this.p("writeFile", fullPath2, "");
+      await this.blobs.putBlob(fullPath2, typedBlob);
+    }
     await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, size: fileSize });
-    await this.blobs.putBlob(fullPath2, typedBlob);
     await this.notifyDesktopChange(folderPath);
     return uniqueName;
   }
@@ -1388,6 +1492,11 @@ export class FileSystemManager {
       if (resolved) {
         return await this.mountManager.readFileBinary(resolved.mount, resolved.relativePath);
       }
+    }
+    if (this.isElectron) {
+      const data = await this.pRead("readFile", fullPath);
+      if (!data) return null;
+      return new Blob([data], { type: mimeFromName(name) });
     }
     const blob = await this.blobs.getBlobByFullPath(fullPath);
     if (!blob) {
@@ -1409,7 +1518,9 @@ export class FileSystemManager {
     }
     await this.p("unlink", fullPath).catch(() => {});
     await this.metadata.removeMeta(dir, name);
-    await this.blobs.deleteBlobByFullPath(fullPath);
+    if (!this.isElectron) {
+      await this.blobs.deleteBlobByFullPath(fullPath);
+    }
     await this.notifyDesktopChange(folderPath);
   }
 
@@ -1446,7 +1557,9 @@ export class FileSystemManager {
       release();
     }
 
-    await this.blobs.renameBlobByFullPath(oldPath, newPath);
+    if (!this.isElectron) {
+      await this.blobs.renameBlobByFullPath(oldPath, newPath);
+    }
     await this.notifyDesktopChange(folderPath);
   }
 }

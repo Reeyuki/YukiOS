@@ -1289,108 +1289,113 @@ export class ExplorerApp extends BaseApp {
     if (inst.isRendering) return;
     inst.isRendering = true;
 
-    const win = $(`#${inst.winId}`);
-    if (!win) {
-      inst.isRendering = false;
-      return;
-    }
-    const view = $(`#${inst.winId}-view`, win);
-    const pathDisplay = $(`#${inst.winId}-path`, win);
-    if (!view) {
-      inst.isRendering = false;
-      return;
-    }
-
-    view.innerHTML = "";
-    removeClass(view, "games-page");
-    removeClass(view, "explorer-trash-view");
-    removeClass(view, "explorer-view-grid");
-    removeClass(view, "explorer-view-list");
-    addClass(view, `explorer-view-${this.viewMode}`);
-    this.ensureSelBox(view);
-    if (pathDisplay) {
-      if (pathDisplay.tagName === "INPUT") {
-        pathDisplay.value = "/" + inst.currentPath.join("/");
-      } else {
-        pathDisplay.textContent = "/" + inst.currentPath.join("/");
+    try {
+      const win = $(`#${inst.winId}`);
+      if (!win) {
+        inst.isRendering = false;
+        return;
       }
-    }
-
-    const folder = await os.fs.readdir(inst.currentPath);
-    inst.cachedFolder = folder;
-    if (inst.mode === "browse") inst.cachedFolderStats = await this.buildFolderStats(inst);
-
-    const entries = Object.entries(folder).filter(([name]) => {
-      if (name === "system" && inst.currentPath.length === 0) return false;
-      if (name === ".trash" && inst.currentPath.length === 0) return false;
-      return true;
-    });
-    const items = await Promise.all(
-      entries.map(async ([name, itemData]) => {
-        const isFile = itemData?.type === "file";
-        const iconEl = await this.buildItemIconHTML(name, isFile, itemData, inst);
-        return { name, isFile, iconEl, itemData };
-      })
-    );
-
-    if (this.viewMode === "list") {
-      const stats = inst.cachedFolderStats || {};
-      const sorted = this.sortItems(items, inst.sortBy, inst.sortDir, folder, stats);
-
-      const header = this.createListHeader(inst);
-      view.appendChild(header);
-
-      for (const { name, isFile, iconEl, itemData } of sorted) {
-        const row = createElement("div", { className: "file-item" });
-        row.dataset.isFile = isFile ? "true" : "false";
-        const stat = stats[name] || {};
-        const kind = itemData?.kind || "";
-        const size = isFile ? (itemData?.size ?? stat.size ?? 0) : "";
-        const mtime = stat.mtime;
-        const typeLabel = isFile ? this.kindLabel(kind) || "File" : "File Folder";
-        setHTML(
-          row,
-          `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this.formatFriendlyDate(mtime) : "—"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
-        );
-        this.bindItemInteractions(row, name, isFile, inst, win);
-        view.appendChild(row);
+      const view = $(`#${inst.winId}-view`, win);
+      const pathDisplay = $(`#${inst.winId}-path`, win);
+      if (!view) {
+        inst.isRendering = false;
+        return;
       }
-    } else {
-      for (const { name, isFile, iconEl } of items) {
-        const item = createElement("div", { className: "file-item" });
-        item.dataset.isFile = isFile ? "true" : "false";
-        setHTML(item, `${iconEl}<span class="file-item-name">${name}</span>`);
-        this.bindItemInteractions(item, name, isFile, inst, win);
-        view.appendChild(item);
-      }
-    }
 
-    if (Object.keys(folder).length === 0 && inst.mode === "browse") {
-      speak("This folder is empty. Want me to help you organize?", ClippyAnimation.Searching);
-    }
-
-    if (inst.mode === "browse") await this.updateStatusBar(inst, folder);
-    if (inst.mode === "select") this.bindSelectBarButton(inst);
-    await this.updateStorageIndicator(win, inst);
-    this.updateActiveSidebar(inst);
-
-    const cb = this.getClipboard();
-    if (cb && cb.action === "cut") {
-      const items = cb.items || cb.icons || [];
-      const src = cb.sourceInst?.winId;
-      const sameInst = src === inst.winId || (cb.sourcePath && cb.sourcePath.join("/") === inst.currentPath.join("/"));
-      if (sameInst && items.length) {
-        const view = $(`#${inst.winId}-view`, win);
-        if (view) {
-          items.forEach(({ data: { name: n } }) => {
-            const el = $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === n);
-            if (el) setStyle(el, { opacity: "0.5" });
-          });
+      view.innerHTML = "";
+      removeClass(view, "games-page");
+      removeClass(view, "explorer-trash-view");
+      removeClass(view, "explorer-view-grid");
+      removeClass(view, "explorer-view-list");
+      addClass(view, `explorer-view-${this.viewMode}`);
+      this.ensureSelBox(view);
+      if (pathDisplay) {
+        if (pathDisplay.tagName === "INPUT") {
+          pathDisplay.value = "/" + inst.currentPath.join("/");
+        } else {
+          pathDisplay.textContent = "/" + inst.currentPath.join("/");
         }
       }
-    }
 
-    inst.isRendering = false;
+      const folder = await os.fs.readdir(inst.currentPath);
+      inst.cachedFolder = folder;
+      if (inst.mode === "browse") inst.cachedFolderStats = await this.buildFolderStats(inst);
+
+      const entries = Object.entries(folder).filter(([name]) => {
+        if (name === "system" && inst.currentPath.length === 0) return false;
+        if (name === ".trash" && inst.currentPath.length === 0) return false;
+        return true;
+      });
+      const items = await Promise.all(
+        entries.map(async ([name, itemData]) => {
+          const isFile = itemData?.type === "file";
+          const iconEl = await this.buildItemIconHTML(name, isFile, itemData, inst);
+          return { name, isFile, iconEl, itemData };
+        })
+      );
+
+      if (this.viewMode === "list") {
+        const stats = inst.cachedFolderStats || {};
+        const sorted = this.sortItems(items, inst.sortBy, inst.sortDir, folder, stats);
+
+        const header = this.createListHeader(inst);
+        view.appendChild(header);
+
+        for (const { name, isFile, iconEl, itemData } of sorted) {
+          const row = createElement("div", { className: "file-item" });
+          row.dataset.isFile = isFile ? "true" : "false";
+          const stat = stats[name] || {};
+          const kind = itemData?.kind || "";
+          const size = isFile ? (itemData?.size ?? stat.size ?? 0) : "";
+          const mtime = stat.mtime;
+          const typeLabel = isFile ? this.kindLabel(kind) || "File" : "File Folder";
+          setHTML(
+            row,
+            `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this.formatFriendlyDate(mtime) : "—"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
+          );
+          this.bindItemInteractions(row, name, isFile, inst, win);
+          view.appendChild(row);
+        }
+      } else {
+        for (const { name, isFile, iconEl } of items) {
+          const item = createElement("div", { className: "file-item" });
+          item.dataset.isFile = isFile ? "true" : "false";
+          setHTML(item, `${iconEl}<span class="file-item-name">${name}</span>`);
+          this.bindItemInteractions(item, name, isFile, inst, win);
+          view.appendChild(item);
+        }
+      }
+
+      if (Object.keys(folder).length === 0 && inst.mode === "browse") {
+        speak("This folder is empty. Want me to help you organize?", ClippyAnimation.Searching);
+      }
+
+      if (inst.mode === "browse") await this.updateStatusBar(inst, folder);
+      if (inst.mode === "select") this.bindSelectBarButton(inst);
+      await this.updateStorageIndicator(win, inst);
+      this.updateActiveSidebar(inst);
+
+      const cb = this.getClipboard();
+      if (cb && cb.action === "cut") {
+        const items = cb.items || cb.icons || [];
+        const src = cb.sourceInst?.winId;
+        const sameInst =
+          src === inst.winId || (cb.sourcePath && cb.sourcePath.join("/") === inst.currentPath.join("/"));
+        if (sameInst && items.length) {
+          const view = $(`#${inst.winId}-view`, win);
+          if (view) {
+            items.forEach(({ data: { name: n } }) => {
+              const el = $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === n);
+              if (el) setStyle(el, { opacity: "0.5" });
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("renderInstance error:", err);
+    } finally {
+      inst.isRendering = false;
+    }
   }
 
   async buildItemIconHTML(name, isFile, itemData, inst) {
@@ -1865,11 +1870,7 @@ export class ExplorerApp extends BaseApp {
         if (entry.type === "file") {
           stats[name] = { isFile: true, size: entry.size ?? 0, mtime: entry.mtime };
         } else {
-          stats[name] = {
-            isFile: false,
-            size: await this.calcDirSize(inst.currentPath.concat(name)),
-            mtime: entry.mtime
-          };
+          stats[name] = { isFile: false, size: 0, mtime: entry.mtime };
         }
       }
     } catch {}
@@ -1978,19 +1979,14 @@ export class ExplorerApp extends BaseApp {
 
     for (const m of mounts) {
       const mountPath = m.mountPoint;
-      let mountUsed = 0;
-      try {
-        mountUsed = await this.calcDirSize(mountPath.split("/").filter(Boolean));
-      } catch {}
-      const mPct = quota > 0 ? Math.min((mountUsed / quota) * 100, 100) : 0;
       html += `
-        <div class="explorer-disk-card" data-path="${mountPath}">
+        <div class="explorer-disk-card" data-path="${mountPath}" data-mount-calc="${mountPath}">
           <div class="explorer-disk-card-icon"><svg viewBox="0 0 36 36" fill="none" style="width:42px;height:42px;"><rect x="3" y="9" width="30" height="20" rx="3" stroke="var(--brand)" stroke-width="1.8" fill="rgba(255,255,255,0.04)"/><rect x="7" y="13" width="22" height="6" rx="1.5" fill="var(--brand)" opacity="0.25"/><circle cx="9" cy="22" r="1.5" fill="var(--brand)" opacity="0.5"/></svg></div>
           <div class="explorer-disk-card-body">
             <div class="explorer-disk-card-name">${m.label}</div>
-            <div class="explorer-disk-card-info">${formatSize(mountUsed)}</div>
+            <div class="explorer-disk-card-info">...</div>
             <div class="explorer-disk-progress">
-              <div class="explorer-disk-progress-fill" style="width:${mPct}%"></div>
+              <div class="explorer-disk-progress-fill" style="width:0%"></div>
             </div>
           </div>
         </div>`;
@@ -2010,6 +2006,19 @@ export class ExplorerApp extends BaseApp {
         }
       };
     });
+
+    for (const card of view.querySelectorAll(".explorer-disk-card[data-mount-calc]")) {
+      const mountPath = card.dataset.mountCalc;
+      let mountUsed = 0;
+      try {
+        mountUsed = await this.calcDirSize(mountPath.split("/").filter(Boolean));
+      } catch {}
+      const infoEl = card.querySelector(".explorer-disk-card-info");
+      const fillEl = card.querySelector(".explorer-disk-progress-fill");
+      if (infoEl) infoEl.textContent = formatSize(mountUsed);
+      const mPct = quota > 0 ? Math.min((mountUsed / quota) * 100, 100) : 0;
+      if (fillEl) fillEl.style.width = mPct + "%";
+    }
 
     view.querySelectorAll(".disk-folder-item").forEach((item) => {
       const path = item.dataset.path;

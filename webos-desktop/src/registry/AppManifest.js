@@ -1377,5 +1377,20 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "Lens-style screen magnifier with adjustable 2x-16x zoom that follows your cursor."
+  },
+  {
+    serviceKey: "remoteHostApp",
+    enhanced: true,
+    type: "system",
+    title: "Yuki Remote Desktop",
+    icon: "fas fa-desktop",
+    launchType: "instance",
+    windowIdPatterns: ["remote-host"],
+    category: "system",
+    clippy: {
+      message: "Share your desktop with any browser by generating a secure connection code.",
+      animation: ClippyAnimation.Show
+    },
+    description: "Stream your full desktop to any browser via WebRTC with remote input control."
   }
 ];

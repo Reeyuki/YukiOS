@@ -28,7 +28,8 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
   { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" },
-  { app: "room3dApp", name: "3D Room", icon: "static/icons/3dyukios.webp" }
+  { app: "room3dApp", name: "3D Room", icon: "static/icons/3dyukios.webp" },
+  { app: "remoteHostApp", name: "Yuki Remote Desktop", icon: "fas fa-desktop", isFa: true }
 ];
 
 export class IconManager {

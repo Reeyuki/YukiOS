@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YukiOS Remote</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #0d0d0f;
+  --surface: #1a1a1e;
+  --surface2: #252529;
+  --border: rgba(255,255,255,0.08);
+  --text: #e8e8ed;
+  --text2: #888899;
+  --accent: #7c5cfc;
+  --accent-hover: #6a4ae0;
+  --error: #ff4455;
+  --success: #44ddaa;
+  --radius: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
+body { display: flex; flex-direction: column; }
+.remote-root { display: flex; flex-direction: column; height: 100vh; }
+
+/* Connect screen */
+.connect-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 24px; padding: 40px; }
+.connect-screen h1 { font-size: 28px; font-weight: 700; }
+.connect-screen p { color: var(--text2); max-width: 400px; text-align: center; line-height: 1.5; }
+.connect-screen .logo { font-size: 48px; color: var(--accent); margin-bottom: 8px; }
+.room-input-group { display: flex; gap: 8px; align-items: center; }
+.room-input-group input { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-size: 20px; color: var(--text); width: 140px; text-align: center; letter-spacing: 8px; text-transform: uppercase; font-weight: 600; outline: none; transition: border-color 0.2s; }
+.room-input-group input:focus { border-color: var(--accent); }
+.room-input-group input::placeholder { letter-spacing: 1px; font-weight: 400; font-size: 14px; color: var(--text2); }
+.btn { display: flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius); border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+
+/* Guide section */
+.guide-toggle { background: none; border: none; color: var(--text2); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; transition: all 0.15s; margin-top: 4px; }
+.guide-toggle:hover { color: var(--text); background: var(--surface); }
+.guide-toggle i { font-size: 10px; transition: transform 0.2s; }
+.guide-toggle.open i { transform: rotate(180deg); }
+.guide-panel { display: none; max-width: 460px; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-top: 8px; text-align: left; }
+.guide-panel.open { display: block; }
+.guide-panel h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+.guide-panel .step { display: flex; gap: 12px; margin-bottom: 14px; }
+.guide-panel .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.guide-panel .step-content { flex: 1; }
+.guide-panel .step-content strong { display: block; font-size: 13px; color: var(--text); margin-bottom: 2px; }
+.guide-panel .step-content p { font-size: 12px; color: var(--text2); line-height: 1.5; margin: 0; }
+.guide-panel .tip { background: var(--surface2); border-radius: 6px; padding: 10px 12px; margin-top: 4px; font-size: 12px; color: var(--text2); display: flex; gap: 8px; align-items: flex-start; }
+.guide-panel .tip i { color: var(--accent); margin-top: 1px; }
+.guide-divider { height: 1px; background: var(--border); margin: 8px 0 14px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary { background: var(--surface2); color: var(--text); }
+.btn-secondary:hover { background: var(--border); }
+
+/* Viewer screen */
+.viewer-screen { display: none; flex-direction: column; flex: 1; }
+.viewer-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.viewer-toolbar .status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); }
+.viewer-toolbar .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.viewer-toolbar .status-dot.disconnected { background: var(--error); }
+.viewer-toolbar .room-badge { background: var(--surface2); padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; letter-spacing: 4px; }
+.video-container { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; position: relative; overflow: hidden; }
+.video-container video { max-width: 100%; max-height: 100%; object-fit: contain; }
+.video-container .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(0,0,0,0.7); }
+.video-container .overlay.hidden { display: none; }
+.video-container .overlay i { font-size: 48px; color: var(--text2); }
+.video-container .overlay p { color: var(--text2); font-size: 14px; }
+
+.connecting-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error toast */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--error); color: #fff; padding: 10px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500; display: none; z-index: 100; }
+
+kbd { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-family: inherit; }
+
+@media (max-width: 480px) {
+  .connect-screen h1 { font-size: 22px; }
+  .room-input-group input { width: 120px; font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="remote-root" id="app">
+  <div class="connect-screen" id="connectScreen">
+    <div class="logo"><i class="fas fa-desktop"></i></div>
+    <h1>YukiOS Remote</h1>
+    <p>Enter the 6-character code shown on your YukiOS desktop to connect and control your PC remotely.</p>
+    <div class="room-input-group">
+      <input type="text" id="roomInput" maxlength="6" placeholder="CODE" autocomplete="off" autocapitalize="characters">
+      <button class="btn btn-primary" id="connectBtn"><i class="fas fa-plug"></i> Connect</button>
+    </div>
+    <button class="btn btn-secondary" id="qrBtn" style="margin-top:8px"><i class="fas fa-qrcode"></i> Scan QR Code</button>
+    <input type="file" id="qrFileInput" accept="image/*" style="display:none">
+
+    <button class="guide-toggle" id="guideToggle"><i class="fas fa-chevron-down"></i> How to use</button>
+    <div class="guide-panel" id="guidePanel">
+      <p>Open <strong>Yuki Remote Desktop</strong> on your PC (get it from <a href="https://github.com/Reeyuki/yukios/releases" target="_blank" style="color:var(--accent);text-decoration:none">GitHub Releases</a>), click <strong>Share Desktop</strong>, then enter the 6-character code above and click <strong>Connect</strong>. Your mouse and keyboard control the remote PC in real time. Press <kbd>Esc</kbd> to disconnect. The connection is end-to-end encrypted via WebRTC.</p>
+    </div>
+  </div>
+
+  <div class="viewer-screen" id="viewerScreen">
+    <div class="viewer-toolbar">
+      <div class="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <div class="room-badge" id="roomBadge"></div>
+      <button class="btn btn-secondary" id="copyRoomBtn" style="padding:6px 14px;font-size:13px" title="Copy room code"><i class="fas fa-copy"></i></button>
+      <button class="btn btn-secondary" id="fileUploadBtn" style="padding:6px 14px;font-size:13px" title="Send file to host"><i class="fas fa-upload"></i></button>
+      <input type="file" id="fileInput" style="display:none">
+      <button class="btn btn-secondary" id="disconnectBtn" style="padding:6px 14px;font-size:13px"><i class="fas fa-times"></i> Disconnect</button>
+    </div>
+    <div class="video-container" id="videoContainer">
+                <video id="remoteVideo" autoplay playsinline></video>
+      <div class="overlay" id="overlay">
+        <div class="connecting-spinner"></div>
+        <p>Waiting for stream...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+document.getElementById("guideToggle").addEventListener("click", () => {
+  const panel = document.getElementById("guidePanel");
+  const toggle = document.getElementById("guideToggle");
+  panel.classList.toggle("open");
+  toggle.classList.toggle("open");
+});
+</script>
+<script src="RemoteClientCore.js"></script>
+<script src="client.js"></script>
+</body>
+</html>

@@ -313,6 +313,17 @@ See the [Development Guide](DEVELOPMENT.md).
 
 # 🛠 Tech Stack
 
+# 🖥️ Electron Desktop App
+
+An native Electron wrapper for an enhanced desktop experience:
+
+- Native game windows that launch in their own OS-level window with auto-hide menu bar
+- Remote host to stream your desktop with mouse and keyboard control from any device
+- Autostart YukiOS on system startup via a settings toggle
+- Browse your real files with your home directory appearing as a drive in Explorer
+
+The web-only version runs in any browser with all core features intact; the Electron app adds native OS integration on top.
+
 ## Libraries
 
 - [Ruffle](https://github.com/ruffle-rs/ruffle)

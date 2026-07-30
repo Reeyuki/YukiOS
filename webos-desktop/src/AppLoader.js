@@ -48,6 +48,7 @@ import { LavatApp } from "./apps/lavat.js";
 import { BtopApp } from "./apps/btop.js";
 import { CmatrixApp } from "./apps/cmatrix.js";
 import { MagnifierApp } from "./apps/magnifier.js";
+import { RemoteHostApp } from "./apps/RemoteHostApp.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -97,7 +98,8 @@ const APP_CLASS_MAP = {
   lavatApp: LavatApp,
   btopApp: BtopApp,
   cmatrixApp: CmatrixApp,
-  magnifierApp: MagnifierApp
+  magnifierApp: MagnifierApp,
+  remoteHostApp: RemoteHostApp
 };
 
 const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {

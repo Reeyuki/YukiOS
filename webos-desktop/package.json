@@ -1,7 +1,8 @@
 {
-  "name": "webos-desktop",
+  "name": "yukios-desktop",
   "private": true,
   "version": "0.0.0",
+  "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,12 +19,19 @@
     "preview": "vite preview",
     "format": "git diff --name-only HEAD --diff-filter=ACMR | sed 's#^webos-desktop/##' | grep -E '\\.(js|jsx|css|json|html)$' | xargs -r pnpm exec prettier --write --cache --cache-location=.prettier-cache",
     "lint": "eslint . --ext .js,.jsx --fix",
+    "electron:dev": "VITE_ELECTRON=true vite build && electron .",
+    "electron:build": "VITE_ELECTRON=true vite build && electron-builder --config",
+    "electron:build:win": "VITE_ELECTRON=true vite build && electron-builder --win --config",
+    "electron:build:linux": "VITE_ELECTRON=true vite build && electron-builder --linux --config",
+    "electron:build:mac": "VITE_ELECTRON=true vite build && electron-builder --mac --config",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.0.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
@@ -67,5 +75,45 @@
     "webtorrent": "^2.8.5",
     "xlsx": "^0.18.5"
   },
-  "packageManager": "pnpm@11.6.0+sha512.9a36518224080c6fe5165afdcfe79bfa118c29be703f3f462b1e32efe1e98e47e8750b148e08286250aad4113cc7993ca413c4e2cd447752708c2ee5751bc95f"
+  "packageManager": "pnpm@11.6.0+sha512.9a36518224080c6fe5165afdcfe79bfa118c29be703f3f462b1e32efe1e98e47e8750b148e08286250aad4113cc7993ca413c4e2cd447752708c2ee5751bc95f",
+  "build": {
+    "appId": "app.yukios.desktop",
+    "productName": "YukiOS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "dist/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "dist/favicon.ico",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "dist/favicon.ico",
+      "category": "Utility"
+    }
+  }
 }

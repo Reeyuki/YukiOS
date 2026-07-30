@@ -6,8 +6,204 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "July 30, 2026",
+    sections: [
+      {
+        icon: "fa-desktop",
+        title: "Electron Desktop App",
+        items: [
+          [
+            "fa-window-restore",
+            "Native Game Windows",
+            "Games launch in their own native OS window with menu bar hidden and dark background."
+          ]
+        ]
+      },
+      {
+        icon: "fa-display",
+        title: "Browser Screen Sharing/Control",
+        items: [
+          [
+            "fa-share",
+            "Share Your Desktop from Any Browser with controlling",
+            "Share your screen directly from the browser or electron app with high resolution, and control it"
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 29, 2026",
     sections: [
+      {
+        icon: "fa-laptop",
+        title: "Chrome OS Mode",
+        items: [
+          [
+            "fa-desktop",
+            "Chrome OS Desktop Mode",
+            "Switch to a Chromebook-style desktop with shelf, app launcher, and transparent glass effects."
+          ],
+          [
+            "fa-image",
+            "17 Chrome OS Wallpapers",
+            "A full set of Chromebook-inspired wallpapers to complete the Chrome OS look."
+          ]
+        ]
+      },
+      {
+        icon: "fa-volume-high",
+        title: "Audio Indicators",
+        items: [
+          [
+            "fa-volume-high",
+            "Speaker Icons on Taskbar",
+            "Apps playing audio now show a dynamic speaker icon on their taskbar item for quick muting."
+          ],
+          [
+            "fa-circle",
+            "Active App Indicators",
+            "Currently active apps glow with a subtle indicator so you always know which window is focused."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 28, 2026",
+    sections: [
+      {
+        icon: "fa-terminal",
+        title: "Terminal Expansion",
+        items: [
+          [
+            "fa-terminal",
+            "New Commands",
+            "lolcat, cowsay, fortune, pipes, snow, watch, banner, rev, and more added to the terminal."
+          ],
+          [
+            "fa-bars",
+            "Tab Context Menus",
+            "Right-click terminal tabs for quick actions like close, duplicate, and rename."
+          ]
+        ]
+      },
+      {
+        icon: "fa-mouse-pointer",
+        title: "Desktop & Performance",
+        items: [
+          [
+            "fa-bars",
+            "Expanded Context Menu",
+            "Desktop right-click menu now has more options for quick access to system actions."
+          ],
+          [
+            "fa-bolt",
+            "Performance Optimizations",
+            "Faster loading, CSS streamlining, runtime optimizations, and start menu search caching."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 27, 2026",
+    sections: [
+      {
+        icon: "fa-play",
+        title: "Boot Animations",
+        items: [
+          [
+            "fa-play",
+            "Boot Animation System",
+            "Choose from 7 boot animations with random play, selection, and skip keybinds."
+          ],
+          [
+            "fa-user-check",
+            "Remember Me Login",
+            "Auto-login with a saved profile to skip the login screen on return visits."
+          ]
+        ]
+      },
+      {
+        icon: "fa-bars",
+        title: "Taskbar",
+        items: [
+          [
+            "fa-tag",
+            "Taskbar Labels",
+            "Opened app icons now show text labels for clearer identification at a glance, toggleable from settings"
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 26, 2026",
+    sections: [
+      {
+        icon: "fa-cube",
+        title: "3D Room Enhancements",
+        items: [
+          [
+            "fa-gem",
+            "Ultra Graphics Preset",
+            "Crank up the 3D room visuals with an ultra quality preset for sharper textures and lighting."
+          ],
+          [
+            "fa-hand",
+            "F Key to Launch Games",
+            "Grab a game case and press F to launch it with a satisfying minimize-and-hold animation."
+          ],
+          [
+            "fa-person",
+            "Improved Player Body",
+            "Smoother player animations and better body movement for a more immersive experience."
+          ]
+        ]
+      },
+      {
+        icon: "fa-layer-group",
+        title: "Tiling & Steam",
+        items: [
+          [
+            "fa-layer-group",
+            "Master Stack Engine",
+            "New tiling layout mode with a master stack that keeps the focused app prominent."
+          ],
+          [
+            "fa-newspaper",
+            "Steam News System",
+            "Real news and updates feed inside the Steam app so you never miss a game announcement."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 29, 2026",
+    sections: [
+      {
+        icon: "fa-desktop",
+        title: "Yuki Remote Desktop",
+        items: [
+          [
+            "fa-share",
+            "Share Your Desktop",
+            "Stream your full PC desktop to any browser with real-time mouse and keyboard control."
+          ],
+          [
+            "fa-qrcode",
+            "Easy Pairing",
+            "Generate a secure 6-character code and scan QR to connect instantly from any device."
+          ],
+          [
+            "fa-rocket",
+            "Electron App",
+            "Download the native YukiOS desktop app for persistent storage, system tray, and remote host."
+          ]
+        ]
+      },
       {
         icon: "fa-wand-magic-sparkles",
         title: "New App",

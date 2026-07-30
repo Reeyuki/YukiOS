@@ -18,37 +18,44 @@ const readmeContent = readFileSync(resolve(process.cwd(), "../README.md"), "utf-
 const isDevBuild = process.env.VITE_DEV_BUILD === "true";
 const isSingleFile = process.env.VITE_SINGLE_FILE === "true";
 const isVisualize = process.env.VITE_VISUALIZE === "true";
+const isElectronBuild = process.env.VITE_ELECTRON === "true";
 
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/";
 const outDir = resolve(__dirname, "dist");
 const staticDir = resolve(__dirname, "../static");
+const remoteDir = resolve(__dirname, "remote");
 
 function serveStaticDev() {
+  const mimes = {
+    html: "text/html",
+    png: "image/png",
+    jpg: "image/jpeg",
+    gif: "image/gif",
+    svg: "image/svg+xml",
+    ico: "image/x-icon",
+    js: "application/javascript",
+    css: "text/css",
+    wasm: "application/wasm"
+  };
+  function serveDir(basePath, dir) {
+    return (req, res, next) => {
+      const filePath = join(dir, req.url.replace(new RegExp("^" + basePath), "") || "index.html");
+      try {
+        const content = readFileSync(filePath);
+        const ext = filePath.split(".").pop();
+        res.setHeader("Content-Type", mimes[ext] || "application/octet-stream");
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        res.end(content);
+      } catch {
+        next();
+      }
+    };
+  }
   return {
     name: "serve-static-dev",
     configureServer(server) {
-      server.middlewares.use("/static/", (req, res, next) => {
-        const filePath = join(staticDir, req.url.replace(/^\/static\//, ""));
-        try {
-          const content = readFileSync(filePath);
-          const ext = filePath.split(".").pop();
-          const mimes = {
-            png: "image/png",
-            jpg: "image/jpeg",
-            gif: "image/gif",
-            svg: "image/svg+xml",
-            ico: "image/x-icon",
-            js: "application/javascript",
-            css: "text/css",
-            wasm: "application/wasm"
-          };
-          res.setHeader("Content-Type", mimes[ext] || "application/octet-stream");
-          res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-          res.end(content);
-        } catch {
-          next();
-        }
-      });
+      server.middlewares.use("/static/", serveDir("/static/", staticDir));
+      server.middlewares.use("/remote/", serveDir("/remote/", remoteDir));
     }
   };
 }
@@ -164,7 +171,7 @@ function staticCdnRewrite() {
   return {
     name: "static-cdn-rewrite",
     closeBundle() {
-      if (isSingleFile) return;
+      if (isSingleFile || isElectronBuild) return;
       const fp = resolve(outDir, "index.html");
       const html = readFileSync(fp, "utf-8");
       const out = html.replace(
@@ -183,6 +190,23 @@ function removeCosmicFolder() {
       const cosmicPath = resolve(outDir, "skybox/cosmic.exr");
       if (existsSync(cosmicPath)) {
         rmSync(cosmicPath, { force: true });
+      }
+    }
+  };
+}
+
+function copyRemoteClient() {
+  return {
+    name: "copy-remote-client",
+    closeBundle() {
+      const dstDir = resolve(outDir, "remote");
+      mkdirSync(dstDir, { recursive: true });
+      for (const file of ["index.html", "client.js", "RemoteClientCore.js"]) {
+        const src = join(remoteDir, file);
+        if (existsSync(src)) {
+          writeFileSync(join(dstDir, file), readFileSync(src));
+          console.log(`Copied remote/${file} → dist/remote/${file}`);
+        }
       }
     }
   };
@@ -246,9 +270,10 @@ plugins.push(removeCosmicFolder());
 if (!isDevBuild) {
   plugins.push(pageGenerator());
 }
+plugins.push(copyRemoteClient());
 
 export default defineConfig({
-  base: isSingleFile ? "./" : "/",
+  base: isSingleFile || isElectronBuild ? "./" : "/",
   outDir,
   plugins,
   server: {

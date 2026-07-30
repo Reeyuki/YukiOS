@@ -708,6 +708,27 @@ pnpm run preview
 
 Single-file build output is supported for easy deployment.
 
+## Electron Mode
+
+When running as an Electron app, the virtual IndexedDB filesystem is replaced with the real local filesystem:
+
+- **Root directory**: `<userData>/home/<sessionKey>/` where `userData` resolves to:
+  - **Linux**: `~/.config/yukios-desktop/`
+  - **macOS**: `~/Library/Application Support/yukios-desktop/`
+  - **Windows**: `%APPDATA%\yukios-desktop\`
+- Virtual paths like `/home/Guest/Desktop` map directly to real directories on disk
+- Binary files are stored as regular files (no separate blob store)
+- Metadata files (`.meta.json`) are real dotfiles in each directory
+- The storage swap happens in `FileSystemManager` constructor in `src/fs.js` by detecting `window.electronAPI.electronFs`
+
+```bash
+# Run in Electron
+pnpm electron:dev
+
+# Build Electron distribution
+pnpm electron:build
+```
+
 ---
 
 ## Important Rules

@@ -1,4 +1,4 @@
-name: Discord Notify
+name: discord-notify-build-release
 
 on:
   push:
@@ -13,14 +13,31 @@ on:
 permissions:
   contents: write
 
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   notify:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      has_changes: ${{ steps.detect_changes.outputs.has_changes }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Detect webos-desktop changes
+        id: detect_changes
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && git diff --name-only HEAD~1 HEAD | grep -q '^webos-desktop/'; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get next version
         id: version
@@ -39,10 +56,11 @@ jobs:
           corepack prepare pnpm@10 --activate
           pnpm -v
 
-      - name: Handle Discord notifications
+      - name: Handle events
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
         run: |
           set -e
 
@@ -56,174 +74,218 @@ jobs:
               ;;
           esac
 
-          if [ "$EVENT" = "push" ]; then
+          send_discord() {
+            local content="$1"
+            curl -H "Content-Type: application/json" \
+              -d "{\"content\":\"$content\"}" \
+              "$DISCORD_WEBHOOK"
+          }
 
+          send_discord_embed() {
+            local payload="$1"
+            curl -H "Content-Type: application/json" \
+              -d "$payload" \
+              "$DISCORD_WEBHOOK"
+          }
+
+          if [ "$EVENT" = "push" ]; then
             if [ "${{ github.actor }}" = "Reeyuki" ]; then
               SHORT_SHA="${GITHUB_SHA::7}"
-
-              curl -H "Content-Type: application/json" \
-                -d "{
-                  \"embeds\": [
-                    {
-                      \"author\": {
-                        \"name\": \"${{ github.actor }}\",
-                        \"icon_url\": \"https://cdn.discordapp.com/avatars/452491822871085066/5cfc60e7dcf86a9eadee0bf2e84f1cf7.webp?size=160\"
-                      },
-                      \"fields\": [
-                        {
-                          \"name\": \"Commit\",
-                          \"value\": \"\`${SHORT_SHA}\` - ${{ github.event.head_commit.message }}\",
-                          \"inline\": false
-                        }
-                      ]
-                    }
-                  ]
-                }" \
-                "${{ secrets.DISCORD_WEBHOOK }}"
-
+              send_discord_embed '{
+                "embeds": [{
+                  "author": {
+                    "name": "${{ github.actor }}",
+                    "icon_url": "https://cdn.discordapp.com/avatars/452491822871085066/5cfc60e7dcf86a9eadee0bf2e84f1cf7.webp?size=160"
+                  },
+                  "fields": [{
+                    "name": "Commit",
+                    "value": "`'"$SHORT_SHA"'` - ${{ github.event.head_commit.message }}",
+                    "inline": false
+                  }]
+                }]
+              }'
             else
-              curl -H "Content-Type: application/json" \
-                -d "{\"content\":\"[push] ${{ github.actor }} on ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.event.head_commit.message }}\n${{ github.event.head_commit.url }}\"}" \
-                "${{ secrets.DISCORD_WEBHOOK }}"
+              send_discord "[push] ${{ github.actor }} on ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.event.head_commit.message }}
+            ${{ github.event.head_commit.url }}"
             fi
 
             if git diff --name-only HEAD~1 HEAD | grep -q '^webos-desktop/'; then
-
-              cd webos-desktop
-
-              pnpm install --frozen-lockfile
-              pnpm build:single
-
-              HTML_FILE="dist/index.html"
-
-              if [ -f "$HTML_FILE" ]; then
-
-                SHA="${GITHUB_SHA::7}"
-                SUBJECT="${{ github.event.head_commit.message }}"
-
-                PAYLOAD=$(jq -n \
-                  --arg sha "$SHA" \
-                  --arg subject "$SUBJECT" \
-                  --arg content "🚀 Built HTML for YukiOS from $SHA ($SUBJECT)" \
-                  '{content: $content}')
-
-                curl -F "payload_json=$PAYLOAD" \
-                     -F "file1=@${HTML_FILE};type=text/html" \
-                     "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
-
-                ZIP_FILE="dist.zip"
-                zip -r "$ZIP_FILE" dist/ -x "dist/wasm/*" -x "dist/class/*"
-
-                if [ -f "$ZIP_FILE" ]; then
-                  ZIP_PAYLOAD=$(jq -n \
-                    --arg sha "$SHA" \
-                    --arg subject "$SUBJECT" \
-                    --arg content "📦 Build archive for YukiOS from $SHA ($SUBJECT)" \
-                    '{content: $content}')
-
-                  curl -F "payload_json=$ZIP_PAYLOAD" \
-                       -F "file1=@${ZIP_FILE};type=application/zip" \
-                       "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
-                fi
-
-              else
-                echo "No HTML build output found, skipping upload"
-              fi
-
-              cd ..
-
-              if [ -f webos-desktop/dist.zip ]; then
-                TAG="${{ steps.version.outputs.tag }}"
-                gh release create "$TAG" \
-                  webos-desktop/dist.zip \
-                  --title "$TAG" \
-                  --generate-notes
-              fi
-
+              echo "Changes detected in webos-desktop, building..."
+              echo "BUILD_WEB=true" >> $GITHUB_ENV
+            else
+              echo "No webos-desktop changes, skipping build"
             fi
-
             exit 0
           fi
 
           if [ "$EVENT" = "pull_request" ]; then
-            curl -H "Content-Type: application/json" \
-              -d "{\"content\":\"[PR] ${{ github.actor }}\n${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}\"}" \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+            send_discord "[PR] ${{ github.actor }}
+            ${{ github.event.pull_request.title }}
+            ${{ github.event.pull_request.html_url }}"
             exit 0
           fi
 
           if [ "$EVENT" = "issues" ]; then
-            curl -H "Content-Type: application/json" \
-              -d "{\"content\":\"[Issue] ${{ github.event.issue.title }}\n${{ github.event.issue.html_url }}\"}" \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+            send_discord "[Issue] ${{ github.event.issue.title }}
+            ${{ github.event.issue.html_url }}"
             exit 0
           fi
 
           if [ "$EVENT" = "issue_comment" ]; then
-            curl -H "Content-Type: application/json" \
-              -d "{\"content\":\"[Comment] ${{ github.actor }}\n${{ github.event.comment.body }}\"}" \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+            send_discord "[Comment] ${{ github.actor }}
+            ${{ github.event.comment.body }}"
             exit 0
           fi
 
           if [ "$EVENT" = "release" ]; then
-            curl -H "Content-Type: application/json" \
-              -d "{\"content\":\"[Release] ${{ github.event.release.name }}\n${{ github.event.release.html_url }}\"}" \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+            send_discord "[Release] ${{ github.event.release.name }}
+            ${{ github.event.release.html_url }}"
             exit 0
           fi
 
           if [ "$EVENT" = "watch" ]; then
-            curl -H "Content-Type: application/json" \
-              -d "{\"content\":\"⭐ ${{ github.actor }} starred ${{ github.repository }}\"}" \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+            send_discord "⭐ ${{ github.actor }} starred ${{ github.repository }}"
             exit 0
           fi
 
           if [ "$EVENT" = "workflow_dispatch" ]; then
-            cd webos-desktop
-            pnpm install --frozen-lockfile
-            pnpm build:single
-
-            HTML_FILE="dist/index.html"
-
-            if [ -f "$HTML_FILE" ]; then
-              SHA="${GITHUB_SHA::7}"
-              PAYLOAD=$(jq -n \
-                --arg sha "$SHA" \
-                --arg content "🚀 Built HTML for YukiOS from $SHA (workflow_dispatch)" \
-                '{content: $content}')
-
-              curl -F "payload_json=$PAYLOAD" \
-                   -F "file1=@${HTML_FILE};type=text/html" \
-                   "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
-
-              ZIP_FILE="dist.zip"
-              zip -r "$ZIP_FILE" dist/ -x "dist/wasm/*" -x "dist/class/*"
-
-              if [ -f "$ZIP_FILE" ]; then
-                ZIP_PAYLOAD=$(jq -n \
-                  --arg sha "$SHA" \
-                  --arg content "📦 Build archive for YukiOS from $SHA (workflow_dispatch)" \
-                  '{content: $content}')
-
-                curl -F "payload_json=$ZIP_PAYLOAD" \
-                     -F "file1=@${ZIP_FILE};type=application/zip" \
-                     "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
-              fi
-
-              cd ..
-
-              if [ -f dist.zip ]; then
-                TAG="${{ steps.version.outputs.tag }}"
-                gh release create "$TAG" \
-                  dist.zip \
-                  --title "$TAG" \
-                  --generate-notes
-              fi
-
-            else
-              echo "No HTML build output found, skipping upload"
-            fi
+            echo "BUILD_WEB=true" >> $GITHUB_ENV
             exit 0
           fi
+
+      - name: Build web app and upload to Discord
+        if: env.BUILD_WEB == 'true'
+        shell: bash
+        run: |
+          cd webos-desktop
+
+          pnpm install --frozen-lockfile
+          pnpm build:single
+
+          HTML_FILE="dist/index.html"
+
+          if [ -f "$HTML_FILE" ]; then
+            SHA="${GITHUB_SHA::7}"
+            SUBJECT="${{ github.event.head_commit.message }}"
+
+            PAYLOAD=$(jq -n \
+              --arg sha "$SHA" \
+              --arg subject "$SUBJECT" \
+              --arg content "🚀 Built HTML for YukiOS from $SHA ($SUBJECT)" \
+              '{content: $content}')
+
+            curl -F "payload_json=$PAYLOAD" \
+                 -F "file1=@${HTML_FILE};type=text/html" \
+                 "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+
+            ZIP_FILE="dist.zip"
+            zip -r "$ZIP_FILE" dist/ -x "dist/wasm/*" -x "dist/class/*"
+
+            if [ -f "$ZIP_FILE" ]; then
+              ZIP_PAYLOAD=$(jq -n \
+                --arg sha "$SHA" \
+                --arg subject "$SUBJECT" \
+                --arg content "📦 Build archive for YukiOS from $SHA ($SUBJECT)" \
+                '{content: $content}')
+
+              curl -F "payload_json=$ZIP_PAYLOAD" \
+                   -F "file1=@${ZIP_FILE};type=application/zip" \
+                   "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+            fi
+          fi
+
+      - name: Upload dist.zip artifact
+        if: env.BUILD_WEB == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-zip
+          path: webos-desktop/dist.zip
+          if-no-files-found: ignore
+
+  electron:
+    needs: notify
+    if: needs.notify.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            target: linux
+            ext: AppImage
+          - os: windows-latest
+            target: win
+            ext: exe
+          - os: macos-latest
+            target: mac
+            ext: dmg
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10 --activate
+          pnpm -v
+
+      - name: Install dependencies
+        working-directory: webos-desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        working-directory: webos-desktop
+        run: pnpm build:single
+
+      - name: Build Electron package
+        working-directory: webos-desktop
+        run: pnpm electron:build:${{ matrix.target }}
+
+      - name: Upload electron build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-build-${{ matrix.target }}
+          path: webos-desktop/release/*
+          if-no-files-found: error
+
+  release:
+    needs: [notify, electron]
+    if: needs.notify.outputs.has_changes == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dist.zip
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-zip
+          path: release-files
+
+      - name: Download electron artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: electron-build-*
+          path: release-files
+          merge-multiple: true
+
+      - name: Create release
+        run: |
+          TAG="${{ needs.notify.outputs.tag }}"
+          if [ -z "$TAG" ]; then
+            echo "No tag, skipping release"
+            exit 0
+          fi
+          if [ ! -d release-files ] || [ -z "$(ls -A release-files)" ]; then
+            echo "No release files found, skipping"
+            exit 0
+          fi
+          gh release create "$TAG" \
+            release-files/* \
+            --title "$TAG" \
+            --generate-notes

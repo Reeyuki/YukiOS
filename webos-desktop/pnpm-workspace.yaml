@@ -3,6 +3,7 @@ allowBuilds:
   bufferutil: true
   canvas: false
   core-js: true
+  electron: true
   esbuild: true
   ip-set: true
   node-datachannel: true

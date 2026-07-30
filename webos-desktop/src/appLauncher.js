@@ -556,6 +556,28 @@ player.load("${swfPath}");
             ? `<i class="${resolvedGameIcon}" style="margin-right:6px;font-size:16px;vertical-align:middle;"></i>`
             : `<img src="${resolvedGameIcon}" style="width:20px;height:20px;margin-right:6px;vertical-align:middle;object-fit:contain;">`;
 
+        if (window.electronAPI) {
+          let nativeWidth = 1280;
+          let nativeHeight = 900;
+          if (extra.width) {
+            const parsed = parseInt(String(extra.width).replace(/[^0-9]/g, ""));
+            if (!isNaN(parsed)) nativeWidth = parsed;
+          }
+          if (extra.height) {
+            const parsed = parseInt(String(extra.height).replace(/[^0-9]/g, ""));
+            if (!isNaN(parsed)) nativeHeight = parsed;
+          }
+          const nativeIcon = resolvedGameIcon.startsWith("http") ? resolvedGameIcon : undefined;
+          window.electronAPI.openNativeWindow({
+            url: resolvedSource,
+            title: displayTitle,
+            icon: nativeIcon,
+            width: nativeWidth,
+            height: nativeHeight
+          });
+          return;
+        }
+
         const win = os.window.create(
           extra.forceId || `${id}-win`,
           displayTitle,
