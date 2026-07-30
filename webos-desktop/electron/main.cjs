@@ -1,7 +1,8 @@
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage, desktopCapturer, screen, Notification, session, clipboard } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { execSync, exec } = require("child_process");
+const crypto = require("crypto");
+const { execSync, exec, spawn } = require("child_process");
 
 const isDev = !app.isPackaged;
 
@@ -132,6 +133,8 @@ function simulateInput(input) {
         const { width, height } = getScreenSize();
         const px = toPixels(input.x, width);
         const py = toPixels(input.y, height);
+        lastMouseX = px;
+        lastMouseY = py;
         if (platform === "linux") {
           if (isWayland) {
             execSync(`ydotool mousemove --absolute -x ${px} -y ${py} 2>/dev/null || true`);
@@ -149,17 +152,27 @@ function simulateInput(input) {
       case "mousedown":
       case "mouseup": {
         const isDown = input.type === "mousedown";
+        const isRight = input.button === "right";
         if (platform === "linux") {
-          const btn = input.button === "right" ? 3 : 1;
+          const btn = isRight ? 3 : 1;
           if (isWayland) {
             execSync(`ydotool ${isDown ? "mousedown" : "mouseup"} ${btn} 2>/dev/null || true`);
           } else {
             execSync(`xdotool ${isDown ? "mousedown" : "mouseup"} ${btn} 2>/dev/null || true`);
           }
         } else if (platform === "darwin") {
-          execSync(`osascript -e 'tell application "System Events" to ${isDown ? "click" : "click"} (process 1)' 2>/dev/null || true`);
+          try {
+            execSync(`cliclick ${isRight ? "rc" : "c"}:${lastMouseX},${lastMouseY} 2>/dev/null || true`, { timeout: 500 });
+          } catch {
+            const btn = isRight ? " using {control down}" : "";
+            if (isDown) {
+              execSync(`osascript -e 'tell application "System Events" to click at {${lastMouseX}, ${lastMouseY}}${btn}' 2>/dev/null || true`);
+            }
+          }
         } else if (platform === "win32") {
-          execSync(`powershell -Command "[System.Windows.Forms.Cursor]::Position = [System.Windows.Forms.Cursor]::Position" 2>/dev/null || true`);
+          const [dn, up] = isRight ? ["0x0008", "0x0010"] : ["0x0002", "0x0004"];
+          const cmd = isDown ? dn : up;
+          execSync(`powershell -Command "Add-Type @\\\"using System;using System.Runtime.InteropServices;public class W{public delegate void m(int f,int x,int y,int d,int e);[DllImport(\\\"user32\\\")]public static extern void mouse_event(int f,int x,int y,int d,int e);}\\\";[W]::mouse_event(${cmd},0,0,0,0)" 2>/dev/null || true`);
         }
         break;
       }
@@ -201,8 +214,30 @@ function simulateInput(input) {
             else execSync("xdotool click 4 2>/dev/null || true");
           }
         } else if (platform === "darwin") {
+          const dy = input.deltaY || 0;
+          if (dy !== 0) {
+            try {
+              execSync(`python3 -c "
+import ctypes,ctypes.util,sys
+f=ctypes.cdll.LoadLibrary(ctypes.util.find_library('CoreGraphics'))
+C=f.CGEventCreateScrollWheelEvent;C.restype=ctypes.c_void_p;C.argtypes=[ctypes.c_void_p,ctypes.c_uint32,ctypes.c_uint32,ctypes.c_int32]
+p=f.CGEventPost;p.restype=None;p.argtypes=[ctypes.c_void_p,ctypes.c_void_p]
+e=C(None,1,1,${Math.round(dy)})
+p(0,e)
+" 2>/dev/null`, { timeout: 500 });
+            } catch {}
+          }
         } else if (platform === "win32") {
+          const dy = Math.round(input.deltaY);
+          if (dy !== 0) {
+            const d = Math.min(Math.max(dy, -120), 120);
+            execSync(`powershell -Command "Add-Type @\\\"using System;using System.Runtime.InteropServices;public class W{public delegate void m(int f,int x,int y,int d,int e);[DllImport(\\\"user32\\\")]public static extern void mouse_event(int f,int x,int y,int d,int e);}\\\";[W]::mouse_event(0x0800,0,0,${d},0)" 2>/dev/null || true`);
+          }
         }
+        break;
+
+      case "gamepad":
+        simulateGamepad(input);
         break;
     }
   } catch (err) {
@@ -263,10 +298,233 @@ function mapKeyToWindows(key) {
   return null;
 }
 
+const GAMEPAD_BUTTON_MAP = [
+  { key: " ", code: "Space" },       // 0: A
+  { key: "Escape", code: "Escape" }, // 1: B
+  { key: "Shift", code: "ShiftLeft" },// 2: X
+  { key: "Tab", code: "Tab" },       // 3: Y
+  { key: "q", code: "KeyQ" },        // 4: LB
+  { key: "e", code: "KeyE" },        // 5: RB
+  { key: "Control", code: "ControlLeft" },// 6: LT
+  { key: "Alt", code: "AltLeft" },   // 7: RT
+  { key: "Tab", code: "Tab" },       // 8: Select
+  { key: "Enter", code: "Enter" },   // 9: Start
+  { key: "Shift", code: "ShiftLeft" },// 10: L3
+  { key: "Control", code: "ControlLeft" },// 11: R3
+  { key: "ArrowUp", code: "ArrowUp" },   // 12: D-pad Up
+  { key: "ArrowDown", code: "ArrowDown" },// 13: D-pad Down
+  { key: "ArrowLeft", code: "ArrowLeft" },// 14: D-pad Left
+  { key: "ArrowRight", code: "ArrowRight" }// 15: D-pad Right
+];
+
+const GAMEPAD_AXIS_THRESHOLD = 0.4;
+let prevGamepadState = { buttons: [], axes: [] };
+
+function simulateGamepad(input) {
+  const platform = process.platform;
+  const isWayland = process.env.XDG_SESSION_TYPE === "wayland";
+  const buttons = input.buttons || [];
+  const axes = input.axes || [];
+  const prev = prevGamepadState;
+
+  for (let i = 0; i < buttons.length; i++) {
+    const b = buttons[i];
+    const prevB = prev.buttons[i];
+    if (!b || !prevB) continue;
+    if (b.p === prevB.p) continue;
+    const map = GAMEPAD_BUTTON_MAP[i];
+    if (!map) continue;
+    if (platform === "linux") {
+      if (isWayland) {
+        const code = mapKeyToYdotool(map.key, map.code);
+        if (code !== null) execSync(`ydotool ${b.p ? "keydown" : "keyup"} ${code} 2>/dev/null || true`);
+      } else {
+        const key = mapKeyToXdotool(map.key);
+        if (key) execSync(`xdotool ${b.p ? "keydown" : "keyup"} ${key} 2>/dev/null || true`);
+      }
+    } else if (platform === "darwin") {
+      const k = map.key === " " ? "space" : map.key;
+      execSync(`osascript -e 'tell application "System Events" to ${b.p ? "key down" : "key up"} "${k}"' 2>/dev/null || true`);
+    } else if (platform === "win32") {
+      const k = mapKeyToWindows(map.key);
+      if (k) execSync(`powershell -Command "$wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys('${k}')" 2>/dev/null || true`);
+    }
+  }
+
+  if (axes.length >= 2) {
+    const dx = Math.abs(axes[0]) > GAMEPAD_AXIS_THRESHOLD ? axes[0] : 0;
+    const dy = Math.abs(axes[1]) > GAMEPAD_AXIS_THRESHOLD ? axes[1] : 0;
+    if (dx !== 0 || dy !== 0) {
+      const moveX = Math.round(dx * 10);
+      const moveY = Math.round(dy * 10);
+      if (platform === "linux") {
+        if (isWayland) execSync(`ydotool mousemove ${moveX} ${moveY} 2>/dev/null || true`);
+        else execSync(`xdotool mousemove_relative -- ${moveX} ${moveY} 2>/dev/null || true`);
+      }
+    }
+  }
+
+  if (axes.length >= 4) {
+    const lx = Math.abs(axes[2]) > GAMEPAD_AXIS_THRESHOLD ? axes[2] : 0;
+    const ly = Math.abs(axes[3]) > GAMEPAD_AXIS_THRESHOLD ? axes[3] : 0;
+    const wasdInput = [];
+    if (ly < -GAMEPAD_AXIS_THRESHOLD) wasdInput.push({ type: "keydown", key: "w", code: "KeyW" });
+    else wasdInput.push({ type: "keyup", key: "w", code: "KeyW" });
+    if (ly > GAMEPAD_AXIS_THRESHOLD) wasdInput.push({ type: "keydown", key: "s", code: "KeyS" });
+    else wasdInput.push({ type: "keyup", key: "s", code: "KeyS" });
+    if (lx < -GAMEPAD_AXIS_THRESHOLD) wasdInput.push({ type: "keydown", key: "a", code: "KeyA" });
+    else wasdInput.push({ type: "keyup", key: "a", code: "KeyA" });
+    if (lx > GAMEPAD_AXIS_THRESHOLD) wasdInput.push({ type: "keydown", key: "d", code: "KeyD" });
+    else wasdInput.push({ type: "keyup", key: "d", code: "KeyD" });
+    for (const ev of wasdInput) {
+      if (platform === "linux") {
+        if (isWayland) {
+          const code = mapKeyToYdotool(ev.key, ev.code);
+          if (code !== null) execSync(`ydotool ${ev.type === "keydown" ? "keydown" : "keyup"} ${code} 2>/dev/null || true`);
+        } else {
+          const key = mapKeyToXdotool(ev.key);
+          if (key) execSync(`xdotool ${ev.type === "keydown" ? "keydown" : "keyup"} ${key} 2>/dev/null || true`);
+        }
+      } else if (platform === "darwin") {
+        execSync(`osascript -e 'tell application "System Events" to ${ev.type === "keydown" ? "key down" : "key up"} "${ev.key}"' 2>/dev/null || true`);
+      } else if (platform === "win32") {
+        const k = mapKeyToWindows(ev.key);
+        if (k) execSync(`powershell -Command "$wshell = New-Object -ComObject wscript.shell; $wshell.SendKeys('${k}')" 2>/dev/null || true`);
+      }
+    }
+  }
+
+  prevGamepadState = {
+    buttons: buttons.map(b => ({ p: b.p })),
+    axes: [...axes]
+  };
+}
+
+// ---- GStreamer Pipeline ----
+
+let gstreamerProc = null;
+
+function checkGstreamer() {
+  try {
+    execSync("gst-launch-1.0 --version", { stdio: "pipe" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function startGstreamerPipeline(quality, fps, onFrame, onError) {
+  const height = quality === "1080p" ? 1080 : 720;
+  const width = Math.round(height * 16 / 9);
+  const framerate = fps || 30;
+  const platform = process.platform;
+
+  let source;
+  if (platform === "linux") {
+    const wl = process.env.XDG_SESSION_TYPE === "wayland" || !!process.env.WAYLAND_DISPLAY;
+    source = wl ? "pipewiresrc" : "ximagesrc use-damage=false";
+  } else if (platform === "win32") {
+    source = "dxgiscreencapsrc";
+  } else if (platform === "darwin") {
+    source = "avfvideosrc capture-screen=true";
+  } else {
+    onError("Unsupported platform");
+    return null;
+  }
+
+  const pipeline = [
+    "gst-launch-1.0 -q",
+    source,
+    `! videoconvert ! videoscale ! video/x-raw,width=${width},height=${height},framerate=${framerate}/1,format=I420`,
+    "! x264enc speed-preset=ultrafast tune=zerolatency bitrate=2000 key-int-max=" + (framerate * 2),
+    "! h264parse config-interval=1",
+    "! video/x-h264,alignment=nal",
+    "! fdsink fd=1"
+  ].join(" ");
+
+  try {
+    const proc = spawn("sh", ["-c", pipeline], { stdio: ["pipe", "pipe", "pipe"] });
+    gstreamerProc = proc;
+
+    let nalBuf = Buffer.alloc(0);
+
+    proc.stdout.on("data", (data) => {
+      nalBuf = Buffer.concat([nalBuf, data]);
+      while (nalBuf.length >= 4) {
+        let scLen = 0, scPos = -1;
+        for (let i = 0; i <= nalBuf.length - 3; i++) {
+          if (nalBuf[i] === 0 && nalBuf[i + 1] === 0) {
+            if (nalBuf[i + 2] === 1) { scLen = 3; scPos = i; break; }
+            if (i <= nalBuf.length - 4 && nalBuf[i + 2] === 0 && nalBuf[i + 3] === 1) { scLen = 4; scPos = i; break; }
+          }
+        }
+        if (scPos === -1) break;
+
+        let nextSc = -1;
+        for (let i = scPos + scLen; i <= nalBuf.length - 3; i++) {
+          if (nalBuf[i] === 0 && nalBuf[i + 1] === 0) {
+            if (nalBuf[i + 2] === 1) { nextSc = i; break; }
+            if (i <= nalBuf.length - 4 && nalBuf[i + 2] === 0 && nalBuf[i + 3] === 1) { nextSc = i; break; }
+          }
+        }
+        if (nextSc === -1) {
+          if (nalBuf.length > 1048576) {
+            const data = nalBuf.slice(scPos + scLen);
+            nalBuf = Buffer.alloc(0);
+            if (data.length > 0) onFrame(data, (data[0] & 0x1F) === 5);
+          }
+          break;
+        }
+        const nal = nalBuf.slice(scPos + scLen, nextSc);
+        nalBuf = nalBuf.slice(nextSc);
+        if (nal.length > 0) onFrame(nal, (nal[0] & 0x1F) === 5);
+      }
+    });
+
+    proc.stderr.on("data", (d) => { if (isDev) process.stderr.write("[GStreamer] " + d); });
+
+    proc.on("error", (err) => { gstreamerProc = null; onError(err.message); });
+    proc.on("close", (code) => {
+      gstreamerProc = null;
+      if (code !== 0 && code !== null) onError("GStreamer exited with code " + code);
+    });
+
+    return proc;
+  } catch (err) {
+    onError(err.message);
+    return null;
+  }
+}
+
+function stopGstreamerPipeline() {
+  if (gstreamerProc) {
+    gstreamerProc.kill("SIGTERM");
+    setTimeout(() => {
+      if (gstreamerProc) { gstreamerProc.kill("SIGKILL"); gstreamerProc = null; }
+    }, 3000);
+    gstreamerProc = null;
+  }
+}
+
 // ---- IPC Handlers ----
 
 let tray = null;
 let rebuildTrayMenu = null;
+
+let lastMouseX = 0;
+let lastMouseY = 0;
+
+const TURN_SECRET = process.env.TURN_SECRET || "";
+const TURN_URL = process.env.TURN_URL || "turn:turn.example.com:3478";
+const TURNS_URL = process.env.TURNS_URL || "turns:turn.example.com:5349";
+
+function getTurnCreds() {
+  if (!TURN_SECRET) return null;
+  const expiry = Math.floor(Date.now() / 1000) + 86400;
+  const username = expiry + ":yukios";
+  const credential = crypto.createHmac("sha1", TURN_SECRET).update(username).digest("base64");
+  return { urls: [TURN_URL, TURNS_URL].filter(Boolean), username, credential };
+}
 
 let trayState = {
   dnd: false,
@@ -505,6 +763,8 @@ function setupInputHandlers() {
       }
     };
   });
+
+  ipcMain.handle("remote-host:turn-creds", () => getTurnCreds());
 }
 
 function setupRemoteHostHandlers() {
@@ -542,10 +802,11 @@ function setupRemoteHostHandlers() {
         }
       });
 
-      const quality = (config && config.quality) || (isDev ? "1080p" : "720p");
-      const fps = (config && config.fps) || (isDev ? 60 : 30);
+      const quality = (config && config.quality) || "1080p";
+      const fps = (config && config.fps) || 30;
       const pb = primary.workAreaSize || primary.size;
-      const qs = new URLSearchParams({ quality, fps: String(fps), mw: String(pb.width), mh: String(pb.height) });
+      const useGst = config && config.useGstreamer === true;
+      const qs = new URLSearchParams({ quality, fps: String(fps), mw: String(pb.width), mh: String(pb.height), gstreamer: useGst ? "1" : "0" });
       remoteHostWindow.loadFile(path.join(__dirname, "remote-host.html"), { query: Object.fromEntries(qs) });
 
       if (isDev) {
@@ -581,6 +842,41 @@ function setupRemoteHostHandlers() {
     return {
       running: remoteHostWindow !== null && !remoteHostWindow.isDestroyed()
     };
+  });
+
+  ipcMain.handle("remote-host:gstreamer-available", () => checkGstreamer());
+
+  ipcMain.handle("remote-host:gstreamer-start", async (event, config) => {
+    stopGstreamerPipeline();
+    const quality = (config && config.quality) || "1080p";
+    const fps = (config && config.fps) || 30;
+
+    return new Promise((resolve) => {
+      startGstreamerPipeline(quality, fps,
+        (nalData, keyframe) => {
+          if (remoteHostWindow && !remoteHostWindow.isDestroyed()) {
+            remoteHostWindow.webContents.send("remote-host:event", {
+              type: "gstreamer-frame",
+              data: Array.from(nalData),
+              keyframe,
+              ts: Date.now() * 1000
+            });
+          }
+        },
+        (error) => {
+          if (remoteHostWindow && !remoteHostWindow.isDestroyed()) {
+            remoteHostWindow.webContents.send("remote-host:event", { type: "gstreamer-error", error });
+          }
+          resolve({ success: false, error });
+        }
+      );
+      resolve({ success: true });
+    });
+  });
+
+  ipcMain.handle("remote-host:gstreamer-stop", () => {
+    stopGstreamerPipeline();
+    return { success: true };
   });
 
   ipcMain.handle("file:save", async (event, { fileName, data }) => {

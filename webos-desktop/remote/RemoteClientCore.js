@@ -9,8 +9,16 @@ const STUN_SERVERS = [
 ];
 const MAX_RECONNECT = 20;
 
+let _turnCreds = null;
+function setTurnCreds(creds) {
+  _turnCreds = creds;
+}
 function getIceConfig() {
-  return { iceServers: STUN_SERVERS, iceCandidatePoolSize: 5 };
+  const servers = [...STUN_SERVERS];
+  if (_turnCreds) {
+    servers.push({ urls: _turnCreds.urls, username: _turnCreds.username, credential: _turnCreds.credential });
+  }
+  return { iceServers: servers, iceCandidatePoolSize: 5 };
 }
 
 class RemoteClientCore {
@@ -34,6 +42,8 @@ class RemoteClientCore {
     this.fallbackMode = false;
     this.fallbackCanvas = null;
     this.fallbackCtx = null;
+    this.gamepadPrevState = null;
+    this.gamepadInterval = null;
   }
 
   connect(code) {
@@ -138,6 +148,7 @@ class RemoteClientCore {
       case "room-joined":
         this.options.onStatus("Connected to room, waiting for stream...", true);
         this.connected = true;
+        if (msg.turn) setTurnCreds(msg.turn);
         this.initWebRTC();
         break;
 
@@ -292,6 +303,7 @@ class RemoteClientCore {
 
     this.initDecoder();
     this.setupInputCapture();
+    this.setupGamepadCapture();
   }
 
   initDecoder() {
@@ -507,6 +519,43 @@ class RemoteClientCore {
     }
   }
 
+  setupGamepadCapture() {
+    if (typeof navigator.getGamepads === "undefined") return;
+    this.gamepadPrevState = null;
+    this.gamepadInterval = setInterval(() => {
+      try {
+        const gamepads = navigator.getGamepads();
+        if (!gamepads) return;
+        for (const gp of gamepads) {
+          if (!gp) continue;
+          const buttons = gp.buttons.map((b) => ({ p: b.pressed, v: b.value }));
+          const axes = Array.from(gp.axes);
+          const stateStr = JSON.stringify({ buttons, axes });
+          if (stateStr === this.gamepadPrevState) continue;
+          this.gamepadPrevState = stateStr;
+          this.sendInput({
+            type: "gamepad",
+            index: gp.index,
+            id: gp.id,
+            buttons,
+            axes,
+            timestamp: performance.now()
+          });
+        }
+      } catch (e) {
+        console.error("Gamepad poll error:", e);
+      }
+    }, 50);
+  }
+
+  stopGamepadCapture() {
+    if (this.gamepadInterval) {
+      clearInterval(this.gamepadInterval);
+      this.gamepadInterval = null;
+    }
+    this.gamepadPrevState = null;
+  }
+
   startReconnect() {
     this.reconnectAttempts++;
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 30000);
@@ -611,6 +660,7 @@ class RemoteClientCore {
       this.connectionTimeout = null;
     }
     this.reconnectAttempts = 0;
+    this.stopGamepadCapture();
     this.removeInputListeners();
     if (this.videoDecoder) {
       try {

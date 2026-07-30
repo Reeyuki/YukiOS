@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     return () => ipcRenderer.removeListener("tray:action", handler);
   },
   sendTrayState: (state) => ipcRenderer.send("tray:state-update", state),
+  gstreamerAvailable: () => ipcRenderer.invoke("remote-host:gstreamer-available"),
+  gstreamerStart: (config) => ipcRenderer.invoke("remote-host:gstreamer-start", config),
+  gstreamerStop: () => ipcRenderer.invoke("remote-host:gstreamer-stop"),
   openNativeWindow: (opts) => ipcRenderer.invoke("native-window:open-url", opts),
 
   electronFs: {

@@ -289,7 +289,12 @@ jobs:
             echo "No release files found, skipping"
             exit 0
           fi
-          gh release create "$TAG" \
-            $(find release-files -maxdepth 1 -type f) \
+          files=()
+          while IFS= read -r -d '' f; do files+=("$f"); done < <(find release-files -maxdepth 1 -type f -print0)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No release files found, skipping"
+            exit 0
+          fi
+          gh release create "$TAG" "${files[@]}" \
             --title "$TAG" \
             --generate-notes

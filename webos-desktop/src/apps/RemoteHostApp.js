@@ -125,9 +125,8 @@ export class RemoteHostApp extends BaseApp {
               <div class="host-section">
                 <label class="host-label">Stream Quality</label>
                 <select class="host-select" id="qualitySelect">
-                  <option value="720p">720p</option>
                   <option value="1080p">1080p</option>
-                  <option value="max">Max</option>
+                  <option value="720p">720p</option>
                 </select>
               </div>
               <div class="host-section">
@@ -298,7 +297,11 @@ export class RemoteHostApp extends BaseApp {
 
       if (isElectron) {
         try {
-          const result = await electronAPI.startRemoteHost({ quality, fps });
+          let useGst = false;
+          try {
+            useGst = await electronAPI.gstreamerAvailable();
+          } catch {}
+          const result = await electronAPI.startRemoteHost({ quality, fps, useGstreamer: useGst });
           if (!result.success) {
             log(`Failed to start: ${result.error || "Unknown error"}`, "error");
             shareBtn.disabled = false;

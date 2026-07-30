@@ -148,15 +148,6 @@ Planned features and improvements for YukiOS.
 - [💡] **.bashrc support**
 - [💡] **Windows xp, win7, win10, win11 theme support**
 
----
-
-## Remote Desktop / Streaming
-
-- [📋] **Gamepad support** — Relay gamepad input from client to host (joystick, buttons, triggers, vibration feedback)
-- [📋] **GStreamer encoding pipeline** — Replace WebCodecs with native GStreamer for lower latency and more codec options (NVENC/VAAPI/AMF)
-- [📋] **Higher free tier quality** — Upgrade browser host from 480p/15fps to 720p/30fps and Electron free from 720p/30fps to 1080p/30fps
-- [📋] **Server relay fallback** — TURN relay for free tier users behind strict NATs (currently STUN-only, fails on symmetric NATs)
-
 ## Known Bugs to Fix
 
 - [📋] Files saved in Pictures using upload to virtual fs, moved to desktop by dragging, then dragged back to explorer

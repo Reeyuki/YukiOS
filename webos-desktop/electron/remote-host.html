@@ -94,6 +94,7 @@
       const MAX_RECONNECT = 20;
       let settings = {};
       let useWebCodecs = false;
+      let useGstreamer = false;
       let videoEncoder = null;
       let encoderReader = null;
 
@@ -116,8 +117,12 @@
         { urls: "stun:stun3.l.google.com:19302" },
         { urls: "stun:stun4.l.google.com:19302" }
       ];
-      function getIceConfig() {
-        return { iceServers: STUN_SERVERS, iceCandidatePoolSize: 5 };
+      function getIceConfig(turnCreds) {
+        const servers = [...STUN_SERVERS];
+        if (turnCreds) {
+          servers.push({ urls: turnCreds.urls, username: turnCreds.username, credential: turnCreds.credential });
+        }
+        return { iceServers: servers, iceCandidatePoolSize: 5 };
       }
 
       function setAudioEnabled(enabled) {
@@ -255,50 +260,126 @@
         }
         const frameRate = settings.fps || 30;
 
-        setStatus("Capturing screen...");
+        useGstreamer = qp.gstreamer === "1";
 
-        try {
-          const stream = await Promise.race([
-            captureScreen(res, frameRate),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Screen capture timed out after 10s")), 10000))
-          ]);
-          captureStream = stream;
-        } catch (err) {
-          const msg = err.message || String(err);
-          if (msg.includes("Permission") || msg.includes("denied") || msg.includes("not allowed")) {
-            flashError("Screen capture permission denied");
-            sendEvent({ type: "error", message: "Screen capture permission denied" });
-            return;
+        if (useGstreamer) {
+          setStatus("Checking GStreamer...");
+          try {
+            const avail = await API.gstreamerAvailable();
+            if (!avail) {
+              useGstreamer = false;
+              setStatus("GStreamer not found, falling back to WebCodecs...");
+            }
+          } catch {
+            useGstreamer = false;
           }
-          flashError("Screen capture failed: " + msg);
-          sendEvent({ type: "error", message: "Screen capture failed: " + msg });
-          return;
         }
 
         try {
-          if (typeof MediaStreamTrackProcessor !== "undefined" && typeof VideoEncoder !== "undefined") {
-            const testConfig = {
-              codec: "avc1.42001E",
-              width: 640,
-              height: 480,
-              bitrate: 1_000_000,
-              framerate: 30,
-              hardwareAcceleration: "prefer-hardware",
-              avc: { format: "annexb" }
-            };
-            const support = await VideoEncoder.isConfigSupported(testConfig);
-            if (support.supported) {
-              useWebCodecs = true;
+          const turnData = await API.getTurnCreds();
+          if (turnData) window._turnCreds = turnData;
+        } catch {}
+
+        if (useGstreamer) {
+          setStatus("Capturing audio...");
+          try {
+            const sources = await API.getScreenSources();
+            if (sources && sources.length > 0) {
+              const src =
+                sources.find(
+                  (s) => s.name && (s.name.toLowerCase().includes("entire") || s.name.toLowerCase().includes("screen"))
+                ) || sources[0];
+              try {
+                const aStream = await navigator.mediaDevices.getUserMedia({
+                  audio: { mandatory: { chromeMediaSource: "desktop", chromeMediaSourceId: src.id } },
+                  video: false
+                });
+                captureStream = aStream;
+              } catch {
+                const fs = await navigator.mediaDevices.getDisplayMedia({
+                  video: { width: { ideal: 1 }, height: { ideal: 1 } },
+                  audio: true
+                });
+                fs.getVideoTracks().forEach((t) => {
+                  t.stop();
+                  fs.removeTrack(t);
+                });
+                captureStream = fs;
+              }
+            } else {
+              const fs = await navigator.mediaDevices.getDisplayMedia({
+                video: { width: { ideal: 1 }, height: { ideal: 1 } },
+                audio: true
+              });
+              fs.getVideoTracks().forEach((t) => {
+                t.stop();
+                fs.removeTrack(t);
+              });
+              captureStream = fs;
+            }
+          } catch {
+            captureStream = null;
+          }
+          if (captureStream) {
+            const at = captureStream.getAudioTracks()[0];
+            if (at) {
+              audioTrack = at;
+              sendEvent({ type: "audio-state", enabled: hostAudioEnabled, source: "system" });
             }
           }
-        } catch (e) {
-          useWebCodecs = false;
+          setStatus("Starting GStreamer pipeline...");
+          const gstResult = await API.gstreamerStart({ quality: settings.quality, fps: frameRate });
+          if (!gstResult || !gstResult.success) {
+            useGstreamer = false;
+            setStatus("GStreamer failed, falling back...");
+          }
         }
 
-        setStatus("Captured screen, connecting to signaling...", "ok");
+        if (!useGstreamer) {
+          setStatus("Capturing screen...");
+          try {
+            const stream = await Promise.race([
+              captureScreen(res, frameRate),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Screen capture timed out after 10s")), 10000)
+              )
+            ]);
+            captureStream = stream;
+          } catch (err) {
+            const msg = err.message || String(err);
+            if (msg.includes("Permission") || msg.includes("denied") || msg.includes("not allowed")) {
+              flashError("Screen capture permission denied");
+              sendEvent({ type: "error", message: "Screen capture permission denied" });
+              return;
+            }
+            flashError("Screen capture failed: " + msg);
+            sendEvent({ type: "error", message: "Screen capture failed: " + msg });
+            return;
+          }
 
-        const video = document.getElementById("capture");
-        video.srcObject = captureStream;
+          try {
+            if (typeof MediaStreamTrackProcessor !== "undefined" && typeof VideoEncoder !== "undefined") {
+              const testConfig = {
+                codec: "avc1.42001E",
+                width: 640,
+                height: 480,
+                bitrate: 1_000_000,
+                framerate: 30,
+                hardwareAcceleration: "prefer-hardware",
+                avc: { format: "annexb" }
+              };
+              const support = await VideoEncoder.isConfigSupported(testConfig);
+              if (support.supported) useWebCodecs = true;
+            }
+          } catch {
+            useWebCodecs = false;
+          }
+
+          const video = document.getElementById("capture");
+          video.srcObject = captureStream;
+        }
+
+        setStatus("Connecting to signaling...", "ok");
         connectSignaling();
       }
 
@@ -473,7 +554,7 @@
       }
 
       function initWebRTC() {
-        pc = new RTCPeerConnection(getIceConfig());
+        pc = new RTCPeerConnection(getIceConfig(window._turnCreds));
         pc.oniceconnectionstatechange = () => {
           const state = pc.iceConnectionState;
           if (state === "failed" && !iceRestartAttempted) {
@@ -708,6 +789,29 @@
       }
 
       async function startStreaming() {
+        if (useGstreamer) {
+          audioTrack = captureStream ? captureStream.getAudioTracks()[0] || null : null;
+          if (audioTrack) {
+            audioTrack.enabled = hostAudioEnabled;
+            pc.addTrack(audioTrack, captureStream);
+          }
+          sendEvent({
+            type: "audio-state",
+            enabled: hostAudioEnabled,
+            muted: !hostAudioEnabled,
+            hasAudio: !!audioTrack
+          });
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            ws.send(JSON.stringify({ type: "offer", sdp: pc.localDescription.sdp, codec: "h264" }));
+            sendEvent({ type: "stream-started" });
+          } catch (err) {
+            sendEvent({ type: "error", message: "Failed to create offer: " + err.message });
+          }
+          return;
+        }
+
         if (!captureStream) return;
 
         const track = captureStream.getVideoTracks()[0];
@@ -745,6 +849,39 @@
           sendEvent({ type: "stream-started" });
         } catch (err) {
           sendEvent({ type: "error", message: "Failed to create offer: " + err.message });
+        }
+      }
+
+      function handleGstreamerError(err) {
+        console.error("GStreamer error:", err);
+        flashError("GStreamer: " + err);
+        sendEvent({ type: "error", message: "GStreamer pipeline failed: " + err });
+      }
+
+      API.onRemoteHostEvent((data) => {
+        if (data.type === "gstreamer-frame" && useGstreamer) {
+          sendGstreamerFrame(data);
+        } else if (data.type === "gstreamer-error" && useGstreamer) {
+          handleGstreamerError(data.error);
+        }
+      });
+
+      function sendGstreamerFrame(data) {
+        if (dataChannel && dataChannel.readyState === "open") {
+          const nal = new Uint8Array(data.data);
+          const tsView = new DataView(new ArrayBuffer(4));
+          tsView.setUint32(0, data.ts, true);
+          const durView = new DataView(new ArrayBuffer(4));
+          durView.setUint32(0, 33000, true);
+          const header = new Uint8Array([
+            data.keyframe ? 1 : 0,
+            ...new Uint8Array(tsView.buffer),
+            ...new Uint8Array(durView.buffer)
+          ]);
+          const merged = new Uint8Array(header.length + nal.length);
+          merged.set(header);
+          merged.set(nal, header.length);
+          dataChannel.send(merged.buffer);
         }
       }
 
@@ -795,8 +932,12 @@
         roomId = null;
         reconnectAttempts = 0;
         useWebCodecs = false;
+        useGstreamer = false;
         fallbackMode = false;
         iceRestartAttempted = false;
+        try {
+          API.gstreamerStop();
+        } catch {}
       }
 
       window.addEventListener("beforeunload", cleanup);

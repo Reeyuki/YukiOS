@@ -5,6 +5,27 @@ export class Room extends DurableObject {
     super(ctx, env);
     this.host = null;
     this.client = null;
+    this.env = env;
+  }
+
+  async getTurnCreds() {
+    if (!this.env.TURN_SECRET || !this.env.TURN_URL) return null;
+    const expiry = Math.floor(Date.now() / 1000) + 86400;
+    const username = expiry + ":yukios";
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(this.env.TURN_SECRET),
+      { name: "HMAC", hash: "SHA-1" },
+      false,
+      ["sign"]
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(username));
+    const credential = btoa(String.fromCharCode(...new Uint8Array(sig)));
+    return {
+      urls: [this.env.TURN_URL],
+      username,
+      credential
+    };
   }
 
   async fetch(request) {
@@ -44,7 +65,8 @@ export class Room extends DurableObject {
     switch (msg.type) {
       case "register-host":
         this.host = server;
-        server.send(JSON.stringify({ type: "host-registered", room: roomParam }));
+        const turn = await this.getTurnCreds();
+        server.send(JSON.stringify({ type: "host-registered", room: roomParam, turn }));
         break;
 
       case "join-as-client":
@@ -54,7 +76,8 @@ export class Room extends DurableObject {
         }
         this.client = server;
         this.host.send(JSON.stringify({ type: "client-joined" }));
-        server.send(JSON.stringify({ type: "room-joined" }));
+        const turnClient = await this.getTurnCreds();
+        server.send(JSON.stringify({ type: "room-joined", turn: turnClient }));
         break;
 
       case "offer":

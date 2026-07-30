@@ -8,8 +8,16 @@ const STUN_SERVERS = [
   { urls: "stun:stun4.l.google.com:19302" }
 ];
 
+let _turnCreds = null;
+function setTurnCreds(creds) {
+  _turnCreds = creds;
+}
 function getIceConfig() {
-  return { iceServers: STUN_SERVERS, iceCandidatePoolSize: 5 };
+  const servers = [...STUN_SERVERS];
+  if (_turnCreds) {
+    servers.push({ urls: _turnCreds.urls, username: _turnCreds.username, credential: _turnCreds.credential });
+  }
+  return { iceServers: servers, iceCandidatePoolSize: 5 };
 }
 
 class RemoteHostCore {
@@ -101,6 +109,10 @@ class RemoteHostCore {
     return true;
   }
 
+  checkGstreamer() {
+    return false;
+  }
+
   resolveResolution(quality) {
     if (quality === "max") {
       return { w: screen.width || 1920, h: screen.height || 1080 };
@@ -134,6 +146,7 @@ class RemoteHostCore {
           if (msg.type === "host-registered") {
             this.roomCode = msg.room;
             this.ws = ws;
+            if (msg.turn) setTurnCreds(msg.turn);
             resolve(true);
           } else if (msg.type === "client-joined") {
             this.options.onClientJoined();
