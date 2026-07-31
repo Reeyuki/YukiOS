@@ -23,6 +23,8 @@ import { TerminalRawMode, AltScreenManager, TerminalUIApp } from "../terminal/te
 import { renderPrompt } from "../terminal/prompt.js";
 import { Stream, collectStream } from "../terminal/stream.js";
 
+const termStateMap = new WeakMap();
+
 export class TerminalApp extends BaseApp {
   windowsMap = new Map();
   activeState = null;
@@ -415,8 +417,8 @@ export class TerminalApp extends BaseApp {
       </div>
     </div>`;
     state.terminalContent = win.querySelector(".terminal-content");
-    state.terminalContent.__termState = state;
-    win.__termState = state;
+    termStateMap.set(win, state);
+    termStateMap.set(state.terminalContent, state);
 
     state.terminalContent.addEventListener("contextmenu", (e) => {
       e.preventDefault();
@@ -460,7 +462,7 @@ export class TerminalApp extends BaseApp {
     this.nodeReplBuffer = "";
     this.nodeReplContinuation = false;
     this.nodeFallbackWarned = false;
-    this.terminalInput.__termState = this.activeState;
+    termStateMap.set(this.terminalInput, this.activeState);
     this.terminalInput.addEventListener("input", () => {
       this.terminalInput.style.height = "auto";
       this.terminalInput.style.height = this.terminalInput.scrollHeight + "px";
@@ -632,7 +634,7 @@ export class TerminalApp extends BaseApp {
 
   setupEventHandlers() {
     this.terminalInput.addEventListener("keydown", (e) => {
-      this.activeState = e.currentTarget.__termState;
+      this.activeState = termStateMap.get(e.currentTarget);
       if (this.commandRunning) return;
       if (this.reverseSearchActive) {
         this.handleReverseSearchKey(e);
@@ -736,14 +738,14 @@ export class TerminalApp extends BaseApp {
     if (!win) return;
 
     win.addEventListener("mousedown", (e) => {
-      this.activeState = e.currentTarget.__termState;
+      this.activeState = termStateMap.get(e.currentTarget);
       if (e.target.closest(".terminal-content")) return;
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
     });
 
     win.addEventListener("mouseup", (e) => {
-      this.activeState = e.currentTarget.__termState;
+      this.activeState = termStateMap.get(e.currentTarget);
       if (e.button === 2) return;
       if (e.target.closest(".terminal-output")) return;
       if (window.getSelection().toString().length > 0) return;

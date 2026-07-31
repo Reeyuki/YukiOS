@@ -1,6 +1,8 @@
 import { AppSource } from "../AppSource.js";
 import { os as _os } from "../os/index.js";
 
+const PROXIED_MARKER = Symbol("proxied");
+
 export const PersistenceTypes = {
   NONE: "none",
   LOCAL_STORAGE: "localStorage",
@@ -20,7 +22,7 @@ export class BaseApp {
     } else {
       this.os = _os;
       this.services = param;
-      if (param.windowManager && !param.windowManager.__isProxied) {
+      if (param.windowManager && !param.windowManager[PROXIED_MARKER]) {
         param.windowManager = new Proxy(param.windowManager, {
           get: (target, prop) => {
             if (prop === "sendNotify") {
@@ -29,7 +31,7 @@ export class BaseApp {
                 _os.notify.send("", text, { appSource: source });
               };
             }
-            if (prop === "__isProxied") return true;
+            if (prop === PROXIED_MARKER) return true;
             return target[prop];
           }
         });

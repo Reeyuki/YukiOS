@@ -130,7 +130,7 @@ export function animateWindowOpen(win, isRestoring = false) {
   const duration = 300 * getAnimationSpeed();
 
   win.getAnimations().forEach((anim) => anim.cancel());
-  const wm = window.__windowManager;
+  const wm = os.windowManager;
   const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
 
   const keyframes = getOpenKeyframes(anim, win, isRestoring || isSessionRestoring);

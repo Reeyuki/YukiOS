@@ -6,6 +6,7 @@ import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 import { $ } from "./shared/domUtils.js";
 import { renderLiveStats } from "./shared/liveStats.js";
+import { resolveAppId } from "./utils/utils.js";
 import { StorageKeys, os } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
@@ -47,6 +48,8 @@ export class SessionManager {
     this.IDLE_TIMEOUT = 15 * 60 * 1000;
     this.idleTimer = null;
     this.boundResetIdle = this.handleActivity.bind(this);
+    this.signingIn = false;
+    this.onSessionComplete = null;
   }
 
   ensureUserId() {
@@ -184,6 +187,7 @@ export class SessionManager {
     if (document.getElementById("session-overlay")) return;
 
     this.sessionState = state;
+    this.onSessionComplete = onComplete;
     this.container = document.createElement("div");
     this.container.id = "session-overlay";
     this.container.className = "session-overlay";
@@ -426,6 +430,47 @@ export class SessionManager {
     }
   }
 
+  async signInAndExit() {
+    if (this.sessionState === "locked") {
+      this.unlockSession();
+      if (this.onSessionComplete) this.onSessionComplete(this.currentSession);
+      return;
+    }
+    if (!this.selectedUser) return;
+    this.currentSession = {
+      name: this.selectedUser.name,
+      key: this.selectedUser.key,
+      avatar: this.selectedUser.avatar
+    };
+    await this.initializeSession();
+    this.container.classList.add("exit");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    this.container.remove();
+    this.enableContextMenu();
+    if (this.keyboardHandler) {
+      document.removeEventListener("keydown", this.keyboardHandler);
+      this.keyboardHandler = null;
+    }
+    if (this.onSessionComplete) this.onSessionComplete(this.currentSession);
+  }
+
+  async quickLaunch(appId) {
+    if (this.signingIn) return;
+    const resolvedId = resolveAppId(appId);
+    if (!resolvedId) return;
+    this.signingIn = true;
+    try {
+      await this.signInAndExit();
+    } catch (e) {
+      console.error("Session init failed:", e);
+    } finally {
+      this.signingIn = false;
+    }
+    setTimeout(() => {
+      os.app.launch(resolvedId).catch(() => {});
+    }, 800);
+  }
+
   renderUserTile(user) {
     const lastLoginDate = new Date(user.lastLogin);
     const timeAgo = this.formatTimeAgo(lastLoginDate);
@@ -548,7 +593,7 @@ export class SessionManager {
 
     const stats = await fetchLiveStats();
     if (!this.container || !panel.isConnected) return;
-    renderLiveStats(stats, panel, { showStats: false });
+    renderLiveStats(stats, panel, { showStats: false, onAppClick: (appId) => this.quickLaunch(appId) });
   }
 
   initSessionActivity() {
@@ -641,45 +686,25 @@ export class SessionManager {
 
     const handleAction = async () => {
       if (actionBtn.disabled) return;
+      if (this.signingIn) return;
 
-      if (this.sessionState === "locked") {
-        this.unlockSession();
-        if (onComplete) onComplete(this.currentSession);
-        return;
+      if (this.sessionState !== "locked") {
+        if (!this.selectedUser) return;
+        actionBtn.disabled = true;
+        actionBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
       }
 
-      if (!this.selectedUser) return;
-
-      this.currentSession = {
-        name: this.selectedUser.name,
-        key: this.selectedUser.key,
-        avatar: this.selectedUser.avatar
-      };
-
-      actionBtn.disabled = true;
-      actionBtn.innerHTML = `Signing in... <i class="fas fa-spinner fa-spin"></i>`;
-
+      this.signingIn = true;
       try {
-        await this.initializeSession();
+        await this.signInAndExit();
       } catch (e) {
         console.error("Session init failed:", e);
         actionBtn.disabled = false;
         actionBtn.innerHTML = `Sign in`;
         os.dialog.alert("Session Error", e?.message || String(e));
-        return;
+      } finally {
+        this.signingIn = false;
       }
-
-      this.container.classList.add("exit");
-
-      setTimeout(() => {
-        this.container.remove();
-        this.enableContextMenu();
-        if (this.keyboardHandler) {
-          document.removeEventListener("keydown", this.keyboardHandler);
-          this.keyboardHandler = null;
-        }
-        if (onComplete) onComplete(this.currentSession);
-      }, 500);
     };
 
     actionBtn.addEventListener("click", handleAction);

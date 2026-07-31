@@ -147,7 +147,7 @@ class SceneObject {
     this.locked = false;
     this.children = [];
     this.parentId = null;
-    threeObj.userData.__sceneObjectId = this.id;
+    threeObj.userData.sceneObjectId = this.id;
   }
 }
 
@@ -1170,11 +1170,11 @@ export class Model3DApp extends BaseApp {
       raycaster.setFromCamera(mouse, this.camera);
       const meshes = [];
       this.scene.traverse((c) => {
-        if (c.isMesh && c.userData.__sceneObjectId) meshes.push(c);
+        if (c.isMesh && c.userData.sceneObjectId) meshes.push(c);
       });
       const hits = raycaster.intersectObjects(meshes, false);
       if (hits.length > 0) {
-        const id = hits[0].object.userData.__sceneObjectId;
+        const id = hits[0].object.userData.sceneObjectId;
         if (!e.shiftKey) this.selectOnly(id);
         else this.toggleSelect(id);
       } else if (!e.shiftKey) {

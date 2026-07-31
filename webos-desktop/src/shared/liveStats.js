@@ -2,9 +2,12 @@ import "../styles/liveStats.css";
 import { appMap } from "../games/gamesList.js";
 import { resolveAppName, resolveAppIcon, escapeHtml } from "../utils/utils.js";
 import { resolveIconUrl } from "./assetResolver.js";
+import { $$, bindEvent } from "./domUtils.js";
 
 export function renderLiveStats(stats, target, options = {}) {
   if (!target) return;
+
+  const clickable = typeof options.onAppClick === "function";
 
   if (!stats) {
     target.innerHTML = `<div class="live-stats-message">Could not load live stats.</div>`;
@@ -31,7 +34,7 @@ export function renderLiveStats(stats, target, options = {}) {
     ? topApps
         .map(
           ({ app, count }) => `
-      <div class="live-stats-item">
+      <div class="live-stats-item${clickable ? " live-stats-item--clickable" : ""}"${clickable ? ` data-app="${escapeHtml(app)}"` : ""}>
         ${renderAppIcon(app)}
         <span class="live-stats-name">${escapeHtml(resolveAppName(app))}</span>
         <span class="live-stats-count">${count}</span>
@@ -62,4 +65,13 @@ export function renderLiveStats(stats, target, options = {}) {
       ${trendingHtml}
     </div>
   `;
+
+  if (clickable) {
+    $$(".live-stats-item--clickable", target).forEach((item) => {
+      bindEvent(item, "click", () => {
+        const appId = item.dataset.app;
+        if (appId) options.onAppClick(appId);
+      });
+    });
+  }
 }

@@ -713,7 +713,6 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       steamAudio.playNavigate();
       const appId = heroPlayBtn.dataset.app;
       navigateTo("library");
-      onLaunch.__rendererRef?.setCurrentGame(appId);
     });
   }
 
@@ -751,7 +750,6 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
         if (e.target.closest(".store-card-play-btn")) return;
         steamAudio.playNavigate();
         navigateTo("library");
-        onLaunch.__rendererRef?.setCurrentGame(g.app);
       });
       grid.appendChild(card);
       imgObserver.observe(card.querySelector("img[data-src]"));

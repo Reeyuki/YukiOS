@@ -14,6 +14,10 @@ export const SystemAudio = Object.freeze({
 
 const STORAGE_KEY = StorageKeys.audioMixerV1;
 
+const gainNodeByWindow = new WeakMap();
+const gainNodeByElement = new WeakMap();
+const analyzedElements = new WeakSet();
+
 class AudioMixer {
   constructor() {
     this.masterVolume = 1.0;
@@ -85,19 +89,18 @@ class AudioMixer {
     iframes.forEach((iframe) => {
       if (this.isSameDomain(iframe)) {
         try {
-          if (iframe.contentWindow?.__yukioGain) {
-            iframe.contentWindow.__yukioGain.gain.setTargetAtTime(
-              effectiveVolume,
-              iframe.contentWindow.__yukioGain.context.currentTime,
-              0.01
-            );
+          const cw = iframe.contentWindow;
+          const gainNode = cw ? gainNodeByWindow.get(cw) : null;
+          if (gainNode) {
+            gainNode.gain.setTargetAtTime(effectiveVolume, gainNode.context.currentTime, 0.01);
           }
           const doc = iframe.contentDocument || iframe.contentWindow.document;
           doc.querySelectorAll("audio, video").forEach((el) => {
             el.volume = Math.max(0, Math.min(1, effectiveVolume));
             this.connectMediaElement(winId, el);
-            if (el.__yukioGainNode) {
-              el.__yukioGainNode.gain.setTargetAtTime(effectiveVolume, this.getOrCreateAudioCtx().currentTime, 0.01);
+            const elGainNode = gainNodeByElement.get(el);
+            if (elGainNode) {
+              elGainNode.gain.setTargetAtTime(effectiveVolume, this.getOrCreateAudioCtx().currentTime, 0.01);
             }
           });
 
@@ -118,8 +121,9 @@ class AudioMixer {
     win.querySelectorAll("audio, video").forEach((el) => {
       el.volume = Math.max(0, Math.min(1, effectiveVolume));
       this.connectMediaElement(winId, el);
-      if (el.__yukioGainNode) {
-        el.__yukioGainNode.gain.setTargetAtTime(effectiveVolume, this.getOrCreateAudioCtx().currentTime, 0.01);
+      const gainNode = gainNodeByElement.get(el);
+      if (gainNode) {
+        gainNode.gain.setTargetAtTime(effectiveVolume, this.getOrCreateAudioCtx().currentTime, 0.01);
       }
     });
 
@@ -165,13 +169,13 @@ class AudioMixer {
   }
 
   connectMediaElement(winId, el) {
-    if (el.__yukio_analyzed) return;
-    el.__yukio_analyzed = true;
+    if (analyzedElements.has(el)) return;
+    analyzedElements.add(el);
     try {
       const ctx = this.getOrCreateAudioCtx();
       const source = ctx.createMediaElementSource(el);
       const gain = ctx.createGain();
-      el.__yukioGainNode = gain;
+      gainNodeByElement.set(el, gain);
 
       const analyser = this.getOrCreateAnalyser(winId);
       source.connect(analyser);
@@ -646,7 +650,7 @@ class AudioMixer {
           configurable: true
         });
 
-        cw.__yukioGain = gainNode;
+        gainNodeByWindow.set(cw, gainNode);
         gainNodes.set(key, gainNode);
 
         return instance;

@@ -195,6 +195,15 @@ export function resolveAppName(appId) {
   return appId.charAt(0).toUpperCase() + appId.slice(1).replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
+export function resolveAppId(appId) {
+  if (!appId) return null;
+  const allApps = os.app.getAllApps();
+  if (allApps[appId]) return appId;
+  const lower = String(appId).toLowerCase();
+  const matchedId = Object.keys(allApps).find((id) => id.toLowerCase() === lower);
+  return matchedId || null;
+}
+
 export function resolveAppIcon(appId) {
   if (!appId) return null;
   const info = os.app.getAppInfo(appId);

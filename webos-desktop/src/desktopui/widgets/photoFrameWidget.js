@@ -34,29 +34,13 @@ export class PhotoFrameWidget extends WidgetBase {
   }
 
   onConfigure() {
-    os.dialog
-      .fileOpen({ defaultFileName: "", initialPath: ["Pictures"] })
-      .then((result) => {
-        if (result) {
-          this.customPhotoPath = result;
-          if (this.contentEl) this.showImage(this.contentEl);
-          this.manager.saveState();
-        }
-      })
-      .catch(() => {
-        const explorerApp = this.manager?.widgetClasses ? null : null;
-        const path = ["Pictures"];
-        const desktopUI = typeof window !== "undefined" ? window.__desktopUI : null;
-        if (desktopUI && desktopUI.explorerApp) {
-          desktopUI.explorerApp.open(path, (selectedPath) => {
-            if (selectedPath) {
-              this.customPhotoPath = selectedPath;
-              if (this.contentEl) this.showImage(this.contentEl);
-              this.manager.saveState();
-            }
-          });
-        }
-      });
+    os.dialog.fileOpen({ defaultFileName: "", initialPath: ["Pictures"] }).then((result) => {
+      if (result) {
+        this.customPhotoPath = result;
+        if (this.contentEl) this.showImage(this.contentEl);
+        this.manager.saveState();
+      }
+    });
   }
 
   async loadImages() {

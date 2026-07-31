@@ -6,6 +6,7 @@ import { KeybindManager } from "../keybindManager.js";
 import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
 import { renderLiveStats } from "../shared/liveStats.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
+import { resolveAppId } from "../utils/utils.js";
 
 import { StorageKeys, os } from "../framework.js";
 import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
@@ -879,6 +880,11 @@ export class GameUI {
     const stats = await fetchLiveStats();
     if (!win.isConnected) return;
 
-    renderLiveStats(stats, panel);
+    renderLiveStats(stats, panel, {
+      onAppClick: (appId) => {
+        const resolvedId = resolveAppId(appId);
+        if (resolvedId) os.app.launch(resolvedId).catch(() => {});
+      }
+    });
   }
 }
