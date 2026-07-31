@@ -132,10 +132,16 @@ async function fetchAppList(env) {
   const url = env.APP_LIST_URL || "https://yukios.netlify.app/app-list.json";
   return withCache(Caches.appList, null, async () => {
     try {
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const data = await res.json();
-      return Array.isArray(data) ? data : null;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return Array.isArray(data) ? data : null;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch {
       return null;
     }
@@ -743,6 +749,7 @@ export default {
         );
       });
 
+      if (inserts.length === 0) return jsonResponse({ status: "ok", count: 0 });
       await env.DB.batch(inserts);
       return jsonResponse({ status: "ok", count: events.length });
     }
@@ -782,6 +789,7 @@ export default {
         );
       });
 
+      if (inserts.length === 0) return jsonResponse({ status: "ok", count: 0 });
       await env.DB.batch(inserts);
       return jsonResponse({ status: "ok", count: events.length });
     }
@@ -804,10 +812,12 @@ export default {
       );
       const timestamp = new Date().toISOString();
       const dailyId = await deriveDailyId(env, clientIP);
-      const appList = await fetchAppList(env);
 
       cleanEvents = cleanEvents.filter((e) => {
-        if (!isAppAllowed(e.appId, appList)) return false;
+        if (e.appId != null && e.appId !== "") {
+          const app = normalizeApp(e.appId);
+          if (app !== "unknown" && !/^[a-z0-9_.-]{1,64}$/.test(app)) return false;
+        }
         if (
           (typeof e.username === "string" && (e.username.includes("<") || e.username.includes(">"))) ||
           (typeof e.gameTitle === "string" && (e.gameTitle.includes("<") || e.gameTitle.includes(">")))
@@ -836,6 +846,7 @@ export default {
         );
       });
 
+      if (inserts.length === 0) return jsonResponse({ status: "ok", count: 0 });
       await env.DB.batch(inserts);
       return jsonResponse({ status: "ok", count: cleanEvents.length });
     }
@@ -889,12 +900,11 @@ export default {
       const timestamp = new Date().toISOString();
       const dailyId = await deriveDailyId(env, clientIP);
 
-      const appList = await fetchAppList(env);
       const cleanEvents = events.filter((event) => {
         if (event.app == null || event.app === "") return true;
         const app = normalizeApp(event.app);
         if (app === "unknown") return true;
-        return isAppAllowed(app, appList);
+        return /^[a-z0-9_.-]{1,64}$/.test(app);
       });
 
       const inserts = cleanEvents.map((event) => {
@@ -908,6 +918,7 @@ export default {
         );
       });
 
+      if (inserts.length === 0) return jsonResponse({ status: "ok", count: 0 });
       await env.DB.batch(inserts);
       return jsonResponse({ status: "ok", count: cleanEvents.length });
     }
@@ -1158,6 +1169,7 @@ export default {
           );
         }
 
+        if (statements.length === 0) continue;
         try {
           await env.DB.batch(statements);
           imported += statements.length;
