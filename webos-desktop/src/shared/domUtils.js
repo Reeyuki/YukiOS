@@ -1,11 +1,29 @@
 export const $ = (selector, root = document) => {
   if (!root) return null;
-  return root.querySelector(selector);
+  try {
+    return root.querySelector(selector);
+  } catch {
+    if (typeof selector === "string" && selector.startsWith("#")) {
+      const id = selector.slice(1);
+      if (root.getElementById) return root.getElementById(id);
+      return root.querySelector(`#${CSS.escape(id)}`);
+    }
+    return null;
+  }
 };
 
 export const $$ = (selector, root = document) => {
   if (!root) return [];
-  return Array.from(root.querySelectorAll(selector));
+  try {
+    return Array.from(root.querySelectorAll(selector));
+  } catch {
+    if (typeof selector === "string" && selector.startsWith("#")) {
+      const id = selector.slice(1);
+      const el = root.getElementById ? root.getElementById(id) : root.querySelector(`#${CSS.escape(id)}`);
+      return el ? [el] : [];
+    }
+    return [];
+  }
 };
 
 export const queryAll = (selectors, root = document) => Object.fromEntries(selectors.map((s) => [s, $(s, root)]));

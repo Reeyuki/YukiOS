@@ -249,13 +249,21 @@ function createItemElement(text, onclick, icon) {
   const el = document.createElement("div");
   if (icon) {
     const iconVal = icon.trim();
-    const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
-    const iconEl = document.createElement("i");
-    iconEl.className = iconCls;
-    iconEl.style.width = "16px";
-    iconEl.style.textAlign = "center";
-    iconEl.style.opacity = "0.7";
-    el.appendChild(iconEl);
+    if (iconVal.startsWith("http")) {
+      const iconImg = document.createElement("img");
+      iconImg.className = "context-menu-item-icon-img";
+      iconImg.src = iconVal;
+      iconImg.alt = "";
+      el.appendChild(iconImg);
+    } else {
+      const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
+      const iconEl = document.createElement("i");
+      iconEl.className = iconCls;
+      iconEl.style.width = "16px";
+      iconEl.style.textAlign = "center";
+      iconEl.style.opacity = "0.7";
+      el.appendChild(iconEl);
+    }
   }
   const label = document.createElement("span");
   label.textContent = text;

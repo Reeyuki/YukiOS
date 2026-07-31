@@ -158,6 +158,8 @@ config editing.
   formats (TXT, Markdown, HTML), and common audio/video files
 - Mount external folders as virtual drives, set images as wallpaper, or open any folder in Terminal
 - Save As and file/directory picker dialog
+- File associations: Default Apps app to set, change, or remove the default app per file type
+- "Open with" context menu on files lists every compatible app, plus an app picker dialog
 - storage usage indicator, thumbnail cache
 - Explorer keyboard shortcuts: Ctrl+C copy, Ctrl+X cut, Ctrl+V paste Ctrl+F search, Ctrl+A select all, arrow keys
   navigate, Enter open, F5 refresh, F2 rename, Delete trash
@@ -191,6 +193,7 @@ config editing.
 
 - Explorer
 - Installed Apps (rename, disable, uninstall apps)
+- Default Apps (set the default app for any file type)
 - Terminal: Unix-like shell with filesystem access, Python/Node REPLs, and Git
   - Python REPL (Pyodide WASM), Node.js REPL (WebContainers)
   - Full Git integration (clone, init, add, commit, push, pull, branch, stash, fetch, diff, remote, rm, checkout, log,

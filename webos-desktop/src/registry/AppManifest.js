@@ -1,4 +1,17 @@
 import { ClippyAnimation } from "../ai/clippy.js";
+import {
+  OFFICE_EXTS,
+  TEXT_EXTS,
+  CODE_EXTS,
+  HTML_EXTS,
+  MARKDOWN_EXTS,
+  FONT_EXTS,
+  SWF_EXTS,
+  EXE_EXTS,
+  MODEL3D_EXTS,
+  DISK_EXTS
+} from "../shared/fileKindDetector.js";
+import { ROM_EXTS } from "../shared/coreMap.js";
 
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
 
@@ -103,6 +116,7 @@ export const APP_MANIFESTS = [
     launchType: "instance",
     windowIdPatterns: ["markdown"],
     category: "office",
+    fileAssociations: { extensions: [...MARKDOWN_EXTS] },
     clippy: { message: "Write in Markdown and keep the structure clean.", animation: ClippyAnimation.Writing },
     description: "Split-pane editor with live preview for writing and viewing Markdown documents."
   },
@@ -130,6 +144,7 @@ export const APP_MANIFESTS = [
     launchType: "instance",
     windowIdPatterns: ["monaco"],
     category: "development",
+    fileAssociations: { extensions: [...CODE_EXTS] },
     clippy: { message: "Open a new tab and get your code moving.", animation: ClippyAnimation.GetWizardy },
     description:
       "Full-featured code editor powered by VS Code engine with syntax highlighting, auto-completion, and multi-file support."
@@ -143,6 +158,7 @@ export const APP_MANIFESTS = [
     launchType: "instance",
     windowIdPatterns: ["model3d"],
     category: "graphics",
+    fileAssociations: { extensions: [...MODEL3D_EXTS] },
     clippy: { message: "Inspect models here and spin them from every angle.", animation: ClippyAnimation.LookDownLeft },
     description: "View OBJ, GLTF, and GLB 3D models using Three.js with rotation and zoom controls."
   },
@@ -156,6 +172,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["emulator"],
     isHeavy: true,
     category: "games",
+    fileAssociations: { extensions: [...ROM_EXTS] },
     clippy: { message: "Launch old software here and keep the nostalgia alive.", animation: ClippyAnimation.Show },
     description: "Multi-platform game emulator supporting various console systems."
   },
@@ -184,6 +201,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["ruffle"],
     isHeavy: true,
     category: "games",
+    fileAssociations: { extensions: [...SWF_EXTS] },
     clippy: { message: "Load Flash content here without the usual hassle.", animation: ClippyAnimation.Show },
     description: "Flash game player using modern Ruffle engine for SWF content."
   },
@@ -377,6 +395,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["browser"],
     isHeavy: true,
     category: "internet",
+    fileAssociations: { extensions: [...HTML_EXTS] },
     clippy: {
       message: "Select Tor from the proxy dropdown to browse anonymously. I'll handle the setup.",
       animation: ClippyAnimation.Wave
@@ -976,6 +995,7 @@ export const APP_MANIFESTS = [
     launchType: "instance",
     windowIdPatterns: ["notepad"],
     category: "office",
+    fileAssociations: { extensions: [...TEXT_EXTS, ...CODE_EXTS] },
     clippy: { message: "Start a quick note or draft without overthinking it.", animation: ClippyAnimation.Writing },
     description: "Simple text editor for quick notes and plain text documents with save/load functionality."
   },
@@ -1042,6 +1062,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["office"],
     isHeavy: true,
     category: "office",
+    fileAssociations: { extensions: [...OFFICE_EXTS] },
     clippy: { message: "Open office files here and keep the document flow moving.", animation: ClippyAnimation.Show },
     description: "View .docx, .xlsx, and .pptx documents using Office 365 integration."
   },
@@ -1054,6 +1075,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["jsdos"],
     isHeavy: true,
     category: "games",
+    fileAssociations: { extensions: [...EXE_EXTS] },
     clippy: { message: "Boot old DOS software and keep classic tools alive.", animation: ClippyAnimation.Show },
     description: "DOS emulator for running classic DOS games and applications."
   },
@@ -1066,6 +1088,7 @@ export const APP_MANIFESTS = [
     windowIdPatterns: ["v86"],
     isHeavy: true,
     category: "system",
+    fileAssociations: { extensions: [...DISK_EXTS] },
     clippy: {
       message: "Start a full machine and let the virtual hardware do the work.",
       animation: ClippyAnimation.Show
@@ -1402,5 +1425,16 @@ export const APP_MANIFESTS = [
       animation: ClippyAnimation.Show
     },
     description: "Stream your full desktop to any browser via WebRTC with remote input control."
+  },
+  {
+    serviceKey: "defaultApps",
+    type: "system",
+    title: "Default Apps",
+    icon: "fas fa-th-large",
+    launchType: "instance",
+    windowIdPatterns: ["default-apps"],
+    category: "system",
+    clippy: { message: "Pick which app opens each file type.", animation: ClippyAnimation.Show },
+    description: "Set the default app for every file type."
   }
 ];

@@ -1,6 +1,7 @@
 import { FileKind } from "./shared/fileKindDetector.js";
 import { os, StorageKeys, $ } from "./framework.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
+import { getDefaultApp, isUnassociated } from "./fileAssociations.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { formatSize } from "./utils/utils.js";
 import {
@@ -759,6 +760,19 @@ export async function openFileWith({ name, path }) {
       return;
     }
     trackRecentFile(name, path);
+
+    const defaultApp = getDefaultApp(name);
+    if (defaultApp) {
+      const handled = await openFileWithApp(defaultApp.appId, { name, path });
+      if (handled) return;
+    }
+
+    if (isUnassociated(name)) {
+      const { showChooseAppDialog } = await import("./shared/chooseAppDialog.js");
+      await showChooseAppDialog({ ext: getExt(name), name, path });
+      return;
+    }
+
     console.log("Open file with: ", name, path);
 
     if (isModel3DFile(name)) return openModelFile(name, path);
@@ -783,6 +797,69 @@ export async function openFileWith({ name, path }) {
   } catch (err) {
     console.error("[FileDisplay] openFileWith error:", err);
     os.notify.send("File Display", `Failed to open ${name}`, { type: "error" });
+  }
+}
+
+export async function openFileWithApp(appId, { name, path }) {
+  try {
+    switch (appId) {
+      case "mediaViewer":
+        await openMediaFile(name, path);
+        return true;
+      case "fontViewer":
+        await openFontFile(name, path);
+        return true;
+      case "browserApp":
+        await openHtmlFile(name, path, await os.fs.getFileContent(path, name));
+        return true;
+      case "markdownApp":
+        await openMarkdown(name, path, await os.fs.getFileContent(path, name));
+        return true;
+      case "notepadApp":
+        await openTextFile(name, path, await os.fs.getFileContent(path, name));
+        return true;
+      case "monacoApp": {
+        const monacoApp = os.app.getInstance("monacoApp");
+        if (monacoApp?.open) {
+          monacoApp.open(name, await os.fs.getFileContent(path, name), path);
+          return true;
+        }
+        return false;
+      }
+      case "officeApp":
+        await openOfficeFile(name, path);
+        return true;
+      case "model3dApp":
+        await openModelFile(name, path);
+        return true;
+      case "emulatorApp":
+        await openRomFile(name, path);
+        return true;
+      case "jsDosApp":
+        await openExecutable(name, path);
+        return true;
+      case "ruffleApp":
+        await openSwfFile(name, path);
+        return true;
+      case "v86app": {
+        const v86App = os.app.getInstance("v86app");
+        if (v86App?.launchImage) {
+          v86App.launchImage(name, path);
+          return true;
+        }
+        return false;
+      }
+      default:
+        if (os.app.hasApp(appId)) {
+          os.app.launch(appId, { fileName: name, filePath: path, title: name });
+          return true;
+        }
+        return false;
+    }
+  } catch (err) {
+    console.error("[FileDisplay] openFileWithApp error:", err);
+    os.notify.send("File Display", `Failed to open ${name} with ${appId}`, { type: "error" });
+    return false;
   }
 }
 

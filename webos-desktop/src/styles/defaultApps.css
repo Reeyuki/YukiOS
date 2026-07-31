@@ -1,0 +1,359 @@
+.da-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--bg-secondary);
+}
+
+.da-topbar {
+  border-bottom: 1px solid var(--glass-border);
+  padding: 14px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.da-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.da-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.da-back {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 15px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.da-back:hover {
+  background: var(--glass);
+}
+
+.da-back[hidden] {
+  display: none;
+}
+
+.da-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.da-segmented {
+  display: flex;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.da-seg-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.da-seg-btn:hover {
+  color: var(--text-primary);
+}
+
+.da-seg-btn.active {
+  background: var(--brand);
+  color: #fff;
+}
+
+.da-search {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.da-search:focus {
+  border-color: var(--brand);
+}
+
+.da-search::placeholder {
+  color: var(--text-secondary);
+}
+
+.da-reset {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--error);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+
+.da-reset:hover {
+  background: var(--glass-hover);
+}
+
+.da-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px 18px;
+}
+
+.da-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.da-app-row {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.da-app-row:hover {
+  background: var(--glass);
+}
+
+.da-app-icobox {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.da-app-icobox.large {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  font-size: 24px;
+}
+
+.da-app-icobox img.da-app-icobox-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.da-app-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.da-app-name {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.da-app-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.da-chevron {
+  color: var(--text-secondary);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.da-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 6px 18px;
+}
+
+.da-detail-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.da-detail-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.da-detail-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.da-set-default-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: filter 0.12s;
+}
+
+.da-set-default-btn:hover {
+  filter: brightness(1.1);
+}
+
+.da-detail-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 8px 8px;
+}
+
+.da-file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+
+.da-file-row:hover {
+  background: var(--glass);
+}
+
+.da-file-ext {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+.da-file-current {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.da-default-tag {
+  color: var(--brand);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.da-change-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.12s;
+}
+
+.da-change-btn:hover {
+  border-color: var(--brand);
+}
+
+.da-empty {
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.da-remove-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--error);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.12s;
+}
+
+.da-remove-btn:hover {
+  border-color: var(--error);
+}

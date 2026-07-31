@@ -4,8 +4,10 @@ import { sortDesktopIcons, relayoutDesktopIcons, changeDesktopIconSize } from ".
 import { os, StorageKeys } from "../framework.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
-import { showFileProperties, isImageFile } from "../fileDisplay.js";
-import { FileKind } from "../shared/fileKindDetector.js";
+import { showFileProperties, isImageFile, openFileWithApp } from "../fileDisplay.js";
+import { FileKind, getExt } from "../shared/fileKindDetector.js";
+import { getCompatibleApps, getDefaultApp } from "../fileAssociations.js";
+import { showChooseAppDialog } from "../shared/chooseAppDialog.js";
 
 import {
   buildCopyAction,
@@ -176,8 +178,35 @@ export class DesktopContextMenuManager {
     const fileName = fileIcon.dataset.fileName;
     const filePath = fileIcon.dataset.filePath || "Desktop";
 
-    showDynamicContextMenu(e, async (menu, item, hr) => {
-      menu.appendChild(item("Open", () => this.desktopUI.openDesktopFile(fileName), "fa-file-alt"));
+    showDynamicContextMenu(e, async (menu, item, hr, submenu) => {
+      const defaultApp = getDefaultApp(fileName);
+      menu.appendChild(item("Open", () => this.desktopUI.openDesktopFile(fileName), defaultApp?.icon || "fa-file-alt"));
+      menu.appendChild(
+        submenu(
+          "Open with",
+          (subMenuEl, subItem, subHr) => {
+            const apps = getCompatibleApps(fileName);
+            for (const app of apps) {
+              subMenuEl.appendChild(
+                subItem(
+                  app.title,
+                  () => openFileWithApp(app.appId, { name: fileName, path: filePath.split("/") }),
+                  app.icon
+                )
+              );
+            }
+            subMenuEl.appendChild(subHr());
+            subMenuEl.appendChild(
+              subItem(
+                "Choose another app",
+                () => showChooseAppDialog({ ext: getExt(fileName), name: fileName, path: filePath.split("/") }),
+                "fa-sliders-h"
+              )
+            );
+          },
+          "fa-share-alt"
+        )
+      );
       menu.appendChild(
         item(
           "Add to archive",

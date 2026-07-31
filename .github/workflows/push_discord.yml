@@ -206,7 +206,7 @@ jobs:
 
   electron:
     needs: notify
-    if: needs.notify.outputs.has_changes == 'true'
+    if: needs.notify.outputs.has_changes == 'true' && github.event_name == 'workflow_dispatch'
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -258,7 +258,7 @@ jobs:
 
   release:
     needs: [notify, electron]
-    if: needs.notify.outputs.has_changes == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: needs.notify.outputs.has_changes == 'true' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -18,6 +18,7 @@ import { ShortcutsApp } from "./apps/shortcuts.js";
 import { YukiConvertApp } from "./apps/yukiConvert.js";
 import { SetupApp } from "./apps/setupApp.js";
 import { DataEditorApp } from "./apps/dataEditor.js";
+import { DefaultAppsApp } from "./apps/defaultApps.js";
 import { InstalledAppsApp } from "./apps/installedApps.js";
 import { YukiOsGuideApp } from "./apps/yukiOsGuide.js";
 import { ClipboardManagerApp } from "./apps/clipboardApp.js";
@@ -69,6 +70,7 @@ const APP_CLASS_MAP = {
   yukiConvertApp: YukiConvertApp,
   setupApp: SetupApp,
   dataEditorApp: DataEditorApp,
+  defaultApps: DefaultAppsApp,
   installedAppsApp: InstalledAppsApp,
   yukiOsGuideApp: YukiOsGuideApp,
   clipboardManagerApp: ClipboardManagerApp,

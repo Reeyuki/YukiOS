@@ -9,6 +9,19 @@ const EXISTING_NEWS_UPDATES = [
     date: "July 31, 2026",
     sections: [
       {
+        icon: "fa-th-large",
+        title: "File Associations",
+        items: [
+          ["fa-th-large", "Default Apps", "Set and manage the default program for every file type from one app."],
+          ["fa-share-alt", "Open With", "Right-click any file to launch it with any compatible app from a picker."]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 31, 2026",
+    sections: [
+      {
         icon: "fa-cube",
         title: "Blender",
         items: [

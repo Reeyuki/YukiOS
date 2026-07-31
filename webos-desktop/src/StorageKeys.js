@@ -155,6 +155,7 @@ export const StorageKeys = {
   torBrowserState: "yukiOS_tor_browser_state",
   vncProfiles: "yukiOS_vnc_profiles",
   recentFiles: "yukiOS_recent_files",
+  defaultAppAssociations: "yukiOS_default_app_associations",
   robloxPlayed: "yukiOS_roblox_played",
   desktopSortMode: "yukiOS_desktop_sort_mode",
   desktopAutoSort: "yukiOS_desktop_auto_sort",

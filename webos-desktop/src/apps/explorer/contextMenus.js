@@ -4,8 +4,10 @@ import { FileKind } from "../../shared/fileKindDetector.js";
 import { BusEvents } from "../../core/EventBus.js";
 import { Achievements } from "../../achievements.js";
 import { showDynamicContextMenu } from "../../shared/contextMenu.js";
-import { isFontFile, isISOFile } from "../../shared/fileKindDetector.js";
-import { fileKindFromName, showFileProperties, isImageFile, readFontBlob } from "../../fileDisplay.js";
+import { isFontFile, isISOFile, getExt } from "../../shared/fileKindDetector.js";
+import { fileKindFromName, showFileProperties, isImageFile, readFontBlob, openFileWithApp } from "../../fileDisplay.js";
+import { getCompatibleApps, getDefaultApp } from "../../fileAssociations.js";
+import { showChooseAppDialog } from "../../shared/chooseAppDialog.js";
 import { applyFontFamily } from "../../settings/settingsApply.js";
 import { decodeFileContent, isArchiveFile } from "../../utils/utils.js";
 import { saveToWallpapers } from "./upload.js";
@@ -77,28 +79,56 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
   e.preventDefault();
   e.stopPropagation();
 
-  showDynamicContextMenu(e, (menu, item, hr) => {
+  showDynamicContextMenu(e, (menu, item, hr, submenu) => {
+    if (isFile) {
+      const defaultApp = getDefaultApp(itemName);
+      menu.appendChild(
+        item("Open", () => explorer.openItemForInstance(inst, itemName, true), defaultApp?.icon || "fa-file-alt")
+      );
+      menu.appendChild(
+        submenu(
+          "Open with",
+          (subMenuEl, subItem, subHr) => {
+            const apps = getCompatibleApps(itemName);
+            for (const app of apps) {
+              subMenuEl.appendChild(
+                subItem(
+                  app.title,
+                  () => openFileWithApp(app.appId, { name: itemName, path: inst.currentPath }),
+                  app.icon
+                )
+              );
+            }
+            subMenuEl.appendChild(subHr());
+            subMenuEl.appendChild(
+              subItem(
+                "Choose another app",
+                () => showChooseAppDialog({ ext: getExt(itemName), name: itemName, path: inst.currentPath }),
+                "fa-sliders-h"
+              )
+            );
+          },
+          "fa-share-alt"
+        )
+      );
+      menu.appendChild(hr());
+    }
+
     if (isFile && itemName.toLowerCase().endsWith(".md")) {
       menu.appendChild(item("Preview", () => openMarkdownPreview(explorer, itemName, inst), "fa-eye"));
       menu.appendChild(item("Edit with Notepad", () => openMarkdownInNotepad(explorer, itemName, inst), "fa-edit"));
       menu.appendChild(hr());
     } else if (isFile && itemName.toLowerCase().endsWith(".desktop")) {
-      menu.appendChild(item("Open", () => explorer.openItemForInstance(inst, itemName, true), "fa-file-alt"));
       menu.appendChild(item("Edit with Notepad", () => openTextInNotepad(explorer, itemName, inst), "fa-edit"));
       menu.appendChild(hr());
     } else if (isFile && fileKindFromName(itemName) === FileKind.TEXT) {
-      menu.appendChild(item("Open", () => explorer.openItemForInstance(inst, itemName, true), "fa-file-alt"));
       menu.appendChild(item("Edit with Notepad", () => openTextInNotepad(explorer, itemName, inst), "fa-edit"));
       menu.appendChild(hr());
     } else {
-      menu.appendChild(
-        item(
-          isFile ? "Open" : "Open Folder",
-          () => explorer.openItemForInstance(inst, itemName, isFile),
-          isFile ? "fa-file-alt" : "fa-folder-open"
-        )
-      );
       if (!isFile) {
+        menu.appendChild(
+          item("Open Folder", () => explorer.openItemForInstance(inst, itemName, false), "fa-folder-open")
+        );
         menu.appendChild(
           item(
             "Open in New Window",
