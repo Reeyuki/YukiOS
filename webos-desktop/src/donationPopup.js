@@ -6,7 +6,7 @@ import { parseBool } from "./utils/utils.js";
 const MONERO_ADDRESS =
   "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
 const DAY_MS = 86400000;
-const FOURTEEN_DAYS = 14 * DAY_MS;
+const SEVEN_DAYS = 7 * DAY_MS;
 
 let overlay = null;
 
@@ -25,12 +25,13 @@ function getOverlayHTML() {
           YukiOS is built and maintained by one person in their free time.
           Your support keeps development active and helps fund new features.
           <br><br>
-          You can donate via Ko-fi or Monero . It takes less than a minute.
+          You can donate via Ko-fi, Patreon, or Monero. It takes less than a minute.
         </div>
         <div class="donation-buttons">
           <a href="https://ko-fi.com/Reeyuki" target="_blank" class="donation-btn donation-btn-kofi">
             <i class="fas fa-mug-hot"></i> Ko-fi
           </a>
+          <a href="https://www.patreon.com/Reeyuki" target="_blank" class="donation-btn donation-btn-patreon"><i class="fab fa-patreon"></i> Patreon</a>
           <button class="donation-btn donation-btn-monero" id="donation-show-monero">
             <i class="fab fa-monero"></i> Monero
           </button>
@@ -45,9 +46,6 @@ function getOverlayHTML() {
           <button class="donation-footer-btn donation-footer-btn--danger" id="donation-never">
             <i class="fas fa-ban"></i> Never
           </button>
-          <button class="donation-footer-btn donation-footer-btn--primary" id="donation-remind">
-            <i class="fas fa-clock"></i> Remind later
-          </button>
         </div>
       </div>
     </div>
@@ -61,14 +59,14 @@ function showPopup() {
   wrapper.innerHTML = getOverlayHTML();
   overlay = wrapper.firstElementChild;
 
-  document.body.appendChild(overlay);
+  const parent = $("#session-overlay") || document.body;
+  parent.appendChild(overlay);
 
   requestAnimationFrame(() => {
     overlay.classList.add("donation-overlay--show");
   });
 
   bindEvent($("#donation-close", overlay), "click", dismissPopup);
-  bindEvent($("#donation-remind", overlay), "click", dismissPopup);
   bindEvent($("#donation-never", overlay), "click", permanentDismiss);
   bindEvent($("#donation-show-monero", overlay), "click", () => {
     const section = $("#donation-monero-section", overlay);
@@ -131,15 +129,20 @@ export function checkAndShowDonationPopup() {
   if (!os.storage.get(StorageKeys.setupCompleted)) return;
 
   if (parseBool(os.storage.get(StorageKeys.donationDismissed))) return;
+  if (parseBool(os.storage.get(StorageKeys.adsDisabled))) return;
 
   const firstLaunch = Number(os.storage.get(StorageKeys.firstLaunchTime));
   if (!firstLaunch || isNaN(firstLaunch)) return;
-  if (Date.now() - firstLaunch < FOURTEEN_DAYS) return;
+  if (Date.now() - firstLaunch < SEVEN_DAYS) return;
 
   const lastShown = Number(os.storage.get(StorageKeys.donationLastShown));
-  if (lastShown && !isNaN(lastShown) && Date.now() - lastShown < FOURTEEN_DAYS) return;
+  if (lastShown && !isNaN(lastShown) && Date.now() - lastShown < SEVEN_DAYS) return;
 
   showPopup();
 }
 
 window.showDonationPopup = showPopup;
+
+export function showDonationPopup() {
+  showPopup();
+}

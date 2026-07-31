@@ -163,6 +163,7 @@ export function renderAccountsSettings() {
             <a href="https://ko-fi.com/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-kofi">
               <i class="fas fa-mug-hot"></i> Ko-fi
             </a>
+            <a href="https://www.patreon.com/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-patreon"><i class="fab fa-patreon"></i> Patreon</a>
             <span class="sponsor-banner-btn donation-monero-btn" id="sponsor-link-monero" style="cursor:pointer;">
               <i class="fab fa-monero"></i> Monero
             </span>

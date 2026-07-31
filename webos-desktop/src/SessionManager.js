@@ -18,6 +18,7 @@ import { modeManager, MODES } from "./modeManager.js";
 import { applyMacSettings, disableMacSettings } from "./modes/macos/session.js";
 import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/session.js";
 import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
+import { showDonationPopup } from "./donationPopup.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -214,6 +215,11 @@ export class SessionManager {
         <div class="session-boot-preview-btn" id="session-boot-preview-btn">
           <i class="fas fa-play"></i>
         </div>
+        ${
+          os.storage.get(StorageKeys.donationDismissed) === "true"
+            ? ""
+            : `<button class="session-support-btn" id="session-support-btn" title="Support YukiOS"><i class="fas fa-heart"></i></button>`
+        }
         <div class="session-boot-preview-modal" id="session-boot-preview-modal" style="display: none;">
           <div class="boot-preview-modal-content">
             <div class="boot-preview-modal-header">
@@ -534,6 +540,7 @@ export class SessionManager {
     const bootPreviewBtn = this.container.querySelector("#session-boot-preview-btn");
     const bootPreviewModal = this.container.querySelector("#session-boot-preview-modal");
     const bootPreviewList = this.container.querySelector("#boot-preview-list");
+    const supportBtn = this.container.querySelector("#session-support-btn");
     const electronBanner = this.container.querySelector("#session-electron-banner");
 
     const showBootModal = () => {
@@ -761,6 +768,8 @@ export class SessionManager {
     if (electronDownloadBtn) {
       electronDownloadBtn.addEventListener("click", () => this.handleElectronDownload());
     }
+
+    if (supportBtn) supportBtn.addEventListener("click", () => showDonationPopup());
 
     this.keyboardHandler = (e) => this.handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);

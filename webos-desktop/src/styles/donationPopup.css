@@ -123,6 +123,16 @@
   transform: translateY(-1px);
 }
 
+.donation-btn-patreon {
+  background: #ff424d;
+  color: #fff;
+}
+
+.donation-btn-patreon:hover {
+  background: #d8323b;
+  transform: translateY(-1px);
+}
+
 .donation-btn-monero {
   background: var(--brand);
   color: var(--text-on-brand, #fff);
@@ -197,17 +207,6 @@
 .donation-footer-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
-}
-
-.donation-footer-btn--primary {
-  background: var(--brand-dim);
-  border-color: transparent;
-  color: var(--brand);
-}
-
-.donation-footer-btn--primary:hover {
-  background: var(--brand);
-  color: #fff;
 }
 
 .donation-footer-btn--danger {

@@ -856,6 +856,14 @@ html.is-mobile .session-info-btn {
   font-size: 12px;
 }
 
+html.is-mobile .session-support-btn {
+  top: 12px;
+  left: 104px;
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
 html.is-mobile .session-info-modal {
   top: 52px;
   left: 12px;

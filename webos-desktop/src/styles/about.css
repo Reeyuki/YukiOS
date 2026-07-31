@@ -258,6 +258,12 @@
 #about-yukios .abx-sponsor-btn-ko-fi:hover {
   background: #c04913;
 }
+#about-yukios .abx-sponsor-btn-patreon {
+  background: #ff424d;
+}
+#about-yukios .abx-sponsor-btn-patreon:hover {
+  background: #d8323b;
+}
 
 #about-yukios .abx-foot {
   display: flex;

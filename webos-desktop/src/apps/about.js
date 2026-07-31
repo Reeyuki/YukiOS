@@ -166,6 +166,7 @@ export class AboutApp extends BaseApp {
                       <a href="https://ko-fi.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-kofi">
                         <i class="fab fa-coffe"></i> Ko-fi
                       </a>
+                      <a href="https://www.patreon.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-patreon"><i class="fab fa-patreon"></i> Patreon</a>
                       <span class="abx-sponsor-btn abx-sponsor-btn-monero" id="about-monero-btn" style="cursor:pointer;">
                         <i class="fab fa-monero"></i> Monero
                       </span>
