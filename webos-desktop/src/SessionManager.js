@@ -5,7 +5,7 @@ import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 import { $ } from "./shared/domUtils.js";
-
+import { renderLiveStats } from "./shared/liveStats.js";
 import { StorageKeys, os } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
@@ -254,6 +254,16 @@ export class SessionManager {
           <i class="fas fa-users"></i>
           <span id="online-users-count">--</span> online
         </div>
+        <div class="session-activity-widget" id="session-activity-widget">
+          <button class="session-activity-toggle" id="session-activity-toggle" title="Toggle live activity">
+            <i class="fas fa-gamepad"></i>
+            <span>Live Activity</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="session-activity-panel" id="session-activity-panel">
+            <div style="color:var(--text-secondary);font-size:12px;text-align:center;padding-top:24px;">Loading...</div>
+          </div>
+        </div>
         <div class="session-time">${timeStr}</div>
         <div class="session-date">${dateStr}</div>
 
@@ -308,6 +318,9 @@ export class SessionManager {
         </div>
 
         <div class="session-electron-banner" id="session-electron-banner">
+          <button class="session-electron-banner__close" id="electron-banner-close" aria-label="Dismiss" title="Dismiss">
+            <i class="fas fa-times"></i>
+          </button>
           <i class="fas fa-download"></i>
           <span><strong>YukiOS now has a desktop app.</strong> Persistent storage, system tray, and remote desktop. The YukiOS you know, now as a real desktop application.</span>
           <div class="electron-banner-actions">
@@ -345,8 +358,19 @@ export class SessionManager {
     document.body.appendChild(this.container);
 
     const electronBanner = this.container.querySelector("#session-electron-banner");
-    if (electronBanner && typeof window.electronAPI !== "undefined") {
+    if (
+      electronBanner &&
+      (typeof window.electronAPI !== "undefined" || os.storage.get(StorageKeys.electronBannerDismissed))
+    ) {
       electronBanner.style.display = "none";
+    } else if (electronBanner) {
+      const closeBtn = electronBanner.querySelector("#electron-banner-close");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+          os.storage.set(StorageKeys.electronBannerDismissed, true);
+          electronBanner.style.display = "none";
+        });
+      }
     }
 
     const carouselRow = this.container.querySelector("#user-carousel-row");
@@ -362,6 +386,8 @@ export class SessionManager {
     this.setupDragVisibility();
     this.fetchOnlineUsersCount();
     this.startOnlineUsersPolling();
+    this.initSessionActivity();
+    this.startSessionActivityPolling();
   }
 
   async renderUserCarousel() {
@@ -511,6 +537,38 @@ export class SessionManager {
   startOnlineUsersPolling() {
     this.onlineUsersInterval = setInterval(() => {
       this.fetchOnlineUsersCount();
+    }, 60000);
+  }
+
+  async loadSessionActivity() {
+    const widget = this.container?.querySelector("#session-activity-widget");
+    if (!widget || widget.classList.contains("collapsed")) return;
+    const panel = widget.querySelector("#session-activity-panel");
+    if (!panel) return;
+
+    const stats = await fetchLiveStats();
+    if (!this.container || !panel.isConnected) return;
+    renderLiveStats(stats, panel, { showStats: false });
+  }
+
+  initSessionActivity() {
+    const widget = this.container?.querySelector("#session-activity-widget");
+    if (!widget) return;
+    const toggle = widget.querySelector("#session-activity-toggle");
+    const collapsed = os.storage.get(StorageKeys.sessionActivityCollapsed) === "true";
+    if (collapsed) widget.classList.add("collapsed");
+    toggle?.addEventListener("click", () => {
+      const nowCollapsed = !widget.classList.contains("collapsed");
+      widget.classList.toggle("collapsed", nowCollapsed);
+      os.storage.set(StorageKeys.sessionActivityCollapsed, nowCollapsed ? "true" : "false");
+      if (!nowCollapsed) this.loadSessionActivity();
+    });
+    if (!collapsed) this.loadSessionActivity();
+  }
+
+  startSessionActivityPolling() {
+    this.sessionActivityInterval = setInterval(() => {
+      this.loadSessionActivity();
     }, 60000);
   }
 

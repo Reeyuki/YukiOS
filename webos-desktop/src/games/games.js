@@ -321,7 +321,13 @@ export const SteamDataManager = {
 
 const STEAM_WIN_ID = "games-app-win";
 
-export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId = null) {
+const dispatchSteamNavigate = (page) => {
+  const container = document.getElementById("games-app-container");
+  if (!container) return;
+  container.dispatchEvent(new CustomEvent("steam-navigate", { detail: { page } }));
+};
+
+export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId = null, page = null) {
   const existing = document.getElementById(STEAM_WIN_ID);
   if (existing) {
     if (existing.style.display === "none") {
@@ -334,6 +340,11 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
     if (taskbarItem) {
       taskbarItem.style.display = "";
       taskbarItem.classList.remove("minimized");
+    }
+
+    if (page) {
+      setTimeout(() => dispatchSteamNavigate(page), 50);
+      return;
     }
 
     if (gameId) {
@@ -421,6 +432,10 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
   } else {
     gamesRenderer.render(container, onLaunch, wm, focusCollection);
     setupSteamControls();
+  }
+
+  if (page) {
+    setTimeout(() => dispatchSteamNavigate(page), 900);
   }
 }
 

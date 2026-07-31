@@ -520,6 +520,31 @@
   color: var(--text-primary);
 }
 
+.session-electron-banner__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.session-electron-banner__close:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
 .electron-banner-actions {
   display: flex;
   flex-direction: column;
@@ -965,6 +990,62 @@
 .online-users-badge i {
   font-size: 13px;
   color: var(--brand);
+}
+
+.session-activity-widget {
+  position: absolute;
+  top: 58px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.session-activity-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  backdrop-filter: blur(32px);
+  cursor: pointer;
+}
+
+.session-activity-toggle > i:first-child {
+  font-size: 13px;
+  color: var(--brand);
+}
+
+.session-activity-toggle .fa-chevron-down {
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+
+.session-activity-widget:not(.collapsed) .session-activity-toggle .fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+.session-activity-panel {
+  margin-top: 8px;
+  width: 310px;
+  max-height: 360px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 12px 15px;
+}
+
+.session-activity-widget.collapsed .session-activity-panel {
+  display: none;
 }
 
 .remember-me-row {

@@ -9,6 +9,38 @@ const EXISTING_NEWS_UPDATES = [
     date: "July 31, 2026",
     sections: [
       {
+        icon: "fa-gamepad",
+        title: "Login Live Activity",
+        items: [
+          [
+            "fa-gamepad",
+            "Trending Games on Login",
+            "See who's online and what's trending right on the login screen, collapse it anytime."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 31, 2026",
+    sections: [
+      {
+        icon: "fa-bell",
+        title: "Steam Notifications",
+        items: [
+          [
+            "fa-bell",
+            "Now Playing Popup Toggle",
+            "Disable currently playing popups in Steam settings, or click one to open Steam Settings."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "July 31, 2026",
+    sections: [
+      {
         icon: "fa-th-large",
         title: "File Associations",
         items: [

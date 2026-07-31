@@ -232,6 +232,8 @@ export const StorageKeys = {
   tilingKeybindHintHidden: "yukiOS_tiling_keybind_hint_hidden",
   browserTransport: "yukiOS_browser_transport",
   friendsLiveActivity: "yukiOS_friends_live_activity",
+  sessionActivityCollapsed: "yukiOS_session_activity_collapsed",
+  electronBannerDismissed: "yukiOS_electron_banner_dismissed",
   room3dBookPositions: "yukiOS_room3d_book_positions",
   room3dBallPosition: "yukiOS_room3d_ball_position",
   wallpaperCount: "yukiOS_wallpaper_count",

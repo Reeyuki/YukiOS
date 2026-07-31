@@ -1,7 +1,13 @@
 import { BusEvents } from "./core/EventBus.js";
 import { StorageKeys, os } from "./framework.js";
-import { resolveAppName, resolveAppIcon } from "./utils/utils.js";
+import { resolveAppName, resolveAppIcon, escapeHtml } from "./utils/utils.js";
 import { PREDEFINED_AVATARS } from "./utils/avatarData.js";
+import { SteamSettings } from "./games/steam.js";
+
+function isUrlPrefixed(value) {
+  const v = String(value).trim().toLowerCase();
+  return v.startsWith("http") || v.startsWith("://");
+}
 
 const ACTIVITY_ENDPOINT = "https://analytics.liventcord-a60.workers.dev/live/activity";
 const NOW_PLAYING_ENDPOINT = "https://analytics.liventcord-a60.workers.dev/live/now-playing";
@@ -21,6 +27,17 @@ export class LiveActivityManager {
   }
 
   init() {
+    window.addEventListener("steam-settings-changed", (e) => {
+      if (e.detail?.setting === "shareLiveActivity") {
+        if (e.detail.value) {
+          this.startTimers();
+        } else {
+          this.stopTimers();
+          this.queue = [];
+          this.popupQueue = [];
+        }
+      }
+    });
     if (!this.isEnabled()) return;
     os.events.on(BusEvents.APP_LAUNCHED, ({ appId }) => this.onAppLaunched(appId));
     os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
@@ -36,7 +53,9 @@ export class LiveActivityManager {
   }
 
   isEnabled() {
-    return os.storage.get(StorageKeys.friendsLiveActivity) !== "false";
+    return (
+      os.storage.get(StorageKeys.friendsLiveActivity) !== "false" && SteamSettings.get("shareLiveActivity") !== false
+    );
   }
 
   startTimers() {
@@ -72,7 +91,7 @@ export class LiveActivityManager {
     const profilePic = os.storage.get(StorageKeys.profilePicture) || "";
     const avatarIndex = PREDEFINED_AVATARS.indexOf(profilePic);
 
-    this.queue.push({
+    const item = {
       username: String(username).slice(0, 32),
       appId: String(appId).slice(0, 64),
       gameTitle: String(name).slice(0, 128),
@@ -80,7 +99,11 @@ export class LiveActivityManager {
       avatarIndex: avatarIndex >= 0 ? avatarIndex : -1,
       event: "start",
       timestamp: Date.now()
-    });
+    };
+
+    if (isUrlPrefixed(item.username) || isUrlPrefixed(item.appId) || isUrlPrefixed(item.gameTitle)) return;
+
+    this.queue.push(item);
 
     if (this.queue.length >= 10) this.flush();
   }
@@ -137,6 +160,7 @@ export class LiveActivityManager {
   }
 
   queuePopup(user) {
+    if (!SteamSettings.get("currentlyPlayingPopups")) return;
     this.popupQueue.push(user);
   }
 
@@ -173,11 +197,11 @@ export class LiveActivityManager {
         ${avatarHtml}
       </div>
       <div class="activity-popup__body">
-        <div class="activity-popup__name">${user.username}</div>
+        <div class="activity-popup__name">${escapeHtml(user.username)}</div>
         <div class="activity-popup__action">is now playing</div>
         <div class="activity-popup__game">
           ${gameIconHtml}
-          <span class="activity-popup__game-name">${gameName}</span>
+          <span class="activity-popup__game-name">${escapeHtml(gameName)}</span>
         </div>
       </div>
     `;
@@ -185,9 +209,7 @@ export class LiveActivityManager {
     document.body.appendChild(popup);
 
     popup.addEventListener("click", () => {
-      if (os.app.hasApp(user.appId)) {
-        os.app.launch(user.appId);
-      }
+      os.app.launch("steamApp", { steamPage: "settings" });
     });
 
     requestAnimationFrame(() => popup.classList.add("activity-popup--show"));

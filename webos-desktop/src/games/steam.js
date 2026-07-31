@@ -180,6 +180,30 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
               </div>
 
               <div class="settings-section">
+                <h3 class="settings-section-title">Notifications</h3>
+
+                <div class="settings-item">
+                  <div class="settings-item-label">
+                    <div class="settings-item-title">Currently Playing Popups</div>
+                    <div class="settings-item-description">Show popups when friends start playing a game</div>
+                  </div>
+                  <div class="settings-toggle" data-setting="currentlyPlayingPopups">
+                    <div class="settings-toggle-slider"></div>
+                  </div>
+                </div>
+
+                <div class="settings-item">
+                  <div class="settings-item-label">
+                    <div class="settings-item-title">Share My Activity</div>
+                    <div class="settings-item-description">Send what you're playing and load friends' live activity</div>
+                  </div>
+                  <div class="settings-toggle" data-setting="shareLiveActivity">
+                    <div class="settings-toggle-slider"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
                 <h3 class="settings-section-title">Library</h3>
 
                 <div class="settings-item">
@@ -250,6 +274,8 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
 }
 export class SteamSettings {
   static DEFAULTS = {
+    currentlyPlayingPopups: true,
+    shareLiveActivity: true,
     runOnStartup: false,
     startMinimized: false,
     enableStartupAnimation: true,
@@ -325,7 +351,7 @@ export function initSettingsPage(container) {
       steamAudio.playSelect();
       SteamSettings.set(setting, !isActive);
 
-      if (["hideArchiveGames", "hideLuminSDK", "recentlyPlayedRow"].includes(setting)) {
+      if (["hideArchiveGames", "hideLuminSDK", "recentlyPlayedRow", "shareLiveActivity"].includes(setting)) {
         window.dispatchEvent(
           new CustomEvent("steam-settings-changed", {
             detail: { setting, value: !isActive }

@@ -10,7 +10,8 @@ const Caches = {
   stats: {},
   peak: {},
   insights: {},
-  live: { data: null, time: 0, promise: null }
+  live: { data: null, time: 0, promise: null },
+  appList: { data: null, time: 0, promise: null }
 };
 
 const CACHE_TTL = 5 * 60 * 1000;
@@ -103,6 +104,51 @@ function jsonResponse(data, status = 200) {
 function normalizeApp(name) {
   if (!name) return "unknown";
   return name.toLowerCase().trim();
+}
+
+function isUrlPrefixed(value) {
+  if (typeof value !== "string") return false;
+  const v = value.trim().toLowerCase();
+  return v.startsWith("http") || v.startsWith("://");
+}
+
+function escapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function isAppAllowed(app, appList) {
+  const normalized = normalizeApp(app);
+  if (!appList || !appList.length) return /^[a-z0-9_.-]{1,64}$/.test(normalized);
+  return appList.includes(normalized);
+}
+
+async function fetchAppList(env) {
+  const url = env.APP_LIST_URL || "https://yukios.netlify.app/app-list.json";
+  return withCache(Caches.appList, null, async () => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return Array.isArray(data) ? data : null;
+    } catch {
+      return null;
+    }
+  }, 10 * 60 * 1000);
+}
+
+function isTrustedIconUrl(url) {
+  if (typeof url !== "string") return false;
+  return (
+    url.startsWith("https://cdn.jsdelivr.net/gh/Reeyuki/") ||
+    url.startsWith("https://yukios.netlify.app/") ||
+    url.startsWith("/")
+  );
 }
 
 function checkAuth(env, req) {
@@ -465,6 +511,9 @@ async function fetchLive(env) {
     .bind(fiveMinAgo)
     .all();
 
+  const appList = await fetchAppList(env);
+  topActive.results = topActive.results.filter((row) => isAppAllowed(row.app, appList));
+
   const recentSessions = await env.DB.prepare(
     `SELECT daily_id, MIN(timestamp) AS first, MAX(timestamp) AS last
      FROM analytics WHERE timestamp >= ? GROUP BY daily_id`
@@ -750,16 +799,31 @@ export default {
       }
 
       const events = Array.isArray(payload) ? payload : [payload];
+      let cleanEvents = events.filter(
+        (e) => !isUrlPrefixed(e.username) && !isUrlPrefixed(e.appId) && !isUrlPrefixed(e.gameTitle)
+      );
       const timestamp = new Date().toISOString();
       const dailyId = await deriveDailyId(env, clientIP);
+      const appList = await fetchAppList(env);
 
-      const inserts = events.map((event) => {
+      cleanEvents = cleanEvents.filter((e) => {
+        if (!isAppAllowed(e.appId, appList)) return false;
+        if (
+          (typeof e.username === "string" && (e.username.includes("<") || e.username.includes(">"))) ||
+          (typeof e.gameTitle === "string" && (e.gameTitle.includes("<") || e.gameTitle.includes(">")))
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      const inserts = cleanEvents.map((event) => {
         const data = {
           app: event.appId ? normalizeApp(event.appId) : "unknown",
           event: "activity_" + (event.event === "stop" ? "stop" : "start"),
           name: typeof event.username === "string" ? event.username.slice(0, 32) : "Anonymous",
           gameTitle: typeof event.gameTitle === "string" ? event.gameTitle.slice(0, 128) : "",
-          gameIcon: typeof event.gameIcon === "string" ? event.gameIcon.slice(0, 512) : "",
+          gameIcon: isTrustedIconUrl(event.gameIcon) ? event.gameIcon.slice(0, 512) : "",
           avatarIndex: typeof event.avatarIndex === "number" ? event.avatarIndex : -1,
           timestamp: event.timestamp || Date.now()
         };
@@ -773,7 +837,7 @@ export default {
       });
 
       await env.DB.batch(inserts);
-      return jsonResponse({ status: "ok", count: events.length });
+      return jsonResponse({ status: "ok", count: cleanEvents.length });
     }
 
     if (url.pathname === "/live/now-playing" && request.method === "GET") {
@@ -825,7 +889,15 @@ export default {
       const timestamp = new Date().toISOString();
       const dailyId = await deriveDailyId(env, clientIP);
 
-      const inserts = events.map((event) => {
+      const appList = await fetchAppList(env);
+      const cleanEvents = events.filter((event) => {
+        if (event.app == null || event.app === "") return true;
+        const app = normalizeApp(event.app);
+        if (app === "unknown") return true;
+        return isAppAllowed(app, appList);
+      });
+
+      const inserts = cleanEvents.map((event) => {
         if (event.app) event.app = normalizeApp(event.app);
         const id = crypto.randomUUID();
         return env.DB.prepare("INSERT INTO analytics (id, daily_id, timestamp, data) VALUES (?, ?, ?, ?)").bind(
@@ -837,7 +909,7 @@ export default {
       });
 
       await env.DB.batch(inserts);
-      return jsonResponse({ status: "ok", count: events.length });
+      return jsonResponse({ status: "ok", count: cleanEvents.length });
     }
 
     if (url.pathname === "/admin/stats" && request.method === "GET") {
@@ -1657,10 +1729,10 @@ function displayApp(name){
     s=s.slice(0,-3).trim();
     s=s.replace(/([a-z])([A-Z])/g,"$1 $2");
     s=s.charAt(0).toUpperCase()+s.slice(1);
-    return s+" App";
+    return escapeHtml(s+" App");
   }
   s=s.replace(/([a-z])([A-Z])/g,"$1 $2");
-  return s.charAt(0).toUpperCase()+s.slice(1);
+  return escapeHtml(s.charAt(0).toUpperCase()+s.slice(1));
 }
 
 function apiFetch(url, onSuccess, label) {

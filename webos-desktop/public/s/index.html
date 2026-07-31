@@ -3141,6 +3141,7 @@
                     <div class="browser-dropdown-item" data-action="save-page" data-tooltip="Bookmark the current page and save it to downloads"><i class="fa-solid fa-bookmark di-icon"></i><span class="di-label">Save Page</span></div>
                     <div class="browser-dropdown-item" data-action="screenshot" data-tooltip="Take a screenshot of the current page or panel"><i class="fa-solid fa-camera di-icon"></i><span class="di-label">Screenshot</span></div>
                     <div class="browser-dropdown-item" data-action="devtools" data-tooltip="Open developer tools (Eruda) for the current page"><i class="fa-solid fa-code di-icon"></i><span class="di-label">DevTools</span></div>
+                    <div class="browser-dropdown-item" data-action="google-lens" data-tooltip="Open Google Lens to search by image"><i class="fa-solid fa-images di-icon"></i><span class="di-label">Search With Google Lens</span></div>
                   </div>
                   <div class="browser-dropdown-section">
                     <div class="browser-dropdown-item" data-action="clear-data" data-tooltip="Delete all browsing history, downloads, and bookmarks"><i class="fa-solid fa-trash-can di-icon"></i><span class="di-label">Delete Browsing Data</span></div>
@@ -3291,6 +3292,7 @@
             else if (action === "save-page") savePage();
             else if (action === "screenshot") takeScreenshot();
             else if (action === "devtools") toggleDevTools();
+            else if (action === "google-lens") handleSubmit("https://www.google.com/imghp");
             else if (action === "clear-data") clearBrowsingData();
           });
         });

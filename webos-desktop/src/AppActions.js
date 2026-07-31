@@ -50,7 +50,7 @@ export function createAppActions(appLauncher) {
 
       case "steam":
         actions[appId] = (extra) => {
-          return openSteamWindow(appLauncher, appLauncher.explorerApp.wm, null, extra?.steamGameId);
+          return openSteamWindow(appLauncher, appLauncher.explorerApp.wm, null, extra?.steamGameId, extra?.steamPage);
         };
         break;
 

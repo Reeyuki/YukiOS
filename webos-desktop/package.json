@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/validateRegistry.js",
+    "prebuild": "node scripts/validateRegistry.js && node scripts/generateAppList.js",
     "build": "vite build",
     "build:dev": "VITE_DEV_BUILD=true vite build",
     "build:single": "cross-env VITE_SINGLE_FILE=true vite build",
