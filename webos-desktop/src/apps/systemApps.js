@@ -1,6 +1,8 @@
 import "../styles/systemApps.css";
 import { BaseApp, os } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
+import { showContextMenu } from "../shared/contextMenu.js";
+import { $ } from "../shared/domUtils.js";
 
 export class SystemAppsApp extends BaseApp {
   constructor(services) {
@@ -81,6 +83,10 @@ export class SystemAppsApp extends BaseApp {
     }
   }
 
+  appDisplayName(app) {
+    return getAppRegistry().getAppDisplayName(app.id, app.title);
+  }
+
   renderGrid(query) {
     const sectionNative = document.querySelector("#system-apps-section-native");
     const sectionWeb = document.querySelector("#system-apps-section-web");
@@ -114,6 +120,55 @@ export class SystemAppsApp extends BaseApp {
     this.renderSection(containerWeb, webFiltered, sectionWeb);
   }
 
+  showCardContextMenu(e, app) {
+    e.preventDefault();
+    e.stopPropagation();
+    const registry = getAppRegistry();
+    const displayName = registry.getAppDisplayName(app.id, app.title);
+    const isRenamed = Boolean(registry.renamedApps[app.id]);
+    showContextMenu(
+      e,
+      [
+        { id: `sa-launch-${app.id}`, label: "Launch", action: "launch", icon: "fa-play" },
+        "hr",
+        { id: `sa-rename-${app.id}`, label: "Edit Name", action: "rename", icon: "fa-edit" },
+        {
+          id: `sa-reset-${app.id}`,
+          label: "Reset Name",
+          action: "resetName",
+          icon: "fa-undo",
+          condition: () => isRenamed
+        },
+        "hr",
+        { id: `sa-pin-${app.id}`, label: "Pin to Taskbar", action: "pin", icon: "fa-thumbtack" }
+      ],
+      {
+        launch: () => os.app.launch(app.id),
+        rename: async () => {
+          const newName = await os.dialog.prompt("Rename App", `Enter a new name for "${displayName}":`, displayName);
+          if (newName !== null && newName.trim() !== "" && newName.trim() !== displayName) {
+            registry.setAppName(app.id, newName.trim());
+            this.renderGrid(this.query);
+            this.notify("System Apps", `"${displayName}" is now "${newName.trim()}"`, "success");
+          }
+        },
+        resetName: () => {
+          registry.resetAppName(app.id);
+          this.renderGrid(this.query);
+          this.notify("System Apps", `"${displayName}" name reset to "${app.title}"`, "success");
+        },
+        pin: () => {
+          const pinned = os.window.pinAppToTaskbar(app.id, displayName, app.icon);
+          this.notify(
+            "System Apps",
+            pinned ? `"${displayName}" pinned to taskbar` : `"${displayName}" is already pinned to the taskbar`,
+            "info"
+          );
+        }
+      }
+    );
+  }
+
   renderSection(container, items, sectionEl) {
     if (items.length === 0) {
       container.innerHTML = "";
@@ -133,7 +188,7 @@ export class SystemAppsApp extends BaseApp {
         return `
           <div class="games-app-card" data-app="${app.id}">
             <div class="games-app-card-img-wrap">${iconHtml}</div>
-            <div class="games-app-card-title">${app.title}</div>
+            <div class="games-app-card-title">${this.appDisplayName(app)}</div>
           </div>
         `;
       })
@@ -143,6 +198,11 @@ export class SystemAppsApp extends BaseApp {
       card.addEventListener("dblclick", () => {
         const appId = card.dataset.app;
         if (appId) os.app.launch(appId);
+      });
+      card.addEventListener("contextmenu", (e) => {
+        const appId = card.dataset.app;
+        const app = [...(this.nativeApps || []), ...(this.webApps || [])].find((a) => a.id === appId);
+        if (app) this.showCardContextMenu(e, app);
       });
     });
   }

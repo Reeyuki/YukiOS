@@ -67,6 +67,7 @@ const noopWindow = {
   bringToFront: NOOP,
   addToTaskbar: NOOP,
   removeFromTaskbar: NOOP,
+  pinAppToTaskbar: NOOP,
   getWindowControls: () => "",
   setTitle: NOOP,
   getTitle: () => null

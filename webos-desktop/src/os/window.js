@@ -158,6 +158,17 @@ export class WindowAPI {
     this.wm.removeFromTaskbar(winId);
   }
 
+  pinAppToTaskbar(appId, title, iconValue, color = null) {
+    const taskbar = this.wm?.taskbarSystem;
+    if (!taskbar || typeof taskbar.getPinnedItems !== "function") return false;
+    const pinnedItems = taskbar.getPinnedItems();
+    if (pinnedItems.some((item) => item.appId === appId)) return false;
+    pinnedItems.push({ winId: `${appId}-pinned`, appId, title, iconValue, color });
+    taskbar.savePinnedItems(pinnedItems);
+    taskbar.renderPinnedItems?.();
+    return true;
+  }
+
   getWindowControls(externalUrl, showDownload) {
     return this.wm.getWindowControls(externalUrl, showDownload);
   }
