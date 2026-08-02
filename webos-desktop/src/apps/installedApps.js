@@ -2,6 +2,7 @@ import "../styles/installedApps.css";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { showContextMenu } from "../shared/contextMenu.js";
+import { addAppToDesktop, isAppOnDesktop } from "../shared/desktopShortcuts.js";
 
 import { BaseApp, os } from "../framework.js";
 export class InstalledAppsApp extends BaseApp {
@@ -48,6 +49,13 @@ export class InstalledAppsApp extends BaseApp {
 
     this.bindControls(win, inst);
     this.loadApps(inst);
+
+    if (options.searchQuery) {
+      inst.searchQuery = String(options.searchQuery).toLowerCase();
+      const searchInput = win.querySelector("#ia-search-input");
+      if (searchInput) searchInput.value = inst.searchQuery;
+      this.renderApps(win, inst);
+    }
 
     const observer = new MutationObserver(() => {
       if (!document.getElementById(winId)) {
@@ -420,6 +428,7 @@ export class InstalledAppsApp extends BaseApp {
       } else {
         items = [
           { id: "launch-" + app.id, label: "Launch", action: "launch", icon: "fa-play" },
+          { id: "addDesktop-" + app.id, label: "Add to Desktop", action: "addDesktop", icon: "fa-desktop" },
           "hr",
           { id: "rename-" + app.id, label: "Edit Name", action: "rename", icon: "fa-edit" },
           {
@@ -442,6 +451,7 @@ export class InstalledAppsApp extends BaseApp {
 
       showContextMenu(e, items, {
         launch: () => this.handleLaunch(app),
+        addDesktop: () => this.handleAddDesktop(app),
         rename: () => this.handleRename(app, inst),
         toggle: () => this.handleToggle(app, inst),
         uninstall: () => this.handleUninstall(app, inst),
@@ -502,6 +512,19 @@ export class InstalledAppsApp extends BaseApp {
     this.appRegistry.restoreApp(app.id);
     this.loadApps(inst);
     this.notify("App Restored", `"${app.displayName}" has been restored`, "success", 5000, "fas fa-undo");
+  }
+
+  async handleAddDesktop(app) {
+    const already = await isAppOnDesktop(app.id);
+    if (already) {
+      return this.notify("Add to Desktop", `${app.displayName} is already on your desktop.`);
+    }
+    try {
+      await addAppToDesktop(app.id, app);
+      this.notify("Added to Desktop", `"${app.displayName}" is now on your desktop.`, "success", 5000, "fa-desktop");
+    } catch (err) {
+      this.notify("Add to Desktop", "Could not add the app to your desktop.");
+    }
   }
 
   handleLaunch(app) {

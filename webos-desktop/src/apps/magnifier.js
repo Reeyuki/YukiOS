@@ -7,7 +7,7 @@ export class MagnifierApp extends BaseApp {
   constructor(services) {
     super(services);
     this.panel = null;
-    this.zoom = 2;
+    this.zoom = 200;
     this.desktop = null;
     this.cursorX = 0;
     this.cursorY = 0;
@@ -106,23 +106,10 @@ export class MagnifierApp extends BaseApp {
   setupEvents() {
     if (!this.panel) return;
     this.panel.querySelector("#magnifier-zoom-in").addEventListener("click", () => {
-      if (this.zoom === 1) {
-        this.setZoom(2);
-        return;
-      }
-      const levels = [2, 4, 8, 16];
-      const idx = levels.indexOf(this.zoom);
-      if (idx < levels.length - 1) this.setZoom(levels[idx + 1]);
+      if (this.zoom < 400) this.setZoom(this.zoom + 25);
     });
     this.panel.querySelector("#magnifier-zoom-out").addEventListener("click", () => {
-      if (this.zoom === 1) return;
-      const levels = [2, 4, 8, 16];
-      const idx = levels.indexOf(this.zoom);
-      if (idx === 0) {
-        this.setZoom(1);
-        return;
-      }
-      if (idx > 0) this.setZoom(levels[idx - 1]);
+      if (this.zoom > 100) this.setZoom(this.zoom - 25);
     });
   }
 
@@ -137,7 +124,7 @@ export class MagnifierApp extends BaseApp {
   setZoom(level) {
     this.zoom = level;
     const label = $("#magnifier-zoom-level");
-    if (label) label.textContent = level * 100 + "%";
+    if (label) label.textContent = level + "%";
     this.applyTransform();
   }
 
@@ -172,7 +159,7 @@ export class MagnifierApp extends BaseApp {
   applyTransform() {
     if (!this.desktop) return;
     this.desktop.style.transformOrigin = this.cursorX + "px " + this.cursorY + "px";
-    this.desktop.style.transform = "scale(" + this.zoom + ")";
+    this.desktop.style.transform = "scale(" + this.zoom / 100 + ")";
   }
 
   setupMouseTracking() {

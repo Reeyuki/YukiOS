@@ -112,6 +112,7 @@ export const TEXT_EXTS = [
   "txt",
   "js",
   "json",
+  "desktop",
   "css",
   "xml",
   "yaml",

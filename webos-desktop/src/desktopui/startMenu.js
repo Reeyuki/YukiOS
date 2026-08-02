@@ -2,7 +2,7 @@ import { appMap } from "../games/gamesList.js";
 import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 import { camelize } from "../utils/utils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { isImageFile, resolveFileIcon, openFileWith } from "../fileDisplay.js";
+import { isImageFile, resolveFileIcon, openFileWith, showFileProperties } from "../fileDisplay.js";
 import { isTextFile } from "../utils/utils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
@@ -11,6 +11,8 @@ import { getAppRegistry } from "../appRegistry.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "../settings/settingsNav.js";
+import { addAppToDesktop, isAppOnDesktop } from "../shared/desktopShortcuts.js";
+import { isAppPinnedToTaskbar, toggleTaskbarPin, showAppProperties } from "../shared/appContextActions.js";
 
 import {
   $,
@@ -1757,8 +1759,65 @@ function populateCategoryPage(category) {
   grid.appendChild(fragment);
 }
 
+function toggleStartPin(appId) {
+  if (getFavorites().includes(appId)) unfavoriteApp(appId);
+  else favoriteApp(appId);
+}
+
 function showAppItemContextMenu(e, appId, appData) {
   showDynamicContextMenu(e, (menu, item, hr) => {
+    const isPinned = isAppPinnedToTaskbar(appId);
+    menu.appendChild(
+      item(
+        isPinned ? "Unpin from Taskbar" : "Pin to Taskbar",
+        () => toggleTaskbarPin(appId, appData),
+        isPinned ? "fas fa-thumbtack-slash" : "fas fa-thumbtack"
+      )
+    );
+
+    const isFavorite = getFavorites().includes(appId);
+    menu.appendChild(
+      item(
+        isFavorite ? "Unpin from Start" : "Pin to Start",
+        () => toggleStartPin(appId),
+        isFavorite ? "fas fa-star-half-stroke" : "fas fa-star"
+      )
+    );
+
+    menu.appendChild(
+      item(
+        "Add to Desktop",
+        async () => {
+          try {
+            const already = await isAppOnDesktop(appId);
+            if (already) {
+              os.notify.send("Already on Desktop", `${appData.title || appId} is already on your desktop.`);
+              return;
+            }
+            await addAppToDesktop(appId, appData);
+            os.notify.send("Added to Desktop", `${appData.title || appId} is now on your desktop.`);
+          } catch (error) {
+            os.notify.send("Add to Desktop", "Could not add the app to your desktop.");
+          }
+        },
+        "fas fa-desktop"
+      )
+    );
+
+    menu.appendChild(hr());
+
+    menu.appendChild(
+      item(
+        "View in Installed Apps",
+        () => os.app.launch("installedAppsApp", { searchQuery: appData.title || appId }),
+        "fas fa-th-list"
+      )
+    );
+
+    menu.appendChild(item("Properties", () => showAppProperties(appId, appData), "fas fa-info-circle"));
+
+    menu.appendChild(hr());
+
     menu.appendChild(
       item(
         "Edit Item",
@@ -1775,27 +1834,30 @@ function showAppItemContextMenu(e, appId, appData) {
                 appRegistry.setAppName(appId, newName.trim());
                 appData.title = newName.trim();
               }
-              const itemEl = $(`.start-menu-item[data-app="${CSS.escape(appId)}"] .app-title`);
-              if (itemEl) itemEl.textContent = appData.title;
+              const entryEl = $(`.start-menu-item[data-app="${CSS.escape(appId)}"] .app-title`);
+              if (entryEl) entryEl.textContent = appData.title;
             });
         },
         "fas fa-pen-to-square"
       )
     );
+
+    menu.appendChild(hr());
+
     menu.appendChild(
       item(
-        "Delete Item",
-        () => {
-          os.dialog.confirm(
-            "Delete Item",
-            `Are you sure you want to remove ${appData.title || appId} from the start menu?`,
-            () => {
-              const appRegistry = getAppRegistry();
-              if (appRegistry) {
-                appRegistry.uninstallApp(appId);
-              }
-            }
+        "Uninstall",
+        async () => {
+          const confirmed = await os.dialog.confirm(
+            "Uninstall App",
+            `Are you sure you want to uninstall ${appData.title || appId}? You can restore it later.`
           );
+          if (confirmed) {
+            const appRegistry = getAppRegistry();
+            if (appRegistry) {
+              appRegistry.uninstallApp(appId);
+            }
+          }
         },
         "fas fa-trash-can"
       )

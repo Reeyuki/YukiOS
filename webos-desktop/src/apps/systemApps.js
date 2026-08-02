@@ -3,6 +3,13 @@ import { BaseApp, os } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { $ } from "../shared/domUtils.js";
+import {
+  isAppPinnedToTaskbar,
+  toggleTaskbarPin,
+  showAppProperties,
+  addAppToDesktop,
+  isAppOnDesktop
+} from "../shared/appContextActions.js";
 
 export class SystemAppsApp extends BaseApp {
   constructor(services) {
@@ -126,24 +133,53 @@ export class SystemAppsApp extends BaseApp {
     const registry = getAppRegistry();
     const displayName = registry.getAppDisplayName(app.id, app.title);
     const isRenamed = Boolean(registry.renamedApps[app.id]);
+    const pinned = isAppPinnedToTaskbar(app.id);
     showContextMenu(
       e,
       [
         { id: `sa-launch-${app.id}`, label: "Launch", action: "launch", icon: "fa-play" },
         "hr",
-        { id: `sa-rename-${app.id}`, label: "Edit Name", action: "rename", icon: "fa-edit" },
+        {
+          id: `sa-pin-${app.id}`,
+          label: pinned ? "Unpin from Taskbar" : "Pin to Taskbar",
+          action: "pin",
+          icon: "fas fa-thumbtack"
+        },
+        { id: `sa-desktop-${app.id}`, label: "Add to Desktop", action: "addToDesktop", icon: "fas fa-desktop" },
+        "hr",
+        { id: `sa-installed-${app.id}`, label: "View in Installed Apps", action: "view", icon: "fas fa-th-list" },
+        { id: `sa-properties-${app.id}`, label: "Properties", action: "properties", icon: "fas fa-info-circle" },
+        "hr",
+        { id: `sa-rename-${app.id}`, label: "Edit Name", action: "rename", icon: "fas fa-pen-to-square" },
         {
           id: `sa-reset-${app.id}`,
           label: "Reset Name",
           action: "resetName",
-          icon: "fa-undo",
+          icon: "fas fa-undo",
           condition: () => isRenamed
         },
         "hr",
-        { id: `sa-pin-${app.id}`, label: "Pin to Taskbar", action: "pin", icon: "fa-thumbtack" }
+        {
+          id: `sa-uninstall-${app.id}`,
+          label: "Uninstall",
+          action: "uninstall",
+          icon: "fas fa-trash-can",
+          condition: () => !registry.isProtected(app.id)
+        }
       ],
       {
         launch: () => os.app.launch(app.id),
+        pin: () => toggleTaskbarPin(app.id, app),
+        addToDesktop: async () => {
+          if (await isAppOnDesktop(app.id)) {
+            os.notify.send("Already on Desktop", `${app.title} is already on your desktop.`);
+            return;
+          }
+          await addAppToDesktop(app.id, app);
+          os.notify.send("Added to Desktop", `${app.title} is now on your desktop.`);
+        },
+        view: () => os.app.launch("installedAppsApp", { searchQuery: app.title || app.id }),
+        properties: () => showAppProperties(app.id, app),
         rename: async () => {
           const newName = await os.dialog.prompt("Rename App", `Enter a new name for "${displayName}":`, displayName);
           if (newName !== null && newName.trim() !== "" && newName.trim() !== displayName) {
@@ -157,13 +193,17 @@ export class SystemAppsApp extends BaseApp {
           this.renderGrid(this.query);
           this.notify("System Apps", `"${displayName}" name reset to "${app.title}"`, "success");
         },
-        pin: () => {
-          const pinned = os.window.pinAppToTaskbar(app.id, displayName, app.icon);
-          this.notify(
-            "System Apps",
-            pinned ? `"${displayName}" pinned to taskbar` : `"${displayName}" is already pinned to the taskbar`,
-            "info"
+        uninstall: async () => {
+          const confirmed = await os.dialog.confirm(
+            "Uninstall App",
+            `Are you sure you want to uninstall ${app.title}? You can restore it later.`
           );
+          if (confirmed) {
+            if (registry.uninstallApp(app.id)) {
+              this.renderGrid(this.query);
+              this.notify("System Apps", `${app.title} uninstalled.`, "info");
+            }
+          }
         }
       }
     );

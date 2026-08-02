@@ -6,6 +6,27 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "August 3, 2026",
+    sections: [
+      {
+        icon: "fa-mouse-pointer",
+        title: "App Context Menus",
+        items: [
+          [
+            "fa-thumbtack",
+            "Pin and Place Apps",
+            "Right-click any app to pin it to the taskbar or start, add it to the desktop, or open its properties."
+          ],
+          [
+            "fa-pen-to-square",
+            "Full App Management",
+            "Rename, reset names, view in Installed Apps, or uninstall any app from its right-click menu."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "August 2, 2026",
     sections: [
       {
