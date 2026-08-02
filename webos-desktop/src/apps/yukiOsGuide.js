@@ -1,5 +1,4 @@
 import { getAppRegistry } from "../appRegistry.js";
-import { FEATURE_DATA } from "./setupApp.js";
 import { YUKIOS_VERSION } from "./about.js";
 import { appMap } from "../games/gamesList.js";
 const gamesListAppMap = appMap;
@@ -7,329 +6,94 @@ import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
 import { $, $$ } from "../shared/domUtils.js";
-
 import { BaseApp, os } from "../framework.js";
 import { buildTilingKeybindHTML } from "../tiling/TilingKeybindOverlay.js";
-const SYSTEM_INFO = {
-  version: YUKIOS_VERSION,
-  architecture: "Browser-based Desktop Environment",
-  runtime: "Built with pure javascript",
-  persistence: "Files stick around after you close the tab",
-  windowManager: "Custom drag/resize/snap/z-order system",
-  audio: "Web Audio API with per-app volume control",
-  filesystem: "Virtual VFS mounted at /home/reeyuki/",
-  workspaces: "Multiple virtual desktops",
-  animations: "35-effect window animation system",
-  tray: "System tray for background applications",
-  session: "Login screen with profile management",
-  commandPalette: "Global launcher (Ctrl+K / F1)"
-};
+import { startIntroTour } from "./introTour.js";
 
-const SYSTEM_CAPABILITIES = [
+const SHOWCASE = [
   {
-    tag: "WM",
-    title: "Windowed Multitasking",
-    desc: "Drag, resize, snap, minimize, maximize, and layer apps like a real desktop."
+    group: "Get productive",
+    icon: "fas fa-folder-open",
+    title: "File Explorer",
+    desc: "A real filesystem lives in this tab. Drag, drop, edit, organize.",
+    action: "explorerApp"
   },
   {
-    tag: "VFS",
-    title: "Virtual Filesystem",
-    desc: "Files stay put in the browser. Come back anytime and pick up where you left off."
+    group: "Get productive",
+    icon: "fas fa-file-alt",
+    title: "Notepad",
+    desc: "A clean text editor that saves straight to your virtual disk.",
+    action: "notepadApp"
   },
   {
-    tag: "PLAY",
-    title: "Games Library",
-    desc: "2900+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
+    group: "Get productive",
+    icon: "fas fa-calculator",
+    title: "Calculator",
+    desc: "A full scientific calculator with memory and history.",
+    action: "calculatorApp"
   },
   {
-    tag: "APPS",
-    title: "80 Built-in Apps",
-    desc: "Terminal, browser, editors, paint, calculator, office viewer, and more."
+    group: "Get productive",
+    icon: "fas fa-cog",
+    title: "Settings",
+    desc: "Themes, wallpapers, audio, and every system knob in one place.",
+    action: "settingsApp"
   },
   {
-    tag: "RUN",
-    title: "Multi-Runtime Engine",
-    desc: "HTML5, WebAssembly, emulation (JS-DOS, V86, Azahar 3DS), Flash (Ruffle) in one place."
+    group: "Make something",
+    icon: "fas fa-code",
+    title: "Code Editor",
+    desc: "A full VS Code-powered editor running right inside the tab.",
+    action: "monacoApp"
   },
   {
-    tag: "LOOK",
-    title: "Personalization",
-    desc: "Themes, wallpapers, custom cursors, window animations, and UI scaling."
+    group: "Make something",
+    icon: "fas fa-terminal",
+    title: "Terminal",
+    desc: "Real commands, git, Python, and WASM tools like btop and cmatrix.",
+    action: "terminalApp"
   },
   {
-    tag: "WORK",
-    title: "Virtual Workspaces",
-    desc: "Multiple desktops for organizing different tasks and contexts."
+    group: "Make something",
+    icon: "fas fa-wand-magic-sparkles",
+    title: "App Creator",
+    desc: "Turn any URL into a desktop app in under a minute.",
+    action: "appCreatorApp"
   },
   {
-    tag: "AUDIO",
-    title: "Per-App Audio",
-    desc: "Individual volume control for each application with master volume."
+    group: "Make something",
+    icon: "fas fa-camera",
+    title: "Camera",
+    desc: "Snap a photo and save it straight to your files.",
+    action: "cameraApp"
   },
   {
-    tag: "TRAY",
-    title: "System Tray",
-    desc: "Background applications can minimize to system tray with resident mode."
+    group: "Make something",
+    icon: "fas fa-cube",
+    title: "3D Models",
+    desc: "Open and orbit OBJ, GLTF, and GLB models in 3D.",
+    action: "model3dApp"
   },
   {
-    tag: "SESSION",
-    title: "Session Management",
-    desc: "Login screen with profile customization and 15-minute auto-login."
+    group: "Play something",
+    icon: "fab fa-steam",
+    title: "Steam",
+    desc: "Browse and launch 2900+ games from a full library.",
+    action: "steamApp"
   },
   {
-    tag: "CMD",
-    title: "Command Palette",
-    desc: "Global launcher for apps, files, and system commands (Ctrl+K / F1)."
+    group: "Play something",
+    icon: "fas fa-gamepad",
+    title: "Emulators",
+    desc: "Boot DOS, Flash, console, and x86 systems in the browser.",
+    action: "emulatorApp"
   },
   {
-    tag: "ANIM",
-    title: "Window Animations",
-    desc: "35 customizable effects for open, close, and minimize animations."
-  },
-  {
-    tag: "THEME",
-    title: "Theming Support",
-    desc: "Dark/light themes, window transparency, custom cursors, and performance modes."
-  },
-  {
-    tag: "APP",
-    title: "App Management",
-    desc: "Rename, disable, uninstall apps with bulk actions and search filters."
-  },
-  {
-    tag: "TIME",
-    title: "Playtime Tracking",
-    desc: "Automatic tracking of app and game playtime with session history and statistics."
-  },
-  {
-    tag: "PWA",
-    title: "PWA Support",
-    desc: "Progressive Web App capabilities for offline use and desktop installation."
-  },
-  {
-    tag: "IMPORT",
-    title: "Import/Export",
-    desc: "Backup and migrate full system configuration with data import/export."
-  },
-  {
-    tag: "CDN",
-    title: "CDN Mirror Selection",
-    desc: "Configure CDN mirrors for improved asset loading reliability and speed."
-  },
-  {
-    tag: "CURSOR",
-    title: "Custom Cursors",
-    desc: "Custom cursor support with themed pointers and enhanced visual feedback."
-  },
-  {
-    tag: "ADS",
-    title: "Ads Integration",
-    desc: "Optional ad display system with analytics buffering and user control."
-  },
-  {
-    tag: "ANALYTICS",
-    title: "Analytics Toggle",
-    desc: "Enable or disable anonymous usage analytics for system improvement."
-  },
-  {
-    tag: "RESIZE",
-    title: "Alt+Right-Click Resize",
-    desc: "Hold Alt or Super key and right-click drag anywhere on a window to resize it quickly."
-  },
-  {
-    tag: "BUBBLE",
-    title: "Click Bubble Feedback",
-    desc: "Visual animation feedback on clicks for improved interaction feel."
-  },
-  {
-    tag: "PREVIEW",
-    title: "Taskbar Previews",
-    desc: "Hover taskbar for live window previews with Tab Peek functionality."
-  },
-  {
-    tag: "PIN",
-    title: "Taskbar Pinning",
-    desc: "Pin frequently used apps to taskbar for quick access with improved behavior."
-  },
-  {
-    tag: "START",
-    title: "Start Menu Customization",
-    desc: "Customize start menu categories, items, and keybinds (Space, Tab, Ctrl)."
-  },
-  {
-    tag: "TRANS",
-    title: "Transparency Levels",
-    desc: "Configure window transparency levels: High, Medium, or Low for glass effects."
-  },
-  {
-    tag: "PERF",
-    title: "Turbo Mode",
-    desc: "Choose Balanced, Turbo, or Quality mode to optimize system behavior."
-  },
-  {
-    tag: "STRETCH",
-    title: "Desktop Scroll Lock",
-    desc: "Prevent desktop page stretch when dragging windows beyond screen bounds."
-  },
-  {
-    tag: "THEME2",
-    title: "Theme Presets",
-    desc: "Expanded theming system with improved consistency and custom theme support."
-  },
-  {
-    tag: "STEAM",
-    title: "Steam Integration",
-    desc: "Steam play counts, LuminSDK catalog (1000+ games), and home button support."
-  },
-  {
-    tag: "DL",
-    title: "File Download",
-    desc: "Download files directly from explorer with right-click context menu."
-  },
-  {
-    tag: "FAVICON",
-    title: "Dynamic Favicon",
-    desc: "Browser tab icon updates dynamically to reflect current activity."
-  },
-  {
-    tag: "WINICON",
-    title: "Window Icons",
-    desc: "App windows display their respective icons in the title bar for easy identification."
-  },
-  {
-    tag: "WINMENU",
-    title: "Window Header Menu",
-    desc: "Right-click on window header for quick actions and window controls."
-  },
-  {
-    tag: "F2",
-    title: "F2 Rename",
-    desc: "Press F2 to rename files quickly in explorer, just like native OS."
-  },
-  {
-    tag: "DRAG",
-    title: "Drag to Desktop",
-    desc: "Drag files from apps directly to desktop to save them conveniently."
-  },
-  {
-    tag: "REFRESH",
-    title: "Desktop Auto-Refresh",
-    desc: "Desktop automatically reflects file changes without manual refresh."
-  },
-  {
-    tag: "HTML",
-    title: "HTML File Support",
-    desc: "Open and render HTML files directly in the browser with full support."
-  },
-  {
-    tag: "ARCHIVE",
-    title: "Archive Support",
-    desc: "Extract 7z, .tar.xz, zip, and other archive formats via right-click menu."
-  },
-  {
-    tag: "AUDIO",
-    title: "Audio Playback",
-    desc: "Play audio files directly with built-in audio player and mixer integration."
-  },
-  {
-    tag: "VIDEO",
-    title: "Video Turbo",
-    desc: "Smoother video playback across the system with optimized rendering."
-  },
-  {
-    tag: "JSDOS",
-    title: "JsDos GUI Support",
-    desc: "Upload jsdos files directly and play featured DOS games with GUI."
-  },
-  {
-    tag: "PROPS",
-    title: "Properties Page",
-    desc: "View detailed file and app properties with enhanced information display."
-  },
-  {
-    tag: "CONTEXT",
-    title: "Context Menu Polish",
-    desc: "Improved context menus with better organization and overflow handling."
-  },
-  {
-    tag: "CTXFILE",
-    title: "Explorer File Actions",
-    desc: "Right-click supports convert/transform, create archive, bulk download ZIP, extract archives, and wallpaper actions."
-  },
-  {
-    tag: "CTXWIN",
-    title: "Window Context Controls",
-    desc: "Taskbar and window menus include snap actions, workspace move, properties, and pin/unpin taskbar."
-  },
-  {
-    tag: "CTXTRAY",
-    title: "Tray & Start Menu Context",
-    desc: "Tray menu supports open/quit and start menu grid menu supports add/edit/remove shortcuts."
-  },
-  {
-    tag: "CTXSTEAM",
-    title: "Steam Library Context",
-    desc: "Steam game menus support favorites, hide/unhide, collections, add to desktop, and broken game reports."
-  },
-  {
-    tag: "EXPLORER",
-    title: "Explorer Styling",
-    desc: "Refined explorer appearance with improved visual consistency."
-  },
-  {
-    tag: "PROXY",
-    title: "App Proxy Support",
-    desc: "Per-app CORS proxy support for created web apps and external URLs."
-  },
-  {
-    tag: "CONVERT",
-    title: "File Converter",
-    desc: "Convert files to different formats locally without uploading to servers."
-  },
-  {
-    tag: "SHORTCUTS",
-    title: "Keyboard Shortcuts App",
-    desc: "Browse every global hotkey and app shortcut in one place."
-  },
-  {
-    tag: "SETUP",
-    title: "Setup Wizard",
-    desc: "First-time setup wizard for system personalization and configuration."
-  },
-  {
-    tag: "NEWS",
-    title: "What's New",
-    desc: "Changelog app showing latest features, improvements, and fixes."
-  },
-  {
-    tag: "CALENDAR",
-    title: "Calendar App",
-    desc: "Built-in calendar with event management and date navigation."
-  },
-  {
-    tag: "PIXEL",
-    title: "LibreSprite",
-    desc: "Pixel art and animation editor for creating sprites and tilesets."
-  },
-  {
-    tag: "SPOTIFY",
-    title: "Spotify Utility",
-    desc: "Spotify utility app for music streaming integration."
-  },
-  {
-    tag: "YOUTUBE",
-    title: "YouTube Utilities",
-    desc: "YouTube tools and utilities for video management and playback."
-  },
-  {
-    tag: "STORAGE",
-    title: "Storage Editor",
-    desc: "View and edit IndexedDB storage data for debugging and advanced users."
-  },
-  {
-    tag: "INSTALLED",
-    title: "Installed Apps",
-    desc: "Manage installed applications with rename, disable, and uninstall options."
+    group: "Play something",
+    icon: "fas fa-floppy-disk",
+    title: "DOS Games",
+    desc: "Play classic DOS titles through the JsDos runtime.",
+    action: "jsDosApp"
   }
 ];
 
@@ -342,7 +106,7 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   open(opts = {}) {
-    const win = os.window.create("yuki-os-guide", "YukiOS Guide", "900px", "650px", {
+    const win = os.window.create("yuki-os-guide", "YukiOS Guide", "980px", "720px", {
       icon: "fas fa-book-open",
       appId: "yuki-os-guide"
     });
@@ -379,9 +143,9 @@ export class YukiOsGuideApp extends BaseApp {
                 <span>Apps</span>
                 <span class="guide-nav-badge">${filteredApps.length}</span>
               </button>
-              <button class="guide-nav-item ${this.currentTab === "features" ? "active" : ""}" data-tab="features">
-                <i class="fas fa-star"></i>
-                <span>Features</span>
+              <button class="guide-nav-item ${this.currentTab === "developers" ? "active" : ""}" data-tab="developers">
+                <i class="fas fa-code"></i>
+                <span>For Developers</span>
               </button>
               <button class="guide-nav-item ${this.currentTab === "tiling" ? "active" : ""}" data-tab="tiling">
                 <i class="fas fa-th-large"></i>
@@ -403,8 +167,8 @@ export class YukiOsGuideApp extends BaseApp {
         return this.buildOverview(apps);
       case "apps":
         return this.buildApps(apps);
-      case "features":
-        return this.buildFeatures();
+      case "developers":
+        return this.buildDevelopers();
       case "tiling":
         return this.buildTiling();
       default:
@@ -413,149 +177,62 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   buildOverview(apps) {
-    const systemApps = apps.filter((a) => a.type === "core" || a.type === "bundled");
-    const gameApps = apps.filter((a) => a.type === "external");
-    const totalFeatures = FEATURE_DATA.step2.length + FEATURE_DATA.step3.length + FEATURE_DATA.step3b.length;
+    const showcaseItems = SHOWCASE.filter((item) => this.os.app.hasApp(item.action));
+    const groups = ["Get productive", "Make something", "Play something"].map((label) => ({
+      label,
+      items: showcaseItems.filter((item) => item.group === label)
+    }));
 
     return `
-      <div class="guide-section">
+      <div class="guide-section guide-overview">
         <div class="guide-hero">
           <div class="guide-hero-icon">
-            <i class="fas fa-book-open"></i>
+            <i class="fas fa-rocket"></i>
           </div>
           <div class="guide-hero-content">
-            <h1>YukiOS ${SYSTEM_INFO.version}</h1>
-            <p>${apps.length}+ apps, 2900+ games - your desktop, in your browser</p>
-            <div class="guide-hero-meta">
-              <span class="hero-tag"><i class="fas fa-code"></i> ${SYSTEM_INFO.runtime}</span>
-              <span class="hero-tag"><i class="fas fa-database"></i> ${SYSTEM_INFO.persistence}</span>
-            </div>
+            <h1>Welcome to YukiOS</h1>
+            <p class="guide-tagline">A full desktop inside one browser tab. No installs, nothing to block, everything saved.</p>
+            <p class="guide-blurb">Everything on this page is real and running right now. Drag windows, browse the web, open a terminal, or boot a retro game, then close the tab and come back later. It all remembers.</p>
+            <button class="guide-tour-btn" type="button"><i class="fas fa-play"></i> Take the 60-second tour</button>
+            <p class="guide-tech-note"><i class="fas fa-code"></i> Built with pure JavaScript, no React and no framework, all in one HTML file. Running v${YUKIOS_VERSION}.</p>
           </div>
         </div>
 
-        <div class="guide-stats">
-          <div class="stat-card">
-            <i class="fas fa-th"></i>
-            <div class="stat-value">${systemApps.length}</div>
-            <div class="stat-label">Apps</div>
-          </div>
-          <div class="stat-card">
-            <i class="fas fa-gamepad"></i>
-            <div class="stat-value">2900+</div>
-            <div class="stat-label">Games</div>
-          </div>
-          <div class="stat-card">
-            <i class="fas fa-star"></i>
-            <div class="stat-value">${totalFeatures}</div>
-            <div class="stat-label">Features</div>
-          </div>
-
-          <div class="stat-card">
-            <i class="fas fa-magic"></i>
-            <div class="stat-value">35</div>
-            <div class="stat-label">Animations</div>
-          </div>
+        <div class="guide-facts">
+          <div class="fact-chip"><i class="fas fa-code"></i> 140k lines of vanilla JS</div>
+          <div class="fact-chip"><i class="fas fa-globe"></i> Runs on any browser</div>
+          <div class="fact-chip"><i class="fas fa-database"></i> Everything persists in this tab</div>
+          <div class="fact-chip"><i class="fas fa-gamepad"></i> Emulates DOS, Flash, 3DS, and x86</div>
         </div>
 
         <div class="guide-subsection">
-          <h2><i class="fas fa-microchip"></i> System Architecture</h2>
-          <div class="architecture-grid">
-            <div class="arch-item">
-              <i class="fas fa-window-maximize"></i>
-              <strong>${SYSTEM_INFO.windowManager}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-volume-high"></i>
-              <strong>${SYSTEM_INFO.audio}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-folder-tree"></i>
-              <strong>${SYSTEM_INFO.filesystem}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-desktop"></i>
-              <strong>${SYSTEM_INFO.workspaces}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-film"></i>
-              <strong>${SYSTEM_INFO.animations}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-bars"></i>
-              <strong>${SYSTEM_INFO.tray}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-user-lock"></i>
-              <strong>${SYSTEM_INFO.session}</strong>
-            </div>
-            <div class="arch-item">
-              <i class="fas fa-terminal"></i>
-              <strong>${SYSTEM_INFO.commandPalette}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="guide-subsection">
-          <h2><i class="fas fa-rocket"></i> System Capabilities</h2>
-          <div class="capabilities-grid" id="capabilities-grid">
-            ${SYSTEM_CAPABILITIES.map(
-              (cap) => `
-              <div class="capability-card" data-search="${cap.title.toLowerCase()} ${cap.desc.toLowerCase()} ${cap.tag.toLowerCase()}">
-                <div class="capability-tag">${cap.tag}</div>
-                <h3>${cap.title}</h3>
-                <p>${cap.desc}</p>
-              </div>
-            `
-            ).join("")}
-          </div>
-        </div>
-
-        <div class="guide-subsection">
-          <h2><i class="fas fa-info-circle"></i> Quick Start</h2>
-          <div class="quick-start-list">
-            <div class="quick-start-item">
-              <i class="fas fa-keyboard"></i>
-              <div>
-                <strong>Command Palette</strong>
-                <p>Press Ctrl+K or F1 to launch apps, search files, or run commands</p>
+          <h2><i class="fas fa-th"></i> Try it live</h2>
+          <p class="guide-subsection-note">Click anything below and it opens the real app.</p>
+          ${groups
+            .map(
+              (group) => `
+            <div class="showcase-group">
+              <h3 class="showcase-group-title">${group.label}</h3>
+              <div class="showcase-grid">
+                ${group.items
+                  .map(
+                    (item) => `
+                  <div class="showcase-card" data-search="${item.title.toLowerCase()} ${item.desc.toLowerCase()}" data-action="${item.action}">
+                    <div class="showcase-icon"><i class="${item.icon}"></i></div>
+                    <div class="showcase-info">
+                      <h4>${item.title}</h4>
+                      <p>${item.desc}</p>
+                    </div>
+                    <span class="showcase-open"><i class="fas fa-external-link-alt"></i> Open</span>
+                  </div>
+                `
+                  )
+                  .join("")}
               </div>
             </div>
-            <div class="quick-start-item">
-              <i class="fas fa-folder"></i>
-              <div>
-                <strong>File Explorer</strong>
-                <p>Access your virtual filesystem with persistent storage at /home/reeyuki/</p>
-              </div>
-            </div>
-            <div class="quick-start-item">
-              <i class="fas fa-gamepad"></i>
-              <div>
-                <strong>Games Hub</strong>
-                <p>Browse 2900+ games via Steam integration or direct launch</p>
-              </div>
-            </div>
-            <div class="quick-start-item">
-              <i class="fas fa-layer-group"></i>
-              <div>
-                <strong>Workspaces</strong>
-                <p>Use multiple virtual desktops to organize your tasks</p>
-              </div>
-            </div>
-            <div class="quick-start-item">
-              <i class="fas fa-volume-high"></i>
-              <div>
-                <strong>Audio Mixer</strong>
-                <p>Control volume per-app from the system tray</p>
-              </div>
-            </div>
-            <div class="quick-start-item">
-              <i class="fas fa-sliders-h"></i>
-              <div>
-                <strong>Settings</strong>
-                <p>Customize themes, wallpapers, animations, and more</p>
-              </div>
-            </div>
-          </div>
+          `
+            )
+            .join("")}
         </div>
       </div>
     `;
@@ -624,81 +301,68 @@ export class YukiOsGuideApp extends BaseApp {
     `;
   }
 
-  buildFeatures() {
-    const searchLower = this.searchQuery.toLowerCase();
-
-    const filterFeatures = (features) => {
-      return features.filter(
-        (f) => f.title.toLowerCase().includes(searchLower) || f.desc.toLowerCase().includes(searchLower)
-      );
-    };
-
-    const step2Filtered = filterFeatures(FEATURE_DATA.step2);
-    const step3Filtered = filterFeatures(FEATURE_DATA.step3);
-    const step3bFiltered = filterFeatures(FEATURE_DATA.step3b);
-
+  buildDevelopers() {
     return `
       <div class="guide-section">
         <div class="guide-header">
-          <h1>Feature Explorer</h1>
-          <p>Discover what YukiOS can do</p>
+          <h1><i class="fas fa-code"></i> For Developers</h1>
+          <p>The engineering behind a full desktop in one tab.</p>
         </div>
 
         <div class="guide-subsection">
-          <h2><i class="fas fa-star"></i> Core Highlights</h2>
-          <div class="feature-grid">
-            ${step2Filtered
-              .map(
-                (f) => `
-              <div class="feature-card">
-                <div class="feature-icon"><i class="${f.icon}"></i></div>
-                <h3>${f.title}</h3>
-                <p>${f.desc}</p>
-              </div>
-            `
-              )
-              .join("")}
+          <h2><i class="fas fa-layer-group"></i> The Stack</h2>
+          <div class="dev-grid">
+            <div class="dev-card">
+              <div class="dev-card-icon"><i class="fab fa-js"></i></div>
+              <h3>Vanilla JavaScript</h3>
+              <p>No framework, no virtual DOM. Just modern web platform code.</p>
+            </div>
+            <div class="dev-card">
+              <div class="dev-card-icon"><i class="fas fa-bolt"></i></div>
+              <h3>Vite build</h3>
+              <p>Fast bundler with a tree-shaken output and a single entry point.</p>
+            </div>
+            <div class="dev-card">
+              <div class="dev-card-icon"><i class="fas fa-file-code"></i></div>
+              <h3>One HTML file output</h3>
+              <p>Deploy to any static host. No server, no database, no setup.</p>
+            </div>
           </div>
-          ${step2Filtered.length === 0 ? `<p class="no-results">No matching features</p>` : ""}
         </div>
 
         <div class="guide-subsection">
-          <h2><i class="fas fa-puzzle-piece"></i> System Features</h2>
-          <div class="feature-grid">
-            ${step3Filtered
-              .map(
-                (f) => `
-              <div class="feature-card">
-                <div class="feature-icon"><i class="${f.icon}"></i></div>
-                <h3>${f.title}</h3>
-                <p>${f.desc}</p>
-              </div>
-            `
-              )
-              .join("")}
+          <h2><i class="fas fa-microchip"></i> Runtimes running in your browser</h2>
+          <div class="runtime-list">
+            <div class="runtime-item"><i class="fas fa-terminal"></i><div><strong>WebAssembly ports</strong><p>btop, lavat, and cmatrix are real C/C++ recompiled to WASM.</p></div></div>
+            <div class="runtime-item"><i class="fab fa-python"></i><div><strong>Pyodide Python</strong><p>A full CPython interpreter compiled to WebAssembly.</p></div></div>
+            <div class="runtime-item"><i class="fab fa-node-js"></i><div><strong>WebContainers Node.js</strong><p>A Node.js runtime running entirely inside the tab.</p></div></div>
+            <div class="runtime-item"><i class="fas fa-film"></i><div><strong>Ruffle Flash</strong><p>Runs .swf files without any plugin.</p></div></div>
+            <div class="runtime-item"><i class="fas fa-floppy-disk"></i><div><strong>JsDos</strong><p>The DOSBox port that boots classic DOS software.</p></div></div>
+            <div class="runtime-item"><i class="fas fa-gamepad"></i><div><strong>EmulatorJS</strong><p>Retro console emulation right in the browser.</p></div></div>
+            <div class="runtime-item"><i class="fas fa-microchip"></i><div><strong>V86 x86</strong><p>Boots full x86 OS images like FreeDOS at near-native speed.</p></div></div>
+            <div class="runtime-item"><i class="fas fa-mobile-alt"></i><div><strong>Azahar 3DS</strong><p>Nintendo 3DS emulation with a modern renderer.</p></div></div>
           </div>
-          ${step3Filtered.length === 0 ? `<p class="no-results">No matching features</p>` : ""}
         </div>
 
         <div class="guide-subsection">
-          <h2><i class="fas fa-plus-circle"></i> Advanced Features</h2>
-          <div class="feature-grid">
-            ${step3bFiltered
-              .map(
-                (f) => `
-              <div class="feature-card">
-                <div class="feature-icon"><i class="${f.icon}"></i></div>
-                <h3>${f.title}</h3>
-                <p>${f.desc}</p>
-              </div>
-            `
-              )
-              .join("")}
+          <h2><i class="fas fa-sitemap"></i> Architecture</h2>
+          <div class="architecture-list">
+            <div class="arch-item"><i class="fas fa-window-maximize"></i><div><strong>Custom window manager</strong><p>Drag, resize, snap, and z-order, all hand-rolled.</p></div></div>
+            <div class="arch-item"><i class="fas fa-database"></i><div><strong>IndexedDB virtual filesystem</strong><p>Real persistent storage mounted at /home/reeyuki/.</p></div></div>
+            <div class="arch-item"><i class="fas fa-history"></i><div><strong>Session persistence</strong><p>Windows, layout, and app state restore on reload.</p></div></div>
+            <div class="arch-item"><i class="fas fa-search"></i><div><strong>Command palette</strong><p>Launch anything with Ctrl+K or F1.</p></div></div>
+            <div class="arch-item"><i class="fas fa-th-large"></i><div><strong>Tiling WM</strong><p>Hyprland-inspired, with a live-editable config file.</p></div></div>
+            <div class="arch-item"><i class="fas fa-puzzle-piece"></i><div><strong>Extensible apps</strong><p>Every app is a class; add new ones without touching core.</p></div></div>
+            <div class="arch-item"><i class="fas fa-mobile-alt"></i><div><strong>PWA</strong><p>Installable, offline-capable, and addable to your home screen.</p></div></div>
           </div>
-          ${step3bFiltered.length === 0 ? `<p class="no-results">No matching features</p>` : ""}
         </div>
 
-        ${this.buildCategorizedShortcuts(searchLower)}
+        <div class="guide-subsection">
+          <h2><i class="fas fa-plus-circle"></i> Extend it yourself</h2>
+          <div class="extend-note">
+            <p>Open the <strong>App Creator</strong> to turn any URL into a desktop app with a custom icon, per-app CORS proxy, and window options.</p>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -723,16 +387,16 @@ export class YukiOsGuideApp extends BaseApp {
             ${buildTilingKeybindHTML(searchLower)}
           </div>
           <div class="feature-card" style="margin-bottom:12px;margin-top:16px">
-            <div class="feature-icon"><i class="fas fa-file-cog"></i></div>
+            <div class="feature-icon"><i class="fas fa-gear"></i></div>
             <h3>Configuration File</h3>
-            <p>All tiling settings are stored in <code>Config/yukiOs/tiling.conf</code> — a JSON file in your virtual filesystem. Edit it with the Explorer or any text editor; changes are auto-detected and applied within seconds.</p>
+            <p>All tiling settings are stored in <code>Config/yukiOs/tiling.conf</code>, a JSON file in your virtual filesystem. Edit it with the Explorer or any text editor; changes are auto-detected and applied within seconds.</p>
           </div>
           <div class="config-doc">
             <table class="config-table">
               <tr><th>Setting</th><th>Default</th><th>Description</th></tr>
               <tr><td><code>gaps.inner</code></td><td><code>6</code></td><td>Gap (px) between adjacent tiled windows</td></tr>
               <tr><td><code>gaps.outer</code></td><td><code>12</code></td><td>Gap (px) between windows and screen edges</td></tr>
-              <tr><td><code>split_ratio</code></td><td><code>0.5</code></td><td>Default split ratio (0.1–0.9) for master/stack areas</td></tr>
+              <tr><td><code>split_ratio</code></td><td><code>0.5</code></td><td>Default split ratio (0.1-0.9) for master/stack areas</td></tr>
               <tr><td><code>border_width</code></td><td><code>3</code></td><td>Thickness (px) of the focused window border glow</td></tr>
               <tr><td><code>border_radius</code></td><td><code>8</code></td><td>Corner radius (px) for tiled windows</td></tr>
               <tr><td><code>resize_delta</code></td><td><code>0.05</code></td><td>Step size when resizing splits via keyboard</td></tr>
@@ -748,161 +412,6 @@ export class YukiOsGuideApp extends BaseApp {
     `;
   }
 
-  buildCategorizedShortcuts(searchLower) {
-    const CATEGORY_META = {
-      global: { icon: "fas fa-globe", label: "Global & System" },
-      desktop: { icon: "fas fa-desktop", label: "Desktop & Files" },
-      notepad: { icon: "fas fa-file-alt", label: "Notepad" },
-      browser: { icon: "fas fa-compass", label: "Yuki Browser" },
-      calc: { icon: "fas fa-calculator", label: "Calculator" },
-      calendar: { icon: "fas fa-calendar-alt", label: "Calendar" },
-      terminal: { icon: "fas fa-terminal", label: "Terminal" },
-      office: { icon: "fas fa-file-word", label: "Office" },
-      model3d: { icon: "fas fa-cube", label: "3D Model Editor" },
-      games: { icon: "fas fa-gamepad", label: "Games" }
-    };
-    const CATEGORY_ORDER = [
-      "global",
-      "desktop",
-      "notepad",
-      "browser",
-      "calc",
-      "calendar",
-      "terminal",
-      "office",
-      "model3d",
-      "games"
-    ];
-
-    const groups = {};
-    FEATURE_DATA.step6.keyboardShortcuts.forEach((s) => {
-      const cat = s.cat || "global";
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(s);
-    });
-
-    return `
-      <div class="guide-subsection">
-        <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
-        ${CATEGORY_ORDER.map((cat) => {
-          const items = (groups[cat] || []).filter(
-            (s) => s.keys.toLowerCase().includes(searchLower) || s.desc.toLowerCase().includes(searchLower)
-          );
-          if (items.length === 0) return "";
-          const meta = CATEGORY_META[cat] || { icon: "fas fa-keyboard", label: cat };
-          return `
-              <div class="shortcut-category">
-                <h3 class="shortcut-category-title"><i class="${meta.icon}"></i> ${meta.label}</h3>
-                <div class="shortcuts-grid">
-                  ${items
-                    .map(
-                      (s) => `
-                    <div class="shortcut-item">
-                      <kbd>${s.keys}</kbd>
-                      <span>${s.desc}</span>
-                    </div>
-                  `
-                    )
-                    .join("")}
-                </div>
-              </div>
-            `;
-        }).join("")}
-        ${
-          FEATURE_DATA.step6.keyboardShortcuts.filter(
-            (s) => s.keys.toLowerCase().includes(searchLower) || s.desc.toLowerCase().includes(searchLower)
-          ).length === 0
-            ? `<p class="no-results">No matching shortcuts</p>`
-            : ""
-        }
-      </div>
-    `;
-  }
-
-  buildConnectionCards(apps, searchLower) {
-    const connections = [
-      {
-        feature: "Productivity Tools",
-        apps: [
-          "notepadApp",
-          "markdownApp",
-          "monacoApp",
-          "officeApp",
-          "yukiConvertApp",
-          "calculatorApp",
-          "dataEditorApp",
-          "vscode"
-        ],
-        icon: "fas fa-pen-fancy"
-      },
-      {
-        feature: "System Utilities",
-        apps: [
-          "terminal",
-          "explorerApp",
-          "settingsApp",
-          "taskManagerApp",
-          "shortcutsApp",
-          "archiveExtractorApp",
-          "categoriesApp"
-        ],
-        icon: "fas fa-tools"
-      },
-      {
-        feature: "Media & Creative",
-        apps: ["cameraApp", "model3dApp", "paint", "photopea", "youtube", "shittifyApp", "weatherApp", "libreSprite"],
-        icon: "fas fa-palette"
-      },
-      {
-        feature: "Gaming Runtime",
-        apps: ["emulatorApp", "ruffleApp", "jsDosApp", "v86app", "steam", "azahar", "flash"],
-        icon: "fas fa-gamepad"
-      },
-      {
-        feature: "Communication",
-        apps: ["browserApp", "kiwiIRC", "newsApp"],
-        icon: "fas fa-comments"
-      },
-      {
-        feature: "System Management",
-        apps: ["aboutApp", "achievementsApp", "installedAppsApp", "yukiOsGuideApp"],
-        icon: "fas fa-cog"
-      }
-    ];
-
-    return connections
-      .map((conn) => {
-        const matchingApps = apps.filter((a) => conn.apps.includes(a.id));
-        if (matchingApps.length === 0) return "";
-
-        return `
-        <div class="connection-card">
-          <div class="connection-header">
-            <i class="${conn.icon}"></i>
-            <h3>${conn.feature}</h3>
-          </div>
-          <div class="connection-apps">
-            ${matchingApps
-              .map(
-                (app) => `
-              <div class="mini-app-tag">
-                ${
-                  app.icon && (app.icon.startsWith("fa") || app.icon.startsWith("fas") || app.icon.startsWith("fab"))
-                    ? `<i class="${app.icon}"></i>`
-                    : `<i class="fas fa-cube"></i>`
-                }
-                <span>${app.displayName}</span>
-              </div>
-            `
-              )
-              .join("")}
-          </div>
-        </div>
-      `;
-      })
-      .join("");
-  }
-
   filterApps(apps) {
     const searchLower = this.searchQuery.toLowerCase();
     return apps.filter(
@@ -910,19 +419,21 @@ export class YukiOsGuideApp extends BaseApp {
     );
   }
 
-  filterCapabilities(win) {
+  filterOverview(win) {
     const searchLower = this.searchQuery.toLowerCase();
-    const capabilitiesGrid = $("#capabilities-grid", win);
-    if (!capabilitiesGrid) return;
+    const overview = $(".guide-overview", win);
+    if (!overview) return;
 
-    const cards = $$(".capability-card", capabilitiesGrid);
-    cards.forEach((card) => {
-      const searchData = card.dataset.search || "";
-      if (searchData.includes(searchLower) || searchLower === "") {
-        card.style.display = "";
-      } else {
-        card.style.display = "none";
-      }
+    $$(".showcase-group", overview).forEach((group) => {
+      const cards = $$(".showcase-card", group);
+      let anyVisible = false;
+      cards.forEach((card) => {
+        const searchData = card.dataset.search || "";
+        const visible = searchLower === "" || searchData.includes(searchLower);
+        card.style.display = visible ? "" : "none";
+        if (visible) anyVisible = true;
+      });
+      group.style.display = anyVisible ? "" : "none";
     });
   }
 
@@ -960,6 +471,7 @@ export class YukiOsGuideApp extends BaseApp {
       dataEditorApp: "productivity",
 
       terminal: "system",
+      terminalApp: "system",
       explorerApp: "system",
       settingsApp: "system",
       taskManagerApp: "system",
@@ -973,6 +485,7 @@ export class YukiOsGuideApp extends BaseApp {
       paint: "media",
       photopea: "media",
       youtube: "media",
+      youtubeApp: "media",
       shittifyApp: "media",
       weatherApp: "media",
       libreSpriteApp: "media",
@@ -984,6 +497,7 @@ export class YukiOsGuideApp extends BaseApp {
       ruffleApp: "games",
       jsDosApp: "games",
       v86app: "games",
+      steamApp: "games",
       steam: "games",
       azahar: "games",
       flash: "games",
@@ -1021,7 +535,7 @@ export class YukiOsGuideApp extends BaseApp {
     searchInput.addEventListener("input", (e) => {
       this.searchQuery = e.target.value;
       this.refreshContent(win);
-      this.filterCapabilities(win);
+      this.filterOverview(win);
     });
 
     navBtns.forEach((btn) => {
@@ -1033,11 +547,44 @@ export class YukiOsGuideApp extends BaseApp {
         btn.classList.add("active");
 
         this.refreshContent(win);
-        this.filterCapabilities(win);
+        this.filterOverview(win);
       });
     });
 
-    this.appCardBinder = () => {};
+    this.appCardBinder = () => {
+      const mainContent = $(".yuki-guide-main", win);
+      if (!mainContent) return;
+
+      $$(".showcase-card", mainContent).forEach((card) => {
+        card.addEventListener("click", () => {
+          const appId = card.dataset.action;
+          if (appId && os.app.hasApp(appId)) {
+            os.app.launch(appId);
+          }
+        });
+      });
+
+      $$(".app-card", mainContent).forEach((card) => {
+        const appId = card.dataset.appId;
+        if (!appId) return;
+        if (!os.app.hasApp(appId)) {
+          card.classList.add("app-card-disabled");
+          return;
+        }
+        card.addEventListener("click", () => {
+          os.app.launch(appId);
+        });
+      });
+
+      const tourBtn = $(".guide-tour-btn", mainContent);
+      if (tourBtn) {
+        tourBtn.addEventListener("click", () => {
+          startIntroTour();
+        });
+      }
+    };
+
+    this.appCardBinder();
   }
 
   refreshContent(win) {
@@ -1069,7 +616,7 @@ export class YukiOsGuideApp extends BaseApp {
         this.appCardBinder();
       }
 
-      this.filterCapabilities(win);
+      this.filterOverview(win);
     }
   }
 }

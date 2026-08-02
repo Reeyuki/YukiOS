@@ -5,19 +5,7 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 
-import { Achievements } from "../achievements.js";
-import {
-  $,
-  $$,
-  bindEvent,
-  toggleClass,
-  setStyle,
-  setHTML,
-  createElement,
-  BusEvents,
-  BaseApp,
-  os
-} from "../framework.js";
+import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -1456,7 +1444,6 @@ export class OfficeApp extends BaseApp {
 
   async saveFilesToDocuments(files) {
     if (!this.fs || !files || files.length === 0) return [];
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.OfficeWorker });
 
     const documentsPath = ["Documents"];
     await os.fs.mkdir(documentsPath);
@@ -2406,7 +2393,6 @@ export class OfficeApp extends BaseApp {
 
         os.notify.send(`Saved: ${state.title}`);
         speak("Great, your file has been saved!", ClippyAnimation.Greeting);
-        window.achievements.trigger(Achievements.OfficeWorker);
       } else {
         this.downloadFile(state);
       }
@@ -2439,7 +2425,6 @@ export class OfficeApp extends BaseApp {
           state.filePath = [...path, fileName];
           os.notify.send(`Saved: ${ps}`);
           speak("Great, your file has been saved!", ClippyAnimation.Greeting);
-          window.achievements.trigger(Achievements.OfficeWorker);
         } catch {
           audioMixer().playCriticalWarning();
           os.notify.send("Couldn't save that file");

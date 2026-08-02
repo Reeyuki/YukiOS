@@ -670,7 +670,7 @@ cd webos-desktop && pnpm build:dev
 
 ### BaseApp Interface
 
-All apps extend `BaseApp` (`src/core/BaseApp.ts`). The base class provides:
+All apps extend `BaseApp` (`src/core/BaseApp.js`). The base class provides:
 
 | Method | Purpose |
 |--------|---------|

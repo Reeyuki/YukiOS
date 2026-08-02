@@ -1,5 +1,6 @@
 import "../styles/scramjet.css";
 import { BaseApp, StorageKeys, os, BusEvents } from "../framework.js";
+import { Achievements } from "../achievements.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 import { PROXIES } from "../proxies.js";
 import { $, setStyle, createElement, addClass, removeClass } from "../shared/domUtils.js";
@@ -67,6 +68,9 @@ export class BrowserApp extends BaseApp {
     `;
 
     this.initScramjet(null, null, win, { isIncognito, openUrl });
+    if (isIncognito) {
+      os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.GhostMode });
+    }
 
     return win;
   }

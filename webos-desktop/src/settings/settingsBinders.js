@@ -1,4 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
+import { Achievements } from "../achievements.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { BusEvents } from "../core/EventBus.js";
 import { updateGridConfig } from "../desktopui/desktopui.js";
@@ -518,6 +519,7 @@ export function bindAppearanceCategory(
           icon: "fas fa-palette",
           colors: customColors
         });
+        os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.ThemeSmith });
         os.dialog.alert("Alert", `Saved "${themeName}"`);
         showSaved();
         const customThemesSection = Array.from($$(".settings-row--stacked", win)).find(

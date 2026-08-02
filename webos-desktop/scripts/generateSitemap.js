@@ -606,7 +606,7 @@ const featurePages = [
     key: "tiling",
     title: "Tiling Window Manager",
     description:
-      "Experience i3 and Hyprland-inspired tiling window management in your browser. Keyboard-driven BSP tiling with 9 workspaces, live config editing, gap control, split ratio, and floating window support - no downloads needed."
+      "Experience i3 and Hyprland-inspired tiling window management in your browser. Keyboard-driven BSP tiling with 9 workspaces, live config editing, gap control, split ratio, and floating window support.."
   },
   {
     key: "mac-mode",
@@ -2149,7 +2149,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
   </a>
   <a href="/feature/tiling.html" class="seo-cta-card">
     <h3>Desktop Modes</h3>
-    <p>Mac, Windows, Tiling, or Minimal , switch anytime</p>
+    <p>MacOS, ChromeOS, Hyprland</p>
   </a>
 </div>
 <div class="seo-gallery">${cards}</div>

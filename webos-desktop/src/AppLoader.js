@@ -50,6 +50,7 @@ import { BtopApp } from "./apps/btop.js";
 import { CmatrixApp } from "./apps/cmatrix.js";
 import { MagnifierApp } from "./apps/magnifier.js";
 import { RemoteHostApp } from "./apps/RemoteHostApp.js";
+import { IntroTourApp } from "./apps/introTour.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -73,6 +74,7 @@ const APP_CLASS_MAP = {
   defaultApps: DefaultAppsApp,
   installedAppsApp: InstalledAppsApp,
   yukiOsGuideApp: YukiOsGuideApp,
+  introTourApp: IntroTourApp,
   clipboardManagerApp: ClipboardManagerApp,
   aiAssistantApp: AIAssistantApp,
   displayPerformanceApp: DisplayPerformanceApp,

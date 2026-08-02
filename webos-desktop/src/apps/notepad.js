@@ -1,7 +1,6 @@
 import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { Achievements } from "../achievements.js";
-import { $, $$, setStyle, BusEvents, BaseApp, os } from "../framework.js";
+import { $, $$, setStyle, BaseApp, os } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
@@ -355,7 +354,6 @@ export class NotepadApp extends BaseApp {
     instance.modified = false;
     this.updateTitle(win, winId);
     speak("Great, your file has been saved!", ClippyAnimation.Greeting);
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.NoteTaker });
   }
 
   saveFile(win, winId, onSuccess = null) {

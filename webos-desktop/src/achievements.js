@@ -8,29 +8,23 @@ import { parseBool } from "./utils/utils.js";
 import { BaseApp, StorageKeys, os } from "./framework.js";
 export const Achievements = {
   MultiTasker: "window_manager",
-  NoteTaker: "note_taker",
   ArchiveHandler: "archive_handler",
   PersonalSpace: "personal_space",
   DesktopStylist: "desktop_stylist",
   AppCollector: "app_collector",
   Skid: "skid",
   TerminalUser: "terminal_user",
-  TerminalUserSuper: "terminal_user_super",
-  OfficeWorker: "office_worker",
   ModelViewer: "model_viewer",
   FirstGame: "first_game",
   GameHopper: "game_hopper",
   GameHopperMega: "game_hopper_mega",
-  EmulatorFan: "emulator_fan",
   RetroPlayer: "retro_player",
   ChaosMode: "chaos_mode",
-  FileHoarder: "file_hoarder",
   RegularUser: "regular_user",
-  SystemVeteran: "system_veteran",
   Completionist: "completionist",
   SetupComplete: "setup_complete",
+  IntroTourComplete: "intro_tour_complete",
   FontCustomizer: "font_customizer",
-  SnapHappy: "snap_happy",
   WorkspaceWanderer: "workspace_wanderer",
   WorkspaceArchitect: "workspace_architect",
   ScreenshotSavant: "screenshot_savant",
@@ -39,7 +33,14 @@ export const Achievements = {
   PowerUser: "power_user",
   Customizer: "customizer",
   Flashback: "flashback",
-  Converter: "converter"
+  Converter: "converter",
+  WidgetAdded: "widget_added",
+  ThemeSmith: "theme_smith",
+  MacroMaker: "macro_maker",
+  GhostMode: "ghost_mode",
+  PinCushion: "pin_cushion",
+  Sampler: "sampler",
+  BootStyler: "boot_styler"
 };
 
 export class AchievementsApp extends BaseApp {
@@ -56,22 +57,14 @@ export class AchievementsApp extends BaseApp {
         { at: 10, key: Achievements.ChaosMode }
       ],
       appLaunched: [{ at: 15, key: Achievements.AppCollector }],
-      terminalCmd: [
-        { at: 5, key: Achievements.TerminalUser },
-        { at: 50, key: Achievements.TerminalUserSuper }
-      ],
+      terminalCmd: [{ at: 5, key: Achievements.TerminalUser }],
       gameLaunched: [
         { at: 1, key: Achievements.FirstGame },
         { at: 10, key: Achievements.GameHopper },
         { at: 100, key: Achievements.GameHopperMega }
       ],
       wallpaper: [{ at: 5, key: Achievements.DesktopStylist }],
-      fileUploaded: [{ at: 100, key: Achievements.FileHoarder }],
-      session: [
-        { at: 5, key: Achievements.RegularUser },
-        { at: 20, key: Achievements.SystemVeteran }
-      ],
-      windowSnapped: [{ at: 10, key: Achievements.SnapHappy }],
+      session: [{ at: 5, key: Achievements.RegularUser }],
       workspaceSwitched: [{ at: 25, key: Achievements.WorkspaceWanderer }],
       workspaceAdded: [{ at: 3, key: Achievements.WorkspaceArchitect }],
       screenshotTaken: [{ at: 10, key: Achievements.ScreenshotSavant }],
@@ -154,11 +147,16 @@ export class AchievementsApp extends BaseApp {
 
     const scroll = win.querySelector(".achievements-scroll");
     scroll.addEventListener("click", (e) => {
-      const btn = e.target.closest(".achievements-toggle__btn");
-      if (!btn) return;
-      const filter = btn.dataset.filter || "all";
-      this.currentFilter = filter;
-      this.refresh();
+      const toggleBtn = e.target.closest(".achievements-toggle__btn");
+      if (toggleBtn) {
+        const filter = toggleBtn.dataset.filter || "all";
+        this.currentFilter = filter;
+        this.refresh();
+        return;
+      }
+      if (e.target.closest(".achievements-unlock-all")) {
+        this.unlockAll();
+      }
     });
 
     this.refresh();
@@ -171,7 +169,6 @@ export class AchievementsApp extends BaseApp {
     os.events.on(BusEvents.WALLPAPER_CHANGED, () => this.incrementWallpaper());
     os.events.on(BusEvents.ACHIEVEMENT_TRIGGER, ({ achievementId }) => this.trigger(achievementId));
     os.events.on(BusEvents.SESSION_INITIALIZED, () => this.incrementSession());
-    os.events.on(BusEvents.WINDOW_SNAPPED, () => this.increment("windowSnapped"));
     os.events.on(BusEvents.WORKSPACE_SWITCHED, () => this.increment("workspaceSwitched"));
     os.events.on(BusEvents.WORKSPACE_ADDED, () => this.increment("workspaceAdded"));
   }
@@ -190,14 +187,7 @@ export class AchievementsApp extends BaseApp {
         title: "Chaos Mode",
         desc: "Open 10 apps at once",
         icon: "fa-fire",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.NoteTaker,
-        title: "Note Taker",
-        desc: "Create and save a document",
-        icon: "fa-note-sticky",
-        rarity: "common"
+        rarity: "epic"
       },
       {
         id: Achievements.ArchiveHandler,
@@ -218,14 +208,14 @@ export class AchievementsApp extends BaseApp {
         title: "Curator",
         desc: "Change wallpaper 5 times",
         icon: "fa-paintbrush",
-        rarity: "uncommon"
+        rarity: "rare"
       },
       {
         id: Achievements.AppCollector,
         title: "App Collector",
         desc: "Launch 15 different apps",
         icon: "fa-th-large",
-        rarity: "rare"
+        rarity: "epic"
       },
       {
         id: Achievements.Skid,
@@ -242,25 +232,11 @@ export class AchievementsApp extends BaseApp {
         rarity: "uncommon"
       },
       {
-        id: Achievements.TerminalUserSuper,
-        title: "Terminal Velocity",
-        desc: "Execute 50 commands in terminal",
-        icon: "fa-terminal",
-        rarity: "epic"
-      },
-      {
-        id: Achievements.OfficeWorker,
-        title: "Paper Trail",
-        desc: "Create a document in office suite",
-        icon: "fa-file-word",
-        rarity: "common"
-      },
-      {
         id: Achievements.ModelViewer,
         title: "Depth Perception",
         desc: "View a 3D model",
         icon: "fa-cube",
-        rarity: "uncommon"
+        rarity: "rare"
       },
       {
         id: Achievements.FirstGame,
@@ -274,7 +250,7 @@ export class AchievementsApp extends BaseApp {
         title: "Game Hopper",
         desc: "Play 10 games",
         icon: "fa-dice",
-        rarity: "rare"
+        rarity: "epic"
       },
       {
         id: Achievements.GameHopperMega,
@@ -284,13 +260,6 @@ export class AchievementsApp extends BaseApp {
         rarity: "legendary"
       },
       {
-        id: Achievements.EmulatorFan,
-        title: "Emulated",
-        desc: "Run a ROM",
-        icon: "fa-microchip",
-        rarity: "uncommon"
-      },
-      {
         id: Achievements.RetroPlayer,
         title: "Retro Player",
         desc: "Play a DOS game",
@@ -298,25 +267,11 @@ export class AchievementsApp extends BaseApp {
         rarity: "uncommon"
       },
       {
-        id: Achievements.FileHoarder,
-        title: "File Hoarder",
-        desc: "Upload 100 files",
-        icon: "fa-box-archive",
-        rarity: "epic"
-      },
-      {
         id: Achievements.RegularUser,
         title: "Regular User",
         desc: "Use the OS across 5 sessions",
         icon: "fa-user-clock",
         rarity: "uncommon"
-      },
-      {
-        id: Achievements.SystemVeteran,
-        title: "System Veteran",
-        desc: "Use the OS across 20 sessions",
-        icon: "fa-medal",
-        rarity: "epic"
       },
       {
         id: Achievements.Completionist,
@@ -333,6 +288,13 @@ export class AchievementsApp extends BaseApp {
         rarity: "uncommon"
       },
       {
+        id: Achievements.IntroTourComplete,
+        title: "Tour Guide",
+        desc: "Finish the YukiOS intro tour",
+        icon: "fa-route",
+        rarity: "rare"
+      },
+      {
         id: Achievements.FontCustomizer,
         title: "Font Customizer",
         desc: "Set a custom TTF font as system font",
@@ -340,18 +302,11 @@ export class AchievementsApp extends BaseApp {
         rarity: "uncommon"
       },
       {
-        id: Achievements.SnapHappy,
-        title: "Snap Happy",
-        desc: "Snap windows to screen edges 10 times",
-        icon: "fa-arrows-left-right-to-line",
-        rarity: "uncommon"
-      },
-      {
         id: Achievements.WorkspaceWanderer,
         title: "Workspace Wanderer",
         desc: "Switch workspaces 25 times",
         icon: "fa-layer-group",
-        rarity: "uncommon"
+        rarity: "rare"
       },
       {
         id: Achievements.WorkspaceArchitect,
@@ -365,7 +320,7 @@ export class AchievementsApp extends BaseApp {
         title: "Snip & Clip",
         desc: "Take 10 screenshots",
         icon: "fa-camera",
-        rarity: "uncommon"
+        rarity: "rare"
       },
       {
         id: Achievements.MathWhiz,
@@ -386,7 +341,7 @@ export class AchievementsApp extends BaseApp {
         title: "Power Cycle",
         desc: "Switch power profiles 5 times",
         icon: "fa-bolt",
-        rarity: "uncommon"
+        rarity: "rare"
       },
       {
         id: Achievements.Customizer,
@@ -408,6 +363,55 @@ export class AchievementsApp extends BaseApp {
         desc: "Convert a file",
         icon: "fa-exchange-alt",
         rarity: "common"
+      },
+      {
+        id: Achievements.WidgetAdded,
+        title: "Widget Wizard",
+        desc: "Place your first desktop widget",
+        icon: "fa-puzzle-piece",
+        rarity: "common"
+      },
+      {
+        id: Achievements.ThemeSmith,
+        title: "Theme Smith",
+        desc: "Save a custom theme",
+        icon: "fa-swatchbook",
+        rarity: "rare"
+      },
+      {
+        id: Achievements.MacroMaker,
+        title: "Macro Maker",
+        desc: "Create a custom shortcut action",
+        icon: "fa-wand-magic-sparkles",
+        rarity: "rare"
+      },
+      {
+        id: Achievements.GhostMode,
+        title: "Ghost Mode",
+        desc: "Open an incognito browser window",
+        icon: "fa-mask",
+        rarity: "rare"
+      },
+      {
+        id: Achievements.PinCushion,
+        title: "Pin Cushion",
+        desc: "Pin an app to the taskbar",
+        icon: "fa-thumbtack",
+        rarity: "common"
+      },
+      {
+        id: Achievements.Sampler,
+        title: "Sampler",
+        desc: "Sample a color with the color picker",
+        icon: "fa-eye-dropper",
+        rarity: "common"
+      },
+      {
+        id: Achievements.BootStyler,
+        title: "Boot Styler",
+        desc: "Choose a boot animation",
+        icon: "fa-play",
+        rarity: "common"
       }
     ];
   }
@@ -416,11 +420,9 @@ export class AchievementsApp extends BaseApp {
     try {
       const saved = os.storage.get(StorageKeys.achievements);
       if (saved) {
-        if (Array.isArray(saved)) {
-          this.unlocked = new Map(saved.map((id) => [id, Date.now()]));
-        } else {
-          this.unlocked = new Map(Object.entries(saved));
-        }
+        const entries = Array.isArray(saved) ? saved.map((id) => [id, Date.now()]) : Object.entries(saved);
+        const validIds = new Set(this.achievements.map((a) => a.id));
+        this.unlocked = new Map(entries.filter(([id]) => validIds.has(id)));
       }
       const savedCounters = os.storage.get(StorageKeys.achievementCounters);
       if (savedCounters) this.counters = savedCounters;
@@ -695,6 +697,10 @@ export class AchievementsApp extends BaseApp {
       ${this.renderHero()}
       ${this.renderProgress()}
       ${this.renderToggle(filter)}
+      <button type="button" class="achievements-unlock-all">
+        <i class="fas fa-gift"></i>
+        <span>Unlock All</span>
+      </button>
       <div class="achievements-grid">
         ${this.renderGrid(filter)}
       </div>
@@ -737,9 +743,6 @@ export class AchievementsApp extends BaseApp {
     this.increment("fileUploaded");
   }
   incrementSession() {
-    const isBootAchievement =
-      !this.unlocked.has(Achievements.RegularUser) || !this.unlocked.has(Achievements.SystemVeteran);
-
     this.increment("session");
   }
   incrementScreenshotTaken() {
@@ -773,5 +776,27 @@ export class AchievementsApp extends BaseApp {
       unlocked: this.unlocked.size,
       percentage: Math.round((this.unlocked.size / this.achievements.length) * 100)
     };
+  }
+
+  unlockAll() {
+    this.achievements.forEach((a) => this.unlocked.set(a.id, Date.now()));
+    this.saveToStorage();
+    this.refresh();
+    this.playFinalConfetti();
+  }
+
+  playFinalConfetti() {
+    const burst = (opts) => confetti({ zIndex: 2147483647, ...opts });
+    const duration = 20000;
+    const interval = 300;
+    const endTime = Date.now() + duration;
+    const timer = setInterval(() => {
+      burst({
+        particleCount: 45,
+        spread: 90,
+        origin: { x: 0.2 + Math.random() * 0.6, y: 0.6 }
+      });
+      if (Date.now() >= endTime) clearInterval(timer);
+    }, interval);
   }
 }

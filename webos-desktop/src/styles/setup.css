@@ -168,6 +168,38 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+.setup-value-prop {
+  text-align: center;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.value-prop-icon {
+  font-size: 28px;
+  color: var(--brand);
+  margin-bottom: 12px;
+}
+
+.value-prop-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.value-prop-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
 .setup-info-btn {
   position: absolute;
   top: 0;
@@ -230,6 +262,16 @@
   font-size: 16px;
   margin: 0 auto 10px;
   transition: transform 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand);
+}
+
+.feature-icon svg {
+  width: 1.5em;
+  height: 1.5em;
+  fill: currentColor;
 }
 
 .feature-card:hover .feature-icon {

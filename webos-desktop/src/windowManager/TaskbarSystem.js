@@ -18,6 +18,7 @@ import {
   setStyle
 } from "../shared/domUtils.js";
 import { StorageKeys, os } from "../framework.js";
+import { Achievements } from "../achievements.js";
 export class TaskbarSystem {
   constructor(manager) {
     this.manager = manager;
@@ -583,6 +584,7 @@ export class TaskbarSystem {
 
     this.savePinnedItems(pinnedItems);
     this.renderPinnedItems();
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.PinCushion });
   }
 
   unpinFromTaskbar(winId) {

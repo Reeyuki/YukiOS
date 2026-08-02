@@ -838,6 +838,10 @@ html.is-mobile .session-content {
   padding: 16px;
 }
 
+html.is-mobile .session-extra {
+  gap: 16px;
+}
+
 html.is-mobile .login-center-panel {
   gap: 12px;
   width: 100%;
@@ -869,6 +873,10 @@ html.is-mobile .session-info-modal {
   left: 12px;
 }
 
+html.is-mobile .session-news-widget {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .session-time {
     font-size: 48px;
@@ -883,6 +891,10 @@ html.is-mobile .session-info-modal {
   .session-content {
     gap: 16px;
     padding: 16px;
+  }
+
+  .session-extra {
+    gap: 16px;
   }
 
   .login-center-panel {

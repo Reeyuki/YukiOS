@@ -1,4 +1,5 @@
 import { updateFavoritesUI, setupStartMenu as setupStartMenuFn } from "./startMenu.js";
+import { isIntroTourKeepingStartMenuOpen } from "../apps/introTour.js";
 import { desktop } from "./desktop.js";
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os, $, $$, setStyle } from "../framework.js";
@@ -883,6 +884,7 @@ export class DesktopUI {
   }
 
   closeStartMenu() {
+    if (isIntroTourKeepingStartMenuOpen()) return;
     this.startMenu.classList.add("closing");
     this.startMenu.addEventListener(
       "animationend",

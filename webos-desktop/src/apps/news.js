@@ -6,6 +6,38 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "August 2, 2026",
+    sections: [
+      {
+        icon: "fa-trophy",
+        title: "Achievements",
+        items: [
+          [
+            "fa-trophy",
+            "7 New Achievements",
+            "Place widgets, save themes, pin apps, and more to earn brand-new badges."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "August 1, 2026",
+    sections: [
+      {
+        icon: "fa-compass",
+        title: "Onboarding & Guide",
+        items: [
+          [
+            "fa-compass",
+            "60-Second Tour",
+            "A guided first-run tour shows off the desktop, apps, and games right after setup."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "July 31, 2026",
     sections: [
       {
@@ -1673,6 +1705,8 @@ export const getNewsContentSignature = () => {
   }));
   return hashStringDjb2(JSON.stringify(minimal));
 };
+
+export const getRecentNews = (count = 3) => NEWS_UPDATES.slice(0, count);
 
 export const updateNewsBadge = () => {
   const currentSignature = getNewsContentSignature();

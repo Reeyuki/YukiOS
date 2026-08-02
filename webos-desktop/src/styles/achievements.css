@@ -211,6 +211,31 @@
   font-size: 14px;
 }
 
+.achievements-unlock-all {
+  grid-column: 1;
+  grid-row: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.achievements-unlock-all:hover {
+  background: var(--brand);
+  color: var(--text-on-brand);
+}
+
 .achievements-grid {
   grid-column: 2;
   grid-row: 1 / span 3;
@@ -733,6 +758,9 @@
     margin-bottom: 16px;
   }
   .achievements-progress {
+    margin-bottom: 16px;
+  }
+  .achievements-unlock-all {
     margin-bottom: 16px;
   }
   .achievement-popup {

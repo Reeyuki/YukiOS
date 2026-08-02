@@ -1,6 +1,7 @@
 import "../styles/widgets.css";
 import { makeDraggable } from "../shared/dragUtils.js";
-import { os, StorageKeys } from "../framework.js";
+import { BusEvents, os, StorageKeys } from "../framework.js";
+import { Achievements } from "../achievements.js";
 
 const WIDGET_Z_BASE = 100;
 
@@ -291,6 +292,7 @@ export class WidgetManager {
     const instance = new Klass(this, id);
     const el = instance.buildElement();
     this.container.appendChild(el);
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.WidgetAdded });
     this.widgets.set(id, instance);
     this.saveState();
     return instance;

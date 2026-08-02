@@ -1,5 +1,4 @@
 import "../styles/emulator.css";
-import { Achievements } from "../achievements.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 
 import { audioMixer } from "../audioMixer.js";
@@ -328,8 +327,6 @@ export class EmulatorApp extends BaseApp {
     const win = os.window.create(winId, displayName, "800px", "600px", {
       icon: EMULATOR_ICON
     });
-
-    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
 
     win.innerHTML = `
     <div class="window-content emu-window ruf-window">

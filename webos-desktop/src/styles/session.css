@@ -43,6 +43,18 @@
   pointer-events: auto;
 }
 
+.session-extra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  pointer-events: none;
+}
+
+.session-extra > * {
+  pointer-events: auto;
+}
+
 .session-info-btn {
   position: absolute;
   top: 20px;
@@ -417,73 +429,44 @@
   z-index: 20;
 }
 
-.session-selector-btn {
-  background: transparent;
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
+.session-modes {
   display: flex;
-  align-items: center;
   gap: 8px;
+}
+
+.session-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 84px;
+  padding: 10px 14px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
   transition:
-    background-color 0.2s,
-    color 0.2s;
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   user-select: none;
 }
 
-.session-selector-btn:hover {
+.session-mode-btn i {
+  font-size: 18px;
+}
+
+.session-mode-btn:hover {
   background: var(--glass-hover);
   color: var(--text-primary);
 }
 
-.session-selector-btn i:last-child {
-  font-size: 10px;
-  opacity: 0.7;
-  transition: transform 0.2s;
-}
-
-.session-selector.open .session-selector-btn i:last-child {
-  transform: rotate(180deg);
-}
-
-.session-dropdown {
-  position: absolute;
-  bottom: 42px;
-  left: 0;
-  min-width: 180px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 10px;
-  overflow: hidden;
-  backdrop-filter: blur(32px);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
-  z-index: 20;
-
-  opacity: 0;
-  transform: translateY(10px);
-  pointer-events: none;
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
-}
-
-.session-selector.open .session-dropdown {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.session-option {
-  padding: 10px 12px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
+.session-mode-btn.active {
+  border-color: var(--brand);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 .session-electron-banner {
@@ -603,11 +586,6 @@
 
 .session-features-link:hover {
   color: rgba(255, 255, 255, 0.7);
-}
-
-.session-option:hover {
-  background: var(--glass-hover);
-  color: var(--text-primary);
 }
 
 .action-button {
@@ -943,29 +921,19 @@
   pointer-events: auto;
 }
 
-.session-content.extra-hidden .session-info-btn,
-.session-content.extra-hidden .session-support-btn,
-.session-content.extra-hidden .session-info-modal,
-.session-content.extra-hidden .user-carousel-row,
-.session-content.extra-hidden .login-center-panel,
-.session-content.extra-hidden .session-selector,
-.session-content.extra-hidden .session-electron-banner,
-.session-content.extra-hidden .avatar-edit-modal {
+.session-content.extra-hidden .session-extra {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
 }
 
-.session-content.extra-visible .session-info-btn,
-.session-content.extra-visible .session-support-btn,
-.session-content.extra-visible .session-info-modal,
-.session-content.extra-visible .user-carousel-row,
-.session-content.extra-visible .login-center-panel,
-.session-content.extra-visible .session-selector,
-.session-content.extra-visible .session-electron-banner,
-.session-content.extra-visible .avatar-edit-modal {
+.session-content.extra-visible .session-extra {
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
   transition: opacity 0.3s ease;
 }
 
@@ -1045,6 +1013,145 @@
 }
 
 .session-activity-widget.collapsed .session-activity-panel {
+  display: none;
+}
+
+.session-news-widget {
+  position: fixed;
+  bottom: 32px;
+  right: 40px;
+  z-index: 10;
+  width: 310px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(32px);
+  overflow: hidden;
+}
+
+.session-news-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.session-news-header > i {
+  color: var(--brand);
+  font-size: 15px;
+}
+
+.session-news-close {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.session-news-close:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+.session-news-close i {
+  font-size: 13px;
+}
+
+.session-news-list {
+  overflow-y: auto;
+  max-height: 340px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.session-news-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.session-news-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.session-news-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.session-news-update {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-news-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.session-news-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.session-news-item-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+}
+
+.session-news-item-icon i {
+  font-size: 12px;
+  color: var(--brand);
+}
+
+.session-news-item-body {
+  min-width: 0;
+}
+
+.session-news-item-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.session-news-item-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.session-news-widget.closed {
   display: none;
 }
 

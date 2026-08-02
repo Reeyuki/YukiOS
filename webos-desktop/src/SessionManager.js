@@ -1,4 +1,5 @@
 import { BusEvents } from "./core/EventBus.js";
+import { Achievements } from "./achievements.js";
 import { PREDEFINED_AVATARS } from "./utils/avatarData.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
@@ -20,6 +21,7 @@ import { applyMacSettings, disableMacSettings } from "./modes/macos/session.js";
 import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/session.js";
 import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
 import { showDonationPopup } from "./donationPopup.js";
+import { getRecentNews } from "./apps/news.js";
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -213,6 +215,10 @@ export class SessionManager {
       <div class="session-wallpaper"></div>
       <div class="session-background"></div>
       <div class="session-content${state === "locked" ? "" : " extra-hidden"}">
+        <div class="session-time">${timeStr}</div>
+        <div class="session-date">${dateStr}</div>
+
+        <div class="session-extra">
         <div class="session-info-btn" id="session-info-btn">
           <i class="fas fa-info"></i>
         </div>
@@ -268,9 +274,16 @@ export class SessionManager {
             <div style="color:var(--text-secondary);font-size:12px;text-align:center;padding-top:24px;">Loading...</div>
           </div>
         </div>
-        <div class="session-time">${timeStr}</div>
-        <div class="session-date">${dateStr}</div>
-
+        <div class="session-news-widget" id="session-news-widget">
+          <div class="session-news-header">
+            <i class="fas fa-newspaper"></i>
+            <span>What's New</span>
+            <button class="session-news-close" id="session-news-close" aria-label="Close" title="Close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="session-news-list" id="session-news-list"></div>
+        </div>
         <div class="user-carousel-row" id="user-carousel-row"></div>
 
         <div class="login-center-panel">
@@ -306,18 +319,23 @@ export class SessionManager {
         </div>
 
         <div class="session-selector" id="session-selector">
-          <button class="session-selector-btn" id="session-selector-btn">
-            <i class="fas fa-desktop"></i>
-            <span id="session-selector-label">${this.selectedSession}</span>
-            <i class="fas fa-chevron-down"></i>
-          </button>
-
-          <div class="session-dropdown" id="session-dropdown">
-            <div class="session-option" data-value="desktop">Yuki Desktop(Default)</div>
-            <div class="session-option" data-value="mac">Yuki Mac Desktop</div>
-            <div class="session-option" data-value="tiling">Yuki Tiling WM</div>
-            <div class="session-option" data-value="chromeos">Yuki Chrome OS</div>
-            <div class="session-option" data-value="3d">Yuki 3D Desktop</div>
+          <div class="session-modes" id="session-modes">
+            <button type="button" class="session-mode-btn" data-mode="reset">
+              <i class="fas fa-snowflake"></i>
+              <span>YukiOS</span>
+            </button>
+            <button type="button" class="session-mode-btn" data-mode="mac">
+              <i class="fab fa-apple"></i>
+              <span>Mac</span>
+            </button>
+            <button type="button" class="session-mode-btn" data-mode="chromeos">
+              <i class="fab fa-chrome"></i>
+              <span>Chrome OS</span>
+            </button>
+            <button type="button" class="session-mode-btn" data-mode="tiling">
+              <i class="fas fa-th-large"></i>
+              <span>Tiling</span>
+            </button>
           </div>
         </div>
 
@@ -334,6 +352,7 @@ export class SessionManager {
         </div>
 
         <a href="/features.html" class="session-features-link">Explore Features</a>
+        </div>
       </div>
 
       <div class="avatar-edit-modal" id="avatar-edit-modal" style="display: none;">
@@ -380,6 +399,18 @@ export class SessionManager {
     const carouselRow = this.container.querySelector("#user-carousel-row");
     if (carouselRow) {
       carouselRow.innerHTML = await this.renderUserCarousel();
+    }
+
+    const newsList = this.container.querySelector("#session-news-list");
+    if (newsList) {
+      newsList.innerHTML = this.renderRecentNews();
+    }
+    const newsWidget = this.container.querySelector("#session-news-widget");
+    const newsCloseBtn = this.container.querySelector("#session-news-close");
+    if (newsWidget && newsCloseBtn) {
+      newsCloseBtn.addEventListener("click", () => {
+        newsWidget.classList.add("closed");
+      });
     }
 
     await this.applySessionWallpaper(this.container);
@@ -569,6 +600,35 @@ export class SessionManager {
     return `${seconds}s`;
   }
 
+  renderRecentNews() {
+    return getRecentNews(12)
+      .map(
+        (update) => `
+          <div class="session-news-update">
+            <div class="session-news-date">${update.date}</div>
+            ${(update.sections || [])
+              .flatMap((section) => section.items || [])
+              .slice(0, 3)
+              .map(
+                ([icon, title, desc]) => `
+                  <div class="session-news-item">
+                    <div class="session-news-item-icon" aria-hidden="true">
+                      <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="session-news-item-body">
+                      <div class="session-news-item-title">${title}</div>
+                      <div class="session-news-item-desc">${desc}</div>
+                    </div>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+        `
+      )
+      .join("");
+  }
+
   async fetchOnlineUsersCount() {
     try {
       const stats = await fetchLiveStats();
@@ -634,7 +694,6 @@ export class SessionManager {
     const powerBtn = this.container.querySelector("#power-btn");
     const restartBtn = this.container.querySelector("#restart-btn");
     const sleepBtn = this.container.querySelector("#sleep-btn");
-    const sessionSelectorBtn = this.container.querySelector("#session-selector-btn");
     const avatarModal = this.container.querySelector("#avatar-edit-modal");
     const avatarModalClose = this.container.querySelector("#avatar-modal-close");
     const avatarGrid = this.container.querySelector("#avatar-grid");
@@ -673,6 +732,7 @@ export class SessionManager {
         if (!wasSelected) {
           item.classList.add("selected");
           os.storage.set(StorageKeys.selectedBootAnimation, anim.id);
+          os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.BootStyler });
         } else {
           os.storage.remove(StorageKeys.selectedBootAnimation);
         }
@@ -790,60 +850,28 @@ export class SessionManager {
       }
     });
 
-    sessionSelectorBtn.value =
-      this.selectedSession === "tiling"
-        ? "Yuki Tiling WM"
-        : this.selectedSession === "Yuki Mac Desktop"
-          ? "Yuki Mac Desktop"
-          : this.selectedSession === "Yuki 3D Desktop"
-            ? "Yuki 3D Desktop"
-            : this.selectedSession === "Yuki Chrome OS"
-              ? "Yuki Chrome OS"
-              : "Yuki Desktop(Default)";
-    sessionSelectorBtn.addEventListener("change", (e) => {
-      const value = e.target.value;
-
-      this.selectedSession = value === "tiling" ? "Yuki Tiling VM" : "Yuki Desktop(Default)";
-      os.storage.set(StorageKeys.selectedSession, this.selectedSession);
-    });
-    const sessionRoot = this.container.querySelector("#session-selector");
-    const sessionBtn = this.container.querySelector("#session-selector-btn");
-    const dropdown = this.container.querySelector("#session-dropdown");
-    const label = this.container.querySelector("#session-selector-label");
-
-    const toggle = () => {
-      sessionRoot.classList.toggle("open");
+    const sessionModes = this.container.querySelectorAll("#session-modes .session-mode-btn");
+    const modeToSession = {
+      reset: "Yuki Desktop(Default)",
+      mac: "Yuki Mac Desktop",
+      chromeos: "Yuki Chrome OS",
+      tiling: "Yuki Tiling VM"
     };
-
-    sessionBtn.addEventListener("click", toggle);
-
-    dropdown.addEventListener("click", (e) => {
-      const option = e.target.closest(".session-option");
-      if (!option) return;
-
-      const value = option.dataset.value;
-
-      const sessionMap = {
-        desktop: "Yuki Desktop(Default)",
-        tiling: "Yuki Tiling VM",
-        mac: "Yuki Mac Desktop",
-        chromeos: "Yuki Chrome OS",
-        "3d": "Yuki 3D Desktop"
-      };
-
-      const labelText = sessionMap[value];
-
-      this.selectedSession = labelText;
-      os.storage.set(StorageKeys.selectedSession, this.selectedSession);
-      label.textContent = labelText;
-
-      sessionRoot.classList.remove("open");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!sessionRoot.contains(e.target)) {
-        sessionRoot.classList.remove("open");
-      }
+    const sessionToMode = {
+      "Yuki Desktop(Default)": "reset",
+      "Yuki Mac Desktop": "mac",
+      "Yuki Chrome OS": "chromeos",
+      "Yuki Tiling VM": "tiling",
+      tiling: "tiling"
+    };
+    const activeMode = sessionToMode[this.selectedSession] || "reset";
+    sessionModes.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mode === activeMode);
+      btn.addEventListener("click", () => {
+        this.selectedSession = modeToSession[btn.dataset.mode];
+        os.storage.set(StorageKeys.selectedSession, this.selectedSession);
+        sessionModes.forEach((b) => b.classList.toggle("active", b === btn));
+      });
     });
     await this.bindCarouselEvents();
 

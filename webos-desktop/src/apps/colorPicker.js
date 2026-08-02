@@ -1,6 +1,7 @@
 import "../styles/colorPicker.css";
 import { $, $$, setStyle } from "../shared/domUtils.js";
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, BusEvents, os, StorageKeys } from "../framework.js";
+import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 
 export class ColorPickerApp extends BaseApp {
@@ -137,6 +138,7 @@ export class ColorPickerApp extends BaseApp {
     this.colors.unshift(hex);
     this.saveHistory();
     this.renderHistory();
+    os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Sampler });
   }
 
   updatePreview(hex) {

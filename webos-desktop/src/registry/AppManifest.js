@@ -285,6 +285,17 @@ export const APP_MANIFESTS = [
     description: "Comprehensive documentation and feature discovery hub for YukiOS."
   },
   {
+    serviceKey: "introTourApp",
+    enhanced: false,
+    type: "system",
+    title: "Intro Tour",
+    icon: "fas fa-flag-checkered",
+    launchType: "instance",
+    windowIdPatterns: [],
+    category: "help",
+    description: "Replay the 60-second guided tour of the desktop."
+  },
+  {
     serviceKey: "clipboardManagerApp",
     enhanced: false,
     type: "system",
@@ -929,21 +940,6 @@ export const APP_MANIFESTS = [
     },
     description: "Browse Flashpoint's game archive from a dedicated desktop window.",
     targetUrl: "https://flashpointproject.github.io/flashpoint-database/",
-    windowSize: ["90vw", "85vh"]
-  },
-  {
-    serviceKey: "senshiApp",
-    enhanced: true,
-    type: "system",
-    title: "Senshi",
-    icon: "fas fa-video",
-    launchType: "iframe",
-    windowIdPatterns: ["senshi"],
-    category: "media",
-    persistContentState: false,
-    source: "https://senshi.live",
-    clippy: { message: "Stream on Senshi", animation: ClippyAnimation.Show },
-    description: "Stream anime shows and movies with a clean, simple interface on Senshi.",
     windowSize: ["90vw", "85vh"]
   },
   {

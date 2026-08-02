@@ -124,7 +124,7 @@ Planned features and improvements for YukiOS.
 - [✅] Storage Editor for browsing IndexedDB
 - [✅] **Visual theme editor** — Live-preview theme builder with color pickers and sliders
 - [💡] **Multi-language IDE in YukiCode** — Plugable runtime system supporting Python (Pyodide), C/C++ (Emscripten), Lua
-  (Fengari), and TypeScript compilation in a single editor
+  (Fengari) in a single editor
 
 ## Polish & UX Improvements
 

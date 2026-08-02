@@ -9,8 +9,8 @@ import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUt
 import { getAllThemes } from "../shared/themeEngine.js";
 import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
 import { animateThemeChange } from "../settings/themeTransition.js";
-
 import { BaseApp, StorageKeys, os } from "../framework.js";
+import { startIntroTour } from "./introTour.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 export const FEATURE_DATA = {
@@ -276,6 +276,7 @@ export class SetupApp extends BaseApp {
       position: "center"
     });
     win.innerHTML = this.buildUI();
+    os.window.applySnap(win, "maximize");
     this.openWindows.add(winId);
     this.bindEvents(win);
     this.animateStepIn(win);
@@ -351,7 +352,7 @@ export class SetupApp extends BaseApp {
             <i class="fas fa-snowflake"></i>
           </div>
           <h1 class="hero-title">Hey there, ${nickname}</h1>
-          <p class="hero-subtitle">Your desktop, right in the browser</p>
+          <p class="hero-subtitle">A full desktop in one browser tab. Nothing to install, nothing to block, everything saved</p>
           <button class="setup-info-btn" id="setup-info-btn">
             <i class="fas fa-circle-info"></i>
           </button>
@@ -382,7 +383,16 @@ export class SetupApp extends BaseApp {
   }
 
   buildStep2() {
-    return `<div class="setup-step" data-step="2">${this.buildFeatureGrid(FEATURE_DATA.step2, "Here's What You Get", "fas fa-star")}</div>`;
+    return `
+      <div class="setup-step" data-step="2">
+        <div class="setup-value-prop">
+          <div class="value-prop-icon"><i class="fas fa-snowflake"></i></div>
+          <h2 class="value-prop-title">A full desktop in one browser tab</h2>
+          <p class="value-prop-sub">No installs. Nothing for a school or work network to block. Every file, setting, and open window is saved right here. Come back anytime and it's exactly where you left it.</p>
+        </div>
+        ${this.buildFeatureGrid(FEATURE_DATA.step2, "Here's What You Get", "fas fa-star")}
+      </div>
+    `;
   }
 
   buildStep3() {
@@ -1011,6 +1021,7 @@ Have fun!`;
     );
 
     os.window.close(win);
+    setTimeout(() => startIntroTour(), 600);
   }
 
   skipSetup(win) {
@@ -1018,6 +1029,7 @@ Have fun!`;
 
     this.os.app.triggerAchievement(Achievements.SetupComplete);
     os.window.close(win);
+    setTimeout(() => startIntroTour(), 600);
     this.openWindows.delete("setup-wizard");
   }
 

@@ -1,6 +1,6 @@
 import "./styles/commandPalette.css";
 import { SystemUtilities } from "./system.js";
-import { BusEvents, $, $$ } from "./framework.js";
+import { BusEvents, $, $$, createElement } from "./framework.js";
 import { openFileWith } from "./fileDisplay.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { AppSource } from "./AppSource.js";
@@ -37,7 +37,7 @@ export class CommandPalette {
   }
 
   toggle() {
-    const existing = document.getElementById("command-palette-win");
+    const existing = document.getElementById("command-palette-overlay");
     if (existing) {
       this.close();
     } else {
@@ -47,35 +47,41 @@ export class CommandPalette {
 
   async open() {
     if (document.getElementById("session-overlay")) return;
+    if (document.getElementById("command-palette-overlay")) return;
 
     this.isOpen = true;
     this.currentSubpalette = null;
     this.activeIndex = 0;
 
-    const win = os.window.create("command-palette-win", "Command Palette", "600px", "480px", {
-      icon: "fas fa-search",
-      appId: "___commandPalette___"
-    });
-    win.classList.add("cp-window");
+    const overlay = createElement("div", { id: "command-palette-overlay", className: "command-palette-overlay" });
+    const parent = document.getElementById("session-overlay") || document.body;
+    parent.appendChild(overlay);
 
-    win.innerHTML = `
-      <div class="window-content cp-root">
-        <div class="cp-header">
-          <i class="fas fa-search cp-header-icon"></i>
-          <input type="text" class="cp-input" id="cp-input" placeholder="Type a command, app, or file name..." autocomplete="off">
-          <div class="cp-kbd">ESC</div>
+    overlay.innerHTML = `
+      <div class="command-palette-root">
+        <div class="command-palette-header">
+          <i class="fas fa-search command-palette-header-icon"></i>
+          <input type="text" class="command-palette-input" id="command-palette-input" placeholder="Type a command, app, or file name..." autocomplete="off">
+          <div class="command-palette-kbd">ESC</div>
         </div>
-        <div class="cp-body">
-          <div class="cp-results" id="cp-results"></div>
+        <div class="command-palette-body">
+          <div class="command-palette-results" id="command-palette-results"></div>
         </div>
-        <div class="cp-footer">
+        <div class="command-palette-footer">
           <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to select, <kbd>Esc</kbd> to close</span>
         </div>
       </div>
     `;
 
-    this.inputElement = win.querySelector("#cp-input");
-    this.resultsContainer = win.querySelector("#cp-results");
+    requestAnimationFrame(() => {
+      overlay.classList.add("command-palette-overlay--show");
+      if (this.inputElement && document.activeElement !== this.inputElement) {
+        this.inputElement.focus();
+      }
+    });
+
+    this.inputElement = $("#command-palette-input", overlay);
+    this.resultsContainer = $("#command-palette-results", overlay);
 
     this.inputElement.addEventListener("input", () => {
       this.activeIndex = 0;
@@ -100,24 +106,45 @@ export class CommandPalette {
       }
     });
 
-    win.addEventListener("remove", () => {
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        this.close();
+      } else if (this.inputElement && document.activeElement !== this.inputElement) {
+        this.inputElement.focus();
+      }
+    });
+
+    overlay.addEventListener("remove", () => {
       this.isOpen = false;
       this.inputElement = null;
       this.resultsContainer = null;
     });
 
     this.inputElement.value = "";
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur?.();
+    }
     this.inputElement.focus();
+    setTimeout(() => {
+      if (this.inputElement && document.activeElement !== this.inputElement) {
+        this.inputElement.focus();
+      }
+    }, 0);
     await this.loadFiles();
     this.renderResults();
+    if (this.inputElement && document.activeElement !== this.inputElement) {
+      this.inputElement.focus();
+    }
   }
 
   close() {
-    const win = document.getElementById("command-palette-win");
-    if (win) {
-      os.window.close(win);
+    const overlay = document.getElementById("command-palette-overlay");
+    if (overlay) {
+      overlay.remove();
     }
     this.isOpen = false;
+    this.inputElement = null;
+    this.resultsContainer = null;
   }
 
   async loadFiles() {
@@ -497,13 +524,13 @@ export class CommandPalette {
     this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.results.length - 1));
 
     if (this.results.length === 0) {
-      this.resultsContainer.innerHTML = `<div class="cp-empty">No matching commands, apps, or files found.</div>`;
+      this.resultsContainer.innerHTML = `<div class="command-palette-empty">No matching commands, apps, or files found.</div>`;
       return;
     }
 
     this.results.forEach((item, index) => {
       const el = document.createElement("div");
-      el.className = `cp-item ${index === this.activeIndex ? "active" : ""}`;
+      el.className = `command-palette-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
       let iconHtml = "";
@@ -518,12 +545,12 @@ export class CommandPalette {
       }
 
       el.innerHTML = `
-        <div class="cp-item-icon">${iconHtml}</div>
-        <div class="cp-item-meta">
-          <div class="cp-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="cp-item-sub">${this.escapeHTML(item.subtitle)}</div>
+        <div class="command-palette-item-icon">${iconHtml}</div>
+        <div class="command-palette-item-meta">
+          <div class="command-palette-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="command-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="cp-item-tag">${item.tag}</div>
+        <div class="command-palette-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
@@ -583,16 +610,16 @@ export class CommandPalette {
 
     this.results.forEach((item, index) => {
       const el = document.createElement("div");
-      el.className = `cp-item ${index === this.activeIndex ? "active" : ""}`;
+      el.className = `command-palette-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
       el.innerHTML = `
-        <div class="cp-item-icon"><i class="${item.icon}"></i></div>
-        <div class="cp-item-meta">
-          <div class="cp-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="cp-item-sub">${this.escapeHTML(item.subtitle)}</div>
+        <div class="command-palette-item-icon"><i class="${item.icon}"></i></div>
+        <div class="command-palette-item-meta">
+          <div class="command-palette-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="command-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="cp-item-tag">${item.tag}</div>
+        <div class="command-palette-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
@@ -663,7 +690,7 @@ export class CommandPalette {
 
     this.results.forEach((item, index) => {
       const el = document.createElement("div");
-      el.className = `cp-item ${index === this.activeIndex ? "active" : ""}`;
+      el.className = `command-palette-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
       let iconHtml = "";
@@ -678,12 +705,12 @@ export class CommandPalette {
       }
 
       el.innerHTML = `
-        <div class="cp-item-icon">${iconHtml}</div>
-        <div class="cp-item-meta">
-          <div class="cp-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="cp-item-sub">${this.escapeHTML(item.subtitle)}</div>
+        <div class="command-palette-item-icon">${iconHtml}</div>
+        <div class="command-palette-item-meta">
+          <div class="command-palette-item-title">${this.escapeHTML(item.title)}</div>
+          <div class="command-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
         </div>
-        <div class="cp-item-tag">${item.tag}</div>
+        <div class="command-palette-item-tag">${item.tag}</div>
       `;
 
       el.addEventListener("click", () => {
@@ -1155,7 +1182,7 @@ export class CommandPalette {
   updateActiveSelection() {
     const container = this.resultsContainer;
     if (!container) return;
-    const items = container.querySelectorAll(".cp-item");
+    const items = container.querySelectorAll(".command-palette-item");
     items.forEach((item) => {
       const idx = parseInt(item.dataset.index);
       item.classList.toggle("active", idx === this.activeIndex);
@@ -1166,7 +1193,7 @@ export class CommandPalette {
   scrollToActive() {
     const container = this.resultsContainer;
     if (!container) return;
-    const activeEl = container.querySelector(".cp-item.active");
+    const activeEl = container.querySelector(".command-palette-item.active");
     if (!activeEl) return;
     const body = container.parentElement;
     if (!body) return;

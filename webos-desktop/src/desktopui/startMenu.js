@@ -27,6 +27,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { modeManager, MODES } from "../modeManager.js";
+import { isIntroTourKeepingStartMenuOpen } from "../apps/introTour.js";
 function getStartMenuEl() {
   return $("#start-menu") || $(".start-menu");
 }
@@ -57,6 +58,7 @@ function isStartMenuOpen() {
 }
 
 export function closeStartMenu() {
+  if (isIntroTourKeepingStartMenuOpen()) return;
   const el = getStartMenuEl();
   if (!el) return;
   if (el.style.display !== "flex") return;
@@ -624,7 +626,7 @@ function activateCategoryPage(cat) {
 }
 
 function navigateCategories(direction) {
-  const categories = Array.from($(".start-cat:not(.docked)")).filter(
+  const categories = Array.from($$(".start-cat:not(.docked)")).filter(
     (cat) => cat.style.display !== "none" && cat.offsetParent !== null
   );
   if (categories.length === 0) return;
@@ -852,7 +854,10 @@ export function setupStartMenu(sessionManager) {
         switchFocusMode("apps");
       } else if (KeybindManager.matches(e, "startMenu.enter")) {
         e.preventDefault();
-        if (focusMode === "categories" && selectedCategory) {
+        if (focusMode === "search") {
+          const result = $(".start-page.active .start-menu-item:not(.letter-category-header)");
+          if (result) result.click();
+        } else if (focusMode === "categories" && selectedCategory) {
           selectedCategory.dispatchEvent(new Event("click"));
         } else {
           launchSelectedItem();

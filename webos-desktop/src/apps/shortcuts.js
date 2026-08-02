@@ -493,6 +493,7 @@ export class ShortcutsApp extends BaseApp {
       }
 
       os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Customizer });
+      os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.MacroMaker });
       closeCustomModal();
       render();
     };
