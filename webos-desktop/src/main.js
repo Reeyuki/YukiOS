@@ -28,6 +28,7 @@ import { appMap } from "./games/gamesList.js";
 import "./desktopui/taskbarPositionManager.js";
 import { isMobile, isTouchDevice } from "./shared/platformUtils.js";
 import { batteryPerformanceManager } from "./services/BatteryPerformanceManager.js";
+import { PortManager } from "./services/PortManager.js";
 import "./styles/batterySaver.css";
 import logoImg from "./assets/logo.png";
 import { showCdnPrompt } from "./shared/dialogs.js";
@@ -55,6 +56,7 @@ if (isMobile() || isTouchDevice()) {
 }
 
 const notificationCenter = new NotificationCenter();
+const portManager = new PortManager();
 const fileSystemManager = new FileSystemManager();
 const windowManager = new WindowManager(notificationCenter);
 const desktopPeekManager = new DesktopPeekManager(windowManager);
@@ -67,7 +69,8 @@ const os = initializeOSBridge({
   fileSystemManager,
   notificationCenter,
   eventBus: bus,
-  trayManager
+  trayManager,
+  portManager
 });
 
 os.clipboardManager = clipboardManager;

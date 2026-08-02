@@ -939,7 +939,7 @@
 
 .online-users-badge {
   position: absolute;
-  top: 20px;
+  top: -60px;
   right: 20px;
   display: flex;
   align-items: center;
@@ -962,7 +962,7 @@
 
 .session-activity-widget {
   position: absolute;
-  top: 58px;
+  top: -20px;
   right: 20px;
   z-index: 10;
   display: flex;
@@ -1018,7 +1018,7 @@
 
 .session-news-widget {
   position: fixed;
-  bottom: 32px;
+  bottom: 40px;
   right: 40px;
   z-index: 10;
   width: 310px;

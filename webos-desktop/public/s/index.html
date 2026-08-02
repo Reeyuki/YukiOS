@@ -759,6 +759,146 @@
         letter-spacing: 0.3px;
         text-transform: uppercase;
       }
+      .local-page-container {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--bg);
+        overflow: hidden;
+        z-index: 5;
+      }
+      .local-page-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: var(--bg);
+      }
+      .local-file-view {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .local-file-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text-dim);
+        flex-shrink: 0;
+      }
+      .local-file-toolbar .local-file-name {
+        font-weight: 600;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .local-file-toolbar .local-file-mime {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        color: var(--text-dim);
+        flex-shrink: 0;
+      }
+      .local-file-body {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        min-height: 0;
+      }
+      .local-file-body.local-html-body {
+        display: block;
+        padding: 0;
+      }
+      .local-file-body img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .local-file-body video,
+      .local-file-body audio {
+        max-width: 100%;
+        max-height: 100%;
+      }
+      .local-pdf-embed {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .local-text-body {
+        align-items: stretch;
+        padding: 0;
+      }
+      .local-text-view {
+        width: 100%;
+        margin: 0;
+        padding: 14px 18px;
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: var(--text);
+        white-space: pre;
+        overflow: auto;
+        background: var(--surface);
+      }
+      .local-text-view .tok-key { color: #c4b5fd; }
+      .local-text-view .tok-str { color: #a78bfa; }
+      .local-text-view .tok-num { color: #ddd6fe; }
+      .local-text-view .tok-bool { color: #ddd6fe; }
+      .local-text-view .tok-cmt { color: #71707e; font-style: italic; }
+      .local-text-view .tok-kw { color: #c4b5fd; }
+      .local-text-view .tok-tag { color: #c4b5fd; }
+      .local-text-view .tok-ent { color: #8b8a99; }
+      .local-text-view .tok-at { color: #c4b5fd; }
+      .local-text-view .tok-prop { color: #ddd6fe; }
+      .local-text-view .tok-sel { color: #a78bfa; }
+      .local-text-view .tok-md-head { color: #c4b5fd; font-weight: 700; }
+      .local-text-view .tok-md-code { color: #a78bfa; }
+      .local-text-view .tok-md-bold { color: #fff; font-weight: 700; }
+      .local-text-view .tok-md-em { color: #ddd6fe; font-style: italic; }
+      .local-error-view {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px;
+        text-align: center;
+      }
+      .local-error-view .local-error-code {
+        font-size: 40px;
+        color: var(--text-dim);
+      }
+      .local-error-view .local-error-msg {
+        font-size: 15px;
+        color: var(--text);
+      }
+      .local-error-view .local-error-url {
+        font-size: 12px;
+        color: var(--text-dim);
+        word-break: break-all;
+      }
+      .local-download-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        background: var(--surface-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .local-download-link:hover {
+        color: var(--brand);
+        border-color: var(--brand);
+      }
       .yuki-page-container .panel-item,
       .yuki-page-container .history-entry {
         display: flex;
@@ -2778,6 +2918,11 @@
       let pendingBookmarks = null;
       let pendingHistory = null;
 
+      var _localActive = false;
+      var _localPending = {};
+      var _localReqId = 0;
+      var yukiDinoGameHtml = "";
+
       function sendToParent(msg) {
         if (window.parent && window.parent !== window) {
           try {
@@ -2845,6 +2990,9 @@
           if (data.transport) {
             hostTransport = data.transport;
             localStorage.setItem("proxTransport", data.transport);
+          }
+          if (data.dinoGameHtml) {
+            yukiDinoGameHtml = data.dinoGameHtml;
           }
         }
         if (data.type === "scram:torMode") {
@@ -2980,7 +3128,8 @@
             saved.forEach((s, i) => {
               const tab = createTab(i === 0);
               if (s.url && s.url !== "NT.html" && !s.url.startsWith("yuki://")) {
-                tab.frame.go(s.url);
+                if (isLocalNavigation(s.url)) loadLocalPage(s.url);
+                else tab.frame.go(s.url);
               }
             });
             return true;
@@ -3168,6 +3317,7 @@
               </div>
             </div>
             <div id="yuki-page-container" class="yuki-page-container" style="display:none;"></div>
+            <div id="local-page-container" class="local-page-container" style="display:none;"></div>
             <div id="find-bar" class="find-bar" style="display:none;">
               <input type="text" id="find-input" placeholder="Find in page…" />
               <span id="find-count" class="find-count">0/0</span>
@@ -3189,14 +3339,17 @@
 
         document.getElementById("back-btn").onclick = () => {
           if (_yukiActive) { closeYukiPage(); return; }
+          if (_localActive && goLocalBack()) return;
           getActiveTab()?.frame.back();
         };
         document.getElementById("fwd-btn").onclick = () => {
           if (_yukiActive) return;
+          if (_localActive && goLocalForward()) return;
           getActiveTab()?.frame.forward();
         };
         document.getElementById("reload-btn").onclick = () => {
           if (_yukiActive) { closeYukiPage(); return; }
+          if (_localActive) { loadLocalPage(getActiveTab().url, { reload: true }); return; }
           getActiveTab()?.frame.reload();
         };
         document.getElementById("home-btn-nav").onclick = () => {
@@ -3401,6 +3554,16 @@
               updateTabsUI();
             }
           }
+          if (e.data?.type === "scram:localResponse") {
+            const pending = _localPending[e.data.id];
+            if (pending) {
+              delete _localPending[e.data.id];
+              pending.resolve(e.data);
+            }
+          }
+          if (e.data?.type === "scram-local-nav") {
+            handleSubmit(e.data.url);
+          }
         });
 
         if (restoreTabs && restoreTabState()) {
@@ -3436,7 +3599,9 @@
           skipTimeout: null,
           isPlayingAudio: false,
           isPinned: false,
-          isMuted: false
+          isMuted: false,
+          localStack: [],
+          localIndex: -1,
         };
         _newTabId = tab.id;
 
@@ -3504,6 +3669,21 @@
             }
           } catch {}
 
+          try {
+            const doc = frame.element.contentWindow.document;
+            const bodyText = (doc.body ? doc.body.textContent || "" : "").trim();
+            if (tab.url && !tab.url.includes("NT.html") && bodyText.indexOf("Internal Service Worker Error") === 0) {
+              frame.element.srcdoc = buildProxyOfflineHtml(tab.url);
+              tab.title = "This site can't be reached";
+              tab.loading = false;
+              if (tab.id === activeTabId) showIframeLoading(false);
+              updateTabsUI();
+              updateAddressBar();
+              updateLoadingBar(tab, 100);
+              return;
+            }
+          } catch {}
+
           updateTabsUI();
           updateAddressBar();
           updateLoadingBar(tab, 100);
@@ -3543,6 +3723,7 @@
 
       function switchTab(tabId) {
         if (_yukiActive) closeYukiPage();
+        if (_localActive) closeLocalPage();
         activeTabId = tabId;
         const tab = getActiveTab();
         tabs.forEach((t) => t.frame.element.classList.toggle("hidden", t.id !== tabId));
@@ -3734,6 +3915,12 @@
         const tab = getActiveTab();
         let input = url || document.getElementById("address-bar").value.trim();
         if (!input) return;
+        input = normalizeLocalInput(input);
+        if (isLocalNavigation(input)) {
+          loadLocalPage(input);
+          saveTabState();
+          return;
+        }
         if (input.startsWith("yuki://")) {
           var page = input.replace("yuki://", "");
           navigateToYukiPage(page);
@@ -4088,7 +4275,357 @@
 
       var _yukiActive = false;
 
+      function normalizeLocalInput(input) {
+        var t = String(input || "").trim();
+        if (!t || /^https?:\/\//i.test(t)) return t;
+        if (/^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(\/|$)/i.test(t)) return "http://" + t;
+        return t;
+      }
+
+      function isLocalNavigation(input) {
+        var t = String(input || "").trim();
+        if (!t) return false;
+        if (t.indexOf("fs://") === 0 || t.indexOf("file://") === 0) return true;
+        if (t.indexOf("/") === 0) return true;
+        if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(\/|$)/i.test(t)) return true;
+        if (/^(localhost|127\.0\.0\.1|0\.0\.0\.0):\d+(\/|$)/i.test(t)) return true;
+        return false;
+      }
+
+      function localTargetLabel(url) {
+        var parts = String(url).split(/[\\/?#]/).filter(Boolean);
+        return parts.length ? parts[parts.length - 1] : url;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replace(/'/g, "&#39;");
+      }
+
+      function loadLocalPage(url, opts) {
+        opts = opts || {};
+        var tab = getActiveTab();
+        if (!tab) return;
+        if (_yukiActive) closeYukiPage();
+        if (_localActive && !opts.force && tab.url === url) return;
+        if (!opts.fromHistory && !opts.reload) {
+          tab.localStack = tab.localStack.slice(0, (tab.localIndex != null ? tab.localIndex : -1) + 1);
+          tab.localStack.push({ url: url, title: localTargetLabel(url) });
+          tab.localIndex = tab.localStack.length - 1;
+        } else if (opts.fromHistory) {
+          tab.localStack[tab.localIndex] = { url: url, title: localTargetLabel(url) };
+        }
+        tab._localPrevUrl = tab.url;
+        tab._localPrevTitle = tab.title;
+        tab.url = url;
+        tab.title = localTargetLabel(url);
+        tab.loading = false;
+        _localActive = true;
+        tabs.forEach(function (t) {
+          t.frame.element.classList.add("hidden");
+        });
+        var cont = document.getElementById("local-page-container");
+        if (cont) {
+          cont.style.display = "block";
+          cont.innerHTML = "";
+        }
+        addToHistory(url, tab.title);
+        updateAddressBar();
+        updateTabsUI();
+        showIframeLoading(true, url);
+        saveTabState();
+        requestLocalContent(url)
+          .then(function (res) {
+            var current = getActiveTab();
+            if (!current || current.url !== url) return;
+            showIframeLoading(false);
+            renderLocalContent(url, res);
+          })
+          .catch(function (err) {
+            var current = getActiveTab();
+            if (!current || current.url !== url) return;
+            showIframeLoading(false);
+            renderLocalError(url, "Could not load " + url + ": " + (err && err.message ? err.message : err));
+          });
+      }
+
+      function requestLocalContent(url) {
+        return new Promise(function (resolve, reject) {
+          var id = ++_localReqId;
+          _localPending[id] = { resolve: resolve, reject: reject };
+          sendToParent({ type: "scram:localRequest", url: url, id: id });
+          setTimeout(function () {
+            if (_localPending[id]) {
+              delete _localPending[id];
+              reject(new Error("Request timed out"));
+            }
+          }, 20000);
+        });
+      }
+
+      function closeLocalPage() {
+        _localActive = false;
+        var cont = document.getElementById("local-page-container");
+        if (cont) {
+          cont.style.display = "none";
+          cont.innerHTML = "";
+        }
+        var tab = getActiveTab();
+        if (tab) {
+          if (tab._localPrevUrl) {
+            tab.url = tab._localPrevUrl;
+            tab.title = tab._localPrevTitle || tab._localPrevUrl;
+            delete tab._localPrevUrl;
+            delete tab._localPrevTitle;
+          }
+          tab.frame.element.classList.remove("hidden");
+          tab.loading = false;
+          showIframeLoading(false);
+          updateAddressBar();
+          updateTabsUI();
+        }
+      }
+
+      function goLocalBack() {
+        var tab = getActiveTab();
+        if (!tab || !tab.localStack || tab.localStack.length < 2) return false;
+        tab.localIndex = Math.max(0, (tab.localIndex || 0) - 1);
+        var entry = tab.localStack[tab.localIndex];
+        loadLocalPage(entry.url, { fromHistory: true, force: true });
+        return true;
+      }
+
+      function goLocalForward() {
+        var tab = getActiveTab();
+        if (!tab || !tab.localStack || tab.localIndex == null || tab.localIndex >= tab.localStack.length - 1)
+          return false;
+        tab.localIndex++;
+        var entry = tab.localStack[tab.localIndex];
+        loadLocalPage(entry.url, { fromHistory: true, force: true });
+        return true;
+      }
+
+      function renderLocalContent(url, res) {
+        var cont = document.getElementById("local-page-container");
+        if (!cont) return;
+        var ct = res.contentType || "";
+        if (res.html != null) {
+          renderLocalHtml(cont, url, res.html);
+          return;
+        }
+        if (res.status && res.status >= 400) {
+          renderLocalError(url, res.error || res.text || "Error " + res.status);
+          return;
+        }
+        if (res.error) {
+          renderLocalError(url, res.error);
+          return;
+        }
+        if (res.html != null) {
+          renderLocalHtml(cont, url, res.html);
+          return;
+        }
+        if (res.blobUrl) {
+          if (ct.indexOf("image/") === 0) {
+            renderLocalMediaFile(cont, url, res.blobUrl, "image", ct);
+            return;
+          }
+          if (ct.indexOf("video/") === 0) {
+            renderLocalMediaFile(cont, url, res.blobUrl, "video", ct);
+            return;
+          }
+          if (ct.indexOf("audio/") === 0) {
+            renderLocalMediaFile(cont, url, res.blobUrl, "audio", ct);
+            return;
+          }
+          if (ct === "application/pdf") {
+            renderLocalMediaFile(cont, url, res.blobUrl, "pdf", ct);
+            return;
+          }
+          renderLocalDownload(cont, url, res.blobUrl, ct);
+          return;
+        }
+        renderLocalText(cont, url, res.text != null ? res.text : "");
+      }
+
+      function renderLocalHtml(cont, url, html) {
+        cont.innerHTML =
+          '<iframe class="local-page-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" srcdoc="' +
+          escapeAttr(html) +
+          '"></iframe>';
+      }
+
+      function renderLocalMediaFile(cont, url, blobUrl, kind, ct) {
+        var name = localTargetLabel(url);
+        var inner = "";
+        if (kind === "image") inner = '<img src="' + blobUrl + '" alt="' + escapeAttr(name) + '">';
+        else if (kind === "video") inner = '<video src="' + blobUrl + '" controls autoplay></video>';
+        else if (kind === "audio") inner = '<audio src="' + blobUrl + '" controls autoplay></audio>';
+        else if (kind === "pdf")
+          inner = '<object data="' + blobUrl + '" type="application/pdf" class="local-pdf-embed"></object>';
+        cont.innerHTML =
+          '<div class="local-file-view">' +
+          '<div class="local-file-toolbar"><span class="local-file-name">' +
+          escapeHtml(name) +
+          '</span><span class="local-file-mime">' +
+          escapeHtml(ct) +
+          "</span></div>" +
+          '<div class="local-file-body">' +
+          inner +
+          "</div></div>";
+      }
+
+      function renderLocalText(cont, url, text) {
+        var name = localTargetLabel(url);
+        var ext = name.split(".").pop().toLowerCase();
+        var highlighted = highlightCode(text, ext);
+        cont.innerHTML =
+          '<div class="local-file-view">' +
+          '<div class="local-file-toolbar"><span class="local-file-name">' +
+          escapeHtml(name) +
+          '</span><span class="local-file-mime">text/plain</span></div>' +
+          '<div class="local-file-body local-text-body"><pre class="local-text-view">' +
+          highlighted +
+          "</pre></div></div>";
+      }
+
+      function renderLocalDownload(cont, url, blobUrl, ct) {
+        var name = localTargetLabel(url);
+        var view = document.createElement("div");
+        view.className = "local-file-view";
+        var toolbar = document.createElement("div");
+        toolbar.className = "local-file-toolbar";
+        var nameSpan = document.createElement("span");
+        nameSpan.className = "local-file-name";
+        nameSpan.textContent = name;
+        var mimeSpan = document.createElement("span");
+        mimeSpan.className = "local-file-mime";
+        mimeSpan.textContent = ct;
+        toolbar.appendChild(nameSpan);
+        toolbar.appendChild(mimeSpan);
+        var body = document.createElement("div");
+        body.className = "local-file-body";
+        var btn = document.createElement("button");
+        btn.className = "local-download-link";
+        var icon = document.createElement("i");
+        icon.className = "fa-solid fa-download";
+        btn.appendChild(icon);
+        btn.appendChild(document.createTextNode(" Download " + name));
+        btn.addEventListener("click", function () {
+          sendToParent({ type: "scram:localDownload", url: url });
+        });
+        body.appendChild(btn);
+        view.appendChild(toolbar);
+        view.appendChild(body);
+        cont.innerHTML = "";
+        cont.appendChild(view);
+      }
+
+      function renderLocalError(url, msg) {
+        var cont = document.getElementById("local-page-container");
+        if (!cont) return;
+        cont.innerHTML =
+          '<div class="local-error-view">' +
+          '<div class="local-error-code"><i class="fa-solid fa-triangle-exclamation"></i></div>' +
+          '<div class="local-error-msg">' +
+          escapeHtml(msg) +
+          '</div><div class="local-error-url">' +
+          escapeHtml(url) +
+          "</div></div>";
+      }
+
+      function buildProxyOfflineHtml(url) {
+        var t = "var(--text)";
+        var tm = "var(--text-muted)";
+        var br = "var(--border)";
+        var sg = "var(--surface-glass)";
+        var dinoFrameHtml = yukiDinoGameHtml
+          ? "<iframe class='dino-frame' srcdoc='" + escapeAttr(yukiDinoGameHtml) + "' title='T-Rex Runner' loading='lazy'></iframe>"
+          : "<iframe class='dino-frame' src='https://wayou.github.io/t-rex-runner/' title='T-Rex Runner' loading='lazy'></iframe>";
+        return (
+          '<!DOCTYPE html><html><head><meta charset="utf-8"><title>This site can\'t be reached</title><style>' +
+          "body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;color:" +
+          t +
+          ";font-family:system-ui,-apple-system,sans-serif}.offline{width:100%;max-width:640px;padding:20px;text-align:center}.dino{border:1px solid " +
+          br +
+          ";border-radius:12px;overflow:hidden;background:" +
+          sg +
+          "}.dino-frame{display:block;width:100%;height:210px;border:0}.offline-msg{font-size:20px;font-weight:500;margin-top:20px;text-align:left}.offline-try{font-size:14px;color:" +
+          tm +
+          ";margin-top:14px;text-align:left;margin-left:auto;margin-right:auto}.offline-try ul{list-style:disc;padding-left:20px;margin:6px 0 0}.offline-try li{margin-top:4px}.offline-code{font-family:ui-monospace,monospace;font-size:13px;color:" +
+          tm +
+          ";margin-top:16px;text-align:left}</style></head><body><div class='offline'><div class='dino'>" +
+          dinoFrameHtml +
+          "</div><div class='offline-msg'>There is no Internet connection.</div><div class='offline-try'>Try:<ul><li>Checking the network cables, modem and router</li><li>Reconnecting to Wi-Fi</li></ul></div><div class='offline-code'>ERR_CONNECTION_REFUSED</div></div></body></html>"
+        );
+      }
+
+      function highlightCode(code, ext) {
+        var mode = "text";
+        if (ext === "js" || ext === "mjs" || ext === "cjs" || ext === "ts") mode = "js";
+        else if (ext === "html" || ext === "htm") mode = "html";
+        else if (ext === "css") mode = "css";
+        else if (ext === "json") mode = "json";
+        else if (ext === "md" || ext === "markdown") mode = "markdown";
+        if (mode === "text") return escapeHtml(code);
+        var pattern = null;
+        if (mode === "json") {
+          pattern = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|(\b(?:true|false|null)\b)/g;
+        } else if (mode === "js") {
+          pattern =
+            /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|\b(?:const|let|var|function|return|if|else|for|while|do|class|new|import|export|from|async|await|try|catch|finally|throw|typeof|instanceof|in|of|this|super|null|undefined|true|false|switch|case|break|continue|default|delete|void|yield|extends|static|get|set)\b|\b\d+(?:\.\d+)?\b/g;
+        } else if (mode === "html") {
+          pattern = /(<!--[\s\S]*?-->)|(<\/?[a-zA-Z][^>]*>)|(&[a-zA-Z#0-9]+;)/g;
+        } else if (mode === "css") {
+          pattern =
+            /(\/\*[\s\S]*?\*\/)|("[^"]*"|'[^']*')|(@[a-zA-Z-]+)|(-?[a-zA-Z-]+(?=\s*:))|(\b\d+(?:\.\d+)?(?:px|em|rem|%|vh|vw|s|ms|deg)?\b)|([.#][a-zA-Z-]+)/g;
+        } else if (mode === "markdown") {
+          pattern = /(^#{1,6}[^\n]*$)|(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*]+\*)/gm;
+        }
+        if (!pattern) return escapeHtml(code);
+        return code.replace(pattern, function (match, a, b, c, d, e, f) {
+          var cls = null;
+          if (mode === "json") {
+            if (a && b) cls = "tok-key";
+            else if (a) cls = "tok-str";
+            else if (c) cls = "tok-num";
+            else cls = "tok-bool";
+          } else if (mode === "js") {
+            if (a) cls = "tok-cmt";
+            else if (b) cls = "tok-str";
+            else if (c) cls = "tok-kw";
+            else cls = "tok-num";
+          } else if (mode === "html") {
+            if (a) cls = "tok-cmt";
+            else if (b) cls = "tok-tag";
+            else cls = "tok-ent";
+          } else if (mode === "css") {
+            if (a) cls = "tok-cmt";
+            else if (b) cls = "tok-str";
+            else if (c) cls = "tok-at";
+            else if (d) cls = "tok-prop";
+            else if (e) cls = "tok-num";
+            else cls = "tok-sel";
+          } else if (mode === "markdown") {
+            if (a) cls = "tok-md-head";
+            else if (b) cls = "tok-md-code";
+            else if (c) cls = "tok-md-bold";
+            else cls = "tok-md-em";
+          }
+          if (!cls) return escapeHtml(match);
+          return '<span class="' + cls + '">' + escapeHtml(match) + "</span>";
+        });
+      }
+
       function navigateToYukiPage(page, tabOverride) {
+        if (_localActive) closeLocalPage();
         var tab = tabOverride || getActiveTab();
         if (!tab) return;
         var url = "yuki://" + page;

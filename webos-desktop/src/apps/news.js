@@ -9,6 +9,27 @@ const EXISTING_NEWS_UPDATES = [
     date: "August 2, 2026",
     sections: [
       {
+        icon: "fa-server",
+        title: "Localhost & Filesystem Browsing",
+        items: [
+          [
+            "fa-server",
+            "Virtual HTTP Server",
+            "Run python -m http.server in the terminal and browse your files at localhost:4000."
+          ],
+          [
+            "fa-folder-tree",
+            "Browse Files in the Browser",
+            "Open fs:// paths or /folders in the browser to view files, images, videos, and HTML pages."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    date: "August 2, 2026",
+    sections: [
+      {
         icon: "fa-trophy",
         title: "Achievements",
         items: [

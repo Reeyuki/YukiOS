@@ -61,6 +61,14 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
         run: |
           set -e
 
@@ -76,9 +84,9 @@ jobs:
 
           send_discord() {
             local content="$1"
-            curl -H "Content-Type: application/json" \
-              -d "{\"content\":\"$content\"}" \
-              "$DISCORD_WEBHOOK"
+            local payload
+            payload=$(jq -n --arg content "$content" '{content: $content}')
+            curl -H "Content-Type: application/json" -d "$payload" "$DISCORD_WEBHOOK"
           }
 
           send_discord_embed() {
@@ -91,23 +99,16 @@ jobs:
           if [ "$EVENT" = "push" ]; then
             if [ "${{ github.actor }}" = "Reeyuki" ]; then
               SHORT_SHA="${GITHUB_SHA::7}"
-              send_discord_embed '{
-                "embeds": [{
-                  "author": {
-                    "name": "${{ github.actor }}",
-                    "icon_url": "https://cdn.discordapp.com/avatars/452491822871085066/5cfc60e7dcf86a9eadee0bf2e84f1cf7.webp?size=160"
-                  },
-                  "fields": [{
-                    "name": "Commit",
-                    "value": "`'"$SHORT_SHA"'` - ${{ github.event.head_commit.message }}",
-                    "inline": false
-                  }]
-                }]
-              }'
+              payload=$(jq -n \
+                --arg name "Reeyuki" \
+                --arg icon "https://cdn.discordapp.com/avatars/452491822871085066/5cfc60e7dcf86a9eadee0bf2e84f1cf7.webp?size=160" \
+                --arg value "\`${SHORT_SHA}\` - ${COMMIT_MESSAGE}" \
+                '{embeds: [{author: {name: $name, icon_url: $icon}, fields: [{name: "Commit", value: $value, inline: false}]}]}')
+              send_discord_embed "$payload"
             else
               send_discord "[push] ${{ github.actor }} on ${{ github.repository }}
             Branch: ${{ github.ref_name }}
-            Commit: ${{ github.event.head_commit.message }}
+            Commit: $COMMIT_MESSAGE
             ${{ github.event.head_commit.url }}"
             fi
 
@@ -122,26 +123,26 @@ jobs:
 
           if [ "$EVENT" = "pull_request" ]; then
             send_discord "[PR] ${{ github.actor }}
-            ${{ github.event.pull_request.title }}
-            ${{ github.event.pull_request.html_url }}"
+            $PR_TITLE
+            $PR_URL"
             exit 0
           fi
 
           if [ "$EVENT" = "issues" ]; then
-            send_discord "[Issue] ${{ github.event.issue.title }}
-            ${{ github.event.issue.html_url }}"
+            send_discord "[Issue] $ISSUE_TITLE
+            $ISSUE_URL"
             exit 0
           fi
 
           if [ "$EVENT" = "issue_comment" ]; then
             send_discord "[Comment] ${{ github.actor }}
-            ${{ github.event.comment.body }}"
+            $COMMENT_BODY"
             exit 0
           fi
 
           if [ "$EVENT" = "release" ]; then
-            send_discord "[Release] ${{ github.event.release.name }}
-            ${{ github.event.release.html_url }}"
+            send_discord "[Release] $RELEASE_NAME
+            $RELEASE_URL"
             exit 0
           fi
 
@@ -158,6 +159,8 @@ jobs:
       - name: Build web app and upload to Discord
         if: env.BUILD_WEB == 'true'
         shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           cd webos-desktop
 
@@ -168,7 +171,7 @@ jobs:
 
           if [ -f "$HTML_FILE" ]; then
             SHA="${GITHUB_SHA::7}"
-            SUBJECT="${{ github.event.head_commit.message }}"
+            SUBJECT="$COMMIT_MESSAGE"
 
             PAYLOAD=$(jq -n \
               --arg sha "$SHA" \

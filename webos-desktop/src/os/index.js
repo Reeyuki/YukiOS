@@ -205,6 +205,14 @@ const noopAchievements = {
   unlock: () => null
 };
 
+const noopPorts = {
+  register: NOOP,
+  unregister: NOOP,
+  get: () => null,
+  isRegistered: () => false,
+  list: () => []
+};
+
 const noopAPIs = {
   storage: noopStorage,
   events: noopEvents,
@@ -213,6 +221,7 @@ const noopAPIs = {
   fs: noopFs,
   dialog: noopDialog,
   tray: noopTray,
+  ports: noopPorts,
   app: noopApp,
   tor: noopTor,
   tiling: noopTiling,

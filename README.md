@@ -346,6 +346,7 @@ The web-only version runs in any browser with all core features intact; the Elec
 - [WebTorrent](https://github.com/webtorrent/webtorrent)
 - [Eruda](https://github.com/liriliri/eruda)
 - [Novnc](https://github.com/novnc/novnc)
+- [T-Rex Runner](https://github.com/wayou/t-rex-runner)
 - [webtor-rs](https://github.com/igor53627/webtor-rs) WASM Tor client (Arti + Snowflake)
 - [isomorphic-git](https://github.com/isomorphic-git/isomorphic-git) (Git client via CORS proxy)
 - Scramjet / BareMux / Epoxy Transport

@@ -22,6 +22,7 @@ import { AnsiRenderer } from "../terminal/ansiRenderer.js";
 import { TerminalRawMode, AltScreenManager, TerminalUIApp } from "../terminal/terminalUI.js";
 import { renderPrompt } from "../terminal/prompt.js";
 import { Stream, collectStream } from "../terminal/stream.js";
+import { startVirtualHttpServer } from "../terminal/httpServer.js";
 
 const termStateMap = new WeakMap();
 
@@ -3835,6 +3836,7 @@ export class TerminalApp extends BaseApp {
       ["killactive", "Close the active window"],
       ["python", "Run Python code or enter interactive REPL"],
       ["python3", "Alias for python"],
+      ["python -m http.server", "Serve the current directory over localhost"],
       ["node", "Run JS code or enter Node.js REPL"]
     ];
     await this.print("Available commands:");
@@ -4343,6 +4345,12 @@ export class TerminalApp extends BaseApp {
   }
 
   async cmdPython(args = [], flags = []) {
+    if (flags.includes("-m")) {
+      if (args[0] === "http.server") {
+        return this.cmdHttpServer(args.slice(1), flags);
+      }
+      return this.print(`python: no module named ${args[0] || ""}`, "var(--error)");
+    }
     if (flags.includes("-c") || flags.includes("--command")) {
       const code = args.join(" ");
       if (!code) return this.print("python: -c option requires an argument");
@@ -4354,6 +4362,9 @@ export class TerminalApp extends BaseApp {
       try {
         const resolved = this.fs.resolvePath(filePath, this.currentPath);
         const content = await this.fs.readTextFile(this.pathToRelative(resolved), "");
+        if (content == null) {
+          throw new Error("missing");
+        }
         await this.execPythonCode(content);
       } catch {
         await this.print(`python: can't open file '${filePath}': No such file or directory`);
@@ -4361,6 +4372,37 @@ export class TerminalApp extends BaseApp {
       return;
     }
     await this.enterPythonRepl();
+  }
+
+  async cmdHttpServer(args, flags) {
+    let port = 8000;
+    for (const arg of args) {
+      if (/^\d{1,5}$/.test(arg)) port = parseInt(arg, 10);
+    }
+    if (port < 1 || port > 65535) {
+      return this.print(`python: http.server: invalid port number: '${port}'`, "var(--error)");
+    }
+    let rootSegments = [...this.currentPath];
+    for (const flag of flags) {
+      if (flag.startsWith("--directory=")) {
+        rootSegments = this.fs.resolvePath(flag.slice("--directory=".length), this.currentPath);
+      } else if (flag === "--directory" || flag === "-d") {
+        const dirArg = args.find((arg) => !/^\d{1,5}$/.test(arg));
+        if (dirArg) rootSegments = this.fs.resolvePath(dirArg, this.currentPath);
+      }
+    }
+    if (os.ports.isRegistered(port)) {
+      return this.print(`python: http.server: address already in use: port ${port}`, "var(--error)");
+    }
+    await startVirtualHttpServer(
+      {
+        fs: os.fs,
+        print: (text) => this.print(text),
+        printError: (text) => this.print(text, "var(--error)"),
+        getStopRequested: () => this.stopRequested || !this.activeState?.win?.isConnected
+      },
+      { port, rootSegments }
+    );
   }
 
   async execPythonCode(code) {

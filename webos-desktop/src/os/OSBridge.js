@@ -444,6 +444,32 @@ export class AchievementsAPI {
   }
 }
 
+export class PortAPI {
+  constructor(manager) {
+    this.manager = manager;
+  }
+
+  register(port, handler, root) {
+    return this.manager.register(port, handler, root);
+  }
+
+  unregister(port) {
+    return this.manager.unregister(port);
+  }
+
+  get(port) {
+    return this.manager.get(port);
+  }
+
+  isRegistered(port) {
+    return this.manager.isRegistered(port);
+  }
+
+  list() {
+    return this.manager.list();
+  }
+}
+
 export class OSBridge {
   constructor(services) {
     this.window = new WindowAPI(services.windowManager);
@@ -457,6 +483,7 @@ export class OSBridge {
     this.storage = new StorageAPI();
     this.dialog = new DialogAPI();
     this.tray = new TrayAPI(services.trayManager);
+    this.ports = new PortAPI(services.portManager);
     this.tor = new TorAPI();
     this.tiling = new TilingAPI(services.windowManager);
     this.modes = new ModeAPI();

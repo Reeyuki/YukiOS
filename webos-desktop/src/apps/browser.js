@@ -5,6 +5,18 @@ import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSy
 import { PROXIES } from "../proxies.js";
 import { $, setStyle, createElement, addClass, removeClass } from "../shared/domUtils.js";
 import { maybeTriggerSmartlink } from "../ads.js";
+import {
+  buildFsInterceptScript,
+  buildDirectoryHtml,
+  getMimeType,
+  isDirEntry,
+  isTextContentType,
+  joinPath,
+  parseLocalTarget,
+  readOsTheme,
+  splitPath
+} from "../shared/virtualFsNet.js";
+import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
 
 const THEME_VARS = [
   "--brand",
@@ -112,7 +124,10 @@ export class BrowserApp extends BaseApp {
       const history = os.storage.get(StorageKeys.browserHistory) || [];
       const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
       const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
-      iframe.contentWindow.postMessage({ type: "scram:init", vars, bookmarks, history, wispUrl, transport }, "*");
+      iframe.contentWindow.postMessage(
+        { type: "scram:init", vars, bookmarks, history, wispUrl, transport, dinoGameHtml: buildDinoGameHtml() },
+        "*"
+      );
     };
 
     const msgHandler = (e) => {
@@ -163,6 +178,14 @@ export class BrowserApp extends BaseApp {
       } else if (data.type === "scram:proxyConfigChange") {
         if (data.wispUrl) os.storage.set(StorageKeys.wispServer, data.wispUrl);
         if (data.transport) os.storage.set(StorageKeys.browserTransport, data.transport);
+      } else if (data.type === "scram:localRequest") {
+        this.handleLocalRequest(data.url).then((result) => {
+          try {
+            e.source?.postMessage({ type: "scram:localResponse", id: data.id, ...result }, "*");
+          } catch {}
+        });
+      } else if (data.type === "scram:localDownload") {
+        this.handleLocalDownload(data.url);
       }
     };
     this.msgHandler = msgHandler;
@@ -336,7 +359,10 @@ export class BrowserApp extends BaseApp {
     const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
     const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
 
-    this.iframe.contentWindow.postMessage({ type: "scram:init", vars, bookmarks, history, wispUrl, transport }, "*");
+    this.iframe.contentWindow.postMessage(
+      { type: "scram:init", vars, bookmarks, history, wispUrl, transport, dinoGameHtml: buildDinoGameHtml() },
+      "*"
+    );
   }
 
   cleanupScramjet() {
@@ -390,6 +416,315 @@ export class BrowserApp extends BaseApp {
         if (tryNav() || n > 30) clearInterval(iv);
       }, 80);
     }
+  }
+
+  async handleLocalRequest(url) {
+    const target = parseLocalTarget(url);
+    if (!target) {
+      return {
+        status: 400,
+        contentType: "text/html",
+        html: this.buildLocalErrorPage(url, "Unsupported local address"),
+        title: "Error"
+      };
+    }
+    if (target.kind === "port") {
+      const entry = os.ports.get(target.port);
+      if (!entry) {
+        const cleanUrl = String(url).replace(/\/+$/, "");
+        const refusedUrl = cleanUrl || "localhost:" + target.port;
+        return {
+          status: 404,
+          contentType: "text/html",
+          html: this.buildLocalErrorPage(refusedUrl, "This site can't be reached", {
+            title: "This site can't be reached",
+            detail: refusedUrl + " refused to connect.",
+            code: "ERR_CONNECTION_REFUSED",
+            dino: true
+          }),
+          title: "This site can't be reached"
+        };
+      }
+      try {
+        const request = { method: "GET", url: target.path, headers: {} };
+        const response = await entry.handler(request);
+        return await this.convertLocalResponse(response, target, entry);
+      } catch (err) {
+        return {
+          status: 500,
+          contentType: "text/html",
+          html: this.buildLocalErrorPage(url, "Server error: " + String(err?.message || err)),
+          title: "Server error"
+        };
+      }
+    }
+    return await this.resolveVirtualPath(target.path);
+  }
+
+  async convertLocalResponse(response, target, entry) {
+    const status = response?.status ?? 200;
+    let contentType = "application/octet-stream";
+    const headers = response?.headers;
+    if (headers && typeof headers.get === "function") {
+      const ct = headers.get("content-type");
+      if (ct) contentType = ct;
+    } else if (headers && typeof headers === "object") {
+      contentType = headers["content-type"] || headers["Content-Type"] || contentType;
+    }
+    const base = contentType.split(";")[0].trim();
+    const title = "localhost:" + target.port;
+    if (base.includes("html")) {
+      const text = typeof response.text === "function" ? await response.text() : String(response?.body ?? "");
+      const fsBase = [...(entry?.root || []), ...splitPath(target.path).slice(0, -1)];
+      const html = await this.processHtmlContent(text, fsBase);
+      return { status, contentType: base, html, title };
+    }
+    if (isTextContentType(base) && !base.startsWith("image/")) {
+      const text = typeof response.text === "function" ? await response.text() : String(response?.body ?? "");
+      return { status, contentType: base, text, title };
+    }
+    try {
+      const clone = typeof response.clone === "function" ? response.clone() : null;
+      if (clone && typeof clone.text === "function") {
+        const probe = await clone.text();
+        if (/^\s*<!DOCTYPE\s+html|^\s*<html[\s>]/i.test(probe)) {
+          const fsBase = [...(entry?.root || []), ...splitPath(target.path).slice(0, -1)];
+          const html = await this.processHtmlContent(probe, fsBase);
+          return { status, contentType: "text/html", html, title };
+        }
+      }
+    } catch {}
+    let blob = null;
+    try {
+      blob = typeof response.blob === "function" ? await response.blob() : null;
+    } catch {}
+    if (!blob && response?.body != null) {
+      blob = new Blob([response.body], { type: base });
+    }
+    if (!blob) {
+      return {
+        status: 500,
+        contentType: "text/html",
+        html: this.buildLocalErrorPage(target.path, "Server returned no body"),
+        title
+      };
+    }
+    return { status, contentType: base, blobUrl: URL.createObjectURL(blob), title };
+  }
+
+  async resolveVirtualPath(inputPath) {
+    const segments = splitPath(inputPath);
+    const pathStr = joinPath(segments);
+    const name = segments[segments.length - 1] || "";
+    const dirSegments = segments.slice(0, -1);
+    const dirStr = joinPath(dirSegments);
+    if (!name) {
+      return await this.serveVirtualDirectory(segments, pathStr);
+    }
+    if (dirStr && !(await os.fs.exists(dirStr))) {
+      return {
+        status: 404,
+        contentType: "text/html",
+        html: this.buildLocalErrorPage(inputPath, "Directory not found: /" + dirStr),
+        title: "Not Found"
+      };
+    }
+    const entries = await os.fs.readdir(dirStr || "/");
+    const entry = entries[name];
+    if (!entry) {
+      return {
+        status: 404,
+        contentType: "text/html",
+        html: this.buildLocalErrorPage(inputPath, "File not found: /" + pathStr),
+        title: "Not Found"
+      };
+    }
+    if (isDirEntry(entry)) {
+      return await this.serveVirtualDirectory(segments, pathStr);
+    }
+    return await this.serveVirtualFile(segments, dirSegments, name, pathStr);
+  }
+
+  async serveVirtualDirectory(segments, pathStr) {
+    const entries = await os.fs.readdir(pathStr || "/");
+    const base = "fs:///" + (pathStr ? pathStr + "/" : "");
+    const html = buildDirectoryHtml(pathStr, entries, null, { theme: readOsTheme(), base });
+    return { status: 200, contentType: "text/html", html, title: "Index of /" + pathStr };
+  }
+
+  async serveVirtualFile(segments, dirSegments, name, pathStr) {
+    const mime = getMimeType(name);
+    const isMedia =
+      mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/") || mime === "application/pdf";
+    if (mime.includes("html")) {
+      const text = await os.fs.read(pathStr);
+      const html = await this.processHtmlContent(text || "", segments.slice(0, -1));
+      return { status: 200, contentType: mime, html, title: name };
+    }
+    if (!isMedia && isTextContentType(mime)) {
+      const text = await os.fs.read(pathStr);
+      return { status: 200, contentType: mime, text: text ?? "", title: name };
+    }
+    const dirStr = joinPath(dirSegments) || "/";
+    let blob = await os.fs.readBinaryFile(dirStr, name);
+    if (!blob) {
+      const content = await os.fs.getFileContent(dirStr, name);
+      blob = content instanceof Blob ? content : content != null ? new Blob([String(content)], { type: mime }) : null;
+    }
+    if (!blob) {
+      return {
+        status: 500,
+        contentType: "text/html",
+        html: this.buildLocalErrorPage(pathStr, "Could not read file: " + name),
+        title: "Read error"
+      };
+    }
+    return { status: 200, contentType: mime, blobUrl: URL.createObjectURL(blob), title: name };
+  }
+
+  async processHtmlContent(html, baseSegments) {
+    let doc;
+    try {
+      doc = new DOMParser().parseFromString(html, "text/html");
+    } catch {
+      return html;
+    }
+    if (!doc.documentElement) return html;
+    const base = baseSegments || [];
+    const tags = ["img", "script", "link", "video", "audio", "source", "track", "iframe", "embed"];
+    for (const tag of tags) {
+      const attr = tag === "link" ? "href" : "src";
+      const elements = doc.querySelectorAll(tag + "[" + attr + "]");
+      for (const element of elements) {
+        const value = element.getAttribute(attr);
+        if (!value) continue;
+        if (/^(https?:|data:|blob:|mailto:|#|javascript:|about:)/i.test(value.trim())) continue;
+        const target = this.resolveHtmlReference(base, value);
+        if (!target) continue;
+        const blobUrl = await this.htmlResourceToBlobUrl(target);
+        if (blobUrl) element.setAttribute(attr, blobUrl);
+      }
+    }
+    if (html.indexOf("scram-local-nav") === -1) {
+      const script = doc.createElement("script");
+      script.textContent = buildFsInterceptScript("fs:///" + (base.length ? base.join("/") + "/" : ""));
+      (doc.head || doc.documentElement).appendChild(script);
+    }
+    return "<!DOCTYPE html>" + doc.documentElement.outerHTML;
+  }
+
+  resolveHtmlReference(baseSegments, ref) {
+    let clean = ref.split(/[?#]/)[0];
+    if (!clean) return null;
+    if (clean.startsWith("fs://")) clean = clean.slice(5);
+    if (clean.startsWith("/")) return splitPath(clean);
+    if (/^[a-z][a-z0-9+.-]*:/i.test(clean)) return null;
+    const result = [...baseSegments];
+    for (const part of clean.split("/")) {
+      if (!part || part === ".") continue;
+      if (part === "..") result.pop();
+      else result.push(part);
+    }
+    return result;
+  }
+
+  async htmlResourceToBlobUrl(segments) {
+    const pathStr = joinPath(segments);
+    const dirSegments = segments.slice(0, -1);
+    const name = segments[segments.length - 1] || "";
+    if (!name) return null;
+    const mime = getMimeType(name);
+    const isMedia =
+      mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/") || mime === "application/pdf";
+    try {
+      if (!isMedia && isTextContentType(mime)) {
+        const text = await os.fs.read(pathStr);
+        if (text == null) return null;
+        return URL.createObjectURL(new Blob([text], { type: mime }));
+      }
+      const dirStr = joinPath(dirSegments) || "/";
+      let blob = await os.fs.readBinaryFile(dirStr, name);
+      if (!blob) {
+        const content = await os.fs.getFileContent(dirStr, name);
+        blob = content instanceof Blob ? content : content != null ? new Blob([String(content)], { type: mime }) : null;
+      }
+      if (!blob) return null;
+      return URL.createObjectURL(blob);
+    } catch {
+      return null;
+    }
+  }
+
+  buildLocalErrorPage(url, message, options = {}) {
+    const theme = readOsTheme();
+    const escapeHtml = (value) =>
+      String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const title = escapeHtml(options.title || "Error");
+    if (options.dino) {
+      return (
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
+        title +
+        "</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;color:" +
+        theme.text +
+        ";font-family:system-ui,-apple-system,sans-serif}.offline{width:100%;max-width:640px;padding:20px;text-align:center}.dino{border:1px solid " +
+        theme.border +
+        ";border-radius:12px;overflow:hidden;background:" +
+        theme.surface +
+        "}.dino-frame{display:block;width:100%;height:210px;border:0}.offline-msg{font-size:20px;font-weight:500;margin-top:20px;text-align:left}.offline-try{font-size:14px;color:" +
+        theme.textMuted +
+        ";margin-top:14px;text-align:left;margin-left:auto;margin-right:auto}.offline-try ul{list-style:disc;padding-left:20px;margin:6px 0 0}.offline-try li{margin-top:4px}.offline-code{font-family:ui-monospace,monospace;font-size:13px;color:" +
+        theme.textMuted +
+        ";margin-top:16px;text-align:left}</style></head><body><div class='offline'><div class='dino'><iframe class='dino-frame' srcdoc='" +
+        escapeDinoGameAttr() +
+        "' title='T-Rex Runner' loading='lazy'></iframe></div><div class='offline-msg'>There is no Internet connection.</div><div class='offline-try'>Try:<ul><li>Checking the network cables, modem and router</li><li>Reconnecting to Wi-Fi</li></ul></div><div class='offline-code'>" +
+        (options.code ? escapeHtml(options.code) : "ERR_CONNECTION_REFUSED") +
+        "</div></div></body></html>"
+      );
+    }
+    const detail = options.detail ? '<div class="detail">' + escapeHtml(options.detail) + "</div>" : "";
+    const code = options.code ? '<div class="code">' + escapeHtml(options.code) + "</div>" : "";
+    return (
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
+      title +
+      "</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;color:" +
+      theme.text +
+      ";font-family:system-ui,-apple-system,sans-serif}.wrap{text-align:center;max-width:520px;padding:20px}.badge{width:56px;height:56px;margin:0 auto 16px;border-radius:14px;background:" +
+      theme.surface +
+      ";border:1px solid " +
+      theme.border +
+      ";display:flex;align-items:center;justify-content:center;color:" +
+      theme.error +
+      ";font-size:26px;font-weight:700}.msg{font-size:20px;font-weight:600;margin-bottom:8px}.url{font-size:13px;color:" +
+      theme.textMuted +
+      ";word-break:break-all}.detail{font-size:14px;color:" +
+      theme.textMuted +
+      ";margin-top:10px}.code{display:inline-block;margin-top:14px;padding:4px 10px;border:1px solid " +
+      theme.border +
+      ";border-radius:6px;background:" +
+      theme.surface +
+      ";color:" +
+      theme.textMuted +
+      ';font-family:ui-monospace,monospace;font-size:12px}</style></head><body><div class="wrap"><div class="badge">!</div><div class="msg">' +
+      escapeHtml(message) +
+      '</div><div class="url">' +
+      escapeHtml(url) +
+      "</div>" +
+      detail +
+      code +
+      "</div></body></html>"
+    );
+  }
+
+  async handleLocalDownload(url) {
+    const result = await this.handleLocalRequest(url);
+    try {
+      if (result.blobUrl) {
+        const blob = await (await fetch(result.blobUrl)).blob();
+        this.triggerDownload(blob, url);
+      } else if (result.text != null) {
+        this.triggerDownload(new Blob([result.text], { type: result.contentType || "text/plain" }), url);
+      }
+    } catch {}
   }
 
   enterTorMode() {
