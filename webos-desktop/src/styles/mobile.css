@@ -868,6 +868,14 @@ html.is-mobile .session-support-btn {
   font-size: 12px;
 }
 
+html.is-mobile .session-discord-btn {
+  top: 12px;
+  left: 148px;
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
 html.is-mobile .session-info-modal {
   top: 52px;
   left: 12px;

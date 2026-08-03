@@ -78,6 +78,7 @@ export class SettingsApp extends BaseApp {
         taskbarAlignment: os.storage.get(StorageKeys.taskbarAlignment) || "left",
         cdnMirror: os.storage.get(StorageKeys.cdnMirror) || "jsdelivr",
         theme: os.storage.get(StorageKeys.theme) || "dark",
+        yuriMode: parseBool(os.storage.get(StorageKeys.yuriMode)),
         windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
         soundEnabled: parseBool(os.storage.get(StorageKeys.soundEnabled), true),
         masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,

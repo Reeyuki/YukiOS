@@ -9,6 +9,17 @@ const EXISTING_NEWS_UPDATES = [
     date: "August 3, 2026",
     sections: [
       {
+        icon: "fa-heart",
+        title: "Yuri Mode",
+        items: [
+          [
+            "fa-wand-magic-sparkles",
+            "Secret Yuri Mode",
+            "Boot YukiOS as YuriOS with a fresh pink palette on rare occasions, or force it in Settings."
+          ]
+        ]
+      },
+      {
         icon: "fa-mouse-pointer",
         title: "App Context Menus",
         items: [

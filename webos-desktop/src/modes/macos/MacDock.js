@@ -1,5 +1,5 @@
 import "./style.css";
-import { os } from "../../framework.js";
+import { os, brand } from "../../framework.js";
 import { modeManager, MODES } from "../../modeManager.js";
 import { createElement } from "../../shared/domUtils.js";
 import { resolveIconUrl } from "../../shared/assetResolver.js";
@@ -13,7 +13,7 @@ const DEFAULT_DOCK_APPS = [
   { appId: "launchpadApp", title: "Launchpad", icon: "fas fa-th", color: "#888" },
   { appId: "commandPalette", title: "Finder", icon: "fas fa-folder", color: "#6ea8fe", isFinder: true },
   { appId: "explorerApp", title: "Explorer", icon: `static/icons/file.webp`, color: "#fff" },
-  { appId: "browserApp", title: "Yuki Browser", icon: "static/icons/firefox.webp", color: "#fff" },
+  { appId: "browserApp", title: brand("Yuki Browser"), icon: "static/icons/firefox.webp", color: "#fff" },
   { appId: "terminalApp", title: "Terminal", icon: `static/icons/terminal.webp`, color: "#fff" },
   { appId: "settingsApp", title: "Settings", icon: "fa fa-cog", color: "#adb5bd" },
   { appId: "calculatorApp", title: "Calculator", icon: "fas fa-calculator", color: "#20c997" },

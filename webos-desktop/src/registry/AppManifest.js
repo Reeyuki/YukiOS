@@ -12,6 +12,7 @@ import {
   DISK_EXTS
 } from "../shared/fileKindDetector.js";
 import { ROM_EXTS } from "../shared/coreMap.js";
+import { brand } from "../easterYuri.js";
 
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
 
@@ -139,7 +140,7 @@ export const APP_MANIFESTS = [
     serviceKey: "monacoApp",
     enhanced: true,
     type: "system",
-    title: "Yuki Code",
+    title: brand("Yuki Code"),
     icon: "fas fa-code",
     launchType: "instance",
     windowIdPatterns: ["monaco"],
@@ -153,7 +154,7 @@ export const APP_MANIFESTS = [
     serviceKey: "model3dApp",
     enhanced: false,
     type: "system",
-    title: "Yuki Blender",
+    title: brand("Yuki Blender"),
     icon: `${CDN_BASE}/static/icons/3dmodel.webp`,
     launchType: "instance",
     windowIdPatterns: ["model3d"],
@@ -166,7 +167,7 @@ export const APP_MANIFESTS = [
     serviceKey: "emulatorApp",
     enhanced: true,
     type: "system",
-    title: "Yuki Emulator",
+    title: brand("Yuki Emulator"),
     icon: `${CDN_BASE}/static/icons/emulator.webp`,
     launchType: "instance",
     windowIdPatterns: ["emulator"],
@@ -221,7 +222,7 @@ export const APP_MANIFESTS = [
     serviceKey: "yukiConvertApp",
     enhanced: false,
     type: "system",
-    title: "Yuki Convert",
+    title: brand("Yuki Convert"),
     icon: "fas fa-exchange-alt",
     launchType: "instance",
     windowIdPatterns: ["yuki-convert"],
@@ -276,7 +277,7 @@ export const APP_MANIFESTS = [
     serviceKey: "yukiOsGuideApp",
     enhanced: true,
     type: "system",
-    title: "YukiOS Guide",
+    title: brand("YukiOS Guide"),
     icon: "fas fa-book-open",
     launchType: "instance",
     windowIdPatterns: ["yuki-os-guide", "yukios-guide"],
@@ -314,7 +315,7 @@ export const APP_MANIFESTS = [
     serviceKey: "aiAssistantApp",
     enhanced: false,
     type: "system",
-    title: "Yuki AI Assistant",
+    title: brand("Yuki AI Assistant"),
     icon: "fas fa-robot",
     launchType: "instance",
     windowIdPatterns: ["ai-assistant"],
@@ -400,7 +401,7 @@ export const APP_MANIFESTS = [
   {
     serviceKey: "browserApp",
     type: "system",
-    title: "Yuki Browser",
+    title: brand("Yuki Browser"),
     icon: `${CDN_BASE}/static/icons/firefox.webp`,
     launchType: "instance",
     windowIdPatterns: ["browser"],
@@ -945,7 +946,7 @@ export const APP_MANIFESTS = [
   {
     serviceKey: "yukiDevToolsApp",
     type: "system",
-    title: "Yuki Dev Tools",
+    title: brand("Yuki Dev Tools"),
     icon: "fas fa-code",
     launchType: "method",
     launchMethod: "openYukiDevToolsApp",
@@ -1411,7 +1412,7 @@ export const APP_MANIFESTS = [
     serviceKey: "remoteHostApp",
     enhanced: true,
     type: "system",
-    title: "Yuki Remote Desktop",
+    title: brand("Yuki Remote Desktop"),
     icon: "fas fa-desktop",
     launchType: "instance",
     windowIdPatterns: ["remote-host"],

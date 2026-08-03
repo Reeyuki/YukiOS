@@ -38,6 +38,7 @@ import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $ } from "./shared/domUtils.js";
 import { showBootScreen } from "./bootScreen.js";
+import { initYuriEasterEgg, applyYuriTheme, isYuri } from "./easterYuri.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
 import { initPopunder } from "./ads.js";
 import { bus } from "./core/EventBus.js";
@@ -77,6 +78,9 @@ os.clipboardManager = clipboardManager;
 new MacControlCenter();
 init();
 window.os = os;
+
+initYuriEasterEgg();
+applyYuriTheme();
 
 const boot = showBootScreen();
 

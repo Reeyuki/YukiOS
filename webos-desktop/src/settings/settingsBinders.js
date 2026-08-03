@@ -577,6 +577,17 @@ export function bindAppearanceCategory(
     });
   }
 
+  const yuriModeToggle = $("#settingsYuriMode", win);
+  if (yuriModeToggle) {
+    bindEvent(yuriModeToggle, "change", () => {
+      const enabled = yuriModeToggle.checked;
+      settings.yuriMode = enabled;
+      os.storage.set(StorageKeys.yuriMode, String(enabled));
+      showSaved();
+      setTimeout(() => location.reload(), 600);
+    });
+  }
+
   const guiScaleSlider = $("#settingsGuiScale", win);
   const guiScaleValue = $("#settingsGuiScaleValue", win);
   if (guiScaleSlider) {

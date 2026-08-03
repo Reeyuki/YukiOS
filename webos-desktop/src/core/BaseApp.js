@@ -1,5 +1,6 @@
 import { AppSource } from "../AppSource.js";
 import { os as _os } from "../os/index.js";
+import { brand } from "../easterYuri.js";
 
 const PROXIED_MARKER = Symbol("proxied");
 
@@ -95,7 +96,7 @@ export class BaseApp {
       case "ExplorerApp":
         return AppSource.EXPLORER;
       case "YukiConvertApp":
-        return AppSource.YUKI_CONVERT;
+        return brand(AppSource.YUKI_CONVERT);
       case "SetupApp":
         return AppSource.SETUP;
       case "InstalledAppsApp":
@@ -135,9 +136,9 @@ export class BaseApp {
       case "AppCreatorApp":
         return AppSource.APP_CREATOR;
       case "YukiOsGuideApp":
-        return AppSource.YUKI_OS_GUIDE;
+        return brand(AppSource.YUKI_OS_GUIDE);
       case "AIAssistantApp":
-        return AppSource.AI_ASSISTANT;
+        return brand(AppSource.AI_ASSISTANT);
       case "ClockApp":
         return AppSource.CLOCK;
       case "WallpaperEngineApp":

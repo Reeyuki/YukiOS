@@ -1,4 +1,4 @@
-import { os, StorageKeys } from "./framework.js";
+import { os, StorageKeys, brand } from "./framework.js";
 
 const MODIFIER_ALIASES = {
   ctrl: ["ctrl", "control"],
@@ -1112,7 +1112,7 @@ export const KEYBIND_DEFINITIONS = [
   {
     id: "global.launchBrowser",
     defaultKeys: ["Alt", "F"],
-    desc: "Open Yuki Browser",
+    desc: brand("Open Yuki Browser"),
     cat: "global",
     icon: "fas fa-globe"
   },

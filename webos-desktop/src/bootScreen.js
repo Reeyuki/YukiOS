@@ -1,4 +1,4 @@
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, osName } from "./framework.js";
 import logoImg from "./assets/logo.png";
 import versionStr from "../version.txt?raw";
 import "./styles/bootScreen.css";
@@ -7,7 +7,7 @@ import { KeybindManager } from "./keybindManager.js";
 import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
 
-const BRAND = "YukiOS";
+const BRAND = osName();
 const MIN_DURATION = 2500;
 
 export function showBootScreen() {
@@ -37,7 +37,7 @@ export function showBootScreen() {
   div.innerHTML = `
     <div class="boot-container">
       <div class="boot-logo-wrap">
-        <img class="boot-logo" src="${logoImg}" alt="YukiOS" fetchpriority="high" />
+        <img class="boot-logo" src="${logoImg}" alt="${BRAND}" fetchpriority="high" />
         <div class="boot-brand">${lettersHTML}</div>
         <div class="boot-version">${versionStr}</div>
       </div>
@@ -151,7 +151,7 @@ export function runBootPreview(anim, onDone) {
   div.innerHTML = `
     <div class="boot-container">
       <div class="boot-logo-wrap">
-        <img class="boot-logo" src="${logoImg}" alt="YukiOS" fetchpriority="high" />
+        <img class="boot-logo" src="${logoImg}" alt="${BRAND}" fetchpriority="high" />
         <div class="boot-brand">${lettersHTML}</div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { initializeAppGrid, tryGetIcon, trackRecentlyUsed } from "./desktopui/st
 const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 import { getLibraryUrl } from "./shared/cdnConfig.js";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, brand } from "./framework.js";
 import { parseBool } from "./utils/utils.js";
 import {
   fetchHtmlAsBlobUrl,
@@ -386,7 +386,7 @@ export class AppLauncher {
     const appId = "yukiDevTools";
     if (this.bringToFrontIfExists(appId)) return;
 
-    const title = this.appMap[appId]?.title || "Yuki Dev Tools";
+    const title = this.appMap[appId]?.title || brand("Yuki Dev Tools");
     let iframeUrl = YUKI_DEV_TOOLS_URL;
 
     try {

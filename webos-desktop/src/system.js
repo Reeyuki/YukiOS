@@ -10,7 +10,8 @@ import { vantaPresets } from "./vantaPresets.js";
 import { loadVantaEffect } from "./vanta/vantaLoader.js";
 import { parseBool } from "./utils/utils.js";
 
-import { StorageKeys, os, MODES } from "./framework.js";
+import { StorageKeys, os, MODES, isYuri } from "./framework.js";
+import { getYuriWallpapers } from "./yuriWallpapers.js";
 function isBlob(obj) {
   if (!obj) return false;
   return (
@@ -661,6 +662,16 @@ class WallpaperManager {
       }
       await this.setSequentialWallpaper();
       return;
+    }
+
+    if (isYuri() && !isManual) {
+      const yuriWalls = getYuriWallpapers();
+      if (yuriWalls.length) {
+        const pick = yuriWalls[Math.floor(Math.random() * yuriWalls.length)];
+        os.storage.set(StorageKeys.wallpaperKey, pick.url);
+        this.applyWallpaper(pick.url);
+        return;
+      }
     }
 
     if ((isManual && saved) || (!shouldCycle && saved)) {

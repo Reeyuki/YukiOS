@@ -34,6 +34,7 @@ export const StorageKeys = {
   taskbarOrder: "yukiOS_taskbar_order",
   cdnMirror: "yukiOS_cdnMirror",
   theme: "yukiOS_theme",
+  yuriMode: "yukiOS_yuri_mode",
   windowTransparency: "yukiOS_window_transparency",
   soundEnabled: "yukiOS_sound_enabled",
   masterVolume: "yukiOS_master_volume",

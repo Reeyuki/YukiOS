@@ -1,5 +1,18 @@
 import "../styles/introTour.css";
-import { os, BusEvents, BaseApp, $, $$, setStyle, setHTML, setText, toggleClass, createElement, StorageKeys } from "../framework.js";
+import {
+  os,
+  BusEvents,
+  BaseApp,
+  $,
+  $$,
+  setStyle,
+  setHTML,
+  setText,
+  toggleClass,
+  createElement,
+  StorageKeys,
+  brand
+} from "../framework.js";
 import { toggleStartMenu, closeStartMenu } from "../desktopui/startMenu.js";
 import { Achievements } from "../achievements.js";
 import { applyMacSettings, disableMacSettings } from "../modes/macos/session.js";
@@ -42,7 +55,7 @@ const STEPS = [
   {
     id: "welcome",
     icon: "fas fa-rocket",
-    title: "This is YukiOS.",
+    title: brand("This is YukiOS."),
     body: "A full desktop inside one browser tab. No installs, nothing for a school or work network to block, and everything saved right here in this browser. 60 seconds and you'll have seen what it does.",
     buttons: { primary: { label: "Start", action: "advance" } }
   },
@@ -80,7 +93,7 @@ const STEPS = [
     title: "One desktop, four faces.",
     body: "Flip the whole desktop to a Mac, a Chromebook, or a tiling window manager. Try one, then jump back to default mode.",
     modeButtons: [
-      { label: "YukiOS", icon: "fas fa-snowflake", mode: "reset" },
+      { label: brand("YukiOS"), icon: "fas fa-snowflake", mode: "reset" },
       { label: "Mac", icon: "fab fa-apple", mode: "mac" },
       { label: "Chrome OS", icon: "fab fa-chrome", mode: "chromeos" },
       { label: "Tiling", icon: "fas fa-th-large", mode: "tiling" }
@@ -117,13 +130,13 @@ const STEPS = [
   }
 ];
 
-    let tour = null;
+let tour = null;
 
-    export function isIntroTourKeepingStartMenuOpen() {
-      return !!tour && !!tour.currentStep?.openMenu;
-    }
+export function isIntroTourKeepingStartMenuOpen() {
+  return !!tour && !!tour.currentStep?.openMenu;
+}
 
-    export function startIntroTour() {
+export function startIntroTour() {
   if (tour) return;
   if ($(OVERLAY_SELECTOR)) return;
   const dim = createElement("div", { className: "intro-tour-dim" });
@@ -162,8 +175,7 @@ function onWindowCreated(payload) {
   if (!step?.waitForWindow) return;
   const winId = payload?.winId || "";
   const matcher = step.waitForWindow;
-  const matched =
-    typeof matcher === "function" ? matcher(winId) : matcher === "any" ? true : winId.includes(matcher);
+  const matched = typeof matcher === "function" ? matcher(winId) : matcher === "any" ? true : winId.includes(matcher);
   if (matched) advance();
 }
 
@@ -384,13 +396,7 @@ function positionElements() {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const usable =
-    !!rect &&
-    rect.width > 0 &&
-    rect.height > 0 &&
-    rect.right > 0 &&
-    rect.left < vw &&
-    rect.bottom > 0 &&
-    rect.top < vh;
+    !!rect && rect.width > 0 && rect.height > 0 && rect.right > 0 && rect.left < vw && rect.bottom > 0 && rect.top < vh;
   if (!usable) {
     restoreRaised();
     setStyle(spotlight, { display: "none" });
@@ -422,7 +428,9 @@ function positionElements() {
   const cardHeight = card.offsetHeight;
   if (step?.cardSide === "right") {
     const cardLeft = Math.min(Math.max(rect.right + gap, 16), vw - cardWidth - 16);
-    const cardTop = Math.round(Math.min(Math.max(rect.top + rect.height / 2 - cardHeight / 2, 16), vh - cardHeight - 16));
+    const cardTop = Math.round(
+      Math.min(Math.max(rect.top + rect.height / 2 - cardHeight / 2, 16), vh - cardHeight - 16)
+    );
     setStyle(card, { left: cardLeft + "px", top: cardTop + "px" });
     return;
   }

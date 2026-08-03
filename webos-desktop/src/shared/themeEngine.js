@@ -354,6 +354,47 @@ const BUILTIN_THEMES = [
     category: "special",
     preview: "linear-gradient(135deg, #ff6ec7, #00bfff)",
     textColor: "#111"
+  },
+  {
+    value: "yuri",
+    icon: "fas fa-heart",
+    label: "Yuri",
+    category: "hidden",
+    preview: "linear-gradient(135deg, #ff2d78, #2a0f1e)",
+    colors: {
+      brand: "oklch(66% 0.2 352)",
+      "brand-hover": "oklch(58% 0.19 352)",
+      "brand-dark": "oklch(46% 0.18 352)",
+      "brand-glow": "oklch(66% 0.18 352 / 0.2)",
+      "brand-dim": "oklch(66% 0.19 352 / 0.13)",
+      "bg-base": "oklch(15% 0.035 355)",
+      "bg-elev-1": "oklch(20% 0.03 355)",
+      "bg-elev-2": "oklch(26% 0.028 355)",
+      "bg-elev-3": "oklch(32% 0.026 355)",
+      "bg-primary": "oklch(17% 0.035 355)",
+      "bg-secondary": "oklch(23% 0.03 355)",
+      "surface-solid": "oklch(20% 0.03 355)",
+      "surface-hover": "oklch(28% 0.026 355)",
+      glass: "oklch(96% 0.05 355 / 0.055)",
+      "glass-strong": "oklch(96% 0.05 355 / 0.09)",
+      "glass-border": "oklch(98% 0.06 355 / 0.12)",
+      "glass-hover": "oklch(96% 0.07 355 / 0.14)",
+      "text-primary": "oklch(96% 0.012 355)",
+      "text-secondary": "oklch(78% 0.045 355)",
+      "text-muted": "oklch(64% 0.045 355)",
+      "text-on-brand": "#ffffff",
+      "tx-on-brand": "#ffffff",
+      border: "oklch(88% 0.05 355 / 0.2)",
+      "border-strong": "oklch(88% 0.05 355 / 0.3)",
+      "overlay-bg": "oklch(8% 0.02 355 / 0.6)",
+      error: "oklch(62% 0.2 12)",
+      "error-bg": "oklch(62% 0.2 12 / 0.13)",
+      "error-border": "oklch(62% 0.2 12 / 0.26)",
+      charging: "oklch(70% 0.16 150)",
+      "menu-bg": "oklch(24% 0.028 355)",
+      "window-bg": "oklch(20% 0.03 355)",
+      "shadow-color": "rgba(30, 0, 18, 0.7)"
+    }
   }
 ];
 let customThemes = [];

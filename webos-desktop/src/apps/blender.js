@@ -6,7 +6,19 @@ import { resolveGhUrl } from "../shared/assetResolver.js";
 import { addClass, removeClass, createElement } from "../shared/domUtils.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
-import { BusEvents, $, $$, bindEvent, toggleClass, setText, setHTML, setStyle, BaseApp, os } from "../framework.js";
+import {
+  BusEvents,
+  $,
+  $$,
+  bindEvent,
+  toggleClass,
+  setText,
+  setHTML,
+  setStyle,
+  BaseApp,
+  os,
+  brand
+} from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 
 const SAMPLE_MODELS = [
@@ -321,7 +333,7 @@ export class Model3DApp extends BaseApp {
 
       <div class="yb-menu-item" data-menu="help"><span>Help</span>
         <div class="yb-dropdown">
-          <div class="yb-dropdown-item" data-action="about"><i class="fa fa-info-circle"></i> About Yuki Blender</div>
+          <div class="yb-dropdown-item" data-action="about"><i class="fa fa-info-circle"></i> ${brand("About Yuki Blender")}</div>
         </div>
       </div>
     </div>
@@ -707,13 +719,13 @@ export class Model3DApp extends BaseApp {
     `;
   }
 
-  async open(titleOrOptions = "Yuki Blender", filePath = null) {
-    let title = "Yuki Blender";
+  async open(titleOrOptions = brand("Yuki Blender"), filePath = null) {
+    let title = brand("Yuki Blender");
     let fileData = null;
     let fileName = "";
 
     if (titleOrOptions && typeof titleOrOptions === "object" && !Array.isArray(titleOrOptions)) {
-      title = titleOrOptions.title || "Yuki Blender";
+      title = titleOrOptions.title || brand("Yuki Blender");
       filePath = titleOrOptions.filePath || filePath;
       fileData = titleOrOptions.fileData || titleOrOptions.content || null;
       fileName = titleOrOptions.fileName || titleOrOptions.name || "";
@@ -2508,7 +2520,7 @@ export class Model3DApp extends BaseApp {
       os.notify.send("Nothing to export", "Error");
       return;
     }
-    let lines = ["# Exported by Yuki Blender"];
+    let lines = ["# Exported by " + brand("Yuki Blender")];
     let vertOffset = 1;
     this.currentModel.traverse((child) => {
       if (!child.isMesh) return;
@@ -2684,7 +2696,7 @@ export class Model3DApp extends BaseApp {
         <button class="yb-samples-close" title="Close"><i class="fa fa-times"></i></button>
       </div>
       <div class="yb-samples-body">
-        <p class="yb-samples-desc">Load a sample model to explore Yuki Blender.</p>
+        <p class="yb-samples-desc">${brand("Load a sample model to explore Yuki Blender.")}</p>
         <div class="yb-samples-grid">
           ${SAMPLE_MODELS.map(
             (m, i) => `
@@ -2795,7 +2807,7 @@ export class Model3DApp extends BaseApp {
 
   showAboutDialog() {
     showAboutDialog({
-      title: "Yuki Blender",
+      title: brand("Yuki Blender"),
       version: "1.0.0",
       description: "Browser-native 3D editor with modeling, animation, and scene editing powered by three.js.",
       icon: "static/icons/3dmodel.webp",

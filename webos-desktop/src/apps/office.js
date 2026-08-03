@@ -5,7 +5,7 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 
-import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os } from "../framework.js";
+import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os, brand } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -1898,7 +1898,7 @@ export class OfficeApp extends BaseApp {
     showAboutDialog({
       title: "Office",
       version: "1.0.0",
-      description: "YukiOS Office Suite for editing documents, spreadsheets, and presentations.",
+      description: brand("YukiOS Office Suite for editing documents, spreadsheets, and presentations."),
       icon: "static/icons/office.webp",
       iconType: "image"
     });

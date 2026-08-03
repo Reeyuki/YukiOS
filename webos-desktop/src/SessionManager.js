@@ -8,7 +8,7 @@ import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 import { $ } from "./shared/domUtils.js";
 import { renderLiveStats } from "./shared/liveStats.js";
 import { resolveAppId } from "./utils/utils.js";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, brand } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
@@ -228,8 +228,9 @@ export class SessionManager {
         ${
           os.storage.get(StorageKeys.donationDismissed) === "true"
             ? ""
-            : `<button class="session-support-btn" id="session-support-btn" title="Support YukiOS"><i class="fas fa-heart"></i></button>`
+            : `<button class="session-support-btn" id="session-support-btn" title="Support ${brand("YukiOS")}"><i class="fas fa-heart"></i></button>`
         }
+        <a class="session-discord-btn" href="https://discord.gg/wufbWFwr4G" target="_blank" rel="noopener" title="Join Discord"><i class="fab fa-discord"></i></a>
         <div class="session-boot-preview-modal" id="session-boot-preview-modal" style="display: none;">
           <div class="boot-preview-modal-content">
             <div class="boot-preview-modal-header">
@@ -247,7 +248,7 @@ export class SessionManager {
             <div class="info-modal-body">
               <div class="info-row">
                 <span class="info-label">Version</span>
-                <span class="info-value">YukiOS ${YUKIOS_VERSION}</span>
+                <span class="info-value">${brand("YukiOS")} ${YUKIOS_VERSION}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Build</span>
@@ -322,7 +323,7 @@ export class SessionManager {
           <div class="session-modes" id="session-modes">
             <button type="button" class="session-mode-btn" data-mode="reset">
               <i class="fas fa-snowflake"></i>
-              <span>YukiOS</span>
+              <span>${brand("YukiOS")}</span>
             </button>
             <button type="button" class="session-mode-btn" data-mode="mac">
               <i class="fab fa-apple"></i>
@@ -348,7 +349,7 @@ export class SessionManager {
             <i class="fas fa-times"></i>
           </button>
           <i class="fas fa-download"></i>
-          <span><strong>YukiOS now has a desktop app.</strong> Persistent storage, system tray, remote desktop, and better performance. The YukiOS you know, now as a real desktop application.</span>
+          <span><strong>${brand("YukiOS")} now has a desktop app.</strong> Persistent storage, system tray, remote desktop, and better performance. The ${brand("YukiOS")} you know, now as a real desktop application.</span>
           <div class="electron-banner-actions">
             <span class="electron-download-link" id="electron-download-btn"><i class="fas fa-download"></i> Download</span>
             <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-releases-link">View all releases</a>
@@ -814,13 +815,13 @@ export class SessionManager {
     }
 
     powerBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Shutdown", "Shut down YukiOS?")) {
+      if (await os.dialog.confirm("Shutdown", `Shut down ${brand("YukiOS")}?`)) {
         window.close();
       }
     });
 
     restartBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Restart", "Restart YukiOS?")) {
+      if (await os.dialog.confirm("Restart", `Restart ${brand("YukiOS")}?`)) {
         location.reload();
       }
     });

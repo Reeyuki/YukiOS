@@ -17,7 +17,7 @@ import { Achievements } from "../achievements.js";
 import { makeDraggable } from "../shared/dragUtils.js";
 
 import { $, $$, createElement, setHTML, setText, setStyle } from "../shared/domUtils.js";
-import { StorageKeys, os, MODES } from "../framework.js";
+import { StorageKeys, os, MODES, brand } from "../framework.js";
 
 const HARDCODED_DESKTOP_ICONS = [
   { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
@@ -28,7 +28,7 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
   { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" },
   { app: "room3dApp", name: "3D Room", icon: "static/icons/3dyukios.webp" },
-  { app: "remoteHostApp", name: "Yuki Remote Desktop", icon: "fas fa-desktop", isFa: true }
+  { app: "remoteHostApp", name: brand("Yuki Remote Desktop"), icon: "fas fa-desktop", isFa: true }
 ];
 
 export class IconManager {

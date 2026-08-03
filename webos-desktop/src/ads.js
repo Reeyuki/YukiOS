@@ -3,7 +3,7 @@ import { parseBool } from "./utils/utils.js";
 
 export function shouldEnableAds() {
   const hostname = window.location.hostname;
-  if (hostname.includes("vercel") || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") {
+  if (hostname.includes("vercel")) {
     return false;
   }
   const adsDisabled = parseBool(os.storage.get(StorageKeys.adsDisabled));

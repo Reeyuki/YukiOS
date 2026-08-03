@@ -1,5 +1,5 @@
 import "../styles/RemoteHostApp.css";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, brand } from "../framework.js";
 import "../../remote/RemoteClientCore.js";
 import "../../remote/RemoteHostCore.js";
 const RemoteClientCore = window.RemoteClientCore;
@@ -24,7 +24,7 @@ export class RemoteHostApp extends BaseApp {
 
     const isElectron = typeof window.electronAPI !== "undefined";
 
-    const win = os.window.create(winId, "Yuki Remote Desktop", "860px", "620px", {
+    const win = os.window.create(winId, brand("Yuki Remote Desktop"), "860px", "620px", {
       icon: "fas fa-desktop",
       resizable: true,
       minWidth: 500,
@@ -36,7 +36,7 @@ export class RemoteHostApp extends BaseApp {
         <div class="remote-landing" id="remoteLanding">
           <div class="landing-content">
             <div class="landing-icon"><i class="fas fa-desktop"></i></div>
-            <h2>Yuki Remote Desktop</h2>
+            <h2>${brand("Yuki Remote Desktop")}</h2>
             <p class="landing-subtitle">View and control your PC from anywhere</p>
 
             <div class="landing-actions">
@@ -52,7 +52,7 @@ export class RemoteHostApp extends BaseApp {
               <div class="landing-step">
                 <div class="step-num">1</div>
                 <div class="step-desc">
-                  <strong>Open YukiOS on your home PC</strong>
+                  <strong>${brand("Open YukiOS on your home PC")}</strong>
                   <p>Click <strong>Share Desktop</strong> to generate a code.</p>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export class RemoteHostApp extends BaseApp {
           <div class="tab-panel active" id="panel-connect">
             <div class="connect-screen" id="connectScreen">
               <div class="connect-icon"><i class="fas fa-desktop"></i></div>
-              <h3>Connect to Yuki Remote Desktop</h3>
+              <h3>Connect to ${brand("Yuki Remote Desktop")}</h3>
               <p>Enter the 6-character code shown on the host.</p>
               <div class="code-input-group">
                 <input type="text" class="code-input" id="roomInput" maxlength="6" placeholder="CODE" autocomplete="off" autocapitalize="characters">

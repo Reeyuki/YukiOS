@@ -6,7 +6,7 @@ import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
 import { $, $$ } from "../shared/domUtils.js";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, brand } from "../framework.js";
 import { buildTilingKeybindHTML } from "../tiling/TilingKeybindOverlay.js";
 import { startIntroTour } from "./introTour.js";
 
@@ -106,7 +106,7 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   open(opts = {}) {
-    const win = os.window.create("yuki-os-guide", "YukiOS Guide", "980px", "720px", {
+    const win = os.window.create("yuki-os-guide", brand("YukiOS Guide"), "980px", "720px", {
       icon: "fas fa-book-open",
       appId: "yuki-os-guide"
     });
@@ -190,7 +190,7 @@ export class YukiOsGuideApp extends BaseApp {
             <i class="fas fa-rocket"></i>
           </div>
           <div class="guide-hero-content">
-            <h1>Welcome to YukiOS</h1>
+            <h1>${brand("Welcome to YukiOS")}</h1>
             <p class="guide-tagline">A full desktop inside one browser tab. No installs, nothing to block, everything saved.</p>
             <p class="guide-blurb">Everything on this page is real and running right now. Drag windows, browse the web, open a terminal, or boot a retro game, then close the tab and come back later. It all remembers.</p>
             <button class="guide-tour-btn" type="button"><i class="fas fa-play"></i> Take the 60-second tour</button>

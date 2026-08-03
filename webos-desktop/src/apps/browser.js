@@ -4,7 +4,7 @@ import { Achievements } from "../achievements.js";
 import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
 import { PROXIES } from "../proxies.js";
 import { $, setStyle, createElement, addClass, removeClass } from "../shared/domUtils.js";
-import { maybeTriggerSmartlink } from "../ads.js";
+import { maybeTriggerSmartlink, shouldEnableAds } from "../ads.js";
 import {
   buildFsInterceptScript,
   buildDirectoryHtml,
@@ -125,7 +125,16 @@ export class BrowserApp extends BaseApp {
       const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
       const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
       iframe.contentWindow.postMessage(
-        { type: "scram:init", vars, bookmarks, history, wispUrl, transport, dinoGameHtml: buildDinoGameHtml() },
+        {
+          type: "scram:init",
+          vars,
+          bookmarks,
+          history,
+          wispUrl,
+          transport,
+          dinoGameHtml: buildDinoGameHtml(),
+          adsEnabled: shouldEnableAds()
+        },
         "*"
       );
     };
@@ -360,7 +369,16 @@ export class BrowserApp extends BaseApp {
     const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
 
     this.iframe.contentWindow.postMessage(
-      { type: "scram:init", vars, bookmarks, history, wispUrl, transport, dinoGameHtml: buildDinoGameHtml() },
+      {
+        type: "scram:init",
+        vars,
+        bookmarks,
+        history,
+        wispUrl,
+        transport,
+        dinoGameHtml: buildDinoGameHtml(),
+        adsEnabled: shouldEnableAds()
+      },
       "*"
     );
   }

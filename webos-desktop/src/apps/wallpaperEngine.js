@@ -1,5 +1,5 @@
 import "../styles/wallpaperEngine.css";
-import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES, isYuri } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 import {
   WALLPAPER_NAME_URL_PAIRS,
@@ -7,6 +7,7 @@ import {
   CHROME_OS_WALLPAPER_NAME_URL_PAIRS
 } from "../wallpaperConfig.js";
 import { videos, videos2 } from "../wallpaperList.js";
+import { getYuriWallpapers } from "../yuriWallpapers.js";
 import { vantaPresets } from "../vantaPresets.js";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
 import { FileKind } from "../shared/fileKindDetector.js";
@@ -303,6 +304,7 @@ export class WallpaperEngineApp extends BaseApp {
     const categories = [
       { id: "all", icon: "fas fa-th-large", label: "All" },
       { id: "static", icon: "fas fa-image", label: "Static" },
+      { id: "yuri", icon: "fas fa-heart", label: "Yuri" },
       { id: "mac", icon: "fab fa-apple", label: "macOS" },
       { id: "chromeos", icon: "fab fa-chrome", label: "ChromeOS" },
       { id: "video", icon: "fas fa-film", label: "Live Video" },
@@ -311,7 +313,7 @@ export class WallpaperEngineApp extends BaseApp {
       { id: "uploaded", icon: "fas fa-cloud-upload-alt", label: "Your Uploads" },
       { id: "favorites", icon: "fas fa-star", label: "Favorites" },
       { id: "recent", icon: "fas fa-clock", label: "Recent" }
-    ];
+    ].filter((c) => c.id !== "yuri" || isYuri());
 
     setHTML(
       sidebar,
@@ -501,6 +503,7 @@ export class WallpaperEngineApp extends BaseApp {
   async loadAllWallpapers() {
     const items = [];
     items.push(...this.getStaticWallpapers());
+    if (isYuri()) items.push(...this.getYuriWallpapers());
     items.push(...this.getMacWallpapers());
     items.push(...this.getChromeOsWallpapers());
     items.push(...this.getVideoWallpapers());
@@ -538,6 +541,18 @@ export class WallpaperEngineApp extends BaseApp {
       thumbnail: resolveWallpaperUrl(wp.url),
       isVideo: false,
       meta: { source: "macOS" }
+    }));
+  }
+
+  getYuriWallpapers() {
+    return getYuriWallpapers().map((wp, i) => ({
+      id: `yuri_${i}_${wp.name}`,
+      name: wp.name,
+      type: "yuri",
+      src: wp.url,
+      thumbnail: resolveWallpaperUrl(wp.url),
+      isVideo: false,
+      meta: { source: "Yuri" }
     }));
   }
 

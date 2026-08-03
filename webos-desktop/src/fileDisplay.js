@@ -1,5 +1,5 @@
 import { FileKind } from "./shared/fileKindDetector.js";
-import { os, StorageKeys, $ } from "./framework.js";
+import { os, StorageKeys, $, brand } from "./framework.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { getDefaultApp, isUnassociated } from "./fileAssociations.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
@@ -500,7 +500,7 @@ async function openModelFile(name, path) {
         fileData: arrayBuffer
       });
     } else {
-      os.dialog.alert("Can't Open", "Yuki Blender isn't available right now.");
+      os.dialog.alert("Can't Open", brand("Yuki Blender isn't available right now."));
     }
   } catch (err) {
     console.error("[FileDisplay] openModelFile error:", err);

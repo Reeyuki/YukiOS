@@ -1273,6 +1273,34 @@
         padding: 40px;
       }
 
+      .browser-ad-bar {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 4px 12px;
+        flex-shrink: 0;
+        background: var(--surface-glass);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        z-index: 5;
+      }
+      .browser-ad-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+      }
+      .browser-ad-slot {
+        min-height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 728px;
+      }
+
       .iframe-container {
         flex: 1;
         position: relative;
@@ -2810,6 +2838,8 @@
         if (data.type === "scram:init") {
           isEmbedded = true;
           if (data.vars) applyTheme(data.vars);
+          if (data.adsEnabled) enableBrowserAds();
+          else disableBrowserAds();
           if (isIncognito) return;
           if (Array.isArray(data.bookmarks)) {
             bookmarks = data.bookmarks;
@@ -2845,6 +2875,35 @@
           }
         }
       });
+
+      function enableBrowserAds() {
+        var bar = document.getElementById("browser-ad-bar");
+        var slot = document.getElementById("browser-ad-slot");
+        if (!bar || !slot) return;
+        if (slot.getAttribute("data-ads-loaded") === "1") {
+          bar.style.display = "flex";
+          return;
+        }
+        slot.setAttribute("data-ads-loaded", "1");
+        var cfg = document.createElement("script");
+        cfg.text = "atOptions = { 'key': '28c33f91ee21bcf1063e489aae3024f8', 'format': 'iframe', 'height': 90, 'width': 728, 'params': {} };";
+        slot.appendChild(cfg);
+        var inv = document.createElement("script");
+        inv.async = true;
+        inv.src = "https://www.highperformanceformat.com/28c33f91ee21bcf1063e489aae3024f8/invoke.js";
+        slot.appendChild(inv);
+        bar.style.display = "flex";
+      }
+
+      function disableBrowserAds() {
+        var bar = document.getElementById("browser-ad-bar");
+        var slot = document.getElementById("browser-ad-slot");
+        if (bar) bar.style.display = "none";
+        if (slot) {
+          slot.removeAttribute("data-ads-loaded");
+          slot.innerHTML = "";
+        }
+      }
 
       function loadPrefs() {
         isIncognito = new URLSearchParams(window.location.search).get("incognito") === "true";
@@ -3135,6 +3194,10 @@
           </div>
           <div class="bookmark-bar hidden" id="bookmark-bar"></div>
           <div class="loading-bar-container"><div class="loading-bar" id="loading-bar"></div></div>
+          <div class="browser-ad-bar" id="browser-ad-bar">
+            <span class="browser-ad-label">Sponsored</span>
+            <div class="browser-ad-slot" id="browser-ad-slot"></div>
+          </div>
           <div class="iframe-container" id="iframe-container">
             <div id="loading" class="message-container" style="display: none;">
               <div class="message-content">

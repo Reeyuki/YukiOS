@@ -5,7 +5,7 @@ import { AIMemory } from "./aiAssistant/memory.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import "./aiAssistant/aiAssistant.css";
 
-import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
+import { BaseApp, StorageKeys, os, MODES, brand } from "../framework.js";
 export class AIAssistantApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -29,13 +29,13 @@ export class AIAssistantApp extends BaseApp {
     if (await this.isSingletonOpen(winId)) return;
 
     if (this.enabled && !os.modes.isActive(MODES.MAC)) {
-      await this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {
+      await this.registerTray(this.winId, "fas fa-robot", brand("Yuki AI"), {
         resident: true,
         showInTray: true
       });
     }
 
-    const win = os.window.create(winId, "Yuki AI Assistant", "800px", "600px", {
+    const win = os.window.create(winId, brand("Yuki AI Assistant"), "800px", "600px", {
       icon: "fas fa-robot"
     });
     this.windows.set(winId, win);
@@ -70,7 +70,7 @@ export class AIAssistantApp extends BaseApp {
   buildSetupUI(state) {
     return `
       <div class="window-header">
-        <span>Yuki AI Assistant</span>
+        <span>${brand("Yuki AI Assistant")}</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="ai-assistant-container">
@@ -79,7 +79,7 @@ export class AIAssistantApp extends BaseApp {
             <div class="ai-setup-icon">
               <i class="fas fa-robot"></i>
             </div>
-            <h2>Yuki AI Assistant</h2>
+            <h2>${brand("Yuki AI Assistant")}</h2>
             <p class="ai-setup-description">
               Runs locally in your browser. your data never leaves your machine.
             </p>
@@ -131,7 +131,7 @@ export class AIAssistantApp extends BaseApp {
   buildUI(state) {
     return `
       <div class="window-header">
-        <span>Yuki AI Assistant</span>
+        <span>${brand("Yuki AI Assistant")}</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="ai-assistant-container">
@@ -744,7 +744,7 @@ Say what you're about to do before running an action. If it could be destructive
       open_terminal: "Open the Terminal app",
       switch_workspace: "Switch to the next workspace",
       openexplorer: "Open the Explorer app",
-      open_browser: "Open the Yuki Browser app",
+      open_browser: brand("Open the Yuki Browser app"),
       open_news: "Open What's New app",
       open_weather: "Open the Weather app",
       open_task_manager: "Open the Task Manager app",
@@ -766,7 +766,7 @@ Say what you're about to do before running an action. If it could be destructive
           ["opensettings", "Open Settings", "Change theme and system preferences.", "fas fa-cog"],
           ["open_terminal", "Open Terminal", "Launch command line tools.", "fas fa-terminal"],
           ["openexplorer", "Open Explorer", "Browse and manage files.", "fas fa-folder-open"],
-          ["open_browser", "Open Browser", "Launch Yuki Browser.", "fas fa-globe"],
+          ["open_browser", "Open Browser", brand("Launch Yuki Browser."), "fas fa-globe"],
           ["open_notepad", "Open Notepad", "Quick notes and text edits.", "fas fa-note-sticky"],
           ["open_task_manager", "Open Task Manager", "View running windows and resources.", "fas fa-list-check"]
         ]
@@ -791,7 +791,7 @@ Say what you're about to do before running an action. If it could be destructive
       {
         title: "Discover",
         items: [
-          ["open_news", "Open What's New", "See latest YukiOS updates.", "fas fa-newspaper"],
+          ["open_news", "Open What's New", brand("See latest YukiOS updates."), "fas fa-newspaper"],
           ["open_weather", "Open Weather", "Check current forecast.", "fas fa-cloud-sun"]
         ]
       }

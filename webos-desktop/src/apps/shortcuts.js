@@ -1,6 +1,6 @@
 import "../styles/shortcuts.css";
 import { Achievements } from "../achievements.js";
-import { BusEvents, os, BaseApp } from "../framework.js";
+import { BusEvents, os, BaseApp, brand } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const MODIFIER_KEY_MAP = {
@@ -36,7 +36,7 @@ export class ShortcutsApp extends BaseApp {
             <div class="sc-nav-item" data-cat="global"><i class="fas fa-globe"></i>Global & System</div>
             <div class="sc-nav-item" data-cat="desktop"><i class="fas fa-desktop"></i>Desktop & Files</div>
             <div class="sc-nav-item" data-cat="notepad"><i class="fas fa-file-alt"></i>Notepad</div>
-            <div class="sc-nav-item" data-cat="browser"><i class="fas fa-compass"></i>Yuki Browser</div>
+            <div class="sc-nav-item" data-cat="browser"><i class="fas fa-compass"></i>${brand("Yuki Browser")}</div>
             <div class="sc-nav-item" data-cat="calc"><i class="fas fa-calculator"></i>Calculator</div>
             <div class="sc-nav-item" data-cat="calendar"><i class="fas fa-calendar-alt"></i>Calendar</div>
             <div class="sc-nav-item" data-cat="terminal"><i class="fas fa-terminal"></i>Terminal</div>
@@ -207,7 +207,7 @@ export class ShortcutsApp extends BaseApp {
         global: "Global & System",
         desktop: "Desktop & Files",
         notepad: "Notepad",
-        browser: "Yuki Browser",
+        browser: brand("Yuki Browser"),
         calc: "Calculator",
         calendar: "Calendar",
         terminal: "Terminal",

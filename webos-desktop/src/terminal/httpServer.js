@@ -1,4 +1,4 @@
-import { os } from "../framework.js";
+import { os, brand } from "../framework.js";
 import {
   buildDirectoryHtml,
   getMimeType,
@@ -92,7 +92,9 @@ export async function startVirtualHttpServer(ctx, options) {
   os.ports.register(port, handler, rootSegments);
   ctx.print("Serving HTTP on 0.0.0.0 port " + port + " (http://localhost:" + port + "/) ...");
   ctx.print("Serving directory " + rootPath);
-  ctx.print("Press Ctrl+C to stop the server. Open the Yuki Browser and go to http://localhost:" + port + "/");
+  ctx.print(
+    "Press Ctrl+C to stop the server. Open the " + brand("Yuki Browser") + " and go to http://localhost:" + port + "/"
+  );
   while (!ctx.getStopRequested()) {
     await sleep(250);
   }

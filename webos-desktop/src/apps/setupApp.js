@@ -9,7 +9,7 @@ import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUt
 import { getAllThemes } from "../shared/themeEngine.js";
 import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
 import { animateThemeChange } from "../settings/themeTransition.js";
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, brand } from "../framework.js";
 import { startIntroTour } from "./introTour.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
@@ -271,7 +271,7 @@ export class SetupApp extends BaseApp {
 
     await this.loadWallpapers();
 
-    const win = os.window.create(winId, "Set Up YukiOS", "85vw", "75vh", {
+    const win = os.window.create(winId, brand("Set Up YukiOS"), "85vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
@@ -294,7 +294,7 @@ export class SetupApp extends BaseApp {
     const headerClass = isTaskbarTop() ? "window-header mac-header" : "window-header";
     return `
       <div class="${headerClass}">
-        <span>Set Up YukiOS</span>
+        <span>${brand("Set Up YukiOS")}</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="window-content setup-wizard">
@@ -710,7 +710,7 @@ export class SetupApp extends BaseApp {
         <div class="complete-actions">
           <button id="setup-launch-guide" class="setup-guide-btn">
             <i class="fas fa-book-open"></i>
-            <span>Open YukiOS Guide</span>
+            <span>Open ${brand("YukiOS Guide")}</span>
           </button>
         </div>
       </div>
