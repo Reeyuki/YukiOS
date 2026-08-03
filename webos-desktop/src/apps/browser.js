@@ -989,12 +989,7 @@ export class BrowserApp extends BaseApp {
 
   isTorUrl(url) {
     return (
-      this.torEnabled &&
-      url &&
-      !url.startsWith("about:") &&
-      !url.startsWith("blob:") &&
-      !url.startsWith("yuki://") &&
-      !url.startsWith("NT.html")
+      this.torEnabled && url && !url.startsWith("about:") && !url.startsWith("blob:") && !url.startsWith("yuki://")
     );
   }
 }

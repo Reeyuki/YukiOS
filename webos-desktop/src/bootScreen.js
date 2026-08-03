@@ -87,27 +87,28 @@ export function showBootScreen() {
     });
   }
 
+  const isSkipKey = (e) => e.key === "Escape" || e.key === "Enter" || e.key === " " || e.key === "Spacebar";
+
   const skipHandler = (e) => {
-    if (KeybindManager.matches(e, "boot.skip")) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (hidden) return;
-      hidden = true;
-      document.removeEventListener("keydown", skipHandler);
-      if (showTl && showTl.kill) showTl.kill();
-      div.remove();
-    }
+    if (!isSkipKey(e) && !KeybindManager.matches(e, "boot.skip")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (hidden) return;
+    hidden = true;
+    document.removeEventListener("keydown", skipHandler);
+    if (showTl && showTl.kill) showTl.kill();
+    div.remove();
   };
   document.addEventListener("keydown", skipHandler);
 
   return {
     hide: () => {
-      document.removeEventListener("keydown", skipHandler);
       const elapsed = performance.now() - startTime;
       const delay = Math.max(0, MIN_DURATION - elapsed);
 
       return new Promise((resolve) => {
         const doHide = () => {
+          document.removeEventListener("keydown", skipHandler);
           if (hidden) {
             resolve();
             return;

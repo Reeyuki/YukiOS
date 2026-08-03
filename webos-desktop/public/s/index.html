@@ -6,17 +6,14 @@
     <title>Browser</title>
     <link rel="icon" href="/s/dogfavi.png" type="image/png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <script src="adblock.js"></script>
     <script src="./scramjet.js"></script>
     <script src="./controller.api.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script type="module">
       import { default as EpoxyTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
       import { default as LibcurlTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs";
@@ -321,18 +318,6 @@
         animation: btnBounce 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .nav button#adblock-btn.active {
-        color: var(--success);
-        text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
-      }
-      .nav button#adblock-btn.active:hover {
-        color: var(--success);
-      }
-      .nav button#adblock-btn.inactive {
-        color: var(--text-muted);
-        opacity: 0.5;
-      }
-
       .address-wrapper {
         flex: 1;
         position: relative;
@@ -536,174 +521,24 @@
         display: block;
       }
 
-      .adblock-popup {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 36px;
-        background: var(--surface);
-        border: 1px solid var(--glass-border);
-        border-radius: 14px;
-        min-width: 250px;
-        z-index: 1000;
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-        margin-top: 6px;
-        overflow: hidden;
-        animation: menuDropIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .adblock-popup.open { display: block; }
-
-      .adblock-popup-body {
-        padding: 20px 20px 14px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 14px;
-      }
-
-      .adblock-page-row {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-      }
-      .adblock-page-label {
-        font-size: 12px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-      }
-      .adblock-page-num {
-        font-size: 32px;
-        font-weight: 700;
-        font-family: var(--font-mono);
-        color: var(--text);
-        line-height: 1.2;
-      }
-
-      .adblock-total-row {
-        display: flex;
-        align-items: baseline;
-        gap: 5px;
-        font-size: 12px;
-        color: var(--text-muted);
-      }
-      .adblock-total-num {
-        font-weight: 600;
-        color: var(--text);
-      }
-      .adblock-total-pct {
-        font-size: 11px;
-        color: var(--text-dim);
-      }
-
-      .adblock-popup-actions {
-        display: flex;
-        gap: 6px;
-        width: 100%;
-        padding-top: 4px;
-      }
-      .adblock-action-btn {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        background: var(--surface-hover);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        color: var(--text-muted);
-        font-size: 12px;
-        cursor: pointer;
-        padding: 8px 0;
-        transition: all 0.15s;
-      }
-      .adblock-action-btn:hover {
-        background: var(--surface-active);
-        color: var(--text);
-        border-color: var(--border-light);
-      }
-
-      .adblock-popup-footer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        background: var(--surface-hover);
-        border-top: 1px solid var(--border);
-      }
-      .adblock-footer-text {
-        font-size: 10px;
-        color: var(--text-dim);
-      }
-
-      .adblock-log-container {
-        padding: 12px;
-      }
-      .adblock-log-stats {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 12px;
-      }
-      .adblock-log-stat {
-        flex: 1;
-        background: var(--surface-hover);
-        border-radius: var(--radius-sm);
-        padding: 10px;
-        text-align: center;
-      }
-      .adblock-log-stat-num {
-        display: block;
-        font-size: 20px;
-        font-weight: 700;
-        font-family: var(--font-mono);
-        color: var(--text);
-      }
-      .adblock-log-stat-label {
-        font-size: 10px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        margin-top: 2px;
-      }
-      .adblock-log-entries {
-        max-height: 400px;
-        overflow-y: auto;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-      }
-      .adblock-log-entry {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--border);
-        font-size: 11px;
-      }
-      .adblock-log-entry:last-child {
-        border-bottom: none;
-      }
-      .adblock-log-entry-domain {
-        font-weight: 600;
-        color: var(--text);
-      }
-      .adblock-log-entry-url {
-        color: var(--text-muted);
-        word-break: break-all;
-        font-family: var(--font-mono);
-        font-size: 10px;
-      }
-      .adblock-log-entry-time {
-        color: var(--text-dim);
-        font-size: 10px;
-      }
-
       .yuki-page-container {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
         background: var(--bg);
         overflow-y: auto;
         z-index: 10;
+      }
+      .yuki-page-container .dino-page {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .yuki-page-container .dino-srcdoc {
+        width: 100%;
+        height: 100%;
+        border: 0;
       }
       .yuki-page-container .yuki-page-header {
         display: flex;
@@ -2883,11 +2718,14 @@
       let autoplayBlock = false;
       let searchRegion = "";
       let torEnabled = false;
-      let adblockEnabled = true;
-      let adblockBlockedCount = 0;
-      let adblockPageCount = 0;
-      let adblockTotalRequests = 0;
-      let adblockEngineReady = false;
+
+      const faviconCache = new Map();
+      function decodeUtf8Base64(b64) {
+        var bin = atob(b64);
+        var bytes = Uint8Array.from(bin, function (c) { return c.charCodeAt(0); });
+        return new TextDecoder().decode(bytes);
+      }
+      let bundledNewTabHtml = decodeUtf8Base64("PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9IlVURi04IiAvPgogICAgPHRpdGxlPk5ldyBUYWI8L3RpdGxlPgoKICAgIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvZm9udC1hd2Vzb21lLzYuNS4xL2Nzcy9hbGwubWluLmNzcyIgLz4KICAgIDxzdHlsZT4KICAgICAgQGltcG9ydCB1cmwoImh0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vY3NzMj9mYW1pbHk9SW50ZXI6d2dodEA0MDA7NTAwOzYwMDs3MDAmZGlzcGxheT1zd2FwIik7CgogICAgICA6cm9vdCB7CiAgICAgICAgLyogQ29yZSBjb2xvcnMgKi8KICAgICAgICAtLWJnOiAjMGEwYTBhOwogICAgICAgIC0tc3VyZmFjZTogIzBmMGYwZjsKICAgICAgICAtLXN1cmZhY2UtaG92ZXI6ICMxYTFhMWE7CiAgICAgICAgLS1zdXJmYWNlLWFjdGl2ZTogIzI1MjUyNTsKICAgICAgICAtLWJvcmRlcjogIzFmMWYxZjsKICAgICAgICAtLWJvcmRlci1saWdodDogIzJhMmEyYTsKCiAgICAgICAgLyogVGV4dCAqLwogICAgICAgIC0tdGV4dDogI2U0ZTRlNzsKICAgICAgICAtLXRleHQtbXV0ZWQ6ICM3MTcxN2E7CiAgICAgICAgLS10ZXh0LWRpbTogIzUyNTI1YjsKCiAgICAgICAgLyogQWNjZW50ICovCiAgICAgICAgLS1hY2NlbnQ6ICNmZmZmZmY7CiAgICAgICAgLS1hY2NlbnQtZGltOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuOCk7CiAgICAgICAgLS1hY2NlbnQtZ2xvdzogcmdiYSgyNTUsIDI1NSwgMjU1LCAwLjEpOwoKICAgICAgICAvKiBTdGF0dXMgY29sb3JzICovCiAgICAgICAgLS1zdWNjZXNzOiAjMjJjNTVlOwogICAgICAgIC0td2FybmluZzogI2Y1OWUwYjsKICAgICAgICAtLWVycm9yOiAjZWY0NDQ0OwogICAgICAgIC0taW5mbzogIzNiODJmNjsKCiAgICAgICAgLyogU2hhZG93cyAqLwogICAgICAgIC0tc2hhZG93LXNtOiAwIDFweCAycHggcmdiYSgwLCAwLCAwLCAwLjMpOwogICAgICAgIC0tc2hhZG93LW1kOiAwIDRweCAxMnB4IHJnYmEoMCwgMCwgMCwgMC40KTsKICAgICAgICAtLXNoYWRvdy1sZzogMCA4cHggMjRweCByZ2JhKDAsIDAsIDAsIDAuNSk7CiAgICAgICAgLS1zaGFkb3cteGw6IDAgMTZweCA0OHB4IHJnYmEoMCwgMCwgMCwgMC42KTsKCiAgICAgICAgLyogU3BhY2luZyAqLwogICAgICAgIC0tc3BhY2UteHM6IDRweDsKICAgICAgICAtLXNwYWNlLXNtOiA4cHg7CiAgICAgICAgLS1zcGFjZS1tZDogMTZweDsKICAgICAgICAtLXNwYWNlLWxnOiAyNHB4OwogICAgICAgIC0tc3BhY2UteGw6IDMycHg7CiAgICAgICAgLS1zcGFjZS0yeGw6IDQ4cHg7CgogICAgICAgIC8qIEJvcmRlciByYWRpdXMgKi8KICAgICAgICAtLXJhZGl1cy1zbTogNHB4OwogICAgICAgIC0tcmFkaXVzLW1kOiA4cHg7CiAgICAgICAgLS1yYWRpdXMtbGc6IDEycHg7CiAgICAgICAgLS1yYWRpdXMteGw6IDE2cHg7CiAgICAgICAgLS1yYWRpdXMtZnVsbDogOTk5OXB4OwoKICAgICAgICAvKiBUcmFuc2l0aW9ucyAqLwogICAgICAgIC0tdHJhbnNpdGlvbi1mYXN0OiAwLjFzIGVhc2U7CiAgICAgICAgLS10cmFuc2l0aW9uLW5vcm1hbDogMC4ycyBlYXNlOwogICAgICAgIC0tdHJhbnNpdGlvbi1zbG93OiAwLjNzIGVhc2U7CgogICAgICAgIC8qIFR5cG9ncmFwaHkgKi8KICAgICAgICAtLWZvbnQtc2FuczogIkludGVyIiwgc3lzdGVtLXVpLCAtYXBwbGUtc3lzdGVtLCBzYW5zLXNlcmlmOwogICAgICAgIC0tZm9udC1tb25vOiAiSmV0QnJhaW5zIE1vbm8iLCAiRmlyYSBDb2RlIiwgbW9ub3NwYWNlOwoKICAgICAgICAvKiBCYWNrZ3JvdW5kICovCiAgICAgICAgLS1iZy1pbWFnZTogbm9uZTsKICAgICAgfQoKICAgICAgKiB7CiAgICAgICAgYm94LXNpemluZzogYm9yZGVyLWJveDsKICAgICAgICBtYXJnaW46IDA7CiAgICAgICAgcGFkZGluZzogMDsKICAgICAgfQoKICAgICAgYm9keSB7CiAgICAgICAgZm9udC1mYW1pbHk6ICJJbnRlciIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZjsKICAgICAgICBiYWNrZ3JvdW5kOiB2YXIoLS1iZyk7CiAgICAgICAgY29sb3I6IHZhcigtLXRleHQpOwogICAgICAgIG1pbi1oZWlnaHQ6IDEwMHZoOwogICAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgICAgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsKICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgICAgIHBhZGRpbmc6IDQwcHggMjBweDsKICAgICAgfQoKICAgICAgLmNsb2NrIHsKICAgICAgICBmb250LXNpemU6IDRyZW07CiAgICAgICAgZm9udC13ZWlnaHQ6IDYwMDsKICAgICAgICBsZXR0ZXItc3BhY2luZzogLTJweDsKICAgICAgICBtYXJnaW4tYm90dG9tOiA4cHg7CiAgICAgICAgY29sb3I6IHZhcigtLWFjY2VudCk7CiAgICAgbGluZS1oZWlnaHQ6NHJlbTtoZWlnaHQ6NHJlbTt9CgogICAgICAuZGF0ZSB7CiAgICAgICAgZm9udC1zaXplOiAxNHB4OwogICAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LW11dGVkKTsKICAgICAgICBtYXJnaW4tYm90dG9tOiAzMnB4OwogICAgIGxpbmUtaGVpZ2h0OjE4cHg7bWluLWhlaWdodDoxOHB4O30KCiAgICAgIC5zZWFyY2gtYm94IHsKICAgICAgICBkaXNwbGF5OiBmbGV4OwogICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7CiAgICAgICAgZ2FwOiA4cHg7CiAgICAgICAgYmFja2dyb3VuZDogdmFyKC0tc3VyZmFjZSk7CiAgICAgICAgYm9yZGVyOiAxcHggc29saWQgdmFyKC0tYm9yZGVyKTsKICAgICAgICBib3JkZXItcmFkaXVzOiAxMnB4OwogICAgICAgIHBhZGRpbmc6IDEycHggMTZweDsKICAgICAgICB3aWR0aDogMTAwJTsKICAgICAgICBtYXgtd2lkdGg6IDUwMHB4OwogICAgICAgIG1hcmdpbi1ib3R0b206IDQwcHg7CiAgICAgIH0KCiAgICAgIC5zZWFyY2gtYm94IGkgewogICAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LW11dGVkKTsKICAgICAgICBmb250LXNpemU6IDE0cHg7CiAgICAgIH0KCiAgICAgIC5zZWFyY2gtYm94IGlucHV0IHsKICAgICAgICBmbGV4OiAxOwogICAgICAgIGJhY2tncm91bmQ6IHRyYW5zcGFyZW50OwogICAgICAgIGJvcmRlcjogbm9uZTsKICAgICAgICBvdXRsaW5lOiBub25lOwogICAgICAgIGNvbG9yOiB2YXIoLS10ZXh0KTsKICAgICAgICBmb250LXNpemU6IDE0cHg7CiAgICAgICAgZm9udC1mYW1pbHk6IGluaGVyaXQ7CiAgICAgIH0KCiAgICAgIC5zZWFyY2gtYm94IGlucHV0OjpwbGFjZWhvbGRlciB7CiAgICAgICAgY29sb3I6IHZhcigtLXRleHQtZGltKTsKICAgICAgfQoKICAgICAgLnNlYXJjaC1ib3ggc2VsZWN0IHsKICAgICAgICBiYWNrZ3JvdW5kOiB2YXIoLS1zdXJmYWNlLWhvdmVyKTsKICAgICAgICBib3JkZXI6IG5vbmU7CiAgICAgICAgYm9yZGVyLXJhZGl1czogNnB4OwogICAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LW11dGVkKTsKICAgICAgICBwYWRkaW5nOiA2cHggMTBweDsKICAgICAgICBmb250LXNpemU6IDEycHg7CiAgICAgICAgY3Vyc29yOiBwb2ludGVyOwogICAgICAgIG91dGxpbmU6IG5vbmU7CiAgICAgIH0KCiAgICAgIC5zaG9ydGN1dHMgewogICAgICAgIGRpc3BsYXk6IGdyaWQ7CiAgICAgICAgZ3JpZC10ZW1wbGF0ZS1jb2x1bW5zOiByZXBlYXQoNSwgMWZyKTsKICAgICAgICBnYXA6IDE2cHg7CiAgICAgICAgbWF4LXdpZHRoOiA1MDBweDsKICAgICAgICB3aWR0aDogMTAwJTsKICAgICAgfQoKICAgICAgLnNob3J0Y3V0IHsKICAgICAgICBkaXNwbGF5OiBmbGV4OwogICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47CiAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjsKICAgICAgICBnYXA6IDhweDsKICAgICAgICB0ZXh0LWRlY29yYXRpb246IG5vbmU7CiAgICAgICAgY3Vyc29yOiBwb2ludGVyOwogICAgICB9CgogICAgICAuc2hvcnRjdXQtaWNvbiB7CiAgICAgICAgd2lkdGg6IDUycHg7CiAgICAgICAgaGVpZ2h0OiA1MnB4OwogICAgICAgIGJhY2tncm91bmQ6IHZhcigtLXN1cmZhY2UpOwogICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWJvcmRlcik7CiAgICAgICAgYm9yZGVyLXJhZGl1czogMTJweDsKICAgICAgICBkaXNwbGF5OiBmbGV4OwogICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7CiAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7CiAgICAgICAgdHJhbnNpdGlvbjogYWxsIDAuMTVzOwogICAgICB9CgogICAgICAuc2hvcnRjdXQ6aG92ZXIgLnNob3J0Y3V0LWljb24gewogICAgICAgIGJhY2tncm91bmQ6IHZhcigtLXN1cmZhY2UtaG92ZXIpOwogICAgICAgIHRyYW5zZm9ybTogdHJhbnNsYXRlWSgtMnB4KTsKICAgICAgfQoKICAgICAgLnNob3J0Y3V0LWljb24gaW1nIHsKICAgICAgICB3aWR0aDogMjJweDsKICAgICAgICBoZWlnaHQ6IDIycHg7CiAgICAgICAgZmlsdGVyOiBicmlnaHRuZXNzKDApIGludmVydCgwLjcpOwogICAgICB9CgogICAgICAuc2hvcnRjdXQtaWNvbiBpIHsKICAgICAgICBmb250LXNpemU6IDIwcHg7CiAgICAgICAgY29sb3I6IHZhcigtLXRleHQtbXV0ZWQpOwogICAgICB9CgogICAgICAuc2hvcnRjdXQtY2xvc2UgewogICAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgICAgICB0b3A6IC02cHg7CiAgICAgICAgcmlnaHQ6IC02cHg7CiAgICAgICAgd2lkdGg6IDE4cHg7CiAgICAgICAgaGVpZ2h0OiAxOHB4OwogICAgICAgIGJvcmRlci1yYWRpdXM6IDUwJTsKICAgICAgICBiYWNrZ3JvdW5kOiB2YXIoLS1zdXJmYWNlLWFjdGl2ZSwgIzI1MjUyNSk7CiAgICAgICAgYm9yZGVyOiAxcHggc29saWQgdmFyKC0tYm9yZGVyLCAjMWYxZjFmKTsKICAgICAgICBjb2xvcjogdmFyKC0tdGV4dC1tdXRlZCwgIzcxNzE3YSk7CiAgICAgICAgZm9udC1zaXplOiAxMHB4OwogICAgICAgIGRpc3BsYXk6IG5vbmU7CiAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjsKICAgICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsKICAgICAgICBjdXJzb3I6IHBvaW50ZXI7CiAgICAgICAgei1pbmRleDogMjsKICAgICAgICBsaW5lLWhlaWdodDogMTsKICAgICAgICB0cmFuc2l0aW9uOgogICAgICAgICAgYmFja2dyb3VuZCAwLjFzLAogICAgICAgICAgY29sb3IgMC4xczsKICAgICAgfQogICAgICAuc2hvcnRjdXQtY2xvc2U6aG92ZXIgewogICAgICAgIGJhY2tncm91bmQ6ICNlZjQ0NDQ7CiAgICAgICAgY29sb3I6ICNmZmY7CiAgICAgICAgYm9yZGVyLWNvbG9yOiAjZWY0NDQ0OwogICAgICB9CiAgICAgIC5zaG9ydGN1dDpob3ZlciAuc2hvcnRjdXQtY2xvc2UgewogICAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgIH0KICAgICAgLnNob3J0Y3V0IHsKICAgICAgICBwb3NpdGlvbjogcmVsYXRpdmU7CiAgICAgIH0KCiAgICAgIC5zaG9ydGN1dC1sYWJlbCB7CiAgICAgICAgZm9udC1zaXplOiAxMXB4OwogICAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LW11dGVkKTsKICAgICAgICB0ZXh0LWFsaWduOiBjZW50ZXI7CiAgICAgICAgbWF4LXdpZHRoOiA2MHB4OwogICAgICAgIG92ZXJmbG93OiBoaWRkZW47CiAgICAgICAgdGV4dC1vdmVyZmxvdzogZWxsaXBzaXM7CiAgICAgICAgd2hpdGUtc3BhY2U6IG5vd3JhcDsKICAgICAgfQoKICAgICAgLnNob3J0Y3V0OmhvdmVyIC5zaG9ydGN1dC1sYWJlbCB7CiAgICAgICAgY29sb3I6IHZhcigtLXRleHQpOwogICAgICB9CgogICAgICAucXVvdGUgewogICAgICAgIHBvc2l0aW9uOiBmaXhlZDsKICAgICAgICBib3R0b206IDI0cHg7CiAgICAgICAgZm9udC1zaXplOiAxM3B4OwogICAgICAgIGNvbG9yOiB2YXIoLS10ZXh0LWRpbSk7CiAgICAgICAgbWF4LXdpZHRoOiA0MDBweDsKICAgICAgICB0ZXh0LWFsaWduOiBjZW50ZXI7CiAgICAgIH0KCiAgICAgIC5sb2FkZXIgewogICAgICAgIHBvc2l0aW9uOiBmaXhlZDsKICAgICAgICBpbnNldDogMDsKICAgICAgICBiYWNrZ3JvdW5kOiByZ2JhKDAsIDAsIDAsIDAuOSk7CiAgICAgICAgZGlzcGxheTogbm9uZTsKICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgICAgIHotaW5kZXg6IDEwMDsKICAgICAgfQoKICAgICAgLmxvYWRlci5zaG93IHsKICAgICAgICBkaXNwbGF5OiBmbGV4OwogICAgICB9CgogICAgICAuc3Bpbm5lciB7CiAgICAgICAgd2lkdGg6IDMycHg7CiAgICAgICAgaGVpZ2h0OiAzMnB4OwogICAgICAgIGJvcmRlcjogMnB4IHNvbGlkIHZhcigtLWJvcmRlcik7CiAgICAgICAgYm9yZGVyLXRvcC1jb2xvcjogdmFyKC0tYWNjZW50KTsKICAgICAgICBib3JkZXItcmFkaXVzOiA1MCU7CiAgICAgICAgYW5pbWF0aW9uOiBzcGluIDAuOHMgbGluZWFyIGluZmluaXRlOwogICAgICB9CgogICAgICBAa2V5ZnJhbWVzIHNwaW4gewogICAgICAgIHRvIHsKICAgICAgICAgIHRyYW5zZm9ybTogcm90YXRlKDM2MGRlZyk7CiAgICAgICAgfQogICAgICB9CgogICAgICAuaW5jb2duaXRvLWJhZGdlIHsKICAgICAgICBwb3NpdGlvbjogZml4ZWQ7CiAgICAgICAgdG9wOiAxNnB4OwogICAgICAgIGxlZnQ6IDUwJTsKICAgICAgICB0cmFuc2Zvcm06IHRyYW5zbGF0ZVgoLTUwJSk7CiAgICAgICAgZGlzcGxheTogZmxleDsKICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICAgIGdhcDogOHB4OwogICAgICAgIGJhY2tncm91bmQ6IHJnYmEoMjM5LCA2OCwgNjgsIDAuMTUpOwogICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHJnYmEoMjM5LCA2OCwgNjgsIDAuMyk7CiAgICAgICAgY29sb3I6ICNlZjQ0NDQ7CiAgICAgICAgcGFkZGluZzogOHB4IDE4cHg7CiAgICAgICAgYm9yZGVyLXJhZGl1czogOTk5OXB4OwogICAgICAgIGZvbnQtc2l6ZTogMTJweDsKICAgICAgICBmb250LXdlaWdodDogNTAwOwogICAgICAgIGxldHRlci1zcGFjaW5nOiAwLjAyZW07CiAgICAgIH0KICAgICAgOjotd2Via2l0LXNjcm9sbGJhciB7CiAgICAgICAgd2lkdGg6IDhweDsKICAgICAgfQogICAgICA6Oi13ZWJraXQtc2Nyb2xsYmFyLXRyYWNrIHsKICAgICAgICBiYWNrZ3JvdW5kOiB0cmFuc3BhcmVudDsKICAgICAgfQogICAgICA6Oi13ZWJraXQtc2Nyb2xsYmFyLXRodW1iIHsKICAgICAgICBiYWNrZ3JvdW5kOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMTIpOwogICAgICAgIGJvcmRlci1yYWRpdXM6IDRweDsKICAgICAgfQogICAgICA6Oi13ZWJraXQtc2Nyb2xsYmFyLXRodW1iOmhvdmVyIHsKICAgICAgICBiYWNrZ3JvdW5kOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMik7CiAgICAgIH0KICAgICAgKiB7CiAgICAgICAgc2Nyb2xsYmFyLXdpZHRoOiB0aGluOwogICAgICAgIHNjcm9sbGJhci1jb2xvcjogcmdiYSgyNTUsIDI1NSwgMjU1LCAwLjEyKSB0cmFuc3BhcmVudDsKICAgICAgfQoKICAgICAgLm50LW1vZGFsLW92ZXJsYXkgewogICAgICAgIHBvc2l0aW9uOiBmaXhlZDsKICAgICAgICBpbnNldDogMDsKICAgICAgICBiYWNrZ3JvdW5kOiByZ2JhKDAsIDAsIDAsIDAuNik7CiAgICAgICAgZGlzcGxheTogZmxleDsKICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgICAgIHotaW5kZXg6IDk5OTk7CiAgICAgICAgb3BhY2l0eTogMDsKICAgICAgICBwb2ludGVyLWV2ZW50czogbm9uZTsKICAgICAgICB0cmFuc2l0aW9uOiBvcGFjaXR5IDAuMTVzOwogICAgICB9CiAgICAgIC5udC1tb2RhbC1vdmVybGF5Lm9wZW4gewogICAgICAgIG9wYWNpdHk6IDE7CiAgICAgICAgcG9pbnRlci1ldmVudHM6IGF1dG87CiAgICAgIH0KICAgICAgLm50LW1vZGFsIHsKICAgICAgICBiYWNrZ3JvdW5kOiAjMWExYTFhOwogICAgICAgIGJvcmRlcjogMXB4IHNvbGlkICMzMzM7CiAgICAgICAgYm9yZGVyLXJhZGl1czogMTJweDsKICAgICAgICBwYWRkaW5nOiAyNHB4OwogICAgICAgIG1pbi13aWR0aDogMzIwcHg7CiAgICAgICAgbWF4LXdpZHRoOiA0MjBweDsKICAgICAgICBib3gtc2hhZG93OiAwIDI0cHggNjRweCByZ2JhKDAsIDAsIDAsIDAuNjUpOwogICAgICB9CiAgICAgIC5udC1tb2RhbC10aXRsZSB7CiAgICAgICAgZm9udC1zaXplOiAxNHB4OwogICAgICAgIGZvbnQtd2VpZ2h0OiA2MDA7CiAgICAgICAgbWFyZ2luLWJvdHRvbTogMTZweDsKICAgICAgICBjb2xvcjogI2U0ZTRlNzsKICAgICAgfQogICAgICAubnQtbW9kYWwtaW5wdXQgewogICAgICAgIHdpZHRoOiAxMDAlOwogICAgICAgIHBhZGRpbmc6IDEwcHggMTJweDsKICAgICAgICBib3JkZXItcmFkaXVzOiA4cHg7CiAgICAgICAgYm9yZGVyOiAxcHggc29saWQgIzMzMzsKICAgICAgICBiYWNrZ3JvdW5kOiAjMGYwZjBmOwogICAgICAgIGNvbG9yOiAjZTRlNGU3OwogICAgICAgIGZvbnQtc2l6ZTogMTNweDsKICAgICAgICBvdXRsaW5lOiBub25lOwogICAgICAgIG1hcmdpbi1ib3R0b206IDE2cHg7CiAgICAgICAgYm94LXNpemluZzogYm9yZGVyLWJveDsKICAgICAgfQogICAgICAubnQtbW9kYWwtaW5wdXQ6Zm9jdXMgewogICAgICAgIGJvcmRlci1jb2xvcjogIzY2NjsKICAgICAgfQogICAgICAubnQtbW9kYWwtYWN0aW9ucyB7CiAgICAgICAgZGlzcGxheTogZmxleDsKICAgICAgICBnYXA6IDhweDsKICAgICAgICBqdXN0aWZ5LWNvbnRlbnQ6IGZsZXgtZW5kOwogICAgICB9CiAgICAgIC5udC1tb2RhbC1idG4gewogICAgICAgIHBhZGRpbmc6IDhweCAxNnB4OwogICAgICAgIGJvcmRlci1yYWRpdXM6IDhweDsKICAgICAgICBib3JkZXI6IG5vbmU7CiAgICAgICAgZm9udC1zaXplOiAxM3B4OwogICAgICAgIGN1cnNvcjogcG9pbnRlcjsKICAgICAgICBmb250LXdlaWdodDogNTAwOwogICAgICAgIHRyYW5zaXRpb246IG9wYWNpdHkgMC4xczsKICAgICAgfQogICAgICAubnQtbW9kYWwtYnRuOmhvdmVyIHsKICAgICAgICBvcGFjaXR5OiAwLjg7CiAgICAgIH0KICAgICAgLm50LW1vZGFsLWJ0bi1wcmltYXJ5IHsKICAgICAgICBiYWNrZ3JvdW5kOiAjZTRlNGU3OwogICAgICAgIGNvbG9yOiAjMGEwYTBhOwogICAgICB9CiAgICAgIC5udC1tb2RhbC1idG4tc2Vjb25kYXJ5IHsKICAgICAgICBiYWNrZ3JvdW5kOiAjMmEyYTJhOwogICAgICAgIGNvbG9yOiAjYTFhMWFhOwogICAgICB9CiAgICAgIC5udC1tb2RhbC1tZXNzYWdlIHsKICAgICAgICBmb250LXNpemU6IDEzcHg7CiAgICAgICAgY29sb3I6ICNhMWExYWE7CiAgICAgICAgbWFyZ2luLWJvdHRvbTogMTZweDsKICAgICAgICBsaW5lLWhlaWdodDogMS40OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvaGVhZD4KCiAgPGJvZHk+CiAgICA8ZGl2IGNsYXNzPSJsb2FkZXIiIGlkPSJsb2FkZXIiPgogICAgICA8ZGl2IGNsYXNzPSJzcGlubmVyIj48L2Rpdj4KICAgIDwvZGl2PgoKICAgIDxkaXYgY2xhc3M9ImluY29nbml0by1iYWRnZSIgaWQ9ImluY29nbml0by1iYWRnZSIgc3R5bGU9ImRpc3BsYXk6IG5vbmUiPgogICAgICA8aSBjbGFzcz0iZmEtc29saWQgZmEtdXNlci1zZWNyZXQiPjwvaT4KICAgICAgPHNwYW4+WW91J3JlIGJyb3dzaW5nIHByaXZhdGVseTwvc3Bhbj4KICAgIDwvZGl2PgoKICAgIDxkaXYgY2xhc3M9ImNsb2NrIiBpZD0iY2xvY2siPjAwOjAwPC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJkYXRlIiBpZD0iZGF0ZSI+PC9kaXY+CgogICAgPGZvcm0gY2xhc3M9InNlYXJjaC1ib3giIGlkPSJzZWFyY2hGb3JtIj4KICAgICAgPGkgY2xhc3M9ImZhLXNvbGlkIGZhLW1hZ25pZnlpbmctZ2xhc3MiPjwvaT4KICAgICAgPGlucHV0IHR5cGU9InRleHQiIGlkPSJzZWFyY2hJbnB1dCIgcGxhY2Vob2xkZXI9IlNlYXJjaCB0aGUgd2ViLi4uIiBhdXRvY29tcGxldGU9Im9mZiIgLz4KICAgICAgPHNlbGVjdCBpZD0iZW5naW5lIj4KICAgICAgICA8b3B0aW9uIHZhbHVlPSJodHRwczovL3NlYXJjaC5icmF2ZS5jb20vc2VhcmNoP3E9Ij5CcmF2ZTwvb3B0aW9uPgogICAgICAgIDxvcHRpb24gdmFsdWU9Imh0dHBzOi8vZHVja2R1Y2tnby5jb20vP3E9Ij5EdWNrRHVja0dvPC9vcHRpb24+CiAgICAgICAgPG9wdGlvbiB2YWx1ZT0iaHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9zZWFyY2g/cT0iPkdvb2dsZTwvb3B0aW9uPgogICAgICA8L3NlbGVjdD4KICAgIDwvZm9ybT4KCiAgICA8ZGl2IGNsYXNzPSJzaG9ydGN1dHMiIGlkPSJzaG9ydGN1dHMiPgogICAgICA8YSBjbGFzcz0ic2hvcnRjdXQgcHJlc2V0LXNob3J0Y3V0IiBkYXRhLXVybD0iaHR0cHM6Ly9yZWV5dWtpLm5lb2NpdGllcy5vcmciPgogICAgICAgIDxzcGFuIGNsYXNzPSJzaG9ydGN1dC1jbG9zZSIgZGF0YS11cmw9Imh0dHBzOi8vcmVleXVraS5uZW9jaXRpZXMub3JnIj4mdGltZXM7PC9zcGFuPgogICAgICAgIDxkaXYgY2xhc3M9InNob3J0Y3V0LWljb24iPgogICAgICAgICAgPGltZyBzcmM9Imh0dHBzOi8vcmVleXVraS5naXRodWIuaW8vc3RhdGljL2Zhdmljb24vZmF2aWNvbi0zMngzMi5wbmciIC8+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWxhYmVsIj5SZWV5dWtpIFNpdGU8L3NwYW4+CiAgICAgIDwvYT4KICAgICAgPGEgY2xhc3M9InNob3J0Y3V0IHByZXNldC1zaG9ydGN1dCIgZGF0YS11cmw9Imh0dHBzOi8veW91dHViZS5jb20iPgogICAgICAgIDxzcGFuIGNsYXNzPSJzaG9ydGN1dC1jbG9zZSIgZGF0YS11cmw9Imh0dHBzOi8veW91dHViZS5jb20iPiZ0aW1lczs8L3NwYW4+CiAgICAgICAgPGRpdiBjbGFzcz0ic2hvcnRjdXQtaWNvbiI+CiAgICAgICAgICA8aW1nIHNyYz0iaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3NpbXBsZS1pY29ucy9zaW1wbGUtaWNvbnMvaWNvbnMveW91dHViZS5zdmciIC8+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWxhYmVsIj5Zb3VUdWJlPC9zcGFuPgogICAgICA8L2E+CiAgICAgIDxhIGNsYXNzPSJzaG9ydGN1dCBwcmVzZXQtc2hvcnRjdXQiIGRhdGEtdXJsPSJodHRwczovL2dpdGh1Yi5jb20iPgogICAgICAgIDxzcGFuIGNsYXNzPSJzaG9ydGN1dC1jbG9zZSIgZGF0YS11cmw9Imh0dHBzOi8vZ2l0aHViLmNvbSI+JnRpbWVzOzwvc3Bhbj4KICAgICAgICA8ZGl2IGNsYXNzPSJzaG9ydGN1dC1pY29uIj4KICAgICAgICAgIDxpbWcgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvc2ltcGxlLWljb25zL3NpbXBsZS1pY29ucy9pY29ucy9naXRodWIuc3ZnIiAvPgogICAgICAgIDwvZGl2PgogICAgICAgIDxzcGFuIGNsYXNzPSJzaG9ydGN1dC1sYWJlbCI+R2l0SHViPC9zcGFuPgogICAgICA8L2E+CiAgICAgIDxhIGNsYXNzPSJzaG9ydGN1dCBwcmVzZXQtc2hvcnRjdXQiIGRhdGEtdXJsPSJodHRwczovL2Rpc2NvcmQuY29tIj4KICAgICAgICA8c3BhbiBjbGFzcz0ic2hvcnRjdXQtY2xvc2UiIGRhdGEtdXJsPSJodHRwczovL2Rpc2NvcmQuY29tIj4mdGltZXM7PC9zcGFuPgogICAgICAgIDxkaXYgY2xhc3M9InNob3J0Y3V0LWljb24iPgogICAgICAgICAgPGltZyBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9naC9zaW1wbGUtaWNvbnMvc2ltcGxlLWljb25zL2ljb25zL2Rpc2NvcmQuc3ZnIiAvPgogICAgICAgIDwvZGl2PgogICAgICAgIDxzcGFuIGNsYXNzPSJzaG9ydGN1dC1sYWJlbCI+RGlzY29yZDwvc3Bhbj4KICAgICAgPC9hPgogICAgICA8YSBjbGFzcz0ic2hvcnRjdXQgcHJlc2V0LXNob3J0Y3V0IiBkYXRhLXVybD0iaHR0cHM6Ly90d2l0dGVyLmNvbSI+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWNsb3NlIiBkYXRhLXVybD0iaHR0cHM6Ly90d2l0dGVyLmNvbSI+JnRpbWVzOzwvc3Bhbj4KICAgICAgICA8ZGl2IGNsYXNzPSJzaG9ydGN1dC1pY29uIj4KICAgICAgICAgIDxpbWcgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvc2ltcGxlLWljb25zL3NpbXBsZS1pY29ucy9pY29ucy94LnN2ZyIgLz4KICAgICAgICA8L2Rpdj4KICAgICAgICA8c3BhbiBjbGFzcz0ic2hvcnRjdXQtbGFiZWwiPlR3aXR0ZXI8L3NwYW4+CiAgICAgIDwvYT4KICAgICAgPGEgY2xhc3M9InNob3J0Y3V0IHByZXNldC1zaG9ydGN1dCIgZGF0YS11cmw9Imh0dHBzOi8vcGxheS5nZWZvcmNlbm93LmNvbS9tYWxsLyI+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWNsb3NlIiBkYXRhLXVybD0iaHR0cHM6Ly9wbGF5LmdlZm9yY2Vub3cuY29tL21hbGwvIj4mdGltZXM7PC9zcGFuPgogICAgICAgIDxkaXYgY2xhc3M9InNob3J0Y3V0LWljb24iPgogICAgICAgICAgPGltZyBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9naC9zaW1wbGUtaWNvbnMvc2ltcGxlLWljb25zL2ljb25zL252aWRpYS5zdmciIC8+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWxhYmVsIj5HZWZvcmNlIE5vdzwvc3Bhbj4KICAgICAgPC9hPgogICAgICA8YSBjbGFzcz0ic2hvcnRjdXQgcHJlc2V0LXNob3J0Y3V0IiBkYXRhLXVybD0iaHR0cHM6Ly9mcnV0aWdlcmFlcm9hcmNoaXZlLm9yZy9tdXNpY19wbGF5ZXJzL2xvY2FsIj4KICAgICAgICA8c3BhbiBjbGFzcz0ic2hvcnRjdXQtY2xvc2UiIGRhdGEtdXJsPSJodHRwczovL2ZydXRpZ2VyYWVyb2FyY2hpdmUub3JnL211c2ljX3BsYXllcnMvbG9jYWwiPiZ0aW1lczs8L3NwYW4+CiAgICAgICAgPGRpdiBjbGFzcz0ic2hvcnRjdXQtaWNvbiI+CiAgICAgICAgICA8aW1nIHNyYz0iaHR0cHM6Ly9mcnV0aWdlcmFlcm9hcmNoaXZlLm9yZy9pbWFnZXMvZmF2aWNvbi9mYXZpY29uLmljbz92PTEuMSIgLz4KICAgICAgICA8L2Rpdj4KICAgICAgICA8c3BhbiBjbGFzcz0ic2hvcnRjdXQtbGFiZWwiPlJlZXl1a2kgU2l0ZTwvc3Bhbj4KICAgICAgPC9hPgogICAgICA8YSBjbGFzcz0ic2hvcnRjdXQgcHJlc2V0LXNob3J0Y3V0IiBkYXRhLXVybD0iaHR0cHM6Ly9uZXRmbGl4LmNvbSI+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWNsb3NlIiBkYXRhLXVybD0iaHR0cHM6Ly9uZXRmbGl4LmNvbSI+JnRpbWVzOzwvc3Bhbj4KICAgICAgICA8ZGl2IGNsYXNzPSJzaG9ydGN1dC1pY29uIj4KICAgICAgICAgIDxpbWcgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvc2ltcGxlLWljb25zL3NpbXBsZS1pY29ucy9pY29ucy9uZXRmbGl4LnN2ZyIgLz4KICAgICAgICA8L2Rpdj4KICAgICAgICA8c3BhbiBjbGFzcz0ic2hvcnRjdXQtbGFiZWwiPk5ldGZsaXg8L3NwYW4+CiAgICAgIDwvYT4KICAgICAgPGEgY2xhc3M9InNob3J0Y3V0IHByZXNldC1zaG9ydGN1dCIgZGF0YS11cmw9Imh0dHBzOi8vdHdpdGNoLnR2Ij4KICAgICAgICA8c3BhbiBjbGFzcz0ic2hvcnRjdXQtY2xvc2UiIGRhdGEtdXJsPSJodHRwczovL3R3aXRjaC50diI+JnRpbWVzOzwvc3Bhbj4KICAgICAgICA8ZGl2IGNsYXNzPSJzaG9ydGN1dC1pY29uIj4KICAgICAgICAgIDxpbWcgc3JjPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvc2ltcGxlLWljb25zL3NpbXBsZS1pY29ucy9pY29ucy90d2l0Y2guc3ZnIiAvPgogICAgICAgIDwvZGl2PgogICAgICAgIDxzcGFuIGNsYXNzPSJzaG9ydGN1dC1sYWJlbCI+VHdpdGNoPC9zcGFuPgogICAgICA8L2E+CiAgICAgIDxkaXYgY2xhc3M9InNob3J0Y3V0IiBpZD0iYWRkU2hvcnRjdXQiPgogICAgICAgIDxkaXYgY2xhc3M9InNob3J0Y3V0LWljb24iPjxpIGNsYXNzPSJmYS1zb2xpZCBmYS1wbHVzIj48L2k+PC9kaXY+CiAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWxhYmVsIj5BZGQ8L3NwYW4+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CgogICAgPGRpdiBjbGFzcz0iYm9va21hcmtzLXNlY3Rpb24iIGlkPSJib29rbWFya3Mtc2VjdGlvbiIgc3R5bGU9Im1hcmdpbi10b3A6IDMycHgiPgogICAgICA8aDMKICAgICAgICBzdHlsZT0iCiAgICAgICAgICBjb2xvcjogdmFyKC0tdGV4dC1tdXRlZCk7CiAgICAgICAgICBmb250LXNpemU6IDEycHg7CiAgICAgICAgICB0ZXh0LXRyYW5zZm9ybTogdXBwZXJjYXNlOwogICAgICAgICAgbGV0dGVyLXNwYWNpbmc6IDAuMDdlbTsKICAgICAgICAgIG1hcmdpbi1ib3R0b206IDE2cHg7CiAgICAgICAgIgogICAgICA+CiAgICAgICAgQm9va21hcmtzCiAgICAgIDwvaDM+CiAgICAgIDxkaXYKICAgICAgICBjbGFzcz0ic2hvcnRjdXRzIgogICAgICAgIGlkPSJib29rbWFya3MtY29udGFpbmVyIgogICAgICAgIHN0eWxlPSJncmlkLXRlbXBsYXRlLWNvbHVtbnM6IHJlcGVhdChhdXRvLWZpbGwsIG1pbm1heCgxMDBweCwgMWZyKSkiCiAgICAgID48L2Rpdj4KICAgIDwvZGl2PgoKICAgIDxkaXYgY2xhc3M9InF1b3RlIiBpZD0icXVvdGUiPjwvZGl2PgoKICAgIDxkaXYgY2xhc3M9Im50LW1vZGFsLW92ZXJsYXkiIGlkPSJudE1vZGFsIj4KICAgICAgPGRpdiBjbGFzcz0ibnQtbW9kYWwiPgogICAgICAgIDxkaXYgY2xhc3M9Im50LW1vZGFsLXRpdGxlIiBpZD0ibnRNb2RhbFRpdGxlIj48L2Rpdj4KICAgICAgICA8ZGl2IGNsYXNzPSJudC1tb2RhbC1tZXNzYWdlIiBpZD0ibnRNb2RhbE1lc3NhZ2UiPjwvZGl2PgogICAgICAgIDxpbnB1dCBjbGFzcz0ibnQtbW9kYWwtaW5wdXQiIGlkPSJudE1vZGFsSW5wdXQiIHN0eWxlPSJkaXNwbGF5OiBub25lIiAvPgogICAgICAgIDxkaXYgY2xhc3M9Im50LW1vZGFsLWFjdGlvbnMiPgogICAgICAgICAgPGJ1dHRvbiBjbGFzcz0ibnQtbW9kYWwtYnRuIG50LW1vZGFsLWJ0bi1zZWNvbmRhcnkiIGlkPSJudE1vZGFsQ2FuY2VsIj5DYW5jZWw8L2J1dHRvbj4KICAgICAgICAgIDxidXR0b24gY2xhc3M9Im50LW1vZGFsLWJ0biBudC1tb2RhbC1idG4tcHJpbWFyeSIgaWQ9Im50TW9kYWxPayI+T0s8L2J1dHRvbj4KICAgICAgICA8L2Rpdj4KICAgICAgPC9kaXY+CiAgICA8L2Rpdj4KCiAgICA8c2NyaXB0PgogICAgICBjb25zdCAkID0gKHMpID0+IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3Iocyk7CgogICAgICAvLyBJbmNvZ25pdG8gZGV0ZWN0aW9uCiAgICAgIGNvbnN0IHVybFBhcmFtcyA9IG5ldyBVUkxTZWFyY2hQYXJhbXMod2luZG93LmxvY2F0aW9uLnNlYXJjaCk7CiAgICAgIGlmICh1cmxQYXJhbXMuZ2V0KCJpbmNvZ25pdG8iKSA9PT0gInRydWUiIHx8IHdpbmRvdy5udEluY29nbml0bykgewogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJpbmNvZ25pdG8tYmFkZ2UiKS5zdHlsZS5kaXNwbGF5ID0gImZsZXgiOwogICAgICAgIGRvY3VtZW50LnRpdGxlID0gIk5ldyBUYWIgKFByaXZhdGUpIjsKICAgICAgfQoKICAgICAgY29uc3QgbmF2ID0gKHVybCkgPT4gewogICAgICAgICQoIiNsb2FkZXIiKS5jbGFzc0xpc3QuYWRkKCJzaG93Iik7CiAgICAgICAgd2luZG93LnBhcmVudD8ucG9zdE1lc3NhZ2UoeyB0eXBlOiAibmF2aWdhdGUiLCB1cmwgfSwgIioiKTsKICAgICAgfTsKCiAgICAgIC8vIERPTS1iYXNlZCBkaWFsb2dzIChzYW5kYm94LXNhZmUpCiAgICAgIGZ1bmN0aW9uIG50RGlhbG9nKHR5cGUsIHRpdGxlLCBkZWZhdWx0VmFsdWUpIHsKICAgICAgICByZXR1cm4gbmV3IFByb21pc2UoKHJlc29sdmUpID0+IHsKICAgICAgICAgIGNvbnN0IG92ZXJsYXkgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgibnRNb2RhbCIpOwogICAgICAgICAgY29uc3QgdGl0bGVFbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJudE1vZGFsVGl0bGUiKTsKICAgICAgICAgIGNvbnN0IG1zZ0VsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoIm50TW9kYWxNZXNzYWdlIik7CiAgICAgICAgICBjb25zdCBpbnB1dEVsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoIm50TW9kYWxJbnB1dCIpOwogICAgICAgICAgY29uc3Qgb2tCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgibnRNb2RhbE9rIik7CiAgICAgICAgICBjb25zdCBjYW5jZWxCdG4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgibnRNb2RhbENhbmNlbCIpOwoKICAgICAgICAgIHRpdGxlRWwudGV4dENvbnRlbnQgPSB0aXRsZTsKICAgICAgICAgIGlmICh0eXBlID09PSAicHJvbXB0IikgewogICAgICAgICAgICBtc2dFbC5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiOwogICAgICAgICAgICBpbnB1dEVsLnN0eWxlLmRpc3BsYXkgPSAiIjsKICAgICAgICAgICAgaW5wdXRFbC52YWx1ZSA9IGRlZmF1bHRWYWx1ZSB8fCAiIjsKICAgICAgICAgICAgaW5wdXRFbC5mb2N1cygpOwogICAgICAgICAgICBpbnB1dEVsLm9ua2V5ZG93biA9IChlKSA9PiB7CiAgICAgICAgICAgICAgaWYgKGUua2V5ID09PSAiRW50ZXIiKSBva0J0bi5jbGljaygpOwogICAgICAgICAgICB9OwogICAgICAgICAgfSBlbHNlIGlmICh0eXBlID09PSAiY29uZmlybSIpIHsKICAgICAgICAgICAgbXNnRWwuc3R5bGUuZGlzcGxheSA9ICIiOwogICAgICAgICAgICBtc2dFbC50ZXh0Q29udGVudCA9IGRlZmF1bHRWYWx1ZSB8fCAiIjsKICAgICAgICAgICAgaW5wdXRFbC5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiOwogICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgbXNnRWwuc3R5bGUuZGlzcGxheSA9ICIiOwogICAgICAgICAgICBtc2dFbC50ZXh0Q29udGVudCA9IGRlZmF1bHRWYWx1ZSB8fCAiIjsKICAgICAgICAgICAgaW5wdXRFbC5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiOwogICAgICAgICAgICBjYW5jZWxCdG4uc3R5bGUuZGlzcGxheSA9ICJub25lIjsKICAgICAgICAgIH0KCiAgICAgICAgICBjb25zdCBjbGVhbnVwID0gKCkgPT4gewogICAgICAgICAgICBvdmVybGF5LmNsYXNzTGlzdC5yZW1vdmUoIm9wZW4iKTsKICAgICAgICAgICAgb2tCdG4ub25jbGljayA9IG51bGw7CiAgICAgICAgICAgIGNhbmNlbEJ0bi5vbmNsaWNrID0gbnVsbDsKICAgICAgICAgICAgY2FuY2VsQnRuLnN0eWxlLmRpc3BsYXkgPSAiIjsKICAgICAgICAgIH07CgogICAgICAgICAgb2tCdG4ub25jbGljayA9ICgpID0+IHsKICAgICAgICAgICAgY2xlYW51cCgpOwogICAgICAgICAgICByZXNvbHZlKHR5cGUgPT09ICJwcm9tcHQiID8gaW5wdXRFbC52YWx1ZSA6IHRydWUpOwogICAgICAgICAgfTsKICAgICAgICAgIGNhbmNlbEJ0bi5vbmNsaWNrID0gKCkgPT4gewogICAgICAgICAgICBjbGVhbnVwKCk7CiAgICAgICAgICAgIHJlc29sdmUodHlwZSA9PT0gInByb21wdCIgPyBudWxsIDogZmFsc2UpOwogICAgICAgICAgfTsKCiAgICAgICAgICBvdmVybGF5LmNsYXNzTGlzdC5hZGQoIm9wZW4iKTsKICAgICAgICB9KTsKICAgICAgfQogICAgICBjb25zdCBudFByb21wdCA9IChtc2csIHZhbCkgPT4gbnREaWFsb2coInByb21wdCIsIG1zZywgdmFsKTsKICAgICAgY29uc3QgbnRDb25maXJtID0gKG1zZykgPT4gbnREaWFsb2coImNvbmZpcm0iLCBtc2cpOwogICAgICBjb25zdCBudEFsZXJ0ID0gKG1zZykgPT4gbnREaWFsb2coImFsZXJ0IiwgbXNnKTsKCiAgICAgIC8vIENsb2NrCiAgICAgIGZ1bmN0aW9uIHVwZGF0ZUNsb2NrKCkgewogICAgICAgIGNvbnN0IG5vdyA9IG5ldyBEYXRlKCk7CiAgICAgICAgY29uc3QgY2xvY2tFbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJjbG9jayIpOwogICAgICAgIGNvbnN0IGRhdGVFbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJkYXRlIik7CiAgICAgICAgaWYgKGNsb2NrRWwpIHsKICAgICAgICAgIHRyeSB7CiAgICAgICAgICAgIGNsb2NrRWwudGV4dENvbnRlbnQgPSBub3cudG9Mb2NhbGVUaW1lU3RyaW5nKCJlbi1VUyIsIHsKICAgICAgICAgICAgICBob3VyOiAiMi1kaWdpdCIsCiAgICAgICAgICAgICAgbWludXRlOiAiMi1kaWdpdCIsCiAgICAgICAgICAgICAgaG91cjEyOiBmYWxzZQogICAgICAgICAgICB9KTsKICAgICAgICAgIH0gY2F0Y2ggewogICAgICAgICAgICBjbG9ja0VsLnRleHRDb250ZW50ID0KICAgICAgICAgICAgICBTdHJpbmcobm93LmdldEhvdXJzKCkpLnBhZFN0YXJ0KDIsICIwIikgKyAiOiIgKyBTdHJpbmcobm93LmdldE1pbnV0ZXMoKSkucGFkU3RhcnQoMiwgIjAiKTsKICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgaWYgKGRhdGVFbCkgewogICAgICAgICAgdHJ5IHsKICAgICAgICAgICAgZGF0ZUVsLnRleHRDb250ZW50ID0gbm93LnRvTG9jYWxlRGF0ZVN0cmluZygiZW4tVVMiLCB7CiAgICAgICAgICAgICAgd2Vla2RheTogImxvbmciLAogICAgICAgICAgICAgIG1vbnRoOiAibG9uZyIsCiAgICAgICAgICAgICAgZGF5OiAibnVtZXJpYyIKICAgICAgICAgICAgfSk7CiAgICAgICAgICB9IGNhdGNoIHsKICAgICAgICAgICAgZGF0ZUVsLnRleHRDb250ZW50ID0gbm93LnRvRGF0ZVN0cmluZygpOwogICAgICAgICAgfQogICAgICAgIH0KICAgICAgfQogICAgICB1cGRhdGVDbG9jaygpOwogICAgICBzZXRJbnRlcnZhbCh1cGRhdGVDbG9jaywgMTAwMCk7CgogICAgICAvLyBTZWFyY2gKICAgICAgJCgiI3NlYXJjaEZvcm0iKS5vbnN1Ym1pdCA9IChlKSA9PiB7CiAgICAgICAgZS5wcmV2ZW50RGVmYXVsdCgpOwogICAgICAgIGNvbnN0IHEgPSAkKCIjc2VhcmNoSW5wdXQiKS52YWx1ZS50cmltKCk7CiAgICAgICAgaWYgKHEpIG5hdigkKCIjZW5naW5lIikudmFsdWUgKyBlbmNvZGVVUklDb21wb25lbnQocSkpOwogICAgICB9OwoKICAgICAgLy8gUG9wdWxhdGUgY3VzdG9tIHNlYXJjaCBlbmdpbmVzIGZyb20gbG9jYWxTdG9yYWdlCiAgICAgIGZ1bmN0aW9uIHBvcHVsYXRlQ3VzdG9tRW5naW5lcygpIHsKICAgICAgICB0cnkgewogICAgICAgICAgY29uc3QgY3VzdG9tID0gSlNPTi5wYXJzZShsb2NhbFN0b3JhZ2UuZ2V0SXRlbSgic2NyYW1qZXRfY3VzdG9tX2VuZ2luZXMiKSB8fCAiW10iKTsKICAgICAgICAgIGNvbnN0IHNlbCA9ICQoIiNlbmdpbmUiKTsKICAgICAgICAgIGN1c3RvbS5mb3JFYWNoKGZ1bmN0aW9uIChlbmcpIHsKICAgICAgICAgICAgY29uc3Qgb3B0ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgib3B0aW9uIik7CiAgICAgICAgICAgIG9wdC52YWx1ZSA9IGVuZy51cmw7CiAgICAgICAgICAgIG9wdC50ZXh0Q29udGVudCA9IGVuZy5uYW1lOwogICAgICAgICAgICBzZWwuYXBwZW5kQ2hpbGQob3B0KTsKICAgICAgICAgIH0pOwogICAgICAgIH0gY2F0Y2ggKGUpIHt9CiAgICAgIH0KICAgICAgcG9wdWxhdGVDdXN0b21FbmdpbmVzKCk7CgogICAgICAvLyBDbG9zZSBidXR0b24gZm9yIHByZXNldCBzaG9ydGN1dHMKICAgICAgY29uc3QgUkVNT1ZFRF9QUkVTRVRTX0tFWSA9ICJzY3JhbWpldF9yZW1vdmVkX3ByZXNldHMiOwogICAgICBmdW5jdGlvbiBnZXRSZW1vdmVkUHJlc2V0cygpIHsKICAgICAgICB0cnkgewogICAgICAgICAgcmV0dXJuIEpTT04ucGFyc2UobG9jYWxTdG9yYWdlLmdldEl0ZW0oUkVNT1ZFRF9QUkVTRVRTX0tFWSkgfHwgIltdIik7CiAgICAgICAgfSBjYXRjaCB7CiAgICAgICAgICByZXR1cm4gW107CiAgICAgICAgfQogICAgICB9CiAgICAgIGZ1bmN0aW9uIGhpZGVQcmVzZXRTaG9ydGN1dCh1cmwpIHsKICAgICAgICBjb25zdCByZW1vdmVkID0gZ2V0UmVtb3ZlZFByZXNldHMoKTsKICAgICAgICBpZiAoIXJlbW92ZWQuaW5jbHVkZXModXJsKSkgcmVtb3ZlZC5wdXNoKHVybCk7CiAgICAgICAgbG9jYWxTdG9yYWdlLnNldEl0ZW0oUkVNT1ZFRF9QUkVTRVRTX0tFWSwgSlNPTi5zdHJpbmdpZnkocmVtb3ZlZCkpOwogICAgICAgIGNvbnN0IGVsID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcihgLnByZXNldC1zaG9ydGN1dFtkYXRhLXVybD0iJHt1cmx9Il1gKTsKICAgICAgICBpZiAoZWwpIGVsLnN0eWxlLmRpc3BsYXkgPSAibm9uZSI7CiAgICAgIH0KICAgICAgZ2V0UmVtb3ZlZFByZXNldHMoKS5mb3JFYWNoKCh1cmwpID0+IHsKICAgICAgICBjb25zdCBlbCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYC5wcmVzZXQtc2hvcnRjdXRbZGF0YS11cmw9IiR7dXJsfSJdYCk7CiAgICAgICAgaWYgKGVsKSBlbC5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiOwogICAgICB9KTsKICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgiLnNob3J0Y3V0LWNsb3NlIikuZm9yRWFjaCgoYnRuKSA9PiB7CiAgICAgICAgYnRuLmFkZEV2ZW50TGlzdGVuZXIoImNsaWNrIiwgKGUpID0+IHsKICAgICAgICAgIGUucHJldmVudERlZmF1bHQoKTsKICAgICAgICAgIGUuc3RvcFByb3BhZ2F0aW9uKCk7CiAgICAgICAgICBoaWRlUHJlc2V0U2hvcnRjdXQoYnRuLmRhdGFzZXQudXJsKTsKICAgICAgICB9KTsKICAgICAgfSk7CgogICAgICAvLyBTaG9ydGN1dHMKICAgICAgJCgiI3Nob3J0Y3V0cyIpLm9uY2xpY2sgPSBhc3luYyAoZSkgPT4gewogICAgICAgIGlmIChlLnRhcmdldC5jbG9zZXN0KCIuc2hvcnRjdXQtY2xvc2UiKSkgcmV0dXJuOwogICAgICAgIGNvbnN0IHNob3J0Y3V0ID0gZS50YXJnZXQuY2xvc2VzdCgiLnNob3J0Y3V0W2RhdGEtdXJsXSIpOwogICAgICAgIGNvbnN0IGFkZEJ0biA9IGUudGFyZ2V0LmNsb3Nlc3QoIiNhZGRTaG9ydGN1dCIpOwoKICAgICAgICBpZiAoc2hvcnRjdXQpIHsKICAgICAgICAgIGUucHJldmVudERlZmF1bHQoKTsKICAgICAgICAgIG5hdihzaG9ydGN1dC5kYXRhc2V0LnVybCk7CiAgICAgICAgfSBlbHNlIGlmIChhZGRCdG4pIHsKICAgICAgICAgIGNvbnN0IG5hbWUgPSBhd2FpdCBudFByb21wdCgiU2hvcnRjdXQgbmFtZToiKTsKICAgICAgICAgIGlmICghbmFtZSkgcmV0dXJuOwogICAgICAgICAgbGV0IHVybCA9IGF3YWl0IG50UHJvbXB0KCJVUkw6Iik7CiAgICAgICAgICBpZiAoIXVybCkgcmV0dXJuOwogICAgICAgICAgaWYgKCF1cmwuc3RhcnRzV2l0aCgiaHR0cCIpKSB1cmwgPSAiaHR0cHM6Ly8iICsgdXJsOwoKICAgICAgICAgIGNvbnN0IHNob3J0Y3V0cyA9IEpTT04ucGFyc2UobG9jYWxTdG9yYWdlLmdldEl0ZW0oInNob3J0Y3V0cyIpIHx8ICJbXSIpOwogICAgICAgICAgc2hvcnRjdXRzLnB1c2goeyBuYW1lLCB1cmwgfSk7CiAgICAgICAgICBsb2NhbFN0b3JhZ2Uuc2V0SXRlbSgic2hvcnRjdXRzIiwgSlNPTi5zdHJpbmdpZnkoc2hvcnRjdXRzKSk7CiAgICAgICAgICByZW5kZXJDdXN0b20oKTsKICAgICAgICB9CiAgICAgIH07CgogICAgICBmdW5jdGlvbiByZW5kZXJDdXN0b20oKSB7CiAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgiLmN1c3RvbS1zaG9ydGN1dCIpLmZvckVhY2goKGUpID0+IGUucmVtb3ZlKCkpOwogICAgICAgIGNvbnN0IHNob3J0Y3V0cyA9IEpTT04ucGFyc2UobG9jYWxTdG9yYWdlLmdldEl0ZW0oInNob3J0Y3V0cyIpIHx8ICJbXSIpOwogICAgICAgIGNvbnN0IGFkZEJ0biA9ICQoIiNhZGRTaG9ydGN1dCIpOwoKICAgICAgICBzaG9ydGN1dHMuZm9yRWFjaCgocykgPT4gewogICAgICAgICAgY29uc3QgZGl2ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgiZGl2Iik7CiAgICAgICAgICBkaXYuY2xhc3NOYW1lID0gInNob3J0Y3V0IGN1c3RvbS1zaG9ydGN1dCI7CiAgICAgICAgICBkaXYuZGF0YXNldC51cmwgPSBzLnVybDsKICAgICAgICAgIGRpdi5pbm5lckhUTUwgPSBgCiAgICAgICAgICA8ZGl2IGNsYXNzPSJzaG9ydGN1dC1pY29uIj48aSBjbGFzcz0iZmEtc29saWQgZmEtbGluayI+PC9pPjwvZGl2PgogICAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWxhYmVsIj4ke3MubmFtZX08L3NwYW4+CiAgICAgICAgYDsKICAgICAgICAgIGFkZEJ0bi5iZWZvcmUoZGl2KTsKICAgICAgICB9KTsKICAgICAgfQoKICAgICAgLy8gUmVuZGVyIGJvb2ttYXJrcwogICAgICBmdW5jdGlvbiByZW5kZXJCb29rbWFya3MoKSB7CiAgICAgICAgY29uc3QgY29udGFpbmVyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJvb2ttYXJrcy1jb250YWluZXIiKTsKICAgICAgICBpZiAoIWNvbnRhaW5lcikgcmV0dXJuOwoKICAgICAgICBjb25zdCBib29rbWFya3MgPSBKU09OLnBhcnNlKGxvY2FsU3RvcmFnZS5nZXRJdGVtKCJzY3JhbWpldF9ib29rbWFya3MiKSB8fCAiW10iKTsKICAgICAgICBjb250YWluZXIuaW5uZXJIVE1MID0gIiI7CgogICAgICAgIGlmIChib29rbWFya3MubGVuZ3RoID09PSAwKSB7CiAgICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYm9va21hcmtzLXNlY3Rpb24iKS5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiOwogICAgICAgICAgcmV0dXJuOwogICAgICAgIH0KCiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJvb2ttYXJrcy1zZWN0aW9uIikuc3R5bGUuZGlzcGxheSA9ICJibG9jayI7CgogICAgICAgIGJvb2ttYXJrcy5mb3JFYWNoKChiKSA9PiB7CiAgICAgICAgICBjb25zdCBkaXYgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCJkaXYiKTsKICAgICAgICAgIGRpdi5jbGFzc05hbWUgPSAic2hvcnRjdXQgYm9va21hcmstc2hvcnRjdXQiOwogICAgICAgICAgZGl2LmRhdGFzZXQudXJsID0gYi51cmw7CiAgICAgICAgICBkaXYuaW5uZXJIVE1MID0gYAogICAgICAgICAgPGRpdiBjbGFzcz0ic2hvcnRjdXQtaWNvbiI+PGkgY2xhc3M9ImZhLXNvbGlkIGZhLXN0YXIiIHN0eWxlPSJjb2xvcjp2YXIoLS1hY2NlbnQpOyI+PC9pPjwvZGl2PgogICAgICAgICAgPHNwYW4gY2xhc3M9InNob3J0Y3V0LWxhYmVsIj4ke2IubmFtZX08L3NwYW4+CiAgICAgICAgYDsKICAgICAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChkaXYpOwogICAgICAgIH0pOwogICAgICB9CgogICAgICAvLyBRdW90ZQogICAgICBpZiAod2luZG93LlFVT1RFUz8ubGVuZ3RoKSB7CiAgICAgICAgJCgiI3F1b3RlIikudGV4dENvbnRlbnQgPSB3aW5kb3cuUVVPVEVTW01hdGguZmxvb3IoTWF0aC5yYW5kb20oKSAqIHdpbmRvdy5RVU9URVMubGVuZ3RoKV07CiAgICAgIH0KCiAgICAgIHJlbmRlckN1c3RvbSgpOwogICAgICByZW5kZXJCb29rbWFya3MoKTsKCiAgICAgIC8vIEhhbmRsZSBib29rbWFyayBjbGlja3MKICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImJvb2ttYXJrcy1jb250YWluZXIiKS5vbmNsaWNrID0gKGUpID0+IHsKICAgICAgICBjb25zdCBzaG9ydGN1dCA9IGUudGFyZ2V0LmNsb3Nlc3QoIi5zaG9ydGN1dFtkYXRhLXVybF0iKTsKICAgICAgICBpZiAoc2hvcnRjdXQpIHsKICAgICAgICAgIGUucHJldmVudERlZmF1bHQoKTsKICAgICAgICAgIG5hdihzaG9ydGN1dC5kYXRhc2V0LnVybCk7CiAgICAgICAgfQogICAgICB9OwogICAgPC9zY3JpcHQ+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==");
 
       const STORAGE_KEYS = {
         BOOKMARKS: "scramjet_bookmarks",
@@ -2909,8 +2747,7 @@
         AUTOPLAY_BLOCK: "scramjet_autoplay_block",
         SEARCH_REGION: "scramjet_search_region",
         CUSTOM_SEARCH_ENGINES: "scramjet_custom_engines",
-        TOR_ENABLED: "scramjet_tor_enabled",
-        ADBLOCK_ENABLED: "scramjet_adblock_enabled"
+        TOR_ENABLED: "scramjet_tor_enabled"
       };
 
       let isEmbedded = false;
@@ -3033,7 +2870,6 @@
             autoplayBlock = localStorage.getItem(STORAGE_KEYS.AUTOPLAY_BLOCK) === "true";
             searchRegion = localStorage.getItem(STORAGE_KEYS.SEARCH_REGION) || "";
             torEnabled = localStorage.getItem(STORAGE_KEYS.TOR_ENABLED) === "true";
-            adblockEnabled = localStorage.getItem(STORAGE_KEYS.ADBLOCK_ENABLED) !== "false";
           } catch (e) {
             console.error("Failed to load prefs:", e);
           }
@@ -3109,7 +2945,6 @@
           localStorage.setItem(STORAGE_KEYS.AUTOPLAY_BLOCK, String(autoplayBlock));
           localStorage.setItem(STORAGE_KEYS.SEARCH_REGION, searchRegion);
           localStorage.setItem(STORAGE_KEYS.TOR_ENABLED, String(torEnabled));
-          localStorage.setItem(STORAGE_KEYS.ADBLOCK_ENABLED, String(adblockEnabled));
         } catch (e) {}
       }
 
@@ -3267,7 +3102,6 @@
               <button id="zoom-out-btn" data-tooltip="Zoom out to see more of the page at a smaller size" style="width:30px;"><i class="fa-solid fa-minus"></i></button>
               <span id="nav-zoom-label" data-tooltip="Current zoom level; click to reset to 100%" style="margin-top:10px;font-size:11px;color:var(--text-muted);min-width:30px;text-align:center;font-family:var(--font-mono);">100%</span>
               <button id="zoom-in-btn" data-tooltip="Zoom in to see page content closer and larger" style="width:30px;"><i class="fa-solid fa-plus"></i></button>
-              <button id="adblock-btn" data-tooltip="Ad blocking is active. click to toggle"><i class="fa-solid fa-shield-halved"></i></button>
               <button id="wisp-settings-btn" data-tooltip="Open browser settings, proxy configuration, and preferences"><i class="fa-solid fa-gear"></i></button>
               <div class="main-menu-wrapper">
                 <button id="main-menu-btn" data-tooltip="Open the main browser menu with tabs, tools, and data options"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" width="18" height="18"><path d="M8 256a56 56 0 1 1 112 0A56 56 0 1 1 8 256zm160 0a56 56 0 1 1 112 0 56 56 0 1 1 -112 0zm216-56a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg></button>
@@ -3360,7 +3194,6 @@
           else tab.frame.reload();
         };
         document.getElementById("star-btn").onclick = toggleBookmark;
-        document.getElementById("adblock-btn").onclick = showAdblockPopup;
         document.getElementById("wisp-settings-btn").onclick = function () { navigateToYukiPage("settings"); };
         document.getElementById("zoom-out-btn").onclick = () => {
           zoomLevel = Math.max(0.3, parseFloat((zoomLevel - 0.1).toFixed(1)));
@@ -3480,33 +3313,6 @@
           updateMenuBadges();
         }
 
-        updateAdblockButton();
-
-        if (navigator.serviceWorker) {
-          navigator.serviceWorker.addEventListener("message", function (e) {
-            if (e.data && e.data.type === "adblock:ready") {
-              adblockEngineReady = true;
-              updateAdblockButton();
-            }
-            if (e.data && e.data.type === "adblock:stats") {
-              adblockBlockedCount = e.data.blockedCount || 0;
-              adblockPageCount = e.data.pageBlockedCount || 0;
-              adblockTotalRequests = e.data.totalRequests || 0;
-              adblockEngineReady = e.data.ready || adblockEngineReady;
-              updateAdblockButton();
-            }
-            if (e.data && e.data.type === "adblock:log") {
-              renderAdblockLogEntries(e.data.entries || []);
-            }
-          });
-          if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-              type: "adblock:init",
-              enabled: adblockEnabled
-            });
-          }
-        }
-
         const skipBtn = document.getElementById("skip-btn");
         if (skipBtn) {
           skipBtn.onclick = () => {
@@ -3609,12 +3415,24 @@
           const orig = f.go.bind(f);
           f.go = (url) => {
             t.loading = true;
+            if (url && url.includes("NT.html")) {
+              t.title = "Home";
+              t.url = "yuki://home";
+              t.favicon = null;
+              renderNewTab(f.element, url.indexOf("incognito") >= 0);
+              if (t.id === activeTabId) showIframeLoading(false);
+              updateTabsUI();
+              updateAddressBar();
+              updateLoadingBar(t, 100);
+              if (t.skipTimeout) clearTimeout(t.skipTimeout);
+              return;
+            }
             if (!url.includes("NT.html")) {
               t.url = url;
               try {
                 const urlObj = new URL(url);
                 t.title = urlObj.hostname;
-                t.favicon = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=32`;
+                t.favicon = getFaviconUrl(urlObj.hostname);
                 addToHistory(url, t.title);
               } catch {
                 t.title = url.split("/").pop() || url;
@@ -3622,12 +3440,6 @@
               }
             }
             if (t.id === activeTabId) showIframeLoading(true, t.url);
-            if (t.id === activeTabId && url && !url.includes("NT.html")) {
-              adblockPageCount = 0;
-              if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ type: "adblock:pagechange" });
-              }
-            }
             updateTabsUI();
             updateAddressBar();
             updateLoadingBar(t, 10);
@@ -3643,8 +3455,8 @@
         };
         wrapFrameGo(frame, tab);
 
-        if (isIncognito) frame.element.src = "NT.html?incognito=true";
-        else frame.element.src = "NT.html";
+        if (isIncognito) renderNewTab(frame.element, true);
+        else renderNewTab(frame.element, false);
 
         frame.element.addEventListener("load", () => {
           tab.loading = false;
@@ -3654,7 +3466,7 @@
           injectAudioDetector(frame.element);
           if (autoplayBlock) injectAutoplayBlocker(frame.element);
           if (darkModeEnabled) applyDarkModeToTab(tab);
-          applyZoomToTab(tab);
+          if (zoomLevel !== 1) applyZoomToTab(tab);
 
           try {
             const title = frame.element.contentWindow.document.title;
@@ -3662,9 +3474,8 @@
           } catch {}
 
           try {
-            if (frame.element.contentWindow.location.href.includes("NT.html")) {
+            if (tab.url === "yuki://home") {
               tab.title = "Home";
-              tab.url = "yuki://home";
               tab.favicon = null;
             }
           } catch {}
@@ -3774,102 +3585,144 @@
         }
       }
 
+      function getFaviconUrl(hostname) {
+        if (faviconCache.has(hostname)) return faviconCache.get(hostname);
+        const url = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+        faviconCache.set(hostname, url);
+        return url;
+      }
+
+      function renderNewTab(frameElement, incognito) {
+        frameElement.removeAttribute("src");
+        frameElement.srcdoc = incognito
+          ? "<!doctype html><script>window.ntIncognito = true;</scr" + "ipt>" + bundledNewTabHtml
+          : bundledNewTabHtml;
+      }
+
+      let dragSrcIdx = -1;
+
+      function tabSignature(tab) {
+        return [tab.isPinned, tab.loading, tab.favicon, tab.title, tab.isPlayingAudio, tab.isMuted].join("|");
+      }
+
+      function buildTabElement(tab, idx) {
+        const container = document.getElementById("tab-strip");
+        const el = document.createElement("div");
+        el.className = `tab ${tab.id === activeTabId ? "active" : ""}`;
+        el.draggable = true;
+        el.dataset.tooltip = tab.title;
+        el.dataset.tabId = tab.id;
+
+        let iconHtml = "";
+        if (tab.isPinned) {
+          iconHtml = tab.favicon ? `<img src="${tab.favicon}" class="tab-favicon" onerror="this.style.display='none'">` : `<i class="fa-solid fa-thumbtack" style="font-size:12px;opacity:0.6;"></i>`;
+        } else if (tab.loading) {
+          iconHtml = `<div class="tab-spinner"></div>`;
+        } else if (tab.favicon) {
+          iconHtml = `<img src="${tab.favicon}" class="tab-favicon" onerror="this.style.display='none'">`;
+        }
+
+        const audioIcon = tab.isPlayingAudio
+          ? `<span class="tab-audio-icon" data-tab-id="${tab.id}" data-action="toggle-mute" style="font-size:10px;margin-left:4px;cursor:pointer;">${tab.isMuted ? "🔇" : "🔊"}</span>`
+          : "";
+
+        var innerHtml = tab.isPinned ? iconHtml : (
+          iconHtml +
+          '<span class="tab-title">' + tab.title + '</span>' +
+          audioIcon +
+          '<span class="tab-close">&times;</span>'
+        );
+        el.innerHTML = innerHtml;
+
+        el.onclick = () => switchTab(tab.id);
+        if (!tab.isPinned) {
+          el.querySelector(".tab-close").onclick = (e) => {
+            e.stopPropagation();
+            if (!tab.isPinned) closeTab(tab.id);
+          };
+        }
+        var ai = el.querySelector(".tab-audio-icon");
+        if (ai) ai.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleTabMute(tab);
+        });
+        el.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          openTabContextMenu(tab, e);
+        });
+
+        el.addEventListener("dragstart", (e) => {
+          dragSrcIdx = idx;
+          e.dataTransfer.effectAllowed = "move";
+          el.classList.add("dragging");
+        });
+        el.addEventListener("dragend", () => {
+          el.classList.remove("dragging");
+          container.querySelectorAll(".tab").forEach((t) => t.classList.remove("drag-over"));
+        });
+        el.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          container.querySelectorAll(".tab").forEach((t) => t.classList.remove("drag-over"));
+          el.classList.add("drag-over");
+        });
+        el.addEventListener("dragleave", () => {
+          el.classList.remove("drag-over");
+        });
+        el.addEventListener("drop", (e) => {
+          e.preventDefault();
+          container.querySelectorAll(".tab").forEach((t) => t.classList.remove("drag-over"));
+          if (dragSrcIdx === -1 || dragSrcIdx === idx) return;
+          const [movedTab] = tabs.splice(dragSrcIdx, 1);
+          tabs.splice(idx, 0, movedTab);
+          if (activeTabId === movedTab.id) {
+            updateTabsUI();
+          } else {
+            const containerEls = container.querySelectorAll(".tab");
+            if (containerEls[dragSrcIdx]) containerEls[dragSrcIdx].classList.remove("dragging");
+            updateTabsUI();
+            switchTab(movedTab.id);
+          }
+          saveTabState();
+          dragSrcIdx = -1;
+        });
+
+        el.addEventListener("mousedown", (e) => {
+          if (e.button === 1) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeTab(tab.id);
+          }
+        });
+
+        el.__sig = tabSignature(tab);
+        return el;
+      }
+
       function updateTabsUI() {
         const container = document.getElementById("tab-strip");
-        container.innerHTML = "";
-        let dragSrcIdx = -1;
+        const els = new Map();
+        container.querySelectorAll(".tab").forEach((el) => els.set(Number(el.dataset.tabId), el));
 
         tabs.forEach((tab, idx) => {
-          const el = document.createElement("div");
-          el.className = `tab ${tab.id === activeTabId ? "active" : ""}`;
-          el.draggable = true;
-          el.dataset.tooltip = tab.title;
-          el.dataset.tabId = tab.id;
-
-          let iconHtml = "";
-          if (tab.isPinned) {
-            iconHtml = tab.favicon ? `<img src="${tab.favicon}" class="tab-favicon" onerror="this.style.display='none'">` : `<i class="fa-solid fa-thumbtack" style="font-size:12px;opacity:0.6;"></i>`;
-          } else if (tab.loading) {
-            iconHtml = `<div class="tab-spinner"></div>`;
-          } else if (tab.favicon) {
-            iconHtml = `<img src="${tab.favicon}" class="tab-favicon" onerror="this.style.display='none'">`;
+          let el = els.get(tab.id);
+          const ref = Array.from(container.children).filter((c) => !c.classList.contains("new-tab"))[idx];
+          if (!el) {
+            el = buildTabElement(tab, idx);
+            container.insertBefore(el, ref);
+          } else if (el.__sig !== tabSignature(tab) || ref !== el) {
+            const fresh = buildTabElement(tab, idx);
+            el.replaceWith(fresh);
+            if (ref !== el) container.insertBefore(fresh, ref);
+            el = fresh;
+          } else {
+            el.classList.toggle("active", tab.id === activeTabId);
+            el.dataset.tooltip = tab.title;
           }
-
-          const audioIcon = tab.isPlayingAudio
-            ? `<span class="tab-audio-icon" data-tab-id="${tab.id}" data-action="toggle-mute" style="font-size:10px;margin-left:4px;cursor:pointer;">${tab.isMuted ? "🔇" : "🔊"}</span>`
-            : "";
-
-          var innerHtml = tab.isPinned ? iconHtml : (
-            iconHtml +
-            '<span class="tab-title">' + tab.title + '</span>' +
-            audioIcon +
-            '<span class="tab-close">&times;</span>'
-          );
-          el.innerHTML = innerHtml;
-
-          el.onclick = () => switchTab(tab.id);
-          if (!tab.isPinned) {
-            el.querySelector(".tab-close").onclick = (e) => {
-              e.stopPropagation();
-              if (!tab.isPinned) closeTab(tab.id);
-            };
-          }
-          var ai = el.querySelector(".tab-audio-icon");
-          if (ai) ai.addEventListener("click", function (e) {
-            e.stopPropagation();
-            toggleTabMute(tab);
-          });
-          el.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-            openTabContextMenu(tab, e);
-          });
-
-          el.addEventListener("dragstart", (e) => {
-            dragSrcIdx = idx;
-            e.dataTransfer.effectAllowed = "move";
-            el.classList.add("dragging");
-          });
-          el.addEventListener("dragend", () => {
-            el.classList.remove("dragging");
-            container.querySelectorAll(".tab").forEach((t) => t.classList.remove("drag-over"));
-          });
-          el.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-            container.querySelectorAll(".tab").forEach((t) => t.classList.remove("drag-over"));
-            el.classList.add("drag-over");
-          });
-          el.addEventListener("dragleave", () => {
-            el.classList.remove("drag-over");
-          });
-          el.addEventListener("drop", (e) => {
-            e.preventDefault();
-            container.querySelectorAll(".tab").forEach((t) => t.classList.remove("drag-over"));
-            if (dragSrcIdx === -1 || dragSrcIdx === idx) return;
-            const [movedTab] = tabs.splice(dragSrcIdx, 1);
-            tabs.splice(idx, 0, movedTab);
-            if (activeTabId === movedTab.id) {
-              updateTabsUI();
-            } else {
-              const containerEls = container.querySelectorAll(".tab");
-              if (containerEls[dragSrcIdx]) containerEls[dragSrcIdx].classList.remove("dragging");
-              updateTabsUI();
-              switchTab(movedTab.id);
-            }
-            saveTabState();
-            dragSrcIdx = -1;
-          });
-
-          el.addEventListener("mousedown", (e) => {
-            if (e.button === 1) {
-              e.preventDefault();
-              e.stopPropagation();
-              closeTab(tab.id);
-            }
-          });
-
-          container.appendChild(el);
+          els.delete(tab.id);
         });
+
+        els.forEach((el) => el.remove());
 
         if (_newTabId !== null) {
           const newEl = container.querySelector(`.tab[data-tab-id="${_newTabId}"]`);
@@ -3880,11 +3733,14 @@
           _newTabId = null;
         }
 
-        const newBtn = document.createElement("button");
-        newBtn.className = "new-tab";
-        newBtn.dataset.tooltip = "Open a new blank tab";
-        newBtn.innerHTML = "<i class='fa-solid fa-plus'></i>";
-        newBtn.onclick = () => createTab(true);
+        let newBtn = container.querySelector("button.new-tab");
+        if (!newBtn) {
+          newBtn = document.createElement("button");
+          newBtn.className = "new-tab";
+          newBtn.dataset.tooltip = "Open a new blank tab";
+          newBtn.innerHTML = "<i class='fa-solid fa-plus'></i>";
+          newBtn.onclick = () => createTab(true);
+        }
         container.appendChild(newBtn);
       }
 
@@ -4065,212 +3921,6 @@
         renderDarkExclusions();
         const tab = getActiveTab();
         if (tab) applyDarkModeToTab(tab);
-      }
-
-      function toggleAdblock(enabled) {
-        adblockEnabled = enabled !== undefined ? enabled : !adblockEnabled;
-        localStorage.setItem(STORAGE_KEYS.ADBLOCK_ENABLED, String(adblockEnabled));
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: "adblock:toggle",
-            enabled: adblockEnabled
-          });
-        }
-        updateAdblockButton();
-      }
-
-      function formatBlockCount(n) {
-        if (n >= 1000000) return (n / 1000000).toFixed(3).replace(/\.?0+$/, "") + "M";
-        if (n >= 1000) return n.toLocaleString();
-        return String(n);
-      }
-
-      function requestAdblockStats() {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: "adblock:stats" });
-        }
-      }
-
-      function requestAdblockLog() {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: "adblock:log" });
-        }
-      }
-
-      function showAdblockPopup() {
-        var existing = document.getElementById("adblock-popup");
-        if (existing) { existing.remove(); return; }
-
-        requestAdblockStats();
-
-        var popup = document.createElement("div");
-        popup.id = "adblock-popup";
-        popup.className = "adblock-popup";
-        popup.innerHTML =
-          '<div class="adblock-popup-body">' +
-            '<button class="adblock-power-btn" id="adblock-power-btn" style="width:120px;height:120px;font-size:54px;background:none;border:3px solid rgba(34,197,94,0.3);cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--success);background:rgba(34,197,94,0.1);transition:all 0.2s;">' +
-              '<i class="fa-solid fa-power-off"></i>' +
-            '</button>' +
-            '<div class="adblock-page-row">' +
-              '<span class="adblock-page-label">Blocked on this page</span>' +
-              '<span class="adblock-page-num" id="adblock-page-count">0</span>' +
-            '</div>' +
-            '<div class="adblock-total-row">' +
-              '<span class="adblock-total-label">Blocked since install</span>' +
-              '<span class="adblock-total-num" id="adblock-total-count">0</span>' +
-              '<span class="adblock-total-pct" id="adblock-total-pct">(0%)</span>' +
-            '</div>' +
-            '<div class="adblock-popup-actions">' +
-              '<button class="adblock-action-btn" id="adblock-open-log"><i class="fa-solid fa-list"></i> Log</button>' +
-              '<button class="adblock-action-btn" id="adblock-open-settings"><i class="fa-solid fa-sliders"></i> Settings</button>' +
-            '</div>' +
-          '</div>' +
-          '<div class="adblock-popup-footer">' +
-            '<span class="adblock-footer-text">EasyList &amp; uAssets</span>' +
-          '</div>';
-
-        var btn = document.getElementById("adblock-btn");
-        btn.parentNode.appendChild(popup);
-
-        refreshPopupStats();
-
-        var powerEl = popup.querySelector("#adblock-power-btn");
-        powerEl.addEventListener("click", function () {
-          toggleAdblock(!adblockEnabled);
-          refreshPopupStats();
-        });
-        powerEl.addEventListener("mouseenter", function () {
-          if (!adblockEnabled) {
-            powerEl.style.background = "var(--surface-active)";
-            powerEl.style.borderColor = "var(--text-muted)";
-          } else {
-            powerEl.style.background = "rgba(34,197,94,0.18)";
-            powerEl.style.borderColor = "var(--success)";
-            powerEl.style.transform = "scale(1.06)";
-          }
-        });
-        powerEl.addEventListener("mouseleave", function () {
-          powerEl.style.transform = "";
-          if (!adblockEnabled) {
-            powerEl.style.background = "var(--surface-hover)";
-            powerEl.style.borderColor = "var(--border-light)";
-          } else {
-            powerEl.style.background = "rgba(34,197,94,0.1)";
-            powerEl.style.borderColor = "rgba(34,197,94,0.3)";
-          }
-        });
-
-        var logBtn = popup.querySelector("#adblock-open-log");
-        if (logBtn) {
-          logBtn.addEventListener("click", function () {
-            popup.remove();
-            navigateToYukiPage("blocking-log");
-          });
-        }
-
-        popup.querySelector("#adblock-open-settings").addEventListener("click", function () {
-          popup.remove();
-          openSettings();
-        });
-
-        setTimeout(function () {
-          popup.classList.add("open");
-        }, 10);
-
-        function closePopup(e) {
-          if (!popup.contains(e.target) && e.target.id !== "adblock-btn") {
-            popup.remove();
-            document.removeEventListener("mousedown", closePopup);
-          }
-        }
-        setTimeout(function () { document.addEventListener("mousedown", closePopup); }, 0);
-      }
-
-      function refreshPopupStats() {
-        var powerBtn = document.getElementById("adblock-power-btn");
-        if (powerBtn) {
-          if (!adblockEnabled) {
-            powerBtn.style.color = "var(--text-muted)";
-            powerBtn.style.background = "var(--surface-hover)";
-            powerBtn.style.borderColor = "var(--border-light)";
-          } else {
-            powerBtn.style.color = "var(--success)";
-            powerBtn.style.background = "rgba(34,197,94,0.1)";
-            powerBtn.style.borderColor = "rgba(34,197,94,0.3)";
-          }
-        }
-        var pageNum = document.getElementById("adblock-page-count");
-        if (pageNum) pageNum.textContent = formatBlockCount(adblockPageCount);
-        var totalNum = document.getElementById("adblock-total-count");
-        if (totalNum && adblockTotalRequests > 0) {
-          totalNum.textContent = formatBlockCount(adblockBlockedCount);
-        }
-        var totalPct = document.getElementById("adblock-total-pct");
-        if (totalPct && adblockTotalRequests > 0) {
-          var pct = ((adblockBlockedCount / adblockTotalRequests) * 100);
-          totalPct.textContent = "(" + pct.toFixed(1) + "%)";
-        }
-      }
-
-      function updateAdblockButton() {
-        var btn = document.getElementById("adblock-btn");
-        if (!btn) return;
-        if (adblockEnabled && adblockEngineReady) {
-          btn.classList.add("active");
-          btn.classList.remove("inactive");
-          btn.setAttribute("data-tooltip", "Ad blocking is active . Blocked: " + adblockBlockedCount);
-        } else if (!adblockEnabled) {
-          btn.classList.remove("active");
-          btn.classList.add("inactive");
-          btn.setAttribute("data-tooltip", "Ad blocking is off");
-        } else {
-          btn.classList.remove("active");
-          btn.classList.remove("inactive");
-          btn.setAttribute("data-tooltip", "Ad blocking is loading...");
-        }
-        refreshPopupStats();
-      }
-
-      function renderAdblockLogEntries(entries) {
-        var container = document.getElementById("adblock-log-entries");
-        if (!container) return;
-
-        var pageNum = document.getElementById("log-page-count");
-        if (pageNum) pageNum.textContent = adblockPageCount;
-        var totalNum = document.getElementById("log-total-count");
-        if (totalNum) totalNum.textContent = formatBlockCount(adblockBlockedCount);
-        var rateEl = document.getElementById("log-block-rate");
-        if (rateEl && adblockTotalRequests > 0) {
-          rateEl.textContent = ((adblockBlockedCount / adblockTotalRequests) * 100).toFixed(1) + "%";
-        }
-
-        if (!entries || entries.length === 0) {
-          container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">No blocked requests yet.</div>';
-          return;
-        }
-
-        var html = "";
-        var len = entries.length;
-        for (var i = len - 1; i >= 0; i--) {
-          var entry = entries[i];
-          var url = entry.url || "";
-          var time = entry.time || 0;
-          var displayUrl = url.length > 80 ? url.slice(0, 80) + "..." : url;
-          var domain = "";
-          try { domain = new URL(url).hostname; } catch (e) {}
-          var timeStr = "";
-          if (time) {
-            var d = new Date(time);
-            timeStr = d.toLocaleTimeString();
-          }
-          html +=
-            '<div class="adblock-log-entry">' +
-              '<div class="adblock-log-entry-domain">' + (domain || "unknown") + '</div>' +
-              '<div class="adblock-log-entry-url" title="' + url.replace(/"/g, "&quot;") + '">' + displayUrl + '</div>' +
-              '<div class="adblock-log-entry-time">' + timeStr + '</div>' +
-            '</div>';
-        }
-        container.innerHTML = html;
       }
 
       var _yukiActive = false;
@@ -4844,11 +4494,17 @@
       function renderYukiPage(page) {
         var cont = document.getElementById("yuki-page-container");
         if (!cont) return;
-        if (page === "home" || page === "NT.html") {
-          cont.innerHTML = '<iframe src="NT.html" style="width:100%;height:100%;border:none;"></iframe>';
+        if (page === "dino") {
+          cont.innerHTML = yukiDinoGameHtml
+            ? '<div class="dino-page"><iframe class="dino-srcdoc" srcdoc="' + escapeAttr(yukiDinoGameHtml) + '" title="T-Rex Runner"></iframe></div>'
+            : '<div class="dino-page"><iframe class="dino-srcdoc" src="https://wayou.github.io/t-rex-runner/" title="T-Rex Runner"></iframe></div>';
           return;
         }
-        var iconMap = { settings: "fa-sliders", history: "fa-clock-rotate-left", bookmarks: "fa-star", downloads: "fa-download", "blocking-log": "fa-list" };
+        if (page === "home" || page === "NT.html") {
+          cont.innerHTML = '<iframe srcdoc="' + escapeAttr(bundledNewTabHtml) + '" style="width:100%;height:100%;border:none;"></iframe>';
+          return;
+        }
+        var iconMap = { settings: "fa-sliders", history: "fa-clock-rotate-left", bookmarks: "fa-star", downloads: "fa-download" };
         var icon = iconMap[page] || "fa-file";
         var title = page.charAt(0).toUpperCase() + page.slice(1).replace(/-/g, " ");
         var bodyHtml = getYukiBodyHTML(page);
@@ -4867,7 +4523,6 @@
         if (page === "bookmarks") return renderYukiBookmarks();
         if (page === "history") return renderYukiHistory();
         if (page === "downloads") return renderYukiDownloads();
-        if (page === "blocking-log") return renderYukiBlockingLog();
         return '<div class="yuki-page-empty">Page not found</div>';
       }
 
@@ -4954,10 +4609,6 @@
 
           '<div class="yuki-settings-section" data-section="privacy">' +
             '<div class="settings-section-title"><i class="fa-solid fa-shield"></i> Privacy</div>' +
-            '<div class="settings-field-row">' +
-              '<span class="settings-field-label">Ad & Tracker Blocking <span style="font-size:10px;color:var(--text-dim);font-weight:400;margin-left:4px;">(blocks ads, analytics, tracking)</span></span>' +
-              '<label class="toggle-switch"><input type="checkbox" id="yuki-set-adblock" ' + (adblockEnabled ? "checked" : "") + ' /><span class="toggle-slider"></span></label>' +
-            '</div>' +
             '<div class="settings-field-row">' +
               '<span class="settings-field-label">Clear Data on Exit</span>' +
               '<label class="toggle-switch"><input type="checkbox" id="yuki-set-clear-on-exit" ' + (clearOnExit ? "checked" : "") + ' /><span class="toggle-slider"></span></label>' +
@@ -5065,7 +4716,7 @@
             var domain = "";
             try { domain = new URL(h.url).hostname; } catch (e) { domain = h.url; }
             html += '<div class="history-entry" data-url="' + h.url.replace(/"/g, "&quot;") + '" data-tooltip="' + (h.title || h.url) + '">' +
-              '<img class="he-favicon" src="https://www.google.com/s2/favicons?domain=' + domain + '&sz=32" onerror="this.style.display=\'none\'" />' +
+              '<img class="he-favicon" src="' + getFaviconUrl(domain) + '" onerror="this.style.display=\'none\'" />' +
               '<div class="he-body"><div class="he-title">' + (h.title || h.url) + '</div><div class="he-meta">' + domain + " • " + h.url + '</div></div>' +
               '<span class="he-time">' + timeStr + '</span>' +
             '</div>';
@@ -5087,23 +4738,9 @@
         }).join("");
       }
 
-      function renderYukiBlockingLog() {
-        return '<div class="adblock-log-container" style="padding:0;">' +
-          '<div class="adblock-log-stats">' +
-            '<div class="adblock-log-stat"><span class="adblock-log-stat-num" id="log-page-count">' + adblockPageCount + '</span><span class="adblock-log-stat-label">this page</span></div>' +
-            '<div class="adblock-log-stat"><span class="adblock-log-stat-num" id="log-total-count">' + formatBlockCount(adblockBlockedCount) + '</span><span class="adblock-log-stat-label">total blocked</span></div>' +
-            '<div class="adblock-log-stat"><span class="adblock-log-stat-num" id="log-block-rate">' + (adblockTotalRequests > 0 ? ((adblockBlockedCount / adblockTotalRequests) * 100).toFixed(1) + "%" : "0%") + '</span><span class="adblock-log-stat-label">block rate</span></div>' +
-          '</div>' +
-          '<div class="adblock-log-entries" id="adblock-log-entries">' +
-            '<div style="padding:20px;text-align:center;color:var(--text-dim);font-size:13px;">Loading blocked requests...</div>' +
-          '</div>' +
-        '</div>';
-      }
-
       function attachYukiHandlers(page) {
         if (page === "settings") initYukiSettings();
         else if (page === "bookmarks" || page === "history") initYukiListPage(page);
-        else if (page === "blocking-log") initYukiBlockingLog();
       }
 
       function initYukiListPage(page) {
@@ -5189,10 +4826,6 @@
         document.getElementById("yuki-set-autoplay-block")?.addEventListener("change", function () {
           autoplayBlock = this.checked;
           savePrefs();
-        });
-
-        document.getElementById("yuki-set-adblock")?.addEventListener("change", function () {
-          toggleAdblock(this.checked);
         });
         document.getElementById("yuki-set-clear-on-exit")?.addEventListener("change", function () {
           clearOnExit = this.checked;
@@ -5367,14 +5000,6 @@
         if (tab) applyDarkModeToTab(tab);
       };
 
-      function initYukiBlockingLog() {
-        refreshBlockingLog();
-        var interval = setInterval(function () {
-          if (!document.getElementById("adblock-log-entries")) { clearInterval(interval); return; }
-          refreshBlockingLog();
-        }, 2000);
-      }
-
       function yukiNavigateAway(url) {
         if (!url || url.startsWith("yuki://")) {
           if (url) navigateToYukiPage(url.replace("yuki://", ""));
@@ -5382,16 +5007,6 @@
         }
         closeYukiPage();
         setTimeout(function () { handleSubmit(url); }, 0);
-      }
-
-      function refreshBlockingLog() {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: "adblock:log" });
-        }
-      }
-
-      function openAdblockLog() {
-        navigateToYukiPage("blocking-log");
       }
 
       function openSettings() {
@@ -5504,13 +5119,6 @@
 
             <div class="settings-section">
               <div class="settings-section-title"><i class="fa-solid fa-shield"></i> Privacy</div>
-              <div class="settings-field-row">
-                <span class="settings-field-label">Ad & Tracker Blocking <span style="font-size:10px;color:var(--text-dim);font-weight:400;margin-left:4px;">(blocks ads, analytics, tracking)</span></span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="set-adblock-enabled" ${adblockEnabled ? "checked" : ""} />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
               <div class="settings-field-row">
                 <span class="settings-field-label">Clear Data on Exit</span>
                 <label class="toggle-switch">
@@ -5660,9 +5268,6 @@
           document.getElementById("set-autoplay-block")?.addEventListener("change", function () {
             autoplayBlock = this.checked;
             savePrefs();
-          });
-          document.getElementById("set-adblock-enabled")?.addEventListener("change", function () {
-            toggleAdblock(this.checked);
           });
           document.getElementById("set-clear-on-exit")?.addEventListener("change", function () {
             clearOnExit = this.checked;
@@ -5972,12 +5577,11 @@
 
       function applyZoomToTab(tab) {
         if (!tab || !tab.frame.element) return;
-        const transform = `scale(${zoomLevel})`;
-        tab.frame.element.style.transform = transform;
-        tab.frame.element.style.transformOrigin = "top left";
-        const inverseScale = 1 / zoomLevel;
-        tab.frame.element.style.width = `${100 * inverseScale}%`;
-        tab.frame.element.style.height = `${100 * inverseScale}%`;
+        if (zoomLevel === 1) {
+          tab.frame.element.style.zoom = "";
+          return;
+        }
+        tab.frame.element.style.zoom = String(zoomLevel);
       }
 
       function injectAutoplayBlocker(iframe) {
@@ -6089,6 +5693,20 @@
         updateTabsUI();
       }
 
+      let pdfjsLibLoader = null;
+      function loadPdfJs() {
+        if (!pdfjsLibLoader) {
+          pdfjsLibLoader = new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+            s.onload = () => resolve(window.pdfjsLib);
+            s.onerror = () => reject(new Error("Failed to load pdf.js"));
+            document.head.appendChild(s);
+          });
+        }
+        return pdfjsLibLoader;
+      }
+
       function openPdfViewer(url) {
         var overlay = document.getElementById("pdf-viewer");
         var body = document.getElementById("pdf-body");
@@ -6097,40 +5715,44 @@
         body.innerHTML = '<div class="pdf-loading">Loading PDF…</div>';
         document.getElementById("pdf-title").textContent = url.split("/").pop() || "PDF Document";
         document.getElementById("pdf-page-info").textContent = "-";
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-        
-        var fetchPromise;
-        if (window.__scramjetTransport) {
-          fetchPromise = (async () => {
-            const res = await window.__scramjetTransport.request(url, "GET", null, {}, null);
-            const headers = new Headers();
-            if (Array.isArray(res.headers)) {
-              res.headers.forEach(([k, v]) => headers.append(k, v));
-            }
-            const body = res.body instanceof ArrayBuffer ? res.body : new Uint8Array(res.body);
-            return new Response(body, { status: res.status, statusText: res.statusText, headers });
-          })();
-        } else {
-          fetchPromise = fetch(url);
-        }
-        
-        fetchPromise.then(function (r) { return r.arrayBuffer(); }).then(function (buffer) {
-          return pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
-        }).then(function (doc) {
-          body.innerHTML = "";
-          var info = document.createElement("div");
-          info.className = "pdf-loading";
-          info.textContent = "PDF - " + doc.numPages + " page(s)";
-          body.appendChild(info);
-          var scale = 1.2;
-          var seq = Promise.resolve();
-          for (var num = 1; num <= doc.numPages; num++) {
-            seq = seq.then((function (n) {
-              return function () { return renderPdfPage(doc, body, n, scale); };
-            })(num));
+        loadPdfJs().then(function () {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+          var fetchPromise;
+          if (window.__scramjetTransport) {
+            fetchPromise = (async () => {
+              const res = await window.__scramjetTransport.request(url, "GET", null, {}, null);
+              const headers = new Headers();
+              if (Array.isArray(res.headers)) {
+                res.headers.forEach(([k, v]) => headers.append(k, v));
+              }
+              const body = res.body instanceof ArrayBuffer ? res.body : new Uint8Array(res.body);
+              return new Response(body, { status: res.status, statusText: res.statusText, headers });
+            })();
+          } else {
+            fetchPromise = fetch(url);
           }
-          return seq.then(function () {
-            document.getElementById("pdf-page-info").textContent = doc.numPages + " page(s)";
+
+          fetchPromise.then(function (r) { return r.arrayBuffer(); }).then(function (buffer) {
+            return pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+          }).then(function (doc) {
+            body.innerHTML = "";
+            var info = document.createElement("div");
+            info.className = "pdf-loading";
+            info.textContent = "PDF - " + doc.numPages + " page(s)";
+            body.appendChild(info);
+            var scale = 1.2;
+            var seq = Promise.resolve();
+            for (var num = 1; num <= doc.numPages; num++) {
+              seq = seq.then((function (n) {
+                return function () { return renderPdfPage(doc, body, n, scale); };
+              })(num));
+            }
+            return seq.then(function () {
+              document.getElementById("pdf-page-info").textContent = doc.numPages + " page(s)";
+            });
+          }).catch(function () {
+            body.innerHTML = '<div class="pdf-loading" style="color:var(--error);">Failed to load PDF.</div>';
           });
         }).catch(function () {
           body.innerHTML = '<div class="pdf-loading" style="color:var(--error);">Failed to load PDF.</div>';
@@ -6180,7 +5802,8 @@
       function applyDarkModeToTab(tab) {
         if (!tab || !tab.frame.element || !tab.frame.element.contentDocument) return;
         const styleId = "scramjet-darkmode-style";
-        let styleEl = tab.frame.element.contentDocument.getElementById(styleId);
+        const doc = tab.frame.element.contentDocument;
+        let styleEl = doc.getElementById(styleId);
 
         if (!darkModeEnabled) {
           if (styleEl) styleEl.remove();
@@ -6198,19 +5821,18 @@
         }
 
         if (!styleEl) {
-          styleEl = tab.frame.element.contentDocument.createElement("style");
+          styleEl = doc.createElement("style");
           styleEl.id = styleId;
-          tab.frame.element.contentDocument.head.appendChild(styleEl);
+          styleEl.textContent = `
+            html {
+              filter: invert(90%) hue-rotate(180deg);
+            }
+            html img, html video, html canvas, html svg {
+              filter: invert(100%) hue-rotate(180deg);
+            }
+          `;
+          doc.head.appendChild(styleEl);
         }
-
-        styleEl.textContent = `
-          html {
-            filter: invert(90%) hue-rotate(180deg);
-          }
-          html img, html video, html canvas, html svg {
-            filter: invert(100%) hue-rotate(180deg);
-          }
-        `;
       }
 
       function toggleDarkMode() {
@@ -6257,7 +5879,7 @@
           item.dataset.tooltip = bm.name;
           const hostname = bm.url ? new URL(bm.url).hostname : "";
           item.innerHTML = `
-            <img class="bm-favicon" src="https://www.google.com/s2/favicons?domain=${hostname}&sz=32" onerror="this.style.display='none'" />
+            <img class="bm-favicon" src="${getFaviconUrl(hostname)}" onerror="this.style.display='none'" />
             <span>${bm.name}</span>
             <button class="bm-remove" data-idx="${idx}">✕</button>
           `;
@@ -6445,7 +6067,7 @@
                 }
                 html += `
                 <div class="history-entry" data-url="${h.url.replace(/"/g, "&quot;")}" data-tooltip="${h.title || h.url}">
-                  <img class="he-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" onerror="this.style.display='none'" />
+                  <img class="he-favicon" src="${getFaviconUrl(domain)}" onerror="this.style.display='none'" />
                   <div class="he-body">
                     <div class="he-title">${h.title || h.url}</div>
                     <div class="he-meta"><span class="he-domain">${domain}</span> • ${h.url}</div>
@@ -6795,30 +6417,46 @@
         toClose.forEach((t) => closeTab(t.id));
       }
 
+      let html2canvasLoader = null;
+      function loadHtml2canvas() {
+        if (!html2canvasLoader) {
+          html2canvasLoader = new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+            s.onload = () => resolve(window.html2canvas);
+            s.onerror = () => reject(new Error("Failed to load html2canvas"));
+            document.head.appendChild(s);
+          });
+        }
+        return html2canvasLoader;
+      }
+
       function takeScreenshot() {
-        const panel = document.getElementById("in-content-panel");
-        if (panel) {
-          html2canvas(panel, { backgroundColor: null }).then((canvas) => {
+        loadHtml2canvas().then(() => {
+          const panel = document.getElementById("in-content-panel");
+          if (panel) {
+            html2canvas(panel, { backgroundColor: null }).then((canvas) => {
+              canvas.toBlob((blob) => {
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = (_currentPanelType || "panel") + ".png";
+                a.click();
+                URL.revokeObjectURL(a.href);
+              });
+            });
+            return;
+          }
+          const tab = getActiveTab();
+          if (!tab || !tab.frame || !tab.frame.element) return;
+          const iframe = tab.frame.element;
+          html2canvas(iframe, { useCORS: true, allowTaint: true, backgroundColor: null }).then((canvas) => {
             canvas.toBlob((blob) => {
               const a = document.createElement("a");
               a.href = URL.createObjectURL(blob);
-              a.download = (_currentPanelType || "panel") + ".png";
+              a.download = (tab.title || "screenshot").replace(/[^a-z0-9]/gi, "_") + ".png";
               a.click();
               URL.revokeObjectURL(a.href);
             });
-          });
-          return;
-        }
-        const tab = getActiveTab();
-        if (!tab || !tab.frame || !tab.frame.element) return;
-        const iframe = tab.frame.element;
-        html2canvas(iframe, { useCORS: true, allowTaint: true, backgroundColor: null }).then((canvas) => {
-          canvas.toBlob((blob) => {
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = (tab.title || "screenshot").replace(/[^a-z0-9]/gi, "_") + ".png";
-            a.click();
-            URL.revokeObjectURL(a.href);
           });
         });
       }

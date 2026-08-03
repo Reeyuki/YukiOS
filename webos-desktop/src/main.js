@@ -144,7 +144,7 @@ async function start() {
   const faScript = $('script[src*="font-awesome"], script[src*="fontawesome"]');
   if (!faScript) {
     const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/js/all.min.js";
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js";
     s.defer = true;
     s.crossOrigin = "anonymous";
     document.head.appendChild(s);
