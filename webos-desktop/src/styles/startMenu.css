@@ -851,9 +851,9 @@
 
 .letter-separator {
   flex: 1;
-  color: color-mix(in srgb, var(--brand) 40%, transparent);
-  font-size: 12px;
-  overflow: hidden;
+  height: 1px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--brand) 40%, transparent), transparent);
+  border-radius: var(--r-xs);
 }
 
 .recent-page {

@@ -82,6 +82,7 @@ var $scramjetController;
         if (e.data.$sw$initRemoteTransport && "object" == typeof e.data.$sw$initRemoteTransport) {
           let { port: t, prefix: r } = e.data.$sw$initRemoteTransport,
             o = i.find((e) => new URL(r).pathname.startsWith(e.prefix));
+          console.log("[scramjet-debug] SW initRemoteTransport message, prefix:", r, "controllerFound:", !!o);
           if (!o) return void console.error("No relevant controller found for transport init");
           o.rpc.call("initRemoteTransport", t, [t]);
         }
@@ -161,8 +162,9 @@ var $scramjetController;
     async function a(e) {
       try {
         let t = new URL(e.request.url),
-          r = i.find((e) => t.pathname.startsWith(e.prefix)),
-          o = await clients.get(e.clientId),
+          r = i.find((e) => t.pathname.startsWith(e.prefix));
+        console.log("[scramjet-debug] SW fetch handler", e.request.url, "controllerFound:", !!r);
+        let o = await clients.get(e.clientId),
           s = [...e.request.headers],
           n = await r.rpc.call(
             "request",

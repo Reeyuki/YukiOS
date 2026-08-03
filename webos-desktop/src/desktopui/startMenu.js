@@ -1659,7 +1659,7 @@ export function initializeAppGrid() {
   refreshIcons(grid);
 }
 
-const LETTER_SEPARATOR = "—".repeat(20);
+const LETTER_SEPARATOR = "";
 
 function populateCategoryPage(category) {
   const page = $(`.start-page[data-page="${category}"]`);

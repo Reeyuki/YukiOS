@@ -1368,7 +1368,7 @@ export const APP_MANIFESTS = [
     enhanced: true,
     type: "system",
     title: "Cmatrix",
-    icon: "fa-solid fa-code",
+    icon: "fa-solid fa-binary",
     launchType: "instance",
     windowIdPatterns: ["cmatrix"],
     category: "games",

@@ -52,13 +52,13 @@ export function applyTheme(theme, getCustomColors) {
     const themeColors = getThemeColors(effective);
     if (themeColors) {
       Object.entries(themeColors).forEach(([varName, value]) => {
-        customCSS += `:root { --${varName}: ${value}; }\n`;
+        customCSS += `:root[data-theme], :root[n] { --${varName}: ${value}; }\n`;
       });
     } else {
       const customColors = getCustomColors();
       if (customColors) {
         Object.entries(customColors).forEach(([varName, value]) => {
-          customCSS += `:root { --${varName}: ${value}; }\n`;
+          customCSS += `:root[data-theme], :root[n] { --${varName}: ${value}; }\n`;
         });
       }
     }

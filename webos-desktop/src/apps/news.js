@@ -9,6 +9,11 @@ const EXISTING_NEWS_UPDATES = [
     date: "August 3, 2026",
     sections: [
       {
+        icon: "fa-palette",
+        title: "Themes",
+        items: [["fa-cat", "Catppuccin Mocha Default", "The default dark theme now uses the Catppuccin Mocha palette."]]
+      },
+      {
         icon: "fa-heart",
         title: "Yuri Mode",
         items: [

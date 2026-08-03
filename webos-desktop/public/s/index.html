@@ -3455,6 +3455,7 @@
           if (saved.length > 0) {
             saved.forEach((s, i) => {
               const tab = createTab(i === 0);
+              if (!tab) return true;
               if (s.url && s.url !== "NT.html" && !s.url.startsWith("yuki://")) {
                 if (isLocalNavigation(s.url)) loadLocalPage(s.url);
                 else tab.frame.go(s.url);
@@ -3475,6 +3476,88 @@
         saveHistory();
       }
 
+      function sanitizeWispUrl(url) {
+        if (typeof url === "string") {
+          try {
+            const parsed = new URL(url);
+            if (parsed.protocol === "ws:" || parsed.protocol === "wss:") return url;
+          } catch (error) {}
+        }
+        return DEFAULT_WISP;
+      }
+
+      function probeTransportConnection(rawTransport, timeoutMs) {
+        const probe = new Promise((resolve) => {
+          try {
+            rawTransport
+              .request(new URL("https://example.com/"), "GET", null, [], new AbortController().signal)
+              .then(() => resolve({ ok: true }))
+              .catch((error) => resolve({ ok: false, error: String((error && error.message) || error) }));
+          } catch (error) {
+            resolve({ ok: false, error: String((error && error.message) || error) });
+          }
+        });
+        const deadline = new Promise((resolve) => setTimeout(() => resolve({ ok: false, error: "timed out" }), timeoutMs));
+        return Promise.race([probe, deadline]);
+      }
+
+      let lastProxyErrors = [];
+
+      const DEBUG = true;
+      function debugLog(...args) {
+        if (DEBUG) console.log("[scramjet-debug]", ...args);
+      }
+
+      async function establishTransport(TransportClass, preferredWisp) {
+        const candidates = [];
+        const pushCandidate = (url) => {
+          const clean = sanitizeWispUrl(url);
+          if (clean && candidates.indexOf(clean) === -1) candidates.push(clean);
+        };
+        pushCandidate(preferredWisp);
+        pushCandidate(DEFAULT_WISP);
+        WISP_SERVERS.forEach((server) => pushCandidate(server.url));
+        debugLog("establishTransport candidates:", candidates);
+        const failures = [];
+        for (const wispUrl of candidates) {
+          try {
+            debugLog("establishTransport trying", wispUrl);
+            const rawTransport = new TransportClass({ wisp: wispUrl });
+            await rawTransport.init();
+            debugLog("establishTransport init() ok for", wispUrl);
+            const probeResult = await probeTransportConnection(rawTransport, 10000);
+            debugLog("establishTransport probe", wispUrl, "=>", probeResult);
+            if (probeResult.ok) {
+              debugLog("establishTransport SUCCESS with", wispUrl);
+              return { rawTransport, wispUrl };
+            }
+            failures.push(wispUrl + " -> " + (probeResult.error || "unreachable"));
+          } catch (error) {
+            failures.push(wispUrl + " -> " + String((error && error.message) || error));
+            debugLog("establishTransport error for", wispUrl, String((error && error.message) || error));
+          }
+        }
+        lastProxyErrors = failures;
+        debugLog("establishTransport ALL FAILED:", failures);
+        return null;
+      }
+
+      function showProxyConnectionError() {
+        const errorEl = document.getElementById("error");
+        if (errorEl) errorEl.style.display = "flex";
+        const errorMsg = document.getElementById("error-message");
+        if (errorMsg) {
+          let detail =
+            "Could not connect to any proxy server. Check your network connection or try a different proxy server in settings.";
+          if (lastProxyErrors.length) {
+            detail += "\n" + lastProxyErrors.join("\n");
+          }
+          errorMsg.textContent = detail;
+        }
+        const loadingEl = document.getElementById("loading");
+        if (loadingEl) loadingEl.style.display = "none";
+      }
+
       document.addEventListener("DOMContentLoaded", async function () {
         let basePath = location.pathname.replace(/[^/]*$/, "");
         if (!basePath.endsWith("/")) basePath += "/";
@@ -3484,7 +3567,6 @@
           await navigator.serviceWorker.ready;
           const sw = reg.active || navigator.serviceWorker.controller;
 
-          const wispUrl = hostWispUrl || localStorage.getItem("proxServer") || DEFAULT_WISP;
           const transportType = hostTransport || localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT;
 
           let TransportClass;
@@ -3495,48 +3577,70 @@
           }
 
           if (TransportClass) {
-            const rawTransport = new TransportClass({ wisp: wispUrl });
-            const transport = {
-              get ready() { return rawTransport.ready; },
-              async init() { return rawTransport.init(); },
-              async request(remote, method, body, headers, signal) {
-                const headersArr = Array.isArray(headers)
-                  ? headers
-                  : headers && typeof headers === "object"
-                    ? Object.entries(headers)
-                    : [];
-                const res = await rawTransport.request(remote, method, body, headersArr, signal);
-                const headersOut = Array.isArray(res.headers)
-                  ? res.headers
-                  : res.headers && typeof res.headers === "object"
-                    ? Object.entries(res.headers)
-                    : [];
-                return { ...res, headers: headersOut };
-              },
-              connect(url, protocols, requestHeaders, onopen, onmessage, onclose, onerror) {
-                const headersArr = Array.isArray(requestHeaders)
-                  ? requestHeaders
-                  : requestHeaders && typeof requestHeaders === "object"
-                    ? Object.entries(requestHeaders)
-                    : [];
-                return rawTransport.connect(url, protocols, headersArr, onopen, onmessage, onclose, onerror);
+            const requestedWisp = sanitizeWispUrl(hostWispUrl || localStorage.getItem("proxServer") || DEFAULT_WISP);
+            const established = await establishTransport(TransportClass, requestedWisp);
+            if (established) {
+              const { rawTransport, wispUrl } = established;
+              if (wispUrl !== requestedWisp) {
+                localStorage.setItem("proxServer", wispUrl);
               }
-            };
-            window.__scramjetTransport = transport;
+              const transport = {
+                get ready() { return rawTransport.ready; },
+                async init() { return rawTransport.init(); },
+                async request(remote, method, body, headers, signal) {
+                  const headersArr = Array.isArray(headers)
+                    ? headers
+                    : headers && typeof headers === "object"
+                      ? Object.entries(headers)
+                      : [];
+                  const res = await rawTransport.request(remote, method, body, headersArr, signal);
+                  const headersOut = Array.isArray(res.headers)
+                    ? res.headers
+                    : res.headers && typeof res.headers === "object"
+                      ? Object.entries(res.headers)
+                      : [];
+                  return { ...res, headers: headersOut };
+                },
+                connect(url, protocols, requestHeaders, onopen, onmessage, onclose, onerror) {
+                  const headersArr = Array.isArray(requestHeaders)
+                    ? requestHeaders
+                    : requestHeaders && typeof requestHeaders === "object"
+                      ? Object.entries(requestHeaders)
+                      : [];
+                  return rawTransport.connect(url, protocols, headersArr, onopen, onmessage, onclose, onerror);
+                }
+              };
+              window.__scramjetTransport = transport;
+              debugLog("transport wrapper set on window.__scramjetTransport");
 
-            const { Controller } = $scramjetController;
-            scramjet = new Controller({
-              config: {
-                prefix: basePath + "scramjet/",
-                wasmPath: basePath + "scramjet.wasm",
-                scramjetPath: basePath + "scramjet.js",
-                injectPath: basePath + "controller.inject.js"
-              },
-              transport,
-              serviceworker: sw
-            });
+              const { Controller } = $scramjetController;
+              scramjet = new Controller({
+                config: {
+                  prefix: basePath + "scramjet/",
+                  wasmPath: basePath + "scramjet.wasm",
+                  scramjetPath: basePath + "scramjet.js",
+                  injectPath: basePath + "controller.inject.js"
+                },
+                transport,
+                serviceworker: sw
+              });
+              debugLog("Controller created, awaiting wait()...");
 
-            await scramjet.wait();
+              let waitOutcome = "resolved";
+              await Promise.race([
+                scramjet.wait(),
+                new Promise((resolve) =>
+                  setTimeout(() => {
+                    scramjet = null;
+                    waitOutcome = "timeout";
+                    resolve();
+                  }, 15000)
+                )
+              ]);
+              debugLog("scramjet.wait() outcome:", waitOutcome, "scramjet.ready:", scramjet ? scramjet.ready : "null");
+            } else {
+              scramjet = null;
+            }
           }
         }
 
@@ -3555,6 +3659,7 @@
 
       async function initializeBrowser() {
         loadPrefs();
+        debugLog("initializeBrowser start, scramjet present:", !!scramjet, "isEmbedded:", isEmbedded);
 
         if (torEnabled && isEmbedded) {
           sendToParent({ type: "scram:setTorMode", active: true });
@@ -3684,6 +3789,12 @@
           <div id="tooltip"></div>
         </div>
         </div>`;
+
+        if (!scramjet) {
+          showProxyConnectionError();
+          return;
+        }
+        debugLog("initializeBrowser scramjet OK, binding UI");
 
         document.getElementById("back-btn").onclick = () => {
           if (_yukiActive) { closeYukiPage(); return; }
@@ -3884,6 +3995,7 @@
 
         buildPaletteOverlay();
         applyTabLayout();
+        debugLog("initializeBrowser creating initial tab, restoreTabs:", restoreTabs);
 
         if (restoreTabs && restoreTabState()) {
         } else {
@@ -3895,7 +4007,13 @@
       }
 
       function createTab(makeActive = true, opts = {}) {
+        if (!scramjet) {
+          showProxyConnectionError();
+          return null;
+        }
+        debugLog("createTab", { makeActive, opts });
         const frame = scramjet.createFrame();
+        debugLog("createFrame ok, src:", frame.element.getAttribute("src"));
         const requiredPerms = [
           "allow-scripts",
           "allow-same-origin",
@@ -3930,6 +4048,7 @@
         const wrapFrameGo = (f, t) => {
           const orig = f.go.bind(f);
           f.go = (url) => {
+            debugLog("frame.go called:", url);
             t.loading = true;
             if (url && url.includes("NT.html")) {
               t.title = "Home";
@@ -3971,6 +4090,7 @@
                 if (skipBtn) skipBtn.classList.add("show");
               }
             }, 1000);
+            f.element.removeAttribute("srcdoc");
             orig(url);
           };
         };
@@ -3993,6 +4113,7 @@
         }
 
         frame.element.addEventListener("load", () => {
+          debugLog("frame load fired:", tab.url);
           tab.loading = false;
           if (tab.skipTimeout) clearTimeout(tab.skipTimeout);
           if (tab.id === activeTabId) showIframeLoading(false);
@@ -4088,6 +4209,7 @@
       }
 
       function showIframeLoading(show, url = "") {
+        debugLog("showIframeLoading", show, url);
         const loader = document.getElementById("loading");
         const title = document.getElementById("loading-title");
         const urlText = document.getElementById("loading-url");
@@ -4195,6 +4317,7 @@
       }
 
       function renderNewTab(frameElement, incognito) {
+        debugLog("renderNewTab, incognito:", incognito);
         frameElement.removeAttribute("src");
         frameElement.srcdoc = incognito
           ? "<!doctype html><script>window.ntIncognito = true;</scr" + "ipt>" + bundledNewTabHtml
@@ -4728,6 +4851,7 @@
         closeInContentPanel();
         const tab = getActiveTab();
         let input = url || document.getElementById("address-bar").value.trim();
+        debugLog("handleSubmit input:", input);
         if (!input) return;
         input = normalizeLocalInput(input);
         if (isLocalNavigation(input)) {
