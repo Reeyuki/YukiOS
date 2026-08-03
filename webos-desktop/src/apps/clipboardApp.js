@@ -5,7 +5,6 @@ import { getTrayPosition } from "../tray/tray.js";
 class ClipboardManagerApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.openWindows = new Set();
     this.clipboardManager = os.clipboardManager;
     this.winId = "clipboard-manager-window";
     this.popupId = "clipboard-tray-popup";
@@ -419,7 +418,7 @@ class ClipboardManagerApp extends BaseApp {
 
   onClose(winId) {
     this.closePopup();
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
     if (!this.enabled) {
       this.unregisterTray(winId);
     }

@@ -3,6 +3,15 @@ import { CDN_BASES } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { BusEvents, BaseApp, os } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
+import {
+  normalizePath,
+  fileNameToDisplayName,
+  buildLoadingStateHTML,
+  buildErrorHTML,
+  setLog,
+  renderEmulatorFileList,
+  handleEmulatorUpload
+} from "../shared/emulatorBase.js";
 const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
 
@@ -71,101 +80,51 @@ export class RuffleApp extends BaseApp {
   }
 
   async loadUserFiles() {
-    const container = document.getElementById("ruffle-user-files");
-    if (!container) return;
-
-    try {
-      await os.fs.mkdir(FLASH_DIR);
-      const entries = await os.fs.readdir(FLASH_DIR).catch(() => ({}));
-      const files = Object.keys(entries).filter((k) => entries[k]?.type === "file");
-
-      const swfFiles = files.filter((f) => !f.startsWith(".") && f.toLowerCase().endsWith(".swf"));
-
-      if (swfFiles.length === 0) {
-        container.innerHTML = `<div class="emu-empty ruf-empty">No Flash files uploaded yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = swfFiles
-        .map((f) => {
-          const displayName = f
-            .replace(/\.[^.]+$/, "")
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-
-          return `
+    renderEmulatorFileList({
+      container: document.getElementById("ruffle-user-files"),
+      dir: FLASH_DIR,
+      filter: (f) => f.toLowerCase().endsWith(".swf"),
+      emptyHTML: `<div class="emu-empty ruf-empty">No Flash files uploaded yet.</div>`,
+      cardHTML: (f) => `
             <div class="emu-card ruf-file-card emu-card--removable" data-user-file="${f}">
               <i class="fa-solid fa-film emu-card-icon ruf-file-icon"></i>
               <div class="emu-card-body ruf-file-info">
-                <div class="emu-card-title ruf-file-name">${displayName}</div>
+                <div class="emu-card-title ruf-file-name">${fileNameToDisplayName(f)}</div>
                 <div class="emu-card-meta ruf-file-type">SWF • Flash</div>
               </div>
               <button class="emu-delete-btn ruf-delete-btn" data-file="${f}" title="Delete">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
-          `;
-        })
-        .join("");
-
-      container.querySelectorAll(".ruf-file-card").forEach((card) => {
-        card.addEventListener("click", (e) => {
-          if (e.target.closest(".ruf-delete-btn")) return;
-          const fileName = card.dataset.userFile;
-          this.launchSWF(fileName, FLASH_DIR);
-        });
-      });
-
-      container.querySelectorAll(".ruf-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const fileName = btn.dataset.file;
-          await os.fs.deleteBinaryFile(FLASH_DIR, fileName);
-          this.loadUserFiles();
-        });
-      });
-    } catch {}
+          `,
+      cardSelector: ".ruf-file-card",
+      deleteBtnSelector: ".ruf-delete-btn",
+      deleteAction: (name) => os.fs.deleteBinaryFile(FLASH_DIR, name),
+      onCardClick: (fileName) => this.launchSWF(fileName, FLASH_DIR),
+      onReload: () => this.loadUserFiles()
+    });
   }
 
   async handleUploadedFiles(files, zone) {
-    const originalHTML = zone.innerHTML;
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)...</div>`;
-
-    try {
-      for (const file of files) {
-        const blob = new Blob([await file.arrayBuffer()], { type: "application/x-shockwave-flash" });
-        await os.fs.writeBinaryFile(FLASH_DIR, file.name, blob, "other", CDN_BASES.MAIN + "/static/icons/ruffle.webp");
-        await os.fs.writeBinaryFile(
-          DESKTOP_DIR,
-          file.name,
-          blob,
-          "other",
-          CDN_BASES.MAIN + "/static/icons/ruffle.webp"
-        );
-        os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
-      }
-
-      os.notify.send(`Saved ${files.length} file(s) to Flash.`);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`;
-
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-        this.loadUserFiles();
-      }, 1500);
-    } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i><div class="emu-state-text ruf-state-text emu-state--error">${err.message}</div>`;
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-      }, 2500);
-    }
+    handleEmulatorUpload({
+      zone,
+      files,
+      dir: FLASH_DIR,
+      kind: "other",
+      icon: CDN_BASES.MAIN + "/static/icons/ruffle.webp",
+      extraDirs: [{ dir: DESKTOP_DIR }],
+      emitChanged: true,
+      spinnerHTML: `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)...</div>`,
+      successHTML: `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`,
+      errorHTML: (msg) =>
+        `<i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i><div class="emu-state-text ruf-state-text emu-state--error">${msg}</div>`,
+      onSaved: () => os.notify.send(`Saved ${files.length} file(s) to Flash.`),
+      onReload: () => this.loadUserFiles()
+    });
   }
 
   async launchSWF(fileName, path) {
-    const normalizedPath = Array.isArray(path)
-      ? path
-      : typeof path === "string"
-        ? path.split("/").filter(Boolean)
-        : Object.values(path ?? {}).filter((v) => typeof v === "string");
+    const normalizedPath = normalizePath(path);
 
     try {
       const blob = await os.fs.read([...normalizedPath, fileName]);
@@ -175,10 +134,7 @@ export class RuffleApp extends BaseApp {
       }
 
       const arrayBuffer = await blob.arrayBuffer();
-      const displayName = fileName
-        .replace(/\.[^.]+$/, "")
-        .replace(/[-_]/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const displayName = fileNameToDisplayName(fileName);
 
       this.launchRuffle(displayName, fileName, arrayBuffer);
     } catch (e) {
@@ -195,11 +151,14 @@ export class RuffleApp extends BaseApp {
     os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Flashback });
     win.innerHTML = `
     <div class="window-content emu-window ruf-window">
-      <div id="${winId}-inner" class="emu-state ruf-loading emu-load-wrap">
-        <i class="fa-solid fa-film fa-spin emu-state-icon ruf-state-icon"></i>
-        <div class="emu-state-text ruf-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>...</div>
-        <div id="${winId}-log" class="emu-state-text--muted ruf-log"></div>
-      </div>
+      ${buildLoadingStateHTML({
+        winId,
+        iconClass: "fa-solid fa-film fa-spin ruf-state-icon emu-state-icon",
+        wrapperClass: "emu-state ruf-loading emu-load-wrap",
+        textClass: "emu-state-text ruf-state-text",
+        logClass: "emu-state-text--muted ruf-log",
+        displayName
+      })}
       <iframe
         id="${winId}-frame"
         class="emu-iframe"
@@ -211,26 +170,23 @@ export class RuffleApp extends BaseApp {
     const frame = win.querySelector(`#${winId}-frame`);
     const log = win.querySelector(`#${winId}-log`);
 
-    const setLog = (msg) => {
-      if (log) log.textContent = msg;
-    };
-
     const showError = (msg) => {
       if (inner)
-        inner.innerHTML = `
-        <div class="emu-state emu-state--error ruf-error">
-          <i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i>
-          <div class="emu-state-text ruf-state-text emu-state--error">${msg}</div>
-        </div>`;
+        inner.innerHTML = buildErrorHTML({
+          msg,
+          wrapperClass: "emu-state emu-state--error ruf-error",
+          iconClass: "fa-solid fa-triangle-exclamation ruf-state-icon emu-state-icon emu-state--error",
+          textClass: "emu-state-text ruf-state-text emu-state--error"
+        });
       inner.style.display = "flex";
       frame.style.display = "none";
     };
 
     try {
-      setLog("Starting Ruffle...");
+      setLog(log, "Starting Ruffle...");
       await this.loadRuffleScript();
 
-      setLog("Starting Flash player...");
+      setLog(log, "Starting Flash player...");
 
       const ruffleScriptUrl =
         getLibraryUrl("ruffle") ||
@@ -321,10 +277,7 @@ export class RuffleApp extends BaseApp {
       return;
     }
     const arrayBuffer = await file.arrayBuffer();
-    const displayName = file.name
-      .replace(/\.[^.]+$/, "")
-      .replace(/[-_]/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    const displayName = fileNameToDisplayName(file.name);
 
     this.launchRuffle(displayName, file.name, arrayBuffer);
   }

@@ -7,6 +7,7 @@ import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
+import { buildWindowHeader } from "../shared/windowHeader.js";
 const AC = {
   WIN_ID: "app-creator-win",
   FS_FOLDER: ["Apps"],
@@ -150,10 +151,7 @@ export class AppCreatorApp extends BaseApp {
     }
 
     const content = `
-      <div class="window-header">
-        <span><i class="fas fa-cubes" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;"></i>App Creator</span>
-        ${os.window.getWindowControls()}
-      </div>
+      ${buildWindowHeader("App Creator", "fas fa-cubes")}
       <div class="window-content">
         <div class="ac-pane">
           <div id="app-creator-form">

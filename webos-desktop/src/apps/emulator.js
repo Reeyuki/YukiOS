@@ -2,8 +2,17 @@ import "../styles/emulator.css";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 
 import { audioMixer } from "../audioMixer.js";
-import { BusEvents, BaseApp, os, brand } from "../framework.js";
+import { BaseApp, os, brand } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import {
+  normalizePath,
+  fileNameToDisplayName,
+  buildLoadingStateHTML,
+  buildErrorHTML,
+  setLog,
+  renderEmulatorFileList,
+  handleEmulatorUpload
+} from "../shared/emulatorBase.js";
 const EMULATOR_ICON = "static/icons/emulator.webp";
 const ROMS_DIR = ["ROMs"];
 const DESKTOP_DIR = ["Desktop"];
@@ -160,44 +169,27 @@ export class EmulatorApp extends BaseApp {
   }
 
   async loadUserRoms() {
-    const container = document.getElementById("emulator-user-roms");
-    if (!container) return;
+    const allExts = new Set();
+    Object.values(supportedExtensions).forEach((exts) => {
+      exts.forEach((ext) => allExts.add(ext));
+    });
+    allExts.add(".zip");
 
-    try {
-      await os.fs.mkdir(ROMS_DIR);
-      const files = await os.fs.readdir(ROMS_DIR).catch(() => []);
+    renderEmulatorFileList({
+      container: document.getElementById("emulator-user-roms"),
+      dir: ROMS_DIR,
+      filter: (f) => Array.from(allExts).some((ext) => f.toLowerCase().endsWith(ext)),
+      emptyHTML: `<div class="emu-empty ruf-empty">No ROMs uploaded yet.</div>`,
+      cardHTML: (f) => {
+        const ext = f.toLowerCase().split(".").pop();
+        const system = this.detectSystem(ext);
+        const icon = system ? "fa-gamepad" : "fa-file-zipper";
 
-      const allExts = new Set();
-      Object.values(supportedExtensions).forEach((exts) => {
-        exts.forEach((ext) => allExts.add(ext));
-      });
-      allExts.add(".zip");
-
-      const romFiles = files.filter(
-        (f) => !f.startsWith(".") && Array.from(allExts).some((ext) => f.toLowerCase().endsWith(ext))
-      );
-
-      if (romFiles.length === 0) {
-        container.innerHTML = `<div class="emu-empty ruf-empty">No ROMs uploaded yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = romFiles
-        .map((f) => {
-          const displayName = f
-            .replace(/\.[^.]+$/, "")
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-
-          const ext = f.toLowerCase().split(".").pop();
-          const system = this.detectSystem(ext);
-          const icon = system ? "fa-gamepad" : "fa-file-zipper";
-
-          return `
+        return `
             <div class="emu-card ruf-file-card emu-card--removable" data-user-file="${f}">
               <i class="fa-solid ${icon} emu-card-icon ruf-file-icon"></i>
               <div class="emu-card-body ruf-file-info">
-                <div class="emu-card-title ruf-file-name">${displayName}</div>
+                <div class="emu-card-title ruf-file-name">${fileNameToDisplayName(f)}</div>
                 <div class="emu-card-meta ruf-file-type">${ext.toUpperCase()}${system ? ` • ${system}` : ""}</div>
               </div>
               <button class="emu-delete-btn ruf-delete-btn" data-file="${f}" title="Delete">
@@ -205,54 +197,31 @@ export class EmulatorApp extends BaseApp {
               </button>
             </div>
           `;
-        })
-        .join("");
-
-      container.querySelectorAll(".ruf-file-card").forEach((card) => {
-        card.addEventListener("click", (e) => {
-          const target = e.target;
-          if (target.closest(".emu-delete-btn")) return;
-          const fileName = card.dataset.userFile;
-          this.launchROM(fileName, ROMS_DIR);
-        });
-      });
-
-      container.querySelectorAll(".ruf-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const fileName = btn.dataset.file;
-          await os.fs.delete(ROMS_DIR, fileName);
-          this.loadUserRoms();
-        });
-      });
-    } catch {}
+      },
+      cardSelector: ".ruf-file-card",
+      deleteBtnSelector: ".ruf-delete-btn",
+      deleteAction: (name) => os.fs.delete(ROMS_DIR, name),
+      onCardClick: (fileName) => this.launchROM(fileName, ROMS_DIR),
+      onReload: () => this.loadUserRoms()
+    });
   }
 
   async handleUploadedFiles(files, zone) {
-    const originalHTML = zone.innerHTML;
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)…</div>`;
-
-    try {
-      for (const file of files) {
-        const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-        await os.fs.writeBinaryFile(ROMS_DIR, file.name, blob, "other", resolveIconUrl(EMULATOR_ICON));
-        await os.fs.writeBinaryFile(DESKTOP_DIR, file.name, blob, "rom", resolveIconUrl(EMULATOR_ICON));
-        os.events.emit(BusEvents.FILE_CHANGED, { path: file.name });
-      }
-
-      os.notify.send("", `Saved ${files.length} file(s) to ROMs.`);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`;
-
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-        this.loadUserRoms();
-      }, 1500);
-    } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i><div class="emu-state-text ruf-state-text emu-state--error">${err.message}</div>`;
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-      }, 2500);
-    }
+    handleEmulatorUpload({
+      zone,
+      files,
+      dir: ROMS_DIR,
+      kind: "other",
+      icon: resolveIconUrl(EMULATOR_ICON),
+      extraDirs: [{ dir: DESKTOP_DIR, kind: "rom" }],
+      emitChanged: true,
+      spinnerHTML: `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)…</div>`,
+      successHTML: `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`,
+      errorHTML: (msg) =>
+        `<i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i><div class="emu-state-text ruf-state-text emu-state--error">${msg}</div>`,
+      onSaved: () => os.notify.send("", `Saved ${files.length} file(s) to ROMs.`),
+      onReload: () => this.loadUserRoms()
+    });
   }
 
   detectSystem(ext) {
@@ -284,11 +253,7 @@ export class EmulatorApp extends BaseApp {
   }
 
   async launchROM(fileName, path) {
-    const normalizedPath = Array.isArray(path)
-      ? path
-      : typeof path === "string"
-        ? path.split("/").filter(Boolean)
-        : Object.values(path ?? {}).filter((v) => typeof v === "string");
+    const normalizedPath = normalizePath(path);
 
     try {
       const blob = await os.fs.read([...normalizedPath, fileName]);
@@ -306,10 +271,7 @@ export class EmulatorApp extends BaseApp {
         return;
       }
 
-      const displayName = fileName
-        .replace(/\.[^.]+$/, "")
-        .replace(/[-_]/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const displayName = fileNameToDisplayName(fileName);
 
       this.launchEmulator(displayName, fileName, arrayBuffer);
     } catch (e) {
@@ -330,11 +292,14 @@ export class EmulatorApp extends BaseApp {
 
     win.innerHTML = `
     <div class="window-content emu-window ruf-window">
-      <div id="${winId}-inner" class="emu-state ruf-loading emu-load-wrap">
-        <i class="fa-solid fa-gamepad fa-spin emu-state-icon ruf-state-icon"></i>
-        <div class="emu-state-text ruf-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>…</div>
-        <div id="${winId}-log" class="emu-state-text--muted ruf-log"></div>
-      </div>
+      ${buildLoadingStateHTML({
+        winId,
+        iconClass: "fa-solid fa-gamepad fa-spin ruf-state-icon emu-state-icon",
+        wrapperClass: "emu-state ruf-loading emu-load-wrap",
+        textClass: "emu-state-text ruf-state-text",
+        logClass: "emu-state-text--muted ruf-log",
+        displayName
+      })}
       <div id="${winId}-screen" class="emu-window-screen"></div>
     </div>`;
 
@@ -342,21 +307,18 @@ export class EmulatorApp extends BaseApp {
     const screenDiv = win.querySelector(`#${winId}-screen`);
     const log = win.querySelector(`#${winId}-log`);
 
-    const setLog = (msg) => {
-      if (log) log.textContent = msg;
-    };
-
     const showError = (msg) => {
       if (inner)
-        inner.innerHTML = `
-      <div class="emu-state emu-state--error ruf-error">
-        <i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i>
-        <div class="emu-state-text ruf-state-text emu-state--error">${msg}</div>
-      </div>`;
+        inner.innerHTML = buildErrorHTML({
+          msg,
+          wrapperClass: "emu-state emu-state--error ruf-error",
+          iconClass: "fa-solid fa-triangle-exclamation ruf-state-icon emu-state-icon emu-state--error",
+          textClass: "emu-state-text ruf-state-text emu-state--error"
+        });
     };
 
     try {
-      setLog("Detecting system…");
+      setLog(log, "Detecting system…");
 
       const extension = "." + fileName.toLowerCase().split(".").pop();
 
@@ -419,7 +381,7 @@ export class EmulatorApp extends BaseApp {
         }
       }
 
-      setLog(`Starting ${emulatorSystem} core…`);
+      setLog(log, `Starting ${emulatorSystem} core…`);
 
       const romBlob = new Blob([romData]);
       const romUrl = URL.createObjectURL(romBlob);
@@ -454,10 +416,7 @@ window.EJS_color = "var(--brand)";
 
   async launchFromUrl(url, core) {
     const fileName = url.split("/").pop().split("?")[0] || "game";
-    const displayName = fileName
-      .replace(/\.[^.]+$/, "")
-      .replace(/[-_]/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    const displayName = fileNameToDisplayName(fileName);
 
     try {
       const res = await fetch(url);
@@ -473,10 +432,7 @@ window.EJS_color = "var(--brand)";
     const arrayBuffer = await file.arrayBuffer();
     const fileName = file.name;
 
-    const displayName = fileName
-      .replace(/\.[^.]+$/, "")
-      .replace(/[-_]/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    const displayName = fileNameToDisplayName(fileName);
 
     this.launchEmulator(displayName, fileName, arrayBuffer);
   }

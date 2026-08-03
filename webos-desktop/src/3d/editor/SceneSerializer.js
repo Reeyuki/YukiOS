@@ -1,6 +1,6 @@
-import { os } from "../../os/index.js";
+import { os, StorageKeys } from "../../framework.js";
 
-const STORAGE_KEY = "rm3d_roomLayout";
+const STORAGE_KEY = StorageKeys.room3dRoomLayout;
 
 export class SceneSerializer {
   serialize(furnitureManager, decorManager) {

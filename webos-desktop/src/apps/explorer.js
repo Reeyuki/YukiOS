@@ -25,7 +25,14 @@ import {
 import { scheduleFileTooltip, hideFileTooltip } from "../shared/fileTooltip.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
-import { formatSize, pluralize, isWindowFocused, buildClipboardIcons, isTextFile } from "../utils/utils.js";
+import {
+  formatSize,
+  pluralize,
+  isWindowFocused,
+  buildClipboardIcons,
+  isTextFile,
+  rectsIntersect
+} from "../utils/utils.js";
 import { resolveDesktopIcon } from "../shared/iconUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { trigger as triggerCursorEffect } from "../cursorEffect.js";
@@ -1191,12 +1198,7 @@ export class ExplorerApp extends BaseApp {
             right: r.right - vr.left + view.scrollLeft,
             bottom: r.bottom - vr.top + view.scrollTop
           };
-          const overlaps = !(
-            ir.right < boxRect.left ||
-            ir.left > boxRect.right ||
-            ir.bottom < boxRect.top ||
-            ir.top > boxRect.bottom
-          );
+          const overlaps = rectsIntersect(ir, boxRect);
           const name = item.querySelector("span")?.textContent;
           if (!name) return;
           if (overlaps) {

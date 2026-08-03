@@ -3,25 +3,20 @@ import { BaseApp, os } from "../framework.js";
 export class ErudaApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
   }
 
   async open() {
     const winId = "eruda";
-    if (this.openWindows.has(winId)) return;
+    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Dev Tools (Eruda)", "450px", "400px", {
       icon: "fas fa-code"
     });
 
     win.innerHTML = this.buildUI();
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
 
     await this.initEruda();
-
-    win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
-    });
   }
 
   buildUI() {
@@ -45,6 +40,6 @@ export class ErudaApp extends BaseApp {
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
   }
 }

@@ -1,5 +1,7 @@
 import { os, MODES, StorageKeys } from "../framework.js";
 
+export { isTextFile, mimeFromExt } from "../shared/fileKindDetector.js";
+
 export function escapeHtml(str) {
   if (typeof str !== "string") return "";
   return str
@@ -43,49 +45,6 @@ export function archiveBaseName(name) {
     if (lower.endsWith(suffix)) return name.slice(0, name.length - suffix.length);
   }
   return name;
-}
-
-export function isTextFile(name) {
-  const lower = name.toLowerCase();
-  return [
-    ".txt",
-    ".md",
-    ".js",
-    ".json",
-    ".html",
-    ".css",
-    ".xml",
-    ".csv",
-    ".ts",
-    ".py",
-    ".sh",
-    ".yaml",
-    ".yml",
-    ".toml",
-    ".ini",
-    ".cfg",
-    ".log",
-    ".sql"
-  ].some((ext) => lower.endsWith(ext));
-}
-
-export function mimeFromExt(ext) {
-  const map = {
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    gif: "image/gif",
-    webp: "image/webp",
-    svg: "image/svg+xml",
-    bmp: "image/bmp",
-    ico: "image/x-icon",
-    avif: "image/avif",
-    tiff: "image/tiff",
-    tif: "image/tiff",
-    heic: "image/heic",
-    heif: "image/heif"
-  };
-  return map[ext] || "image/png";
 }
 
 export function tarStr(bytes, offset, length) {
@@ -151,6 +110,10 @@ export function isWindowFocused(winId) {
   return winEl.contains(document.activeElement);
 }
 
+export function rectsIntersect(a, b) {
+  return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+}
+
 export function sanitizeTitle(title) {
   if (title === "[object Object]") return "Window";
   return title;
@@ -212,4 +175,79 @@ export function resolveAppIcon(appId) {
   const lower = String(appId).toLowerCase();
   const matchedId = Object.keys(allApps).find((id) => id.toLowerCase() === lower);
   return allApps[matchedId]?.icon || null;
+}
+
+export function timeAgo(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+export function debounce(fn, delay = 300) {
+  let timer = null;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+export function throttle(fn, limit = 200) {
+  let lastTime = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastTime >= limit) {
+      lastTime = now;
+      fn.apply(this, args);
+    }
+  };
+}
+
+export function generateId(prefix = "") {
+  return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+export function truncate(str, maxLength) {
+  if (typeof str !== "string" || str.length <= maxLength) return str;
+  return str.slice(0, maxLength - 1) + "...";
+}
+
+export function titleCase(str) {
+  if (typeof str !== "string" || str.length === 0) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function base64ToBlob(dataUrl) {
+  const [meta, b64] = dataUrl.split(",");
+  const mimeMatch = meta.match(/data:([^;]+)/);
+  const mime = (mimeMatch && mimeMatch[1]) || "application/octet-stream";
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+export function generateUUID() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }

@@ -10,6 +10,7 @@ import { KeybindManager } from "./keybindManager.js";
 import { StorageKeys, os } from "./framework.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "./settings/settingsNav.js";
 import { animateThemeChange } from "./settings/themeTransition.js";
+import { escapeHtml } from "./utils/utils.js";
 export class CommandPalette {
   constructor(os) {
     this.os = os;
@@ -520,6 +521,11 @@ export class CommandPalette {
       items = items.slice(0, 50);
     }
 
+    this.renderItems(items);
+  }
+
+  renderItems(items) {
+    if (!this.resultsContainer) return;
     this.results = items;
     this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.results.length - 1));
 
@@ -547,8 +553,8 @@ export class CommandPalette {
       el.innerHTML = `
         <div class="command-palette-item-icon">${iconHtml}</div>
         <div class="command-palette-item-meta">
-          <div class="command-palette-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="command-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
+          <div class="command-palette-item-title">${escapeHtml(item.title)}</div>
+          <div class="command-palette-item-sub">${escapeHtml(item.subtitle)}</div>
         </div>
         <div class="command-palette-item-tag">${item.tag}</div>
       `;
@@ -606,31 +612,7 @@ export class CommandPalette {
       });
     }
 
-    this.results = items;
-
-    this.results.forEach((item, index) => {
-      const el = document.createElement("div");
-      el.className = `command-palette-item ${index === this.activeIndex ? "active" : ""}`;
-      el.dataset.index = index;
-
-      el.innerHTML = `
-        <div class="command-palette-item-icon"><i class="${item.icon}"></i></div>
-        <div class="command-palette-item-meta">
-          <div class="command-palette-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="command-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
-        </div>
-        <div class="command-palette-item-tag">${item.tag}</div>
-      `;
-
-      el.addEventListener("click", () => {
-        this.activeIndex = index;
-        this.executeActive();
-      });
-
-      this.resultsContainer.appendChild(el);
-    });
-
-    this.scrollToActive();
+    this.renderItems(items);
   }
 
   renderFileSearchSubpalette(search) {
@@ -685,43 +667,7 @@ export class CommandPalette {
       });
     }
 
-    this.results = items;
-    this.activeIndex = Math.min(this.activeIndex, Math.max(0, this.results.length - 1));
-
-    this.results.forEach((item, index) => {
-      const el = document.createElement("div");
-      el.className = `command-palette-item ${index === this.activeIndex ? "active" : ""}`;
-      el.dataset.index = index;
-
-      let iconHtml = "";
-      if (typeof item.icon === "string") {
-        if (item.icon.startsWith("fa")) {
-          iconHtml = `<i class="${item.icon}"></i>`;
-        } else {
-          iconHtml = `<img src="${resolveIconUrl(item.icon)}" alt="">`;
-        }
-      } else {
-        iconHtml = `<i class="fas fa-file"></i>`;
-      }
-
-      el.innerHTML = `
-        <div class="command-palette-item-icon">${iconHtml}</div>
-        <div class="command-palette-item-meta">
-          <div class="command-palette-item-title">${this.escapeHTML(item.title)}</div>
-          <div class="command-palette-item-sub">${this.escapeHTML(item.subtitle)}</div>
-        </div>
-        <div class="command-palette-item-tag">${item.tag}</div>
-      `;
-
-      el.addEventListener("click", () => {
-        this.activeIndex = index;
-        this.executeActive();
-      });
-
-      this.resultsContainer.appendChild(el);
-    });
-
-    this.scrollToActive();
+    this.renderItems(items);
   }
 
   getSettingsEntries() {
@@ -1217,14 +1163,5 @@ export class CommandPalette {
         this.close();
       }
     }
-  }
-
-  escapeHTML(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
   }
 }

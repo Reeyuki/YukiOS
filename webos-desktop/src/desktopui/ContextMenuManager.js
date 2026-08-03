@@ -5,7 +5,7 @@ import { os, StorageKeys } from "../framework.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
 import { showFileProperties, isImageFile, openFileWithApp } from "../fileDisplay.js";
-import { FileKind, getExt } from "../shared/fileKindDetector.js";
+import { FileKind, getExt, isZipFile } from "../shared/fileKindDetector.js";
 import { getCompatibleApps, getDefaultApp } from "../fileAssociations.js";
 import { showChooseAppDialog } from "../shared/chooseAppDialog.js";
 
@@ -20,7 +20,7 @@ import { openFileConverter } from "../utils/fileConverter.js";
 import { SystemUtilities } from "../system.js";
 import { videos } from "../wallpaperList.js";
 import { vantaPresets } from "../vantaPresets.js";
-import { downloadBlob } from "../settings/settingsData.js";
+import { downloadBlob } from "../utils/utils.js";
 
 export class DesktopContextMenuManager {
   constructor(desktopUI, PositionStore, IconDataHelper, wm) {
@@ -1088,7 +1088,7 @@ export class DesktopContextMenuManager {
       const dirPath = path.length > 1 ? path.slice(0, -1) : ["Desktop"];
       const items = [{ name, path: dirPath, isFile: !isFolder }];
 
-      const archiveName = name.endsWith(".zip") ? name.slice(0, -4) : name;
+      const archiveName = isZipFile(name) ? name.slice(0, -4) : name;
 
       const result = await this.archiveExtractor.createArchive(items, {
         format: "zip",
@@ -1114,7 +1114,7 @@ export class DesktopContextMenuManager {
       if (isFolder) {
         const items = [{ name, path: ["Desktop"], isFile: false }];
 
-        const archiveName = name.endsWith(".zip") ? name.slice(0, -4) : name;
+        const archiveName = isZipFile(name) ? name.slice(0, -4) : name;
 
         const result = await this.archiveExtractor.createArchive(items, {
           format: "zip",

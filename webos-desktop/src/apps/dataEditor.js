@@ -1,11 +1,11 @@
 import "../styles/dataeditor.css";
 import { $, $$, setText, toggleClass, setHTML } from "../shared/domUtils.js";
 import { BaseApp, os } from "../framework.js";
+import { formatSize, downloadBlob } from "../utils/utils.js";
 
 export class DataEditorApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
     this.cssLoaded = false;
     this.currentTab = "ls";
     this.currentIdbCtx = null;
@@ -17,7 +17,7 @@ export class DataEditorApp extends BaseApp {
 
   open() {
     const winId = "yukios-data-editor";
-    if (this.openWindows.has(winId)) return;
+    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Storage Editor", "1000px", "650px", {
       icon: "fas fa-database",
@@ -25,13 +25,12 @@ export class DataEditorApp extends BaseApp {
     });
 
     this.win = win;
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
     win.innerHTML = this.buildUI();
     this.bindDataEditorEvents(win);
     this.loadLocalStorage(win);
 
     win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
       this.win = null;
     });
   }
@@ -228,7 +227,7 @@ export class DataEditorApp extends BaseApp {
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
   }
 
   showEditorStatus(win, msg, color = "var(--text-secondary)") {
@@ -265,14 +264,6 @@ export class DataEditorApp extends BaseApp {
     return typeof value;
   }
 
-  formatBytes(bytes) {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-  }
-
   getValueSize(value) {
     return new Blob([String(value)]).size;
   }
@@ -293,7 +284,7 @@ export class DataEditorApp extends BaseApp {
     if (editorArea) editorArea.style.display = "flex";
     if (keyInput) keyInput.value = keyName;
     if (keyType) keyType.textContent = typeLabel;
-    if (keySize) keySize.textContent = this.formatBytes(this.getValueSize(value ?? ""));
+    if (keySize) keySize.textContent = formatSize(this.getValueSize(value ?? ""));
     if (valInput) {
       try {
         const parsed = JSON.parse(value);
@@ -775,12 +766,7 @@ export class DataEditorApp extends BaseApp {
       exportData[item.key] = this.getStorageValue(item.key);
     });
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `storage-export-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, `storage-export-${Date.now()}.json`);
     this.showEditorStatus(win, `Exported ${this.selectedKeys.size} items`, "var(--charging)");
     os.notify.send("Storage Editor", `Exported ${this.selectedKeys.size} items`, {
       type: "success",

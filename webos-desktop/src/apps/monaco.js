@@ -10,6 +10,7 @@ import { Shell } from "../shared/shell.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 import { $, setStyle, createElement } from "../shared/domUtils.js";
 import { BaseApp, os, brand } from "../framework.js";
+import { buildWindowHeader } from "../shared/windowHeader.js";
 import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
   constructor(os) {
@@ -387,12 +388,7 @@ export class MonacoApp extends BaseApp {
   }
 
   getHeaderHTML(title) {
-    return `
-      <div class="window-header">
-        <span>${brand("Yuki Code")}</span>
-        ${os.window.getWindowControls()}
-      </div>
-    `;
+    return buildWindowHeader(brand("Yuki Code"));
   }
 
   createTab(tabId, title, isDirty = false) {

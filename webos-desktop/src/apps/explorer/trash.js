@@ -3,6 +3,7 @@ import { $, $$, setHTML, addClass, removeClass, createElement } from "../../shar
 import { showDynamicContextMenu } from "../../shared/contextMenu.js";
 import { buildFileIconHTML } from "../../fileDisplay.js";
 import { formatSize } from "../../utils/utils.js";
+import { buildWindowHeader } from "../../shared/windowHeader.js";
 
 export async function showTrashView(explorer, inst) {
   inst.isTrashView = true;
@@ -198,9 +199,7 @@ async function showTrashItemProperties(entry) {
     const propsWin = os.window.create(`${Date.now()}-props`, title, "400px", "auto");
 
     propsWin.innerHTML = `
-      <div class="window-header"><span>${title}</span>
-        ${os.window.getWindowControls()}
-      </div>
+      ${buildWindowHeader(title)}
       <div class="window-content" style="padding:20px;">
         <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;">
           <img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">

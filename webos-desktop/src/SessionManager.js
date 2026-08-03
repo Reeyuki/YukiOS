@@ -7,8 +7,8 @@ import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./shared/avatarResolver.js";
 import { $ } from "./shared/domUtils.js";
 import { renderLiveStats } from "./shared/liveStats.js";
-import { resolveAppId } from "./utils/utils.js";
-import { StorageKeys, os, brand } from "./framework.js";
+import { resolveAppId, generateUUID, timeAgo } from "./utils/utils.js";
+import { StorageKeys, os, brand, wasRandomYuriTrigger } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
@@ -22,13 +22,6 @@ import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/sessi
 import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
 import { showDonationPopup } from "./donationPopup.js";
 import { getRecentNews } from "./apps/news.js";
-function generateUUID() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 export class SessionManager {
   constructor(os) {
@@ -215,6 +208,7 @@ export class SessionManager {
       <div class="session-wallpaper"></div>
       <div class="session-background"></div>
       <div class="session-content${state === "locked" ? "" : " extra-hidden"}">
+        <div class="session-brand">${brand("YukiOS")}</div>
         <div class="session-time">${timeStr}</div>
         <div class="session-date">${dateStr}</div>
 
@@ -523,17 +517,7 @@ export class SessionManager {
   }
 
   formatTimeAgo(date) {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    return timeAgo(date);
   }
 
   async applySessionWallpaper(container) {
@@ -1078,6 +1062,13 @@ export class SessionManager {
     }
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
+    if (wasRandomYuriTrigger()) {
+      os.notify.send("YuriOS", "Random chance triggered YuriOS! Pink mode has appeared.", {
+        type: "info",
+        duration: 6000,
+        icon: "fas fa-heart"
+      });
+    }
     liveActivityManager.init();
 
     if (this.selectedSession === "Yuki Mac Desktop") {

@@ -1,6 +1,6 @@
 import "../styles/camera.css";
 import { openMediaViewer } from "../fileDisplay.js";
-import { FileKind } from "../shared/fileKindDetector.js";
+import { FileKind, isImageFile } from "../shared/fileKindDetector.js";
 import { formatSize } from "../utils/utils.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { BaseApp, os } from "../framework.js";
@@ -15,7 +15,6 @@ export class CameraApp extends BaseApp {
     this.recordings = [];
     this.recordingInterval = null;
     this.historyWin = null;
-    this.openWindows = new Set();
     this.state = {
       currentMode: "photo",
       isRecording: false,
@@ -31,7 +30,7 @@ export class CameraApp extends BaseApp {
 
   open() {
     const winId = "camera-win";
-    if (this.openWindows.has(winId)) return;
+    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Camera", "800px", "600px", {
       icon: "static/icons/obs.webp",
@@ -40,13 +39,12 @@ export class CameraApp extends BaseApp {
     });
 
     this.win = win;
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
     win.innerHTML = this.buildUI();
     this.bindCameraEvents(win);
     this.initCamera(null, null, win, this.state);
 
     win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
       this.stopCamera();
     });
   }
@@ -516,7 +514,7 @@ export class CameraApp extends BaseApp {
   getRecordingType(rec) {
     const id = String(rec.id || "");
     const name = String(rec.name || "");
-    if (id.includes(".png") || id.includes(".jpg") || id.includes(".jpeg")) return "photo";
+    if (isImageFile(id)) return "photo";
     if (name.toLowerCase().includes("screen")) return "screen";
     return "video";
   }
@@ -676,7 +674,7 @@ export class CameraApp extends BaseApp {
       if (save) {
         const newName = input.value.trim();
         if (newName && newName !== rec.name) {
-          const ext = rec.id.includes(".png") ? ".png" : ".webm";
+          const ext = isImageFile(rec.id) ? ".png" : ".webm";
           const newFileName = `${newName}${ext}`;
           try {
             await os.fs.renameBinaryFile(["Pictures", "Camera"], rec.id, newFileName);

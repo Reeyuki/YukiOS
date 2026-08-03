@@ -1,6 +1,7 @@
 import { $ } from "../shared/domUtils.js";
 import { os, StorageKeys } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { escapeHtml } from "../utils/utils.js";
 
 function fuzzyMatch(query, target) {
   const q = query.toLowerCase();
@@ -294,7 +295,7 @@ export class TilingRofi {
       type: "history"
     }));
     if (items.length === 0) {
-      this.resultsEl.innerHTML = `<div class="rofi-empty">Press Enter to run &ldquo;${this.escapeHtml(query)}&rdquo;</div>`;
+      this.resultsEl.innerHTML = `<div class="rofi-empty">Press Enter to run &ldquo;${escapeHtml(query)}&rdquo;</div>`;
       this.results = [];
       this.highlightIndex = -1;
       return;
@@ -523,11 +524,5 @@ export class TilingRofi {
     } catch {
       return [];
     }
-  }
-
-  escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
   }
 }

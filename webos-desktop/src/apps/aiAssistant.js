@@ -6,6 +6,7 @@ import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUt
 import "./aiAssistant/aiAssistant.css";
 
 import { BaseApp, StorageKeys, os, MODES, brand } from "../framework.js";
+import { buildWindowHeader } from "../shared/windowHeader.js";
 export class AIAssistantApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -69,10 +70,7 @@ export class AIAssistantApp extends BaseApp {
 
   buildSetupUI(state) {
     return `
-      <div class="window-header">
-        <span>${brand("Yuki AI Assistant")}</span>
-        ${os.window.getWindowControls()}
-      </div>
+      ${buildWindowHeader(brand("Yuki AI Assistant"))}
       <div class="ai-assistant-container">
         <div class="ai-setup-screen">
           <div class="ai-setup-content">
@@ -130,10 +128,7 @@ export class AIAssistantApp extends BaseApp {
 
   buildUI(state) {
     return `
-      <div class="window-header">
-        <span>${brand("Yuki AI Assistant")}</span>
-        ${os.window.getWindowControls()}
-      </div>
+      ${buildWindowHeader(brand("Yuki AI Assistant"))}
       <div class="ai-assistant-container">
         <div class="ai-header">
           <div class="ai-runtime-strip">

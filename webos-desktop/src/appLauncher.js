@@ -7,7 +7,7 @@ import { initializeAppGrid, tryGetIcon, trackRecentlyUsed } from "./desktopui/st
 const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 import { getLibraryUrl } from "./shared/cdnConfig.js";
-import { StorageKeys, os, brand } from "./framework.js";
+import { StorageKeys, os, brand, yuriPageTitle } from "./framework.js";
 import { parseBool } from "./utils/utils.js";
 import {
   fetchHtmlAsBlobUrl,
@@ -551,12 +551,10 @@ player.load("${swfPath}");
         const isGame = this.isTransparencyBlocked(appId, { type });
         const gameIcon = this.appMap[appId]?.icon || "fas fa-gamepad";
         const resolvedGameIcon = resolveIconUrl(gameIcon);
-        const gameIconHtml =
-          resolvedGameIcon.startsWith("fas ") ||
-          resolvedGameIcon.startsWith("fab ") ||
-          resolvedGameIcon.startsWith("far ")
-            ? `<i class="${resolvedGameIcon}" style="margin-right:6px;font-size:16px;vertical-align:middle;"></i>`
-            : `<img src="${resolvedGameIcon}" style="width:20px;height:20px;margin-right:6px;vertical-align:middle;object-fit:contain;">`;
+        const gameIconHtml = this.buildWindowIconHtml(resolvedGameIcon, {
+          margin: "6px",
+          iconVerticalAlign: true
+        });
 
         if (window.electronAPI) {
           let nativeWidth = 1280;
@@ -609,13 +607,12 @@ player.load("${swfPath}");
           : "";
 
         win.innerHTML = `
-          <div class="window-header">
-            <span>${gameIconHtml}${displayTitle}</span>
-            <div class="window-header-actions">
-              ${overlayBtnHtml}
-              ${os.window.getWindowControls(resolvedSource, true)}
-            </div>
-          </div>
+          ${this.buildWindowHeaderMarkup(
+            gameIconHtml,
+            displayTitle,
+            overlayBtnHtml,
+            os.window.getWindowControls(resolvedSource, true)
+          )}
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
             <div class="modern-loader">
               <div class="loader-dots">
@@ -702,10 +699,32 @@ player.load("${swfPath}");
     return !(appMeta.type === "system" || this.TRANSPARENCY_ALLOWED_APP_IDS.has(appId));
   }
 
+  buildWindowIconHtml(resolvedIcon, options = {}) {
+    const { margin = "8px", iconVerticalAlign = false } = options;
+    const isFontIcon =
+      resolvedIcon.startsWith("fas ") || resolvedIcon.startsWith("fab ") || resolvedIcon.startsWith("far ");
+    const vertAlignStyle = iconVerticalAlign ? "vertical-align:middle;" : "";
+    return isFontIcon
+      ? `<i class="${resolvedIcon}" style="margin-right:${margin};font-size:16px;${vertAlignStyle}"></i>`
+      : `<img src="${resolvedIcon}" style="width:20px;height:20px;margin-right:${margin};vertical-align:middle;object-fit:contain;">`;
+  }
+
+  buildWindowHeaderMarkup(iconHtml, title, overlayBtnHtml, controlsHtml) {
+    return `
+      <div class="window-header">
+        <span>${iconHtml}${title}</span>
+        <div class="window-header-actions">
+          ${overlayBtnHtml}
+          ${controlsHtml}
+        </div>
+      </div>
+    `;
+  }
+
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("game") && appId) {
-      document.title = sanitizeTitle(title);
+      document.title = yuriPageTitle() || sanitizeTitle(title);
       document.head.insertAdjacentHTML(
         "beforeend",
         `<style>
@@ -751,23 +770,14 @@ player.load("${swfPath}");
     });
 
     const resolvedIcon = resolveIconUrl(icon);
-    const iconHtml =
-      resolvedIcon.startsWith("fas ") || resolvedIcon.startsWith("fab ") || resolvedIcon.startsWith("far ")
-        ? `<i class="${resolvedIcon}" style="margin-right:8px;font-size:16px;"></i>`
-        : `<img src="${resolvedIcon}" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;object-fit:contain;">`;
+    const iconHtml = this.buildWindowIconHtml(resolvedIcon, { margin: "8px" });
 
     const overlayBtnHtml = isGame
       ? `<button class="overlay-open-btn" title="Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
       : "";
 
     win.innerHTML = `
-      <div class="window-header">
-        <span>${iconHtml}${title}</span>
-        <div class="window-header-actions">
-          ${overlayBtnHtml}
-          ${os.window.getWindowControls(externalUrl, true)}
-        </div>
-      </div>
+      ${this.buildWindowHeaderMarkup(iconHtml, title, overlayBtnHtml, os.window.getWindowControls(externalUrl, true))}
       <div class="window-content" style="width:100%; height:100%; overflow:hidden;">${contentHtml}</div>
     `;
 

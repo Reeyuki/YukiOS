@@ -169,11 +169,7 @@ class TrayManager {
     return Array.from(this.items.entries()).map(([winId, item]) => ({ winId, ...item }));
   }
 
-  buildIcon(winId, icon, label) {
-    const btn = document.createElement("button");
-    btn.className = "tray-icon-btn";
-    btn.title = label;
-    btn.dataset.winId = winId;
+  buildIconContentHtml(icon, label) {
     const isUrl =
       typeof icon === "string" &&
       (icon.startsWith("http") ||
@@ -188,9 +184,22 @@ class TrayManager {
         icon.startsWith("far") ||
         icon.startsWith("fa "));
     if (isUrl) {
-      btn.innerHTML = `<img src="${icon}" alt="${label}" />`;
-    } else if (isFontAwesome) {
-      btn.innerHTML = `<i class="${icon}"></i>`;
+      return `<img src="${icon}" alt="${label}" />`;
+    }
+    if (isFontAwesome) {
+      return `<i class="${icon}"></i>`;
+    }
+    return null;
+  }
+
+  buildIcon(winId, icon, label) {
+    const btn = document.createElement("button");
+    btn.className = "tray-icon-btn";
+    btn.title = label;
+    btn.dataset.winId = winId;
+    const content = this.buildIconContentHtml(icon, label);
+    if (content) {
+      btn.innerHTML = content;
     } else {
       btn.innerHTML = `<span>${icon}</span>`;
       btn.style.width = "auto";
@@ -291,26 +300,7 @@ class TrayManager {
       const row = document.createElement("div");
       row.className = "tray-popup-item";
       row.title = label;
-      const isUrl =
-        typeof icon === "string" &&
-        (icon.startsWith("http") ||
-          icon.startsWith("data:") ||
-          icon.startsWith("/") ||
-          /\.(webp|png|jpg|jpeg|gif|svg)/.test(icon));
-      const isFontAwesome =
-        typeof icon === "string" &&
-        (icon.startsWith("fa-") ||
-          icon.startsWith("fas") ||
-          icon.startsWith("fab") ||
-          icon.startsWith("far") ||
-          icon.startsWith("fa "));
-      if (isUrl) {
-        row.innerHTML = `<img src="${icon}" alt="${label}" />`;
-      } else if (isFontAwesome) {
-        row.innerHTML = `<i class="${icon}"></i>`;
-      } else {
-        row.innerHTML = `<span style="font-size:12px;">${icon}</span>`;
-      }
+      row.innerHTML = this.buildIconContentHtml(icon, label) || `<span style="font-size:12px;">${icon}</span>`;
       row.addEventListener("click", (e) => {
         e.stopPropagation();
         this.restoreFromTray(winId);

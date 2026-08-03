@@ -1,3 +1,5 @@
+import { escapeHtml } from "../utils/utils.js";
+
 export function renderPrompt(env, format) {
   if (!format) {
     format = "\\u@\\h:\\w\\$ ";
@@ -49,8 +51,4 @@ export function renderPromptHtml(env, format) {
     }
   }
   return html;
-}
-
-function escapeHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

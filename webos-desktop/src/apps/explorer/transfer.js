@@ -3,7 +3,7 @@ import { FileKind } from "../../shared/fileKindDetector.js";
 
 import { zipSync } from "fflate";
 import { $, $$, setStyle } from "../../shared/domUtils.js";
-import { pluralize } from "../../utils/utils.js";
+import { pluralize, downloadBlob } from "../../utils/utils.js";
 import { showArchiveDialog } from "./dialogs.js";
 
 export async function copyItem(explorer, name, isFile, srcPath, destPath) {
@@ -205,12 +205,7 @@ export async function downloadItems(explorer, itemName, isFile, inst) {
   if (effectiveItems.length === 1 && isFile) {
     const content = await os.fs.read([...inst.currentPath, itemName]);
     const data = content || (await explorer.fs.getFileContent(inst.currentPath, itemName)) || "";
-    const src = URL.createObjectURL(new Blob([data]));
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = itemName;
-    a.click();
-    URL.revokeObjectURL(src);
+    downloadBlob(new Blob([data]), itemName);
     return;
   }
 
@@ -230,11 +225,7 @@ export async function downloadItems(explorer, itemName, isFile, inst) {
   }
 
   const zipped = zipSync(zipEntries);
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([zipped], { type: "application/zip" }));
-  a.download = "archive.zip";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  downloadBlob(new Blob([zipped], { type: "application/zip" }), "archive.zip");
 }
 
 export async function createArchiveFromItems(explorer, itemName, isFile, inst) {

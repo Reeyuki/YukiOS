@@ -528,12 +528,6 @@ export const appMap = {
     icon: "/static/icons/wf.webp",
     title: "WorldBox"
   },
-  talkingBen: {
-    type: "remote",
-    url: "https://html-classic.itch.zone/html/5627906/index.html",
-    icon: "/static/icons/ben.webp",
-    title: "Talking Ben"
-  },
   fancyPants: {
     type: "swf",
     swf: "/static/games/swfGames/fancypantsadventure.swf",

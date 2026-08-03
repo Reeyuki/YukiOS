@@ -2,6 +2,7 @@ import "../styles/launchpad.css";
 import { BaseApp } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { KeybindManager } from "../keybindManager.js";
+import { resolveIconHtml } from "../shared/iconUtils.js";
 
 export class LaunchpadApp extends BaseApp {
   constructor(services) {
@@ -136,10 +137,11 @@ export class LaunchpadApp extends BaseApp {
     empty.style.display = "none";
     grid.innerHTML = filtered
       .map((app) => {
-        const isFA = typeof app.icon === "string" && /^fa[bsr]?\s/.test(app.icon);
-        const iconHtml = isFA
-          ? `<i class="launchpad-item-icon ${app.icon}"></i>`
-          : `<img class="launchpad-item-icon" src="${app.icon}" alt="${app.title}" loading="lazy" />`;
+        const iconHtml = resolveIconHtml(app.icon, {
+          faClass: "launchpad-item-icon",
+          imgClass: "launchpad-item-icon",
+          alt: app.title
+        });
         return `
           <div class="launchpad-item" data-app="${app.id}">
             <div class="launchpad-item-icon-wrap">${iconHtml}</div>

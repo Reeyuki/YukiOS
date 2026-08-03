@@ -2,6 +2,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { refreshSteamUI } from "../games/games.js";
 import { resolveAvatarUrl } from "../shared/avatarResolver.js";
 import { PREDEFINED_AVATARS, generateUUID } from "../utils/avatarData.js";
+import { timeAgo } from "../utils/utils.js";
 import { StorageKeys, os } from "../framework.js";
 import { $, $$, bindEvent, setText, setHTML } from "../shared/domUtils.js";
 import { showContextMenu } from "../shared/contextMenu.js";
@@ -35,19 +36,6 @@ function getSelectedUser() {
   return user || getCurrentUser();
 }
 
-function formatTimeAgo(date) {
-  const now = new Date();
-  const diffMs = now - date;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-}
-
 function showStatus(message) {
   const status = $("#account-status", win);
   if (status) {
@@ -69,7 +57,7 @@ export function renderUserList() {
     .map((user) => {
       const isCurrentUser = user.userId === currentUser.userId;
       const isSelected = user.userId === (selectedUserId || currentUser.userId);
-      const lastLogin = user.lastLogin ? formatTimeAgo(new Date(user.lastLogin)) : "Never";
+      const lastLogin = user.lastLogin ? timeAgo(new Date(user.lastLogin)) : "Never";
       return `
         <div class="accounts-user-item ${isSelected ? "selected" : ""} ${isCurrentUser ? "current" : ""}"
              data-user-id="${user.userId}" data-avatar="${user.avatar}">

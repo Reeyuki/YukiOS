@@ -7,7 +7,6 @@ import { KeybindManager } from "../keybindManager.js";
 export class ColorPickerApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
     this.colors = [];
     this.win = null;
     this.registerGlobalShortcut();
@@ -17,7 +16,7 @@ export class ColorPickerApp extends BaseApp {
     document.addEventListener("keydown", (e) => {
       if (KeybindManager.matches(e, "global.colorPicker")) {
         e.preventDefault();
-        if (!this.openWindows.has("color-picker")) this.open();
+        if (!this.hasOpenWindow("color-picker")) this.open();
         this.pick();
       }
     });
@@ -25,7 +24,7 @@ export class ColorPickerApp extends BaseApp {
 
   open() {
     const winId = "color-picker";
-    if (this.openWindows.has(winId)) return;
+    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Color Picker", "360px", "480px", {
       icon: "fas fa-eye-dropper"
@@ -34,13 +33,12 @@ export class ColorPickerApp extends BaseApp {
     win.classList.add("cp-window");
     win.innerHTML = this.buildUI();
     this.win = win;
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
 
     this.setupEvents(win);
     this.loadHistory();
 
     win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
       this.win = null;
     });
   }
@@ -347,7 +345,7 @@ export class ColorPickerApp extends BaseApp {
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
     this.win = null;
     this.removeOverlay();
   }

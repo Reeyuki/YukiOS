@@ -2,8 +2,9 @@ import "../styles/office.css";
 import { KeybindManager } from "../keybindManager.js";
 import { addClass, removeClass } from "../shared/domUtils.js";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { FileKind } from "../shared/fileKindDetector.js";
+import { FileKind, getExt } from "../shared/fileKindDetector.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
+import { escapeHtml } from "../utils/utils.js";
 
 import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os, brand } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
@@ -143,13 +144,7 @@ const modules = new OfficeModuleLoader();
 const FileUtils = {
   getExtension(fileName) {
     if (!fileName || typeof fileName !== "string") return "";
-    const parts = fileName.split(".");
-    return parts.length < 2 ? "" : "." + parts.pop().toLowerCase();
-  },
-
-  escapeHtml(text) {
-    const d = createElement("div", { text });
-    return d.innerHTML;
+    return fileName.includes(".") ? "." + getExt(fileName) : "";
   },
 
   escapeXml(text) {
@@ -780,7 +775,7 @@ class OdtViewer extends EditorStrategy {
       for (let i = 0; i < node.childNodes.length; i++) {
         const c = node.childNodes[i];
         if (c.nodeType === 3) {
-          html += FileUtils.escapeHtml(c.textContent);
+          html += escapeHtml(c.textContent);
           continue;
         }
         if (c.nodeType !== 1) continue;
@@ -801,7 +796,7 @@ class OdtViewer extends EditorStrategy {
             html += `<span${sa}>${walk(c)}</span>`;
             break;
           case "a":
-            html += `<a href="${FileUtils.escapeHtml(c.getAttribute("xlink:href") || "#")}"${sa}>${walk(c)}</a>`;
+            html += `<a href="${escapeHtml(c.getAttribute("xlink:href") || "#")}"${sa}>${walk(c)}</a>`;
             break;
           case "list":
             html += `<ul${sa}>${walk(c)}</ul>`;
@@ -1015,7 +1010,7 @@ class OdpViewer extends EditorStrategy {
     for (let i = 0; i < node.childNodes.length; i++) {
       const c = node.childNodes[i];
       if (c.nodeType === 3) {
-        html += FileUtils.escapeHtml(c.textContent);
+        html += escapeHtml(c.textContent);
         continue;
       }
       if (c.nodeType !== 1) continue;
@@ -1031,7 +1026,7 @@ class OdpViewer extends EditorStrategy {
       else if (ln === "line-break") html += "<br>";
       else if (ln === "s") html += "&nbsp;".repeat(parseInt(c.getAttribute("text:c") || "1"));
       else if (ln === "a")
-        html += `<a href="${FileUtils.escapeHtml(c.getAttribute("xlink:href") || "#")}">${OdpViewer.renderText(c, styleMap)}</a>`;
+        html += `<a href="${escapeHtml(c.getAttribute("xlink:href") || "#")}">${OdpViewer.renderText(c, styleMap)}</a>`;
       else html += OdpViewer.renderText(c, styleMap);
     }
     return html;

@@ -1,5 +1,6 @@
 import { WidgetBase } from "../widgetManager.js";
 import { StorageKeys, os } from "../../framework.js";
+import { escapeHtml } from "../../utils/utils.js";
 
 export class ClipboardWidget extends WidgetBase {
   constructor(manager, id) {
@@ -36,18 +37,12 @@ export class ClipboardWidget extends WidgetBase {
         .map((item) => {
           const data = typeof item === "string" ? item : item.data || "";
           const preview = data.length > 40 ? data.slice(0, 40) + "..." : data;
-          return `<div class="widget-clipboard-item">${this.escapeHtml(preview)}</div>`;
+          return `<div class="widget-clipboard-item">${escapeHtml(preview)}</div>`;
         })
         .join("");
     } else {
       listEl.innerHTML = `<div class="widget-clipboard-empty">No history</div>`;
     }
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   destroy() {

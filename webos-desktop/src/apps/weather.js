@@ -2,7 +2,7 @@ import "../styles/weather.css";
 import { getWeatherInfo } from "../shared/weatherCodes.js";
 
 import { $, setHTML, setText } from "../shared/domUtils.js";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 const WEATHER_CACHE_TTL = 10 * 60 * 1000;
 const LOCATION_CACHE_TTL = 24 * 60 * 60 * 1000;
 function getCached(key, ttl = WEATHER_CACHE_TTL) {
@@ -28,7 +28,7 @@ function setCache(key, data) {
 export { getCached, setCache };
 
 export async function detectUserLocation() {
-  const cacheKey = "wx_user_location";
+  const cacheKey = StorageKeys.weatherUserLocation;
   const cached = getCached(cacheKey, LOCATION_CACHE_TTL);
   if (cached) return cached;
   const res = await fetch("https://ipapi.co/json/");
@@ -108,7 +108,7 @@ export class WeatherApp extends BaseApp {
   async fetchWeatherByCoords(latitude, longitude, cityName, country) {
     const tempUnit = this.unit === "imperial" ? "fahrenheit" : "celsius";
     const windUnit = this.unit === "imperial" ? "mph" : "kmh";
-    const cacheKey = `yukiOS_weather_${latitude.toFixed(2)}_${longitude.toFixed(2)}_${this.unit}`;
+    const cacheKey = StorageKeys.weatherCachePrefix + `${latitude.toFixed(2)}_${longitude.toFixed(2)}_${this.unit}`;
     const cached = getCached(cacheKey);
     if (cached) return { ...cached, cityName, country };
 
@@ -278,7 +278,7 @@ export class WeatherApp extends BaseApp {
   }
 
   async initializeWeather(container, searchInput) {
-    const locCacheKey = "wx_user_location";
+    const locCacheKey = StorageKeys.weatherUserLocation;
     const cachedLoc = getCached(locCacheKey, LOCATION_CACHE_TTL);
 
     if (cachedLoc) {
@@ -286,7 +286,9 @@ export class WeatherApp extends BaseApp {
       this.currentCity = cachedLoc.city;
       searchInput.value = cachedLoc.city;
 
-      const appCacheKey = `yukiOS_weather_${cachedLoc.latitude.toFixed(2)}_${cachedLoc.longitude.toFixed(2)}_${this.unit}`;
+      const appCacheKey =
+        StorageKeys.weatherCachePrefix +
+        `${cachedLoc.latitude.toFixed(2)}_${cachedLoc.longitude.toFixed(2)}_${this.unit}`;
       const cachedAppData = getCached(appCacheKey);
 
       if (cachedAppData) {

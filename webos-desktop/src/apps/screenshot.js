@@ -1,12 +1,12 @@
 import "../styles/screenshot.css";
 import { $, setStyle, createElement } from "../framework.js";
 import { BaseApp, os } from "../framework.js";
+import { downloadBlob } from "../utils/utils.js";
 import { KeybindManager } from "../keybindManager.js";
 
 export class ScreenshotApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
     this.win = null;
     this.recording = false;
     this.mediaRecorder = null;
@@ -53,12 +53,11 @@ export class ScreenshotApp extends BaseApp {
     win.classList.add("sc-window");
     win.innerHTML = this.buildUI();
     this.win = win;
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
 
     this.setupEvents(win);
 
     win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
       this.win = null;
     });
   }
@@ -470,14 +469,7 @@ export class ScreenshotApp extends BaseApp {
     if (!this.currentBlob) return;
     const ext = this.currentType === "recording" ? "webm" : "png";
     const name = `screenshot-${Date.now()}.${ext}`;
-    const url = URL.createObjectURL(this.currentBlob);
-    const a = createElement("a");
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    downloadBlob(this.currentBlob, name);
     os.notify.send("Screenshot", `Downloaded ${name}`);
   }
 
@@ -505,7 +497,7 @@ export class ScreenshotApp extends BaseApp {
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
     this.win = null;
     if (this.recording) this.stopRecording();
     if (this.cleanupOverlay) {

@@ -2225,7 +2225,7 @@ export class TerminalApp extends BaseApp {
         const cachedMem = Math.round(freeSystemMem * 0.3);
         const availMem = freeSystemMem + cachedMem;
 
-        const displayName = os.storage.get("settings:displayName") || "user";
+        const displayName = os.storage.get(StorageKeys.settingsDisplayName) || "user";
         const uptime = Math.floor(performance.now() / 1000);
         const load1 = Math.min(coreCount, +(totalCpu / 25).toFixed(1));
         const load5 = Math.max(0, +(load1 * 0.8).toFixed(1));

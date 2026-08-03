@@ -17,6 +17,7 @@ import {
   splitPath
 } from "../shared/virtualFsNet.js";
 import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
+import { escapeHtml } from "../utils/utils.js";
 
 const THEME_VARS = [
   "--brand",
@@ -675,9 +676,7 @@ export class BrowserApp extends BaseApp {
 
   buildLocalErrorPage(url, message, options = {}) {
     const theme = readOsTheme();
-    const escapeHtml = (value) =>
-      String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    const title = escapeHtml(options.title || "Error");
+    const title = escapeHtml(String(options.title || "Error"));
     if (options.dino) {
       return (
         '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
@@ -695,12 +694,12 @@ export class BrowserApp extends BaseApp {
         ";margin-top:16px;text-align:left}</style></head><body><div class='offline'><div class='dino'><iframe class='dino-frame' srcdoc='" +
         escapeDinoGameAttr() +
         "' title='T-Rex Runner' loading='lazy'></iframe></div><div class='offline-msg'>There is no Internet connection.</div><div class='offline-try'>Try:<ul><li>Checking the network cables, modem and router</li><li>Reconnecting to Wi-Fi</li></ul></div><div class='offline-code'>" +
-        (options.code ? escapeHtml(options.code) : "ERR_CONNECTION_REFUSED") +
+        (options.code ? escapeHtml(String(options.code)) : "ERR_CONNECTION_REFUSED") +
         "</div></div></body></html>"
       );
     }
-    const detail = options.detail ? '<div class="detail">' + escapeHtml(options.detail) + "</div>" : "";
-    const code = options.code ? '<div class="code">' + escapeHtml(options.code) + "</div>" : "";
+    const detail = options.detail ? '<div class="detail">' + escapeHtml(String(options.detail)) + "</div>" : "";
+    const code = options.code ? '<div class="code">' + escapeHtml(String(options.code)) + "</div>" : "";
     return (
       '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
       title +

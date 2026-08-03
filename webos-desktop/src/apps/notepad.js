@@ -4,6 +4,7 @@ import { $, $$, setStyle, BaseApp, os } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
+import { escapeHtml } from "../utils/utils.js";
 export class NotepadApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -85,7 +86,7 @@ export class NotepadApp extends BaseApp {
         </div>
       </div>
       <div class="window-content notepad-content">
-        <textarea class="notepad-textarea">${this.escapeHtml(content)}</textarea>
+        <textarea class="notepad-textarea">${escapeHtml(content)}</textarea>
         <div class="notepad-statusbar">
           <span class="status-position">Ln 1, Col 1</span>
           <span class="status-zoom">100%</span>
@@ -125,12 +126,6 @@ export class NotepadApp extends BaseApp {
 
   get explorerApp() {
     return os.app.getInstance("explorerApp");
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   markModified(win, winId) {

@@ -748,21 +748,6 @@ export const APP_MANIFESTS = [
     windowSize: ["90vw", "85vh"]
   },
   {
-    serviceKey: "replitApp",
-    enhanced: true,
-    type: "system",
-    title: "Replit",
-    icon: "fas fa-code",
-    launchType: "instance",
-    windowIdPatterns: ["replit"],
-    category: "development",
-    persistContentState: false,
-    clippy: { message: "Code on Replit", animation: ClippyAnimation.GetTechy },
-    description: "Code online, build projects, and collaborate with others in real time on Replit.",
-    targetUrl: "https://replit.com",
-    windowSize: ["90vw", "85vh"]
-  },
-  {
     serviceKey: "twitchApp",
     enhanced: true,
     type: "system",

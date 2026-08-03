@@ -3,6 +3,15 @@ import { CDN_BASES } from "../shared/assetResolver.js";
 
 import { BusEvents, BaseApp, os, $, $$, setStyle } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import {
+  normalizePath,
+  fileNameToDisplayName,
+  buildLoadingStateHTML,
+  buildErrorHTML,
+  setLog,
+  renderEmulatorFileList,
+  handleEmulatorUpload
+} from "../shared/emulatorBase.js";
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {
@@ -98,85 +107,53 @@ export class V86App extends BaseApp {
   }
 
   async handleUploadedFile(file, zone) {
-    const originalHTML = zone.innerHTML;
-
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin v86-loading-icon emu-state-icon"></i><div class="v86-loading-text emu-state-text">Saving <strong>${file.name}</strong>…</div>`;
-
-    try {
-      const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await os.fs.writeBinaryFile(IMAGES_DIR, file.name, blob, "other", resolveIconUrl("static/icons/v86.webp"));
-      os.notify.send("V86", `Saved ${file.name} to VMs.`);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check v86-success-icon emu-state-icon"></i><div class="v86-success-text emu-state-text">Saved!</div>`;
-      await this.loadUserImages($("#v86-win"));
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-      }, 1500);
-    } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation v86-error-icon emu-state-icon emu-state--error"></i><div class="v86-error-text emu-state-text emu-state--error">${err.message}</div>`;
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-      }, 2500);
-    }
+    handleEmulatorUpload({
+      zone,
+      files: [file],
+      dir: IMAGES_DIR,
+      kind: "other",
+      icon: resolveIconUrl("static/icons/v86.webp"),
+      emitChanged: false,
+      spinnerHTML: `<i class="fa-solid fa-spinner fa-spin v86-loading-icon emu-state-icon"></i><div class="v86-loading-text emu-state-text">Saving <strong>${file.name}</strong>…</div>`,
+      successHTML: `<i class="fa-solid fa-circle-check v86-success-icon emu-state-icon"></i><div class="v86-success-text emu-state-text">Saved!</div>`,
+      errorHTML: (msg) =>
+        `<i class="fa-solid fa-triangle-exclamation v86-error-icon emu-state-icon emu-state--error"></i><div class="v86-error-text emu-state-text emu-state--error">${msg}</div>`,
+      onSaved: async () => {
+        os.notify.send("V86", `Saved ${file.name} to VMs.`);
+        await this.loadUserImages($("#v86-win"));
+      },
+      onReload: () => {}
+    });
   }
 
   async loadUserImages(win) {
     const container = $("#v86-user-images", win);
     if (!container) return;
 
-    try {
-      await os.fs.mkdir(IMAGES_DIR).catch(() => {});
-      const entries = await os.fs.readdir(IMAGES_DIR).catch(() => ({}));
-      const files = Object.keys(entries).filter((k) => entries[k]?.type === "file");
-      const imageFiles = files.filter(
-        (f) =>
-          !f.startsWith(".") &&
-          (f.endsWith(".iso") || f.endsWith(".img") || f.endsWith(".bin") || f.endsWith(".state") || f.endsWith(".gz"))
-      );
-
-      if (imageFiles.length === 0) {
-        container.innerHTML = `<div class="v86-empty-text emu-empty">No uploaded images yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = imageFiles
-        .map((f) => {
-          const displayName = f
-            .replace(/\.[^.]+$/, "")
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-          return `
+    renderEmulatorFileList({
+      container,
+      dir: IMAGES_DIR,
+      filter: (f) =>
+        f.endsWith(".iso") || f.endsWith(".img") || f.endsWith(".bin") || f.endsWith(".state") || f.endsWith(".gz"),
+      emptyHTML: `<div class="v86-empty-text emu-empty">No uploaded images yet.</div>`,
+      cardHTML: (f) => `
         <div class="v86-image-card emu-card emu-card--removable" data-user-file="${f}">
           <i class="fa-solid fa-compact-disc v86-image-icon emu-card-icon"></i>
-          <div class="v86-image-name emu-card-title">${displayName}</div>
+          <div class="v86-image-name emu-card-title">${fileNameToDisplayName(f)}</div>
           <button class="v86-delete-btn emu-delete-btn" data-file="${f}" title="Delete"><i class="fa-solid fa-xmark"></i></button>
         </div>
-      `;
-        })
-        .join("");
+      `,
+      cardSelector: ".v86-image-card",
+      deleteBtnSelector: ".v86-delete-btn",
+      deleteAction: (name) => os.fs.deleteBinaryFile(IMAGES_DIR, name),
+      onCardClick: (fileName) => this.launchImage(fileName, IMAGES_DIR),
+      onReload: () => this.loadUserImages(win)
+    });
 
-      $$(".v86-image-card", container).forEach((card) => {
-        card.addEventListener("click", (e) => {
-          if (e.target.closest(".v86-delete-btn")) return;
-          const fileName = card.dataset.userFile;
-          this.launchImage(fileName, IMAGES_DIR);
-        });
-        card.addEventListener("mouseenter", () => {
-          card.classList.add("emu-card--hover");
-        });
-        card.addEventListener("mouseleave", () => {
-          card.classList.remove("emu-card--hover");
-        });
-      });
-
-      $$(".v86-delete-btn", container).forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const fileName = btn.dataset.file;
-          await os.fs.deleteBinaryFile(IMAGES_DIR, fileName);
-          await this.loadUserImages(win);
-        });
-      });
-    } catch {}
+    $$(".v86-image-card", container).forEach((card) => {
+      card.addEventListener("mouseenter", () => card.classList.add("emu-card--hover"));
+      card.addEventListener("mouseleave", () => card.classList.remove("emu-card--hover"));
+    });
   }
 
   async launchSystem(systemId, displayName) {
@@ -202,11 +179,7 @@ export class V86App extends BaseApp {
   }
 
   async launchImage(fileName, path) {
-    const normalizedPath = Array.isArray(path)
-      ? path
-      : typeof path === "string"
-        ? path.split("/").filter(Boolean)
-        : Object.values(path ?? {}).filter((v) => typeof v === "string");
+    const normalizedPath = normalizePath(path);
 
     try {
       const blob = await os.fs.readBinaryFile(normalizedPath, fileName);
@@ -231,10 +204,7 @@ export class V86App extends BaseApp {
         config.initialstate = { buffer: arrayBuffer };
       }
 
-      const displayName = fileName
-        .replace(/\.[^.]+$/, "")
-        .replace(/[-_]/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const displayName = fileNameToDisplayName(fileName);
 
       this.launchV86(displayName, config);
     } catch (e) {
@@ -252,11 +222,14 @@ export class V86App extends BaseApp {
 
     win.innerHTML = `
     <div class="window-content v86-window emu-window">
-      <div id="${winId}-inner" class="v86-loading emu-state emu-load-wrap">
-        <i class="fa-solid fa-microchip fa-spin v86-state-icon emu-state-icon"></i>
-        <div class="v86-state-text emu-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>…</div>
-        <div id="${winId}-log" class="v86-log emu-state-text--muted"></div>
-      </div>
+      ${buildLoadingStateHTML({
+        winId,
+        iconClass: "fa-solid fa-microchip fa-spin v86-state-icon emu-state-icon",
+        wrapperClass: "v86-loading emu-state emu-load-wrap",
+        textClass: "v86-state-text emu-state-text",
+        logClass: "v86-log emu-state-text--muted",
+        displayName
+      })}
       <div id="${winId}-screen" class="v86-screen emu-window-screen"></div>
     </div>`;
 
@@ -264,17 +237,14 @@ export class V86App extends BaseApp {
     const screenDiv = $(`#${winId}-screen`, win);
     const log = $(`#${winId}-log`, win);
 
-    const setLog = (msg) => {
-      if (log) log.textContent = msg;
-    };
-
     const showError = (msg) => {
       if (inner)
-        inner.innerHTML = `
-      <div class="v86-error emu-state emu-state--error">
-        <i class="fa-solid fa-triangle-exclamation v86-error-icon emu-state-icon"></i>
-        <div class="v86-error-msg emu-state-text emu-state--error">${msg}</div>
-      </div>`;
+        inner.innerHTML = buildErrorHTML({
+          msg,
+          wrapperClass: "v86-error emu-state emu-state--error",
+          iconClass: "fa-solid fa-triangle-exclamation v86-error-icon emu-state-icon",
+          textClass: "v86-error-msg emu-state-text emu-state--error"
+        });
     };
 
     let emulator = null;
@@ -299,7 +269,7 @@ export class V86App extends BaseApp {
         return;
       }
 
-      setLog("Booting up…");
+      setLog(log, "Booting up…");
 
       const screenContainer = document.createElement("div");
       setStyle(screenContainer, { width: "100%", height: "100%" });
@@ -331,7 +301,7 @@ export class V86App extends BaseApp {
       emulator.add_listener("download-progress", (e) => {
         if (e.loaded && e.total) {
           const pct = Math.round((e.loaded / e.total) * 100);
-          setLog(`Downloading… ${pct}%`);
+          setLog(log, `Downloading… ${pct}%`);
         }
       });
 
@@ -402,10 +372,7 @@ export class V86App extends BaseApp {
       config.initialstate = { buffer: arrayBuffer };
     }
 
-    const displayName = fileName
-      .replace(/\.[^.]+$/, "")
-      .replace(/[-_]/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    const displayName = fileNameToDisplayName(fileName);
 
     this.launchV86(displayName, config);
   }

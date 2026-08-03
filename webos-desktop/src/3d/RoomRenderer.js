@@ -1394,6 +1394,7 @@ export class RoomRenderer {
   }
 
   setQuality(level) {
+    const THREE = this.THREE;
     const isUltra = level === "ultra";
     const isHigh = level === "high" || isUltra;
     const isLow = level === "low";

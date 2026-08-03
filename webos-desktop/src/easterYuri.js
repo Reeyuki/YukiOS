@@ -102,10 +102,15 @@ html[data-yuri] .session-mode-btn:hover {
 html[data-yuri] #session-overlay {
   background: radial-gradient(120% 120% at 50% 0%, oklch(24% 0.07 352), oklch(12% 0.03 355) 70%) !important;
 }
+html[data-yuri] .session-brand {
+  color: var(--yuri-accent-2);
+  text-shadow: 0 2px 12px rgba(255, 45, 120, 0.6);
+}
 `;
 
 let active = false;
 let initialized = false;
+let randomTriggered = false;
 
 function isTrue(value) {
   return value === true || value === "true" || value === "1";
@@ -143,11 +148,16 @@ export function initYuriEasterEgg() {
       active = true;
     } else {
       active = Math.random() < 0.01;
+      randomTriggered = active;
     }
   } catch {
     active = false;
   }
   return active;
+}
+
+export function wasRandomYuriTrigger() {
+  return randomTriggered;
 }
 
 export function isYuri() {
@@ -156,6 +166,10 @@ export function isYuri() {
 
 export function osName() {
   return isYuri() ? "YuriOS" : "YukiOS";
+}
+
+export function yuriPageTitle() {
+  return isYuri() ? "Yuri OS" : null;
 }
 
 export function brand(text) {

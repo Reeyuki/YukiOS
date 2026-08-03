@@ -1,5 +1,5 @@
 import { AppSource } from "../AppSource.js";
-import { os as _os } from "../os/index.js";
+import { os as osBridge } from "../os/index.js";
 import { brand } from "../easterYuri.js";
 
 const PROXIED_MARKER = Symbol("proxied");
@@ -21,7 +21,7 @@ export class BaseApp {
       this.bus = param.events;
       this.notifications = param.notify;
     } else {
-      this.os = _os;
+      this.os = osBridge;
       this.services = param;
       if (param.windowManager && !param.windowManager[PROXIED_MARKER]) {
         param.windowManager = new Proxy(param.windowManager, {
@@ -29,7 +29,7 @@ export class BaseApp {
             if (prop === "sendNotify") {
               return async (text, appSource = null) => {
                 const source = appSource || this.getAppSource();
-                _os.notify.send("", text, { appSource: source });
+                osBridge.notify.send("", text, { appSource: source });
               };
             }
             if (prop === PROXIED_MARKER) return true;
@@ -41,6 +41,7 @@ export class BaseApp {
       this.fs = param.fs || param.fileSystemManager;
       this.bus = param.bus;
       this.notifications = param.notifications || param.notificationCenter;
+      this.openWindows = new Set();
     }
   }
 
@@ -49,6 +50,21 @@ export class BaseApp {
   }
 
   onClose(winId) {}
+
+  hasOpenWindow(winId) {
+    return this.openWindows.has(winId);
+  }
+
+  trackWindow(winId, win) {
+    this.openWindows.add(winId);
+    win.addEventListener("remove", () => {
+      this.openWindows.delete(winId);
+    });
+  }
+
+  untrackWindow(winId) {
+    this.openWindows.delete(winId);
+  }
 
   getSnapshot(winId) {
     return null;
@@ -67,12 +83,12 @@ export class BaseApp {
           taskbarItem.classList.remove("minimized");
         }
         try {
-          const os = _os;
+          const os = osBridge;
           os.tray.restoreFromTray(winId);
         } catch (e) {}
       }
       try {
-        const os = _os;
+        const os = osBridge;
         os.window.focus(existing);
       } catch (e) {
         existing.style.zIndex = "10000";
@@ -84,7 +100,7 @@ export class BaseApp {
 
   async notify(title, message = "", type = "info", duration = 5000, icon = null, appSource = null) {
     const source = appSource || this.getAppSource();
-    const os = _os;
+    const os = osBridge;
     os.notify.send(title, message, { type, duration, icon, appSource: source });
   }
 
@@ -151,22 +167,22 @@ export class BaseApp {
   }
 
   async registerTray(winId, icon, label, options = {}) {
-    const os = _os;
+    const os = osBridge;
     os.tray.register(winId, icon, label, options);
   }
 
   async unregisterTray(winId) {
-    const os = _os;
+    const os = osBridge;
     os.tray.unregister(winId);
   }
 
   async sendToTray(winId) {
-    const os = _os;
+    const os = osBridge;
     os.tray.sendToTray(winId);
   }
 
   async restoreFromTray(winId) {
-    const os = _os;
+    const os = osBridge;
     os.tray.restoreFromTray(winId);
   }
 }

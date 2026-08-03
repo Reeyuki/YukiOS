@@ -4,7 +4,7 @@ import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
 import { updateTransparency } from "./transparencyManager.js";
 import { getSetting } from "../utils/utils.js";
-import { os, MODES } from "../framework.js";
+import { os, MODES, yuriPageTitle } from "../framework.js";
 
 export class WindowManagerUtils {
   constructor(manager) {
@@ -113,7 +113,7 @@ export class WindowManagerUtils {
   }
 
   updatePageFavicon(iconValue, title) {
-    document.title = sanitizeTitle(title) || this.manager.initialTitle;
+    document.title = yuriPageTitle() || sanitizeTitle(title) || this.manager.initialTitle;
     const link = this.getFaviconLink();
     iconValue = resolveIconUrl(iconValue);
     const { isImage, isDataUrl } = this.resolveIconType(iconValue);
@@ -125,7 +125,7 @@ export class WindowManagerUtils {
   }
 
   resetToDefaultState() {
-    document.title = this.manager.initialTitle;
+    document.title = yuriPageTitle() || this.manager.initialTitle;
     const link = this.getFaviconLink();
     link.href = this.manager.initialFavicon || "";
   }
@@ -133,7 +133,7 @@ export class WindowManagerUtils {
   initVisibilityTracking() {
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
-        document.title = this.manager.initialTitle;
+        document.title = yuriPageTitle() || this.manager.initialTitle;
         this.getFaviconLink().href = this.manager.initialFavicon || "";
       } else {
         if (this.manager.openWindows.size === 0) {
@@ -166,13 +166,7 @@ export class WindowManagerUtils {
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
           if (iframeDoc) {
             const html = iframeDoc.documentElement?.outerHTML ?? "";
-            const blob = new Blob([html], { type: "text/html" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename + ".html";
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            this.saveHtmlAsFile(html, filename);
           }
         } catch (e) {}
         return;
@@ -190,13 +184,7 @@ export class WindowManagerUtils {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (iframeDoc) {
           const html = iframeDoc.documentElement?.outerHTML ?? "";
-          const blob = new Blob([html], { type: "text/html" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename + ".html";
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          this.saveHtmlAsFile(html, filename);
           return;
         }
       } catch (e) {}
@@ -212,6 +200,10 @@ export class WindowManagerUtils {
 
     const content = win.querySelector(".window-content");
     const html = content ? content.innerHTML : win.outerHTML;
+    this.saveHtmlAsFile(html, filename);
+  }
+
+  saveHtmlAsFile(html, filename) {
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

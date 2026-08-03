@@ -1,5 +1,6 @@
 import "../styles/setup.css";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
+import { isImageFile } from "../shared/fileKindDetector.js";
 import { SystemUtilities } from "../system.js";
 import { Achievements } from "../achievements.js";
 import { AppSource } from "../AppSource.js";
@@ -251,7 +252,6 @@ export class SetupApp extends BaseApp {
       clippy: false,
       clipboardManager: true
     };
-    this.openWindows = new Set();
     this.wallpapers = [];
     this.customWallpapers = [];
     this.isTransitioning = false;
@@ -277,17 +277,13 @@ export class SetupApp extends BaseApp {
     });
     win.innerHTML = this.buildUI();
     os.window.applySnap(win, "maximize");
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
     this.bindEvents(win);
     this.animateStepIn(win);
-
-    win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
-    });
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
   }
 
   buildUI() {
@@ -1030,7 +1026,7 @@ Have fun!`;
     this.os.app.triggerAchievement(Achievements.SetupComplete);
     os.window.close(win);
     setTimeout(() => startIntroTour(), 600);
-    this.openWindows.delete("setup-wizard");
+    this.untrackWindow("setup-wizard");
   }
 
   async loadWallpapers() {
@@ -1039,7 +1035,7 @@ Have fun!`;
       if (folder) {
         this.wallpapers = Object.keys(folder).filter((name) => {
           const item = folder[name];
-          return item && item.type === "file" && name.endsWith(".webp");
+          return item && item.type === "file" && isImageFile(name);
         });
       }
     } catch (e) {

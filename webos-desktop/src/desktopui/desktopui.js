@@ -4,7 +4,7 @@ import { desktop } from "./desktop.js";
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os, $, $$, setStyle } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
-import { isWindowFocused } from "../utils/utils.js";
+import { isWindowFocused, rectsIntersect } from "../utils/utils.js";
 import { DesktopContextMenuManager } from "./ContextMenuManager.js";
 import { IconManager } from "./iconManager.js";
 import { DragDropManager } from "./dragDropManager.js";
@@ -994,12 +994,7 @@ export class DesktopUI {
         $$(".icon.selectable").forEach((icon) => {
           if (icon.style.display === "none") return;
           const r = icon.getBoundingClientRect();
-          const overlaps = !(
-            r.right < boxRect.left ||
-            r.left > boxRect.right ||
-            r.bottom < boxRect.top ||
-            r.top > boxRect.bottom
-          );
+          const overlaps = rectsIntersect(r, boxRect);
           if (overlaps) this.selectionManager.add(icon);
           else this.selectionManager.remove(icon);
         });
@@ -1173,7 +1168,7 @@ export function sortDesktopIcons(mode) {
         break;
       case "recent": {
         const appId = icon.dataset.app;
-        key = appId ? -(os.storage.get(`launchtime:${appId}`) || 0) : 0;
+        key = appId ? -(os.storage.get(StorageKeys.launchTimePrefix + appId) || 0) : 0;
         break;
       }
       default:

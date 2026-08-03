@@ -340,7 +340,7 @@ export class TaskbarSystem {
   updateAudioIndicators() {
     const intensityValues = audioMixer().intensityValues;
     if (!intensityValues) return;
-    this.manager.openWindows.forEach((_entry, winId) => {
+    this.manager.openWindows.forEach((entry, winId) => {
       const indicator = $(`#taskbar-${winId} .taskbar-speaker-indicator`);
       if (!indicator) return;
       const intensity = intensityValues.get(winId) || 0;

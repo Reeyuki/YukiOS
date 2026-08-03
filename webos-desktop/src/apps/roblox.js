@@ -44,7 +44,7 @@ const GAMES = [
 
 const FAKE_RATINGS = [4.2, 3.8, 4.5, 3.5, 4.8, 4.0, 3.2, 4.7, 3.9, 4.3, 3.6, 4.1, 4.4, 3.7, 4.6];
 
-const SETTINGS_KEY = "roblox_settings";
+const SETTINGS_KEY = StorageKeys.robloxSettings;
 
 export class RobloxApp extends BaseApp {
   constructor(services) {

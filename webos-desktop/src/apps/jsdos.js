@@ -2,6 +2,15 @@ import { Achievements } from "../achievements.js";
 import { zipSync } from "fflate";
 
 import { setStyle, BusEvents, BaseApp, os } from "../framework.js";
+import {
+  normalizePath,
+  fileNameToDisplayName,
+  buildLoadingStateHTML,
+  buildErrorHTML,
+  setLog,
+  renderEmulatorFileList,
+  handleEmulatorUpload
+} from "../shared/emulatorBase.js";
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {
@@ -110,83 +119,44 @@ export class JsDosApp extends BaseApp {
   }
 
   async handleUploadedFile(file, win) {
-    const zone = win.querySelector("#jsdos-upload-zone");
-    const originalHTML = zone.innerHTML;
-
-    zone.innerHTML = `<i class="fa-solid fa-spinner fa-spin jsdos-loading-icon"></i><div class="jsdos-loading-text">Saving <strong>${file.name}</strong>…</div>`;
-
-    try {
-      const blob = new Blob([await file.arrayBuffer()], { type: file.type || "application/octet-stream" });
-      await os.fs.writeBinaryFile(GAMES_DIR, file.name, blob, "other", "/static/icons/jsdos.webp");
-      os.notify.send("JsDos", `Saved ${file.name} to Games.`);
-      zone.innerHTML = `<i class="fa-solid fa-circle-check jsdos-success-icon"></i><div class="jsdos-success-text">Saved!</div>`;
-      await this.loadUserGames(win);
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-        win.querySelector("#jsdos-file-input").addEventListener("change", (e) => {
-          const f = e.target.files[0];
-          if (f) this.handleUploadedFile(f, win);
-          e.target.value = "";
-        });
-      }, 1500);
-    } catch (err) {
-      zone.innerHTML = `<i class="fa-solid fa-triangle-exclamation jsdos-error-icon"></i><div class="jsdos-error-text">${err.message}</div>`;
-      setTimeout(() => {
-        zone.innerHTML = originalHTML;
-      }, 2500);
-    }
+    handleEmulatorUpload({
+      zone: win.querySelector("#jsdos-upload-zone"),
+      files: [file],
+      dir: GAMES_DIR,
+      kind: "other",
+      icon: "/static/icons/jsdos.webp",
+      emitChanged: false,
+      spinnerHTML: `<i class="fa-solid fa-spinner fa-spin jsdos-loading-icon"></i><div class="jsdos-loading-text">Saving <strong>${file.name}</strong>…</div>`,
+      successHTML: `<i class="fa-solid fa-circle-check jsdos-success-icon"></i><div class="jsdos-success-text">Saved!</div>`,
+      errorHTML: (msg) =>
+        `<i class="fa-solid fa-triangle-exclamation jsdos-error-icon"></i><div class="jsdos-error-text">${msg}</div>`,
+      onSaved: () => os.notify.send("JsDos", `Saved ${file.name} to Games.`),
+      onReload: () => this.loadUserGames(win)
+    });
   }
 
   async loadUserGames(win) {
     const container = win.querySelector("#jsdos-user-games");
     if (!container) return;
 
-    try {
-      await os.fs.mkdir(GAMES_DIR).catch(() => {});
-      const entries = await os.fs.readdir(GAMES_DIR).catch(() => ({}));
-      const files = Object.keys(entries).filter((k) => entries[k]?.type === "file");
-      const gameFiles = files.filter(
-        (f) => !f.startsWith(".") && (f.endsWith(".jsdos") || f.endsWith(".exe") || f.endsWith(".com"))
-      );
-
-      if (gameFiles.length === 0) {
-        container.innerHTML = `<div class="jsdos-empty-text">No uploaded games yet.</div>`;
-        return;
-      }
-
-      container.innerHTML = gameFiles
-        .map((f) => {
-          const displayName = f
-            .replace(/\.[^.]+$/, "")
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-          return `
+    renderEmulatorFileList({
+      container,
+      dir: GAMES_DIR,
+      filter: (f) => f.endsWith(".jsdos") || f.endsWith(".exe") || f.endsWith(".com"),
+      emptyHTML: `<div class="jsdos-empty-text">No uploaded games yet.</div>`,
+      cardHTML: (f) => `
         <div class="jsdos-game-card jsdos-user-card emu-card emu-card--removable" data-user-file="${f}">
           <i class="fa-solid fa-floppy-disk jsdos-game-icon emu-card-icon"></i>
-          <div class="jsdos-game-title emu-card-title">${displayName}</div>
+          <div class="jsdos-game-title emu-card-title">${fileNameToDisplayName(f)}</div>
           <button class="jsdos-delete-btn" data-file="${f}" title="Delete"><i class="fa-solid fa-xmark"></i></button>
         </div>
-      `;
-        })
-        .join("");
-
-      container.querySelectorAll(".jsdos-user-card").forEach((card) => {
-        card.addEventListener("click", (e) => {
-          if (e.target.closest(".jsdos-delete-btn")) return;
-          const fileName = card.dataset.userFile;
-          this.launchExe(fileName, GAMES_DIR);
-        });
-      });
-
-      container.querySelectorAll(".jsdos-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const fileName = btn.dataset.file;
-          await os.fs.deleteBinaryFile(GAMES_DIR, fileName);
-          await this.loadUserGames(win);
-        });
-      });
-    } catch {}
+      `,
+      cardSelector: ".jsdos-user-card",
+      deleteBtnSelector: ".jsdos-delete-btn",
+      deleteAction: (name) => os.fs.deleteBinaryFile(GAMES_DIR, name),
+      onCardClick: (fileName) => this.launchExe(fileName, GAMES_DIR),
+      onReload: () => this.loadUserGames(win)
+    });
   }
 
   async launchGame(fileName, displayName) {
@@ -198,25 +168,26 @@ export class JsDosApp extends BaseApp {
 
     win.innerHTML = `
     <div class="window-content jsdos-game-window emu-window">
-      <div id="${winId}-inner" class="jsdos-loading emu-window-screen emu-load-wrap">
-        <i class="fa-solid fa-compact-disc jsdos-loading-spinner emu-state-icon"></i>
-        <div class="jsdos-game-loading-text emu-state-text emu-state-text--accent">Starting <strong>${displayName}</strong>…</div>
-        <div id="${winId}-log" class="jsdos-game-log emu-log"></div>
-      </div>
+      ${buildLoadingStateHTML({
+        winId,
+        iconClass: "fa-solid fa-compact-disc jsdos-loading-spinner emu-state-icon",
+        wrapperClass: "jsdos-loading emu-window-screen emu-load-wrap",
+        textClass: "jsdos-game-loading-text emu-state-text",
+        logClass: "jsdos-game-log emu-log",
+        displayName
+      })}
     </div>`;
 
     const inner = win.querySelector(`#${winId}-inner`);
     const log = win.querySelector(`#${winId}-log`);
-    const setLog = (msg) => {
-      if (log) log.textContent = msg;
-    };
     const showError = (msg) => {
       if (inner)
-        inner.innerHTML = `
-      <div class="jsdos-error emu-error">
-        <i class="fa-solid fa-triangle-exclamation jsdos-error-icon emu-state-icon"></i>
-        <div class="jsdos-error-msg emu-state-text emu-state-text--error">${msg}</div>
-      </div>`;
+        inner.innerHTML = buildErrorHTML({
+          msg,
+          wrapperClass: "jsdos-error emu-error",
+          iconClass: "fa-solid fa-triangle-exclamation jsdos-error-icon emu-state-icon",
+          textClass: "jsdos-error-msg emu-state-text emu-state-text--error"
+        });
     };
 
     let iframeEl = null;
@@ -234,7 +205,7 @@ export class JsDosApp extends BaseApp {
     this.onClose(winId, cleanup);
 
     try {
-      setLog("Downloading game…");
+      setLog(log, "Downloading game…");
       const gameUrl = `https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/apps/jsdos/${fileName}`;
 
       const response = await fetch(gameUrl);
@@ -248,7 +219,7 @@ export class JsDosApp extends BaseApp {
       bundleUrl = URL.createObjectURL(bundleBlob);
 
       os.notify.send("JsDos", `Saved ${fileName} to Games.`);
-      setLog("Launching…");
+      setLog(log, "Launching…");
 
       const iframeHTML = this.buildIframeHTML(bundleUrl);
       const iframeBlobUrl = URL.createObjectURL(new Blob([iframeHTML], { type: "text/html" }));
@@ -335,25 +306,26 @@ export class JsDosApp extends BaseApp {
     os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.RetroPlayer });
     win.innerHTML = `
     <div class="window-content jsdos-game-window">
-      <div id="${winId}-inner" style="width:100%;height:100%;" class="jsdos-loading">
-        <i class="fa-solid fa-compact-disc jsdos-loading-spinner"></i>
-        <div class="jsdos-game-loading-text">Starting <strong>${name}</strong>…</div>
-        <div id="${winId}-log" class="jsdos-game-log"></div>
-      </div>
+      ${buildLoadingStateHTML({
+        winId,
+        iconClass: "fa-solid fa-compact-disc jsdos-loading-spinner",
+        wrapperClass: "jsdos-loading",
+        textClass: "jsdos-game-loading-text",
+        logClass: "jsdos-game-log",
+        displayName: name
+      })}
     </div>`;
 
     const inner = win.querySelector(`#${winId}-inner`);
     const log = win.querySelector(`#${winId}-log`);
-    const setLog = (msg) => {
-      if (log) log.textContent = msg;
-    };
     const showError = (msg) => {
       if (inner)
-        inner.innerHTML = `
-      <div class="jsdos-error jsdos-error-inline">
-        <i class="fa-solid fa-triangle-exclamation jsdos-error-icon"></i>
-        <div class="jsdos-error-msg">${msg}</div>
-      </div>`;
+        inner.innerHTML = buildErrorHTML({
+          msg,
+          wrapperClass: "jsdos-error jsdos-error-inline",
+          iconClass: "fa-solid fa-triangle-exclamation jsdos-error-icon",
+          textClass: "jsdos-error-msg"
+        });
     };
 
     let iframeEl = null;
@@ -371,12 +343,8 @@ export class JsDosApp extends BaseApp {
     this.onClose(winId, cleanup);
 
     try {
-      setLog("Reading file…");
-      const normalizedPath = Array.isArray(path)
-        ? path
-        : typeof path === "string"
-          ? path.split("/").filter(Boolean)
-          : Object.values(path ?? {}).filter((v) => typeof v === "string");
+      setLog(log, "Reading file…");
+      const normalizedPath = normalizePath(path);
 
       const blob = await os.fs.readBinaryFile(normalizedPath, name);
 
@@ -388,7 +356,7 @@ export class JsDosApp extends BaseApp {
 
       const isBundle = name.toLowerCase().endsWith(".jsdos");
 
-      setLog(isBundle ? "Preparing bundle…" : "Building js-dos bundle…");
+      setLog(log, isBundle ? "Preparing bundle…" : "Building js-dos bundle…");
       const arrayBuffer = await blob.arrayBuffer();
 
       const bundleBlob = isBundle
@@ -397,7 +365,7 @@ export class JsDosApp extends BaseApp {
 
       bundleUrl = URL.createObjectURL(bundleBlob);
 
-      setLog("Launching…");
+      setLog(log, "Launching…");
 
       const iframeHTML = this.buildIframeHTML(bundleUrl);
       const iframeBlobUrl = URL.createObjectURL(new Blob([iframeHTML], { type: "text/html" }));

@@ -116,7 +116,7 @@ const v86App = preloaded.v86app;
 const settingsApp = preloaded.settingsApp;
 const appCreatorApp = preloaded.appCreatorApp;
 
-const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app._registry);
+const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app.registry);
 os.setAppLauncher(appLauncher);
 windowManager.setAppLauncher(appLauncher);
 setGameLauncher(appLauncher);

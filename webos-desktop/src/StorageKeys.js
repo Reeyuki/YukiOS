@@ -247,5 +247,16 @@ export const StorageKeys = {
   chromeOsShelfPosition: "yukiOS_chrome_os_shelf_position",
   chromeOsShelfAutoHide: "yukiOS_chrome_os_shelf_autohide",
   chromeOsClock24h: "yukiOS_chrome_os_clock_24h",
-  chromeOsShelfPinnedItems: "yukiOS_chrome_os_shelf_pinned_items"
+  chromeOsShelfPinnedItems: "yukiOS_chrome_os_shelf_pinned_items",
+  aiMemory: "yuki_ai_memory",
+  aiChatHistory: "yuki_ai_chathistory",
+  aiPreferences: "yuki_ai_preferences",
+  weatherUserLocation: "wx_user_location",
+  weatherCachePrefix: "yukiOS_weather_",
+  analyticsQueue: "yuki_analytics_queue",
+  robloxSettings: "roblox_settings",
+  settingsDisplayName: "settings:displayName",
+  room3dStoragePrefix: "rm3d_",
+  room3dAchievements: "rm3d_achievements",
+  room3dRoomLayout: "rm3d_roomLayout"
 };

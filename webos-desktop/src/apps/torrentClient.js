@@ -1,6 +1,7 @@
 import "../styles/torrent.css";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
+import { formatSize, downloadBlob } from "../utils/utils.js";
 
 import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
@@ -696,7 +697,7 @@ export class TorrentClientApp extends BaseApp {
 
     const filesHtml = files
       .map((f, i) => {
-        const size = this.formatSize(f.length || 0);
+        const size = formatSize(f.length || 0);
         const name = f.name || f.path || `File ${i + 1}`;
         return `
         <label class="torrent-file-select-row">
@@ -719,7 +720,7 @@ export class TorrentClientApp extends BaseApp {
         ${
           files.length > 0
             ? `
-          <div class="torrent-dialog-files-label">Select files to download${totalSize > 0 ? " (" + this.formatSize(totalSize) + " total)" : ""}</div>
+          <div class="torrent-dialog-files-label">Select files to download${totalSize > 0 ? " (" + formatSize(totalSize) + " total)" : ""}</div>
           <div class="torrent-dialog-files-scroll">${filesHtml}</div>
         `
             : ""
@@ -843,7 +844,7 @@ export class TorrentClientApp extends BaseApp {
       const progress = Math.round(torrent.progress * 100);
       const downloadSpeed = this.formatSpeed(torrent.downloadSpeed);
       const uploadSpeed = this.formatSpeed(torrent.uploadSpeed);
-      const size = this.formatSize(torrent.length);
+      const size = formatSize(torrent.length);
       const status = torrent.done ? "Completed" : torrent.paused ? "Paused" : "Downloading";
       const isSelected = this.selectedTorrents.has(infoHash);
       const ratio = this.getSeedRatio(infoHash).toFixed(2);
@@ -947,7 +948,7 @@ export class TorrentClientApp extends BaseApp {
 
     let html = "";
     for (const item of this.torrentHistory) {
-      const size = this.formatSize(item.size);
+      const size = formatSize(item.size);
       const date = new Date(item.completedAt).toLocaleDateString();
       const ratio = typeof item.ratio === "number" ? item.ratio.toFixed(2) : "0.00";
       html += `
@@ -985,9 +986,9 @@ export class TorrentClientApp extends BaseApp {
     const progress = Math.round(torrent.progress * 100);
     const downloadSpeed = this.formatSpeed(torrent.downloadSpeed);
     const uploadSpeed = this.formatSpeed(torrent.uploadSpeed);
-    const size = this.formatSize(torrent.length);
-    const downloaded = this.formatSize(torrent.downloaded);
-    const uploaded = this.formatSize(torrent.uploaded);
+    const size = formatSize(torrent.length);
+    const downloaded = formatSize(torrent.downloaded);
+    const uploaded = formatSize(torrent.uploaded);
     const peers = torrent.numPeers;
     const status = torrent.done ? "completed" : torrent.paused ? "paused" : "downloading";
     const statusLabel = torrent.done ? "Completed" : torrent.paused ? "Paused" : "Downloading";
@@ -998,7 +999,7 @@ export class TorrentClientApp extends BaseApp {
       const fileRows = torrent.files
         .map((file) => {
           const fileProgress = Math.round(file.progress * 100);
-          const fileSize = this.formatSize(file.length);
+          const fileSize = formatSize(file.length);
           return `
             <div class="torrent-file-item">
               <span class="torrent-file-name" title="${file.name}">${file.name}</span>
@@ -1107,8 +1108,8 @@ export class TorrentClientApp extends BaseApp {
     const panel = $("#torrent-details-panel");
     if (!panel) return;
 
-    const downloaded = this.formatSize(torrent.downloaded);
-    const uploaded = this.formatSize(torrent.uploaded);
+    const downloaded = formatSize(torrent.downloaded);
+    const uploaded = formatSize(torrent.uploaded);
     const progress = Math.round(torrent.progress * 100);
     const downloadSpeed = this.formatSpeed(torrent.downloadSpeed);
     const uploadSpeed = this.formatSpeed(torrent.uploadSpeed);
@@ -1200,13 +1201,6 @@ export class TorrentClientApp extends BaseApp {
     }
   }
 
-  formatSize(bytes) {
-    if (!bytes || bytes < 1024) return (bytes || 0) + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
-  }
-
   formatSpeed(bytesPerSecond) {
     if (!bytesPerSecond || bytesPerSecond === 0) return "0 B/s";
     const units = ["B/s", "KB/s", "MB/s", "GB/s"];
@@ -1254,14 +1248,7 @@ export class TorrentClientApp extends BaseApp {
           reject(err);
           return;
         }
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = this.sanitizeFileName(file.name);
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, this.sanitizeFileName(file.name));
         resolve();
       });
     });

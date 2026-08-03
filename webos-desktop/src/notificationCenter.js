@@ -3,18 +3,9 @@ import { isImageFile } from "./fileDisplay.js";
 import { appMap } from "./games/gamesList.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { $, createElement, setHTML, toggleClass, addClass, removeClass } from "./shared/domUtils.js";
-import { getSetting, parseBool } from "./utils/utils.js";
+import { getSetting, parseBool, timeAgo, escapeHtml } from "./utils/utils.js";
 
 import { APP_MANIFESTS, StorageKeys, os } from "./framework.js";
-function escapeHtml(str) {
-  if (typeof str !== "string") return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 const APP_SOURCE_TO_APP_MAP_KEY = APP_MANIFESTS.reduce(
   (acc, manifest) => {
@@ -226,31 +217,7 @@ export class NotificationCenter {
       className: `ntf-toast ${typeMap[notif.type] || "ntf-toast--info"}${showAnim ? "" : " ntf-toast--no-animation"}`
     });
 
-    let iconHtml = "";
-    if (notif.icon) {
-      const isImagePath = isImageFile(notif.icon);
-      const isDataUrl = typeof notif.icon === "string" && notif.icon.startsWith("data:");
-
-      if (isImagePath || isDataUrl) {
-        iconHtml = `<img src="${escapeHtml(notif.icon)}" class="ntf-toast__glyph ntf-toast__glyph-img" />`;
-      } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
-        let cls = notif.icon;
-        if (cls.startsWith("fa-") && !cls.startsWith("fas ") && !cls.startsWith("far ") && !cls.startsWith("fab ")) {
-          cls = `fas ${cls}`;
-        } else if (!cls.startsWith("fa")) {
-          cls = `fa ${cls}`;
-        }
-        iconHtml = `<i class="${escapeHtml(cls)} ntf-toast__glyph"></i>`;
-      }
-    } else {
-      const iconMap = {
-        info: "fas fa-info-circle",
-        success: "fas fa-check-circle",
-        warning: "fas fa-exclamation-circle",
-        error: "fas fa-times-circle"
-      };
-      iconHtml = `<i class="${iconMap[notif.type] ?? "fas fa-info-circle"} ntf-toast__glyph"></i>`;
-    }
+    const iconHtml = this.buildNotificationIconHtml(notif, "ntf-toast__glyph ntf-toast__glyph-img", "ntf-toast__glyph");
 
     setHTML(
       toast,
@@ -351,6 +318,34 @@ export class NotificationCenter {
     );
   }
 
+  buildNotificationIconHtml(notif, imgClass, iconClass) {
+    if (notif.icon) {
+      const isImagePath = isImageFile(notif.icon);
+      const isDataUrl = typeof notif.icon === "string" && notif.icon.startsWith("data:");
+
+      if (isImagePath || isDataUrl) {
+        return `<img src="${escapeHtml(notif.icon)}" class="${imgClass}" />`;
+      } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
+        let cls = notif.icon;
+        if (cls.startsWith("fa-") && !cls.startsWith("fas ") && !cls.startsWith("far ") && !cls.startsWith("fab ")) {
+          cls = `fas ${cls}`;
+        } else if (!cls.startsWith("fa")) {
+          cls = `fa ${cls}`;
+        }
+        return `<i class="${escapeHtml(cls)} ${iconClass}"></i>`;
+      }
+    } else {
+      const iconMap = {
+        info: "fas fa-info-circle",
+        success: "fas fa-check-circle",
+        warning: "fas fa-exclamation-circle",
+        error: "fas fa-times-circle"
+      };
+      return `<i class="${iconMap[notif.type] ?? "fas fa-info-circle"} ${iconClass}"></i>`;
+    }
+    return "";
+  }
+
   removeNotification(id) {
     this.notifications = this.notifications.filter((n) => n.id !== id);
     this.snoozedNotifications = this.snoozedNotifications.filter((n) => n.id !== id);
@@ -398,31 +393,7 @@ export class NotificationCenter {
 
       const timestamp = this.formatTime(notif.timestamp);
 
-      let iconHtml = "";
-      if (notif.icon) {
-        const isImagePath = isImageFile(notif.icon);
-        const isDataUrl = typeof notif.icon === "string" && notif.icon.startsWith("data:");
-
-        if (isImagePath || isDataUrl) {
-          iconHtml = `<img src="${escapeHtml(notif.icon)}" class="ntf-card__glyph" />`;
-        } else if (typeof notif.icon === "string" && notif.icon.trim().length > 0) {
-          let cls = notif.icon;
-          if (cls.startsWith("fa-") && !cls.startsWith("fas ") && !cls.startsWith("far ") && !cls.startsWith("fab ")) {
-            cls = `fas ${cls}`;
-          } else if (!cls.startsWith("fa")) {
-            cls = `fa ${cls}`;
-          }
-          iconHtml = `<i class="${escapeHtml(cls)} ntf-card__glyph"></i>`;
-        }
-      } else {
-        const iconMap = {
-          info: "fas fa-info-circle",
-          success: "fas fa-check-circle",
-          warning: "fas fa-exclamation-circle",
-          error: "fas fa-times-circle"
-        };
-        iconHtml = `<i class="${iconMap[notif.type] ?? "fas fa-info-circle"} ntf-card__glyph"></i>`;
-      }
+      const iconHtml = this.buildNotificationIconHtml(notif, "ntf-card__glyph", "ntf-card__glyph");
 
       setHTML(
         item,
@@ -528,18 +499,7 @@ export class NotificationCenter {
   }
 
   formatTime(date) {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return date.toLocaleDateString();
+    return timeAgo(date);
   }
 
   getNotifications() {

@@ -234,7 +234,7 @@ const noopAPIs = {
 export const os = new Proxy(
   {},
   {
-    get(_target, prop) {
+    get(target, prop) {
       if (!bridge) {
         const fallback = noopAPIs[prop];
         if (fallback !== undefined) return fallback;

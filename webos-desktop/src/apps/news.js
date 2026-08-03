@@ -15,7 +15,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-wand-magic-sparkles",
             "Secret Yuri Mode",
-            "Boot YukiOS as YuriOS with a fresh pink palette on rare occasions, or force it in Settings."
+            "Boot YukiOS as YuriOS with a pink palette on 1/100 chance, or toggle it in Settings."
           ]
         ]
       },

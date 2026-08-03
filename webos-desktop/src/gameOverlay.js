@@ -6,6 +6,8 @@ import { ScreenshotApp } from "./apps/screenshot.js";
 import { TerminalApp } from "./apps/terminal.js";
 import { audioMixer } from "./audioMixer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
+import { isImageFile } from "./shared/fileKindDetector.js";
+import { escapeHtml } from "./utils/utils.js";
 import {
   $,
   $$,
@@ -184,7 +186,7 @@ export class GameOverlayController {
 
     if (this.overlayEl) {
       const titleEl = this.overlayEl.querySelector(".overlay-info-title");
-      if (titleEl) titleEl.textContent = this.escapeHtml(this.currentGameTitle);
+      if (titleEl) titleEl.textContent = escapeHtml(this.currentGameTitle);
       this.overlayEl.style.display = "";
       requestAnimationFrame(() => this.overlayEl.classList.add("steam-overlay--visible"));
     } else {
@@ -210,7 +212,7 @@ export class GameOverlayController {
 
     if (this.overlayEl) {
       const titleEl = this.overlayEl.querySelector(".overlay-info-title");
-      if (titleEl) titleEl.textContent = this.escapeHtml(this.currentGameTitle);
+      if (titleEl) titleEl.textContent = escapeHtml(this.currentGameTitle);
       this.overlayEl.style.display = "";
       requestAnimationFrame(() => this.overlayEl.classList.add("steam-overlay--visible"));
     } else {
@@ -291,7 +293,7 @@ export class GameOverlayController {
           <div class="overlay-session-time" id="overlay-session-time">0m this session</div>
           <button class="overlay-exit-game" id="overlay-exit-game">Exit Game</button>
         </div>
-        <span class="overlay-info-title">${this.escapeHtml(this.currentGameTitle)}</span>
+        <span class="overlay-info-title">${escapeHtml(this.currentGameTitle)}</span>
         <div class="overlay-info-right">
           <div class="overlay-backtogame">
             <div class="overlay-backtogame-text">
@@ -1006,7 +1008,7 @@ export class GameOverlayController {
           <span class="overlay-note-card-time">${new Date(note.ts).toLocaleString()}</span>
           <button class="overlay-note-delete-btn" data-index="${i}"><i class="fas fa-trash"></i></button>
         </div>
-        <div class="overlay-note-text" contenteditable="true" data-index="${i}">${this.escapeHtml(note.text)}</div>
+        <div class="overlay-note-text" contenteditable="true" data-index="${i}">${escapeHtml(note.text)}</div>
       </div>
     `
       )
@@ -1058,11 +1060,7 @@ export class GameOverlayController {
       const filesArray = Object.entries(files || {})
         .filter(([, item]) => item.type === "file")
         .map(([name, item]) => ({ ...item, name }));
-      const imageFiles = filesArray.filter(
-        (f) =>
-          f.name &&
-          (f.name.endsWith(".png") || f.name.endsWith(".jpg") || f.name.endsWith(".jpeg") || f.name.endsWith(".webm"))
-      );
+      const imageFiles = filesArray.filter((f) => f.name && (isImageFile(f.name) || f.name.endsWith(".webm")));
 
       const hasFiles = imageFiles.length > 0;
 
@@ -1460,7 +1458,7 @@ export class GameOverlayController {
       channelsHtml += `
         <div class="overlay-audio-row" data-winid="${winId}">
           <div class="overlay-audio-row-icon">${ch.iconHtml || '<i class="fas fa-volume-up"></i>'}</div>
-          <div class="overlay-audio-row-label">${this.escapeHtml(ch.title || "Unknown")}</div>
+          <div class="overlay-audio-row-label">${escapeHtml(ch.title || "Unknown")}</div>
           <input type="range" min="0" max="100" value="${chPct}" class="overlay-audio-slider" data-channel="${winId}">
           <span class="overlay-audio-pct">${chPct}%</span>
         </div>`;
@@ -1542,7 +1540,7 @@ export class GameOverlayController {
             ([key, app]) => `
           <div class="overlay-launcher-item" data-app="${key}">
             <div class="overlay-launcher-item-icon">${renderIcon(app)}</div>
-            <div class="overlay-launcher-item-label">${this.escapeHtml(app.title)}</div>
+            <div class="overlay-launcher-item-label">${escapeHtml(app.title)}</div>
           </div>
         `
           )
@@ -1714,12 +1712,5 @@ export class GameOverlayController {
       URL.revokeObjectURL(url);
     }
     this.screenshotViewUrls.clear();
-  }
-
-  escapeHtml(str) {
-    if (!str) return "";
-    const div = createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
   }
 }

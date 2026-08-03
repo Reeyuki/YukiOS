@@ -6,7 +6,6 @@ import { BaseApp, os } from "../framework.js";
 export class CalculatorApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
     this.reset();
   }
 
@@ -23,7 +22,7 @@ export class CalculatorApp extends BaseApp {
 
   open() {
     const winId = "calculator-window";
-    if (this.openWindows.has(winId)) return;
+    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Calculator", "360px", "560px", {
       icon: "fas fa-calculator",
@@ -31,7 +30,7 @@ export class CalculatorApp extends BaseApp {
     });
 
     this.win = win;
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
     this.reset();
     win.innerHTML = this.buildUI();
     this.bindCalculatorEvents(win);
@@ -43,7 +42,6 @@ export class CalculatorApp extends BaseApp {
     }
 
     win.addEventListener("remove", () => {
-      this.openWindows.delete(winId);
       this.win = null;
     });
 
@@ -356,7 +354,7 @@ export class CalculatorApp extends BaseApp {
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
     this.win = null;
   }
 }

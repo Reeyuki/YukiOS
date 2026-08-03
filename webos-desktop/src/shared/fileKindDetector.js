@@ -109,6 +109,7 @@ export const HTML_EXTS = ["html", "htm", "xhtml"];
 export const MARKDOWN_EXTS = ["md", "markdown"];
 
 export const TEXT_EXTS = [
+  "csv",
   "txt",
   "js",
   "json",
@@ -381,4 +382,12 @@ export function mimeFromName(name) {
 export function isBinaryName(name) {
   const ext = getExt(name);
   return !ALL_TEXT_EXTS.has(ext);
+}
+
+export function isTextFile(name) {
+  return ALL_TEXT_EXTS.has(getExt(name));
+}
+
+export function mimeFromExt(ext) {
+  return IMAGE_MIME_MAP[ext] || "image/png";
 }

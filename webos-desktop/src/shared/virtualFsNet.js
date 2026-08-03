@@ -1,5 +1,5 @@
 import { mimeFromName } from "./fileKindDetector.js";
-import { formatSize } from "../utils/utils.js";
+import { escapeHtml, formatSize } from "../utils/utils.js";
 
 const EXT_MIME_MAP = {
   html: "text/html",
@@ -158,17 +158,11 @@ export function buildFsInterceptScript(base) {
 <\/script>`;
 }
 
-const FOLDER_ICON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M1.5 3.5A1.5 1.5 0 0 1 3 2h3.586a1.5 1.5 0 0 1 1.06.44l1.293 1.293a1.5 1.5 0 0 0 1.06.44H13a1.5 1.5 0 0 1 1.5 1.5v6.79a1.5 1.5 0 0 1-1.5 1.5H3a1.5 1.5 0 0 1-1.5-1.5V3.5z"/></svg>';
+const FOLDER_ICON =
+  '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M1.5 3.5A1.5 1.5 0 0 1 3 2h3.586a1.5 1.5 0 0 1 1.06.44l1.293 1.293a1.5 1.5 0 0 0 1.06.44H13a1.5 1.5 0 0 1 1.5 1.5v6.79a1.5 1.5 0 0 1-1.5 1.5H3a1.5 1.5 0 0 1-1.5-1.5V3.5z"/></svg>';
 
-const FILE_ICON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3.5 1.5A1.5 1.5 0 0 1 5 0h4.586a1.5 1.5 0 0 1 1.06.44l3.914 3.914a1.5 1.5 0 0 1 .44 1.06V12.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5v-11z"/></svg>';
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+const FILE_ICON =
+  '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3.5 1.5A1.5 1.5 0 0 1 5 0h4.586a1.5 1.5 0 0 1 1.06.44l3.914 3.914a1.5 1.5 0 0 1 .44 1.06V12.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5v-11z"/></svg>';
 
 export function buildDirectoryHtml(pathStr, entries, hrefBuilder, options = {}) {
   const theme = options.theme || readOsTheme();
@@ -208,7 +202,7 @@ export function buildDirectoryHtml(pathStr, entries, hrefBuilder, options = {}) 
         '</span><span class="entry-name">' +
         escapeHtml(name) +
         (isDir ? "/" : "") +
-        "</span></a><span class=\"entry-kind\">" +
+        '</span></a><span class="entry-kind">' +
         escapeHtml(kind) +
         '</span><span class="entry-size">' +
         escapeHtml(size) +
@@ -226,9 +220,9 @@ export function buildDirectoryHtml(pathStr, entries, hrefBuilder, options = {}) 
     );
   });
   return (
-    "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Index of /" +
+    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Index of /' +
     escapeHtml(pathStr) +
-    '</title><style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:' +
+    "</title><style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:" +
     theme.bg +
     ";color:" +
     theme.text +
@@ -242,7 +236,7 @@ export function buildDirectoryHtml(pathStr, entries, hrefBuilder, options = {}) 
     theme.brand +
     ";text-decoration:none;cursor:pointer}.crumb:hover{text-decoration:underline}.crumb-sep{color:" +
     theme.textMuted +
-    '}.listing{display:flex;flex-direction:column}.row{display:flex;align-items:center;gap:14px;padding:7px 22px;border-bottom:1px solid ' +
+    "}.listing{display:flex;flex-direction:column}.row{display:flex;align-items:center;gap:14px;padding:7px 22px;border-bottom:1px solid " +
     theme.border +
     ";min-width:0}.row:hover{background:" +
     theme.surfaceHover +
@@ -256,13 +250,13 @@ export function buildDirectoryHtml(pathStr, entries, hrefBuilder, options = {}) 
     theme.textMuted +
     "}.entry-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.entry-kind,.entry-size,.entry-date{color:" +
     theme.textMuted +
-    ";font-size:12px;width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.entry-size{width:80px;text-align:right}.entry-date{width:auto;min-width:80px}</style></head><body><div class=\"header\"><span class=\"icon\">" +
+    ';font-size:12px;width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.entry-size{width:80px;text-align:right}.entry-date{width:auto;min-width:80px}</style></head><body><div class="header"><span class="icon">' +
     FOLDER_ICON +
     "</span><h1>Index of /" +
     escapeHtml(pathStr) +
-    "</h1></div><div class=\"crumbs\">" +
+    '</h1></div><div class="crumbs">' +
     crumbs.join("") +
-    "</div><div class=\"listing\">" +
+    '</div><div class="listing">' +
     rows.join("") +
     "</div>" +
     buildFsInterceptScript(base) +

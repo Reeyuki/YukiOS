@@ -3,6 +3,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { addAppToDesktop, isAppOnDesktop } from "../shared/desktopShortcuts.js";
+import { buildWindowHeader } from "../shared/windowHeader.js";
 
 import { BaseApp, os } from "../framework.js";
 export class InstalledAppsApp extends BaseApp {
@@ -68,10 +69,7 @@ export class InstalledAppsApp extends BaseApp {
 
   buildHTML() {
     return `
-      <div class="window-header">
-        <span><i class="fas fa-th-list" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;"></i>Installed Apps</span>
-        ${os.window.getWindowControls()}
-      </div>
+      ${buildWindowHeader("Installed Apps", "fas fa-th-list")}
       <div class="window-content" style="padding:0;flex-direction:column;">
         <div class="ia-toolbar">
           <div class="ia-search">

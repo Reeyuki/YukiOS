@@ -26,7 +26,7 @@ export class MagnifierApp extends BaseApp {
       }
     };
     document.addEventListener("keydown", handler);
-    this._shortcutHandler = handler;
+    this.shortcutHandler = handler;
   }
 
   open() {
@@ -148,9 +148,9 @@ export class MagnifierApp extends BaseApp {
     this.savedTransform = "";
     this.savedOrigin = "";
 
-    if (this._moveHandler) {
-      document.removeEventListener("mousemove", this._moveHandler);
-      this._moveHandler = null;
+    if (this.moveHandler) {
+      document.removeEventListener("mousemove", this.moveHandler);
+      this.moveHandler = null;
     }
 
     this.desktop = null;
@@ -170,13 +170,13 @@ export class MagnifierApp extends BaseApp {
     };
 
     document.addEventListener("mousemove", handler, { passive: true });
-    this._moveHandler = handler;
+    this.moveHandler = handler;
   }
 
   onClose(winId) {
-    if (this._shortcutHandler) {
-      document.removeEventListener("keydown", this._shortcutHandler);
-      this._shortcutHandler = null;
+    if (this.shortcutHandler) {
+      document.removeEventListener("keydown", this.shortcutHandler);
+      this.shortcutHandler = null;
     }
     this.close();
   }

@@ -2,6 +2,20 @@ import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { $$ } from "./domUtils.js";
 
+export function isFontAwesomeIcon(icon) {
+  return typeof icon === "string" && /^fa[bsr]?\s/.test(icon);
+}
+
+export function resolveIconHtml(icon, options = {}) {
+  const { faClass = "", faStyle = "", imgClass = "", alt = "", imgLoading = "lazy" } = options;
+  if (isFontAwesomeIcon(icon)) {
+    const cls = faClass ? `${faClass} ${icon}` : icon;
+    return `<i class="${cls}"${faStyle ? ` style="${faStyle}"` : ""}></i>`;
+  }
+  const altAttr = alt ? ` alt="${alt}"` : "";
+  return `<img src="${icon}"${imgClass ? ` class="${imgClass}"` : ""}${altAttr}${imgLoading ? ` loading="${imgLoading}"` : ""} />`;
+}
+
 export function resolveDesktopIcon(content, fileName = null) {
   let icon = null;
 

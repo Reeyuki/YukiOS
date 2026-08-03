@@ -590,6 +590,7 @@ export class GameCaseManager {
   }
 
   startGameMode(gameState) {
+    const THREE = this.THREE;
     this.setGameMode(true, gameState);
     for (const gameCase of this.gameCases) {
       if (gameCase.shelved) {

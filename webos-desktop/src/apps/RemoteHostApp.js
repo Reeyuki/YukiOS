@@ -10,7 +10,6 @@ const SIGNALING_BASE = "wss://yukios-remote-signaling.liventcord-a60.workers.dev
 export class RemoteHostApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
     this.hostStreaming = false;
     this.hostRoomCode = null;
     this.hostConnState = "idle";
@@ -20,7 +19,7 @@ export class RemoteHostApp extends BaseApp {
 
   async open(opts = {}) {
     const winId = "remote-host";
-    if (this.openWindows.has(winId)) return;
+    if (this.hasOpenWindow(winId)) return;
 
     const isElectron = typeof window.electronAPI !== "undefined";
 
@@ -165,7 +164,7 @@ export class RemoteHostApp extends BaseApp {
       </div>
     `;
 
-    this.openWindows.add(winId);
+    this.trackWindow(winId, win);
     this.win = win;
     this.winId = winId;
 
@@ -609,7 +608,7 @@ export class RemoteHostApp extends BaseApp {
   }
 
   onClose(winId) {
-    this.openWindows.delete(winId);
+    this.untrackWindow(winId);
     if (this.hostStatusInterval) {
       clearInterval(this.hostStatusInterval);
       this.hostStatusInterval = null;

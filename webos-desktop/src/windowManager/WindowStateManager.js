@@ -1,4 +1,4 @@
-import { os, brand } from "../framework.js";
+import { os, brand, yuriPageTitle } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { animateWindowClose, animateWindowMinimize, applyFocusGlow, applyZDepthLift } from "./AnimationSystem.js";
 import { getSetting } from "../utils/utils.js";
@@ -35,7 +35,7 @@ export class WindowStateManager {
       entry.taskbarItem.classList.add("active");
       entry.taskbarItem.classList.remove("minimized");
       this.manager.updatePageFavicon(entry.iconValue, entry.title);
-      document.title = sanitizeTitle(entry.title) || brand("YukiOS");
+      document.title = yuriPageTitle() || sanitizeTitle(entry.title) || brand("YukiOS");
       if (entry.record) entry.record.zIndex = this.manager.zIndexCounter;
       os.events.emit(BusEvents.WINDOW_FOCUSED, { winId: win.id });
     }

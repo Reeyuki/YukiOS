@@ -4,7 +4,6 @@ import { BaseApp, os, brand } from "../framework.js";
 export class YukiConvertApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.openWindows = new Set();
   }
 
   open() {

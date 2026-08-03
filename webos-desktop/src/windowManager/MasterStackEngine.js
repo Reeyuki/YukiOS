@@ -8,7 +8,7 @@ export function createState(orientation = "horizontal", masterSize = 0.6) {
   };
 }
 
-export function insert(state, winId, _focusedWinId) {
+export function insert(state, winId, focusedWinId) {
   if (!state.master) {
     state.master = winId;
   } else {
@@ -81,7 +81,7 @@ export function getDirectionalNeighbor(state, winId, direction) {
   return null;
 }
 
-export function resizeSplit(state, _winId, direction, delta) {
+export function resizeSplit(state, winId, direction, delta) {
   if (!state) return false;
   const size = state.masterSize ?? 0.6;
   if (direction === "left" || direction === "up") {

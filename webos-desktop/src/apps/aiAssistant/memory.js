@@ -1,4 +1,4 @@
-import { os } from "../../framework.js";
+import { os, StorageKeys } from "../../framework.js";
 
 export class AIMemory {
   constructor() {
@@ -6,9 +6,9 @@ export class AIMemory {
     this.contextMemory = new Map();
     this.preferences = new Map();
     this.chatHistory = [];
-    this.STORAGE_KEY = "yuki_ai_memory";
-    this.CHAT_KEY = "yuki_ai_chathistory";
-    this.PREFS_KEY = "yuki_ai_preferences";
+    this.STORAGE_KEY = StorageKeys.aiMemory;
+    this.CHAT_KEY = StorageKeys.aiChatHistory;
+    this.PREFS_KEY = StorageKeys.aiPreferences;
   }
 
   setContext(key, value) {

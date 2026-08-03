@@ -48,93 +48,93 @@ export class NotificationAPI {
 
 export class AppAPI {
   constructor() {
-    this._registry = new Map();
-    this._launcher = null;
+    this.registry = new Map();
+    this.launcher = null;
   }
 
   setLauncher(launcher) {
-    this._launcher = launcher;
+    this.launcher = launcher;
   }
 
   register(key, instance) {
-    this._registry.set(key, instance);
+    this.registry.set(key, instance);
   }
 
   getInstance(key) {
-    return this._registry.get(key) || null;
+    return this.registry.get(key) || null;
   }
 
   launch(appId, options) {
-    if (!this._launcher) return Promise.reject(new Error("AppLauncher not initialized"));
-    return this._launcher.launch(appId, false, options);
+    if (!this.launcher) return Promise.reject(new Error("AppLauncher not initialized"));
+    return this.launcher.launch(appId, false, options);
   }
 
   launchGame(appId, isSwf, options) {
-    if (!this._launcher) return Promise.reject(new Error("AppLauncher not initialized"));
-    return this._launcher.launch(appId, isSwf, options);
+    if (!this.launcher) return Promise.reject(new Error("AppLauncher not initialized"));
+    return this.launcher.launch(appId, isSwf, options);
   }
 
   close(winId) {
     const win = document.getElementById(winId);
-    if (win) this._launcher?.wm?.closeWindow?.(win);
+    if (win) this.launcher?.wm?.closeWindow?.(win);
   }
 
   getRunningApps() {
-    if (!this._launcher) return [];
-    return this._launcher.listRunningApps?.() ?? [];
+    if (!this.launcher) return [];
+    return this.launcher.listRunningApps?.() ?? [];
   }
 
   getAllApps() {
-    return this._launcher?.appMap ?? {};
+    return this.launcher?.appMap ?? {};
   }
 
   getAppInfo(appId) {
-    return this._launcher?.appMap?.[appId] ?? null;
+    return this.launcher?.appMap?.[appId] ?? null;
   }
 
   hasApp(appId) {
-    return !!this._launcher?.appMap?.[appId];
+    return !!this.launcher?.appMap?.[appId];
   }
 
   searchApps(query) {
-    if (!this._launcher) return [];
+    if (!this.launcher) return [];
     const q = query.toLowerCase();
-    return Object.entries(this._launcher.appMap)
+    return Object.entries(this.launcher.appMap)
       .filter(([, app]) => app.title?.toLowerCase().includes(q))
       .map(([id]) => id);
   }
 
   async openIframeApp(options) {
-    if (!this._launcher) return;
-    await this._launcher.openIframeApp(options);
+    if (!this.launcher) return;
+    await this.launcher.openIframeApp(options);
   }
 
   lockSession() {
-    this._registry.get("sessionManager")?.lockSession();
+    this.registry.get("sessionManager")?.lockSession();
   }
 
   lockToLoginScreen() {
-    this._registry.get("sessionManager")?.lockToLoginScreen();
+    this.registry.get("sessionManager")?.lockToLoginScreen();
   }
 
   triggerAchievement(id) {
-    this._registry.get("achievementsApp")?.trigger(id);
+    this.registry.get("achievementsApp")?.trigger(id);
   }
 
   incrementScreenshotTaken() {
-    this._registry.get("achievementsApp")?.incrementScreenshotTaken();
+    this.registry.get("achievementsApp")?.incrementScreenshotTaken();
   }
 
   incrementCalculationDone() {
-    this._registry.get("achievementsApp")?.incrementCalculationDone();
+    this.registry.get("achievementsApp")?.incrementCalculationDone();
   }
 
   incrementPowerProfileChange() {
-    this._registry.get("achievementsApp")?.incrementPowerProfileChange();
+    this.registry.get("achievementsApp")?.incrementPowerProfileChange();
   }
 
   executeCommand(cmd) {
-    const term = this._registry.get("terminalApp");
+    const term = this.registry.get("terminalApp");
     if (term) {
       term.open();
       term.executeCommand(cmd);
@@ -142,11 +142,11 @@ export class AppAPI {
   }
 
   setClipboardContent(value) {
-    this._registry.get("clipboardManagerApp")?.set(value, "text");
+    this.registry.get("clipboardManagerApp")?.set(value, "text");
   }
 
   takeScreenshot(autoCapture) {
-    const app = this._registry.get("screenshotApp");
+    const app = this.registry.get("screenshotApp");
     if (app) {
       app.open();
       if (autoCapture) app.captureFull(true);
@@ -154,26 +154,26 @@ export class AppAPI {
   }
 
   registerCustomApp(appId, entry) {
-    if (this._launcher) {
-      this._launcher.appMap[appId] = entry;
+    if (this.launcher) {
+      this.launcher.appMap[appId] = entry;
     }
   }
 
   unregisterCustomApp(appId) {
-    if (this._launcher) {
-      delete this._launcher.appMap[appId];
+    if (this.launcher) {
+      delete this.launcher.appMap[appId];
     }
   }
 
   registerAppRuntime(appId, instance) {
-    if (this._launcher?.appRuntime) {
-      this._launcher.appRuntime.register(appId, instance);
+    if (this.launcher?.appRuntime) {
+      this.launcher.appRuntime.register(appId, instance);
     }
   }
 
   unregisterAppRuntime(appId) {
-    if (this._launcher?.appRuntime) {
-      this._launcher.appRuntime.unregister(appId);
+    if (this.launcher?.appRuntime) {
+      this.launcher.appRuntime.unregister(appId);
     }
   }
 
@@ -321,24 +321,24 @@ export class TilingAPI {
 
 class TorAPI {
   constructor() {
-    this._manager = null;
+    this.manager = null;
   }
 
   setManager(m) {
-    this._manager = m;
+    this.manager = m;
   }
 
   require() {
-    if (!this._manager) throw new Error("Tor not initialized");
-    return this._manager;
+    if (!this.manager) throw new Error("Tor not initialized");
+    return this.manager;
   }
 
   get isReady() {
-    return this._manager?.getStatus().ready ?? false;
+    return this.manager?.getStatus().ready ?? false;
   }
 
   get running() {
-    return this._manager?.getStatus().running ?? false;
+    return this.manager?.getStatus().running ?? false;
   }
 
   fetch(url) {
@@ -358,7 +358,7 @@ class TorAPI {
   }
 
   getStatus() {
-    return this._manager?.getStatus() ?? { running: false, phase: "stopped", ready: false };
+    return this.manager?.getStatus() ?? { running: false, phase: "stopped", ready: false };
   }
 
   start(options) {
@@ -370,19 +370,19 @@ class TorAPI {
   }
 
   getLogs() {
-    return this._manager?.getLogs() ?? [];
+    return this.manager?.getLogs() ?? [];
   }
 
   getSnowflakeUrl() {
-    return this._manager?.snowflakeUrl;
+    return this.manager?.snowflakeUrl;
   }
 
   setSnowflakeUrl(url) {
-    this._manager.snowflakeUrl = url;
+    this.manager.snowflakeUrl = url;
   }
 
   getFetchCount() {
-    return this._manager?.getFetchCount() ?? 0;
+    return this.manager?.getFetchCount() ?? 0;
   }
 
   reconnect() {
@@ -478,7 +478,7 @@ export class OSBridge {
     this.fs = new FileSystemAPI(services.fileSystemManager);
     this.notify = new NotificationAPI(services.notificationCenter);
     this.app = new AppAPI();
-    this.achievements = new AchievementsAPI(this.app._registry);
+    this.achievements = new AchievementsAPI(this.app.registry);
     this.events = new EventBusAPI(services.eventBus);
     this.storage = new StorageAPI();
     this.dialog = new DialogAPI();

@@ -653,24 +653,30 @@ export class AchievementsApp extends BaseApp {
 
     document.body.appendChild(popup);
 
-    popup.addEventListener("click", () => os.app.launch("achievementsApp"));
+    const dismissPopup = () => {
+      if (!popup.isConnected) return;
+      popup.remove();
+      this.isShowingAchievement = false;
+      this.processQueue();
+    };
+
+    let hideTimer;
+    popup.addEventListener("click", () => {
+      clearTimeout(hideTimer);
+      dismissPopup();
+      os.app.launch("achievementsApp");
+    });
 
     setTimeout(() => popup.classList.add("achievement-popup--show"), 10);
 
     const displayDuration = 4000;
-    const delayBetween = 500;
 
-    setTimeout(() => {
+    hideTimer = setTimeout(() => {
       popup.classList.remove("achievement-popup--show");
       popup.classList.add("achievement-popup--hide");
 
       setTimeout(() => {
-        popup.remove();
-
-        setTimeout(() => {
-          this.isShowingAchievement = false;
-          this.processQueue();
-        }, delayBetween);
+        dismissPopup();
       }, 600);
     }, displayDuration);
   }

@@ -3,6 +3,7 @@ import { BaseApp, os } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { $ } from "../shared/domUtils.js";
+import { isFontAwesomeIcon, resolveIconHtml } from "../shared/iconUtils.js";
 import {
   isAppPinnedToTaskbar,
   toggleTaskbarPin,
@@ -68,8 +69,7 @@ export class SystemAppsApp extends BaseApp {
       .map(([id, data]) => ({ id, ...data }));
 
     const sortByIcon = (arr) => {
-      const isFA = (icon) => typeof icon === "string" && /^fa[bsr]?\s/.test(icon);
-      return [...arr.filter((a) => !isFA(a.icon)), ...arr.filter((a) => isFA(a.icon))];
+      return [...arr.filter((a) => !isFontAwesomeIcon(a.icon)), ...arr.filter((a) => isFontAwesomeIcon(a.icon))];
     };
 
     const nativeApps = sortByIcon(allApps.filter((a) => !a.targetUrl || a.id === "discordApp"));
@@ -221,10 +221,7 @@ export class SystemAppsApp extends BaseApp {
     container.innerHTML = items
       .map((app) => {
         const icon = app.icon || "";
-        const isFA = typeof icon === "string" && /^fa[bsr]?\s/.test(icon);
-        const iconHtml = isFA
-          ? `<i style="color:var(--brand);" class="icon ${icon}"></i>`
-          : `<img src="${icon}" alt="${app.title}" loading="lazy" />`;
+        const iconHtml = resolveIconHtml(icon, { faClass: "icon", faStyle: "color:var(--brand);", alt: app.title });
         return `
           <div class="games-app-card" data-app="${app.id}">
             <div class="games-app-card-img-wrap">${iconHtml}</div>

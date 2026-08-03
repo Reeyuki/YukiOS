@@ -18,7 +18,7 @@ import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 import { TilingManager } from "./modes/tiling/TilingManager.js";
 
-import { StorageKeys, os, MODES, brand } from "./framework.js";
+import { StorageKeys, os, MODES, brand, yuriPageTitle } from "./framework.js";
 import { $ } from "./shared/domUtils.js";
 import { isMobile } from "./shared/platformUtils.js";
 
@@ -29,7 +29,7 @@ export class WindowManager {
     this.gameWindowCount = 0;
     this.isDraggingWindow = false;
     this.notificationCenter = notificationCenter;
-    this.initialTitle = document.title || brand("YukiOS");
+    this.initialTitle = yuriPageTitle() || document.title || brand("YukiOS");
     const faviconLink = $("link[rel~='icon']");
     this.initialFavicon = faviconLink ? faviconLink.href : "";
     this.snapGhost = null;

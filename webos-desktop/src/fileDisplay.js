@@ -24,6 +24,7 @@ import {
   isMarkdownFile,
   isJsonFile,
   isCodeFile,
+  mimeFromName,
   IMAGE_EXTS,
   VIDEO_EXTS,
   AUDIO_EXTS,
@@ -428,31 +429,6 @@ function base64ToBlob(dataURL) {
   return new Blob([bytes], { type: mime });
 }
 
-function audioExtToMime(name) {
-  const map = {
-    mp3: "audio/mpeg",
-    ogg: "audio/ogg",
-    wav: "audio/wav",
-    flac: "audio/flac",
-    aac: "audio/aac",
-    m4a: "audio/mp4",
-    opus: "audio/opus",
-    wma: "audio/x-ms-wma",
-    alac: "audio/alac",
-    mid: "audio/midi",
-    midi: "audio/midi",
-    aiff: "audio/aiff",
-    caf: "audio/x-caf"
-  };
-  return map[getExt(name)] ?? "audio/octet-stream";
-}
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return `${bytes} bytes`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function getContentSize(content) {
   if (!content) return 0;
   if (typeof content === "string") return new Blob([content]).size;
@@ -462,7 +438,7 @@ function getContentSize(content) {
 }
 
 async function confirmLargeFile(name, size) {
-  const sizeStr = formatFileSize(size);
+  const sizeStr = formatSize(size);
   return os.dialog.confirm(
     "Large File Warning",
     `The file "${name}" is quite large (${sizeStr}).\n\nOpening it in Notepad may cause performance issues.\n\nDo you want to continue?`,
@@ -569,7 +545,7 @@ async function openMediaFile(name, path) {
     const kind = isVideoFile(name) ? FileKind.VIDEO : isAudioFile(name) ? FileKind.AUDIO : FileKind.IMAGE;
 
     const mime = isAudioFile(name)
-      ? audioExtToMime(name)
+      ? mimeFromName(name)
       : isVideoFile(name)
         ? (VIDEO_MIME_MAP[getExt(name)] ?? "application/octet-stream")
         : (IMAGE_MIME_MAP[ext] ?? "application/octet-stream");
@@ -722,7 +698,7 @@ async function openFontFile(name, path) {
       <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13px;">
         <span style="opacity:0.6;">Family:</span><span>${fontFamily}</span>
         <span style="opacity:0.6;">Format:</span><span>${format}</span>
-        <span style="opacity:0.6;">Size:</span><span>${formatFileSize(blob.size)}</span>
+        <span style="opacity:0.6;">Size:</span><span>${formatSize(blob.size)}</span>
       </div>
       <div style="border-bottom:1px solid var(--glass-border);margin:16px 0;"></div>
       <div style="font-family:'FontPreview';font-size:18px;line-height:1.6;color:var(--text-secondary);">

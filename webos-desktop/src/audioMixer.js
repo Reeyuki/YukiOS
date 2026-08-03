@@ -45,7 +45,7 @@ class AudioMixer {
     if (Number.isFinite(settingsSystemVolume)) {
       this.systemVolume = settingsSystemVolume;
     }
-    this.muted = parseBool(os.storage.get(StorageKeys.soundEnabled)) === false;
+    this.muted = parseBool(os.storage.get(StorageKeys.soundEnabled), true) === false;
   }
 
   save() {
@@ -778,15 +778,7 @@ class AudioMixer {
   }
 
   playCriticalWarning() {
-    try {
-      if (this.muted || !this.systemAudioEnabled) return;
-
-      const audio = new Audio(resolveGhUrl(`https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/${SystemAudio.WARNING}`));
-      audio.volume = this.masterVolume * this.systemVolume;
-      audio.play().catch(() => {});
-    } catch (e) {
-      console.error("[AudioMixer]", e);
-    }
+    this.playSystemSound(SystemAudio.WARNING);
   }
 
   safeLocalStorageSetItem(key, value) {

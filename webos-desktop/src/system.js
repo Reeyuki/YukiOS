@@ -4,6 +4,7 @@ import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR, STATIC_FALLBACK_WALLPAPERS } from "./wallpaperConfig.js";
 import { createCalendarPopup, setCurrentCalendarMonth } from "./apps/calendar.js";
 import { resolveWallpaperUrl } from "./shared/assetResolver.js";
+import { isVideoFile } from "./shared/fileKindDetector.js";
 import { BusEvents } from "./core/EventBus.js";
 import { getVantaPresetById } from "./vantaPresets.js";
 import { vantaPresets } from "./vantaPresets.js";
@@ -67,14 +68,17 @@ class WallpaperStore {
     return typeof str === "string" && str.startsWith("data:image/");
   }
 
-  static base64ToBlobUrl(dataUrl) {
+  static dataUrlToBlob(dataUrl) {
     const [header, b64] = dataUrl.split(",");
     const mime = header.match(/:(.*?);/)[1];
     const binary = atob(b64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const blob = new Blob([bytes], { type: mime });
-    return URL.createObjectURL(blob);
+    return new Blob([bytes], { type: mime });
+  }
+
+  static base64ToBlobUrl(dataUrl) {
+    return URL.createObjectURL(this.dataUrlToBlob(dataUrl));
   }
 
   static openWpBlobDB() {
@@ -149,7 +153,24 @@ class WallpaperManager {
       console.error("Vanta preset not found:", presetId);
       return false;
     }
+    return this.applyVantaConfig(preset, "Failed to initialize Vanta effect:", true);
+  }
 
+  static async applyCustomVantaEffect(customConfig) {
+    try {
+      const preset = JSON.parse(atob(customConfig));
+      if (!preset || !preset.effect || !preset.options) {
+        console.error("Invalid custom Vanta configuration");
+        return false;
+      }
+      return this.applyVantaConfig(preset, "Failed to apply custom Vanta effect:");
+    } catch (error) {
+      console.error("Failed to apply custom Vanta effect:", error);
+      return false;
+    }
+  }
+
+  static async applyVantaConfig(preset, failureMessage, cleanupOnError = false) {
     WallpaperStore.destroyVantaInstance();
     document.getElementById("wallpaper-img")?.remove();
     document.getElementById("wallpaper-video")?.remove();
@@ -186,56 +207,8 @@ class WallpaperManager {
       });
       return true;
     } catch (error) {
-      console.error("Failed to initialize Vanta effect:", error);
-      container.remove();
-      return false;
-    }
-  }
-
-  static async applyCustomVantaEffect(customConfig) {
-    try {
-      const preset = JSON.parse(atob(customConfig));
-      if (!preset || !preset.effect || !preset.options) {
-        console.error("Invalid custom Vanta configuration");
-        return false;
-      }
-
-      WallpaperStore.destroyVantaInstance();
-      document.getElementById("wallpaper-img")?.remove();
-      document.getElementById("wallpaper-video")?.remove();
-
-      const container = createElement("div");
-      container.id = "vanta-container";
-      Object.assign(container.style, {
-        position: "fixed",
-        top: "0",
-        left: "0",
-        width: "100%",
-        height: "100%",
-        zIndex: "-1",
-        pointerEvents: "none",
-        userSelect: "none"
-      });
-
-      document.body.appendChild(container);
-
-      const VantaEffect = await loadVantaEffect(preset.effect);
-      if (!VantaEffect) {
-        console.error("Vanta effect not found:", preset.effect);
-        container.remove();
-        return false;
-      }
-
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      WallpaperStore.currentVantaInstance = VantaEffect({
-        el: container,
-        ...preset.options
-      });
-      return true;
-    } catch (error) {
-      console.error("Failed to apply custom Vanta effect:", error);
+      console.error(failureMessage, error);
+      if (cleanupOnError) container.remove();
       return false;
     }
   }
@@ -243,8 +216,19 @@ class WallpaperManager {
   static getWallpaperType(url) {
     if (!url || typeof url !== "string") return "image";
     if (url.startsWith("vanta:")) return "vanta";
-    if (url.endsWith(".mp4")) return "video";
+    if (isVideoFile(url)) return "video";
     return "image";
+  }
+
+  static pickImageWallpaper() {
+    const index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
+    return WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+  }
+
+  static pickVantaWallpaper() {
+    const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
+    const preset = vantaPresets[vantaIndex];
+    return `vanta:${preset.id}`;
   }
 
   static async setSequentialWallpaper() {
@@ -286,10 +270,10 @@ class WallpaperManager {
         os.storage.set(StorageKeys.wallpaperType, "image");
 
         let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
-        const expectedWallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+        const expectedWallpaper = this.pickImageWallpaper();
 
         if (existing !== expectedWallpaper) {
-          wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+          wallpaper = this.pickImageWallpaper();
           os.storage.set(StorageKeys.wallpaperKey, wallpaper);
           WallpaperStore.clearWallpaperBlob().catch(() => {});
           this.applyWallpaper(wallpaper);
@@ -298,39 +282,31 @@ class WallpaperManager {
 
         index = (index + 1) % DEFAULT_WALLPAPER_FILES.length;
         os.storage.set(StorageKeys.wallpaperIndexKey, String(index));
-        wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+        wallpaper = this.pickImageWallpaper();
       } else if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
-        const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
-        const preset = vantaPresets[vantaIndex];
-        wallpaper = `vanta:${preset.id}`;
+        wallpaper = this.pickVantaWallpaper();
       }
     } else if (randomChoice < 0.66) {
       if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
-        const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
-        const preset = vantaPresets[vantaIndex];
-        wallpaper = `vanta:${preset.id}`;
+        wallpaper = this.pickVantaWallpaper();
       } else if (hasImages) {
         newWallpaperType = "image";
         os.storage.set(StorageKeys.wallpaperType, "image");
-        let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
-        wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+        wallpaper = this.pickImageWallpaper();
       }
     } else {
       if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
-        const vantaIndex = Math.floor(Math.random() * vantaPresets.length);
-        const preset = vantaPresets[vantaIndex];
-        wallpaper = `vanta:${preset.id}`;
+        wallpaper = this.pickVantaWallpaper();
       } else if (hasImages) {
         newWallpaperType = "image";
         os.storage.set(StorageKeys.wallpaperType, "image");
-        let index = os.storage.get(StorageKeys.wallpaperIndexKey) || 0;
-        wallpaper = WALLPAPER_STATIC_DIR + DEFAULT_WALLPAPER_FILES[index];
+        wallpaper = this.pickImageWallpaper();
       }
     }
 
@@ -497,18 +473,12 @@ class WallpaperManager {
       WallpaperStore.currentLoginWallpaperBlobUrl = WallpaperStore.base64ToBlobUrl(saved);
       return { url: WallpaperStore.currentLoginWallpaperBlobUrl, isVideo: false };
     }
-    const isVideo =
-      typeof saved === "string" && (saved.toLowerCase().endsWith(".mp4") || saved.toLowerCase().endsWith(".webm"));
+    const isVideo = typeof saved === "string" && isVideoFile(saved);
     return { url: saved, isVideo };
   }
 
   static dataURItoBlob(dataUrl) {
-    const [header, b64] = dataUrl.split(",");
-    const mime = header.match(/:(.*?);/)[1];
-    const binary = atob(b64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new Blob([bytes], { type: mime });
+    return WallpaperStore.dataUrlToBlob(dataUrl);
   }
 
   static applyBlob(blob, type) {
@@ -538,8 +508,7 @@ class WallpaperManager {
     WallpaperStore.revokeWallpaperBlob();
     const isVideo =
       typeof wallpaperURL === "string" &&
-      (wallpaperURL.toLowerCase().endsWith(".mp4") ||
-        wallpaperURL.toLowerCase().endsWith(".webm") ||
+      (isVideoFile(wallpaperURL) ||
         wallpaperURL.startsWith("data:video") ||
         (wallpaperURL.startsWith("blob:") && os.storage.get(StorageKeys.wallpaperKey) === "__blob_video__"));
     this.renderElement(isVideo ? "video" : "img", wallpaperURL);

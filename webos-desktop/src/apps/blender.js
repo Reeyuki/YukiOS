@@ -5,6 +5,7 @@ import { Achievements } from "../achievements.js";
 import { resolveGhUrl } from "../shared/assetResolver.js";
 import { addClass, removeClass, createElement } from "../shared/domUtils.js";
 import { KeybindManager } from "../keybindManager.js";
+import { downloadBlob } from "../utils/utils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import {
   BusEvents,
@@ -20,6 +21,7 @@ import {
   brand
 } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
+import { buildWindowHeader } from "../shared/windowHeader.js";
 
 const SAMPLE_MODELS = [
   {
@@ -239,10 +241,7 @@ export class Model3DApp extends BaseApp {
 
   buildHTML(title) {
     return `
-    <div class="window-header">
-      <span><i class="fa fa-cube" style="color: white;margin-right: 6px;font-size: 25px;vertical-align: middle;"></i>${title}</span>
-      ${os.window.getWindowControls()}
-    </div>
+    ${buildWindowHeader(title, "fa fa-cube")}
 
     <!-- ── Menubar ── -->
     <div class="yb-menubar">
@@ -2504,7 +2503,7 @@ export class Model3DApp extends BaseApp {
         this.currentModel,
         (result) => {
           const blob = new Blob([JSON.stringify(result)], { type: "application/json" });
-          this.downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".gltf");
+          downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".gltf");
           os.notify.send("Exported as GLTF", "Export");
         },
         (err) => os.notify.send("Export didn't work: " + err, "Error"),
@@ -2542,7 +2541,7 @@ export class Model3DApp extends BaseApp {
       vertOffset += pos.count;
     });
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
-    this.downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".obj");
+    downloadBlob(blob, (this.currentFileName.replace(/\.[^.]+$/, "") || "scene") + ".obj");
     os.notify.send("Exported as OBJ", "Export");
   }
 
@@ -2560,17 +2559,8 @@ export class Model3DApp extends BaseApp {
       });
     });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    this.downloadBlob(blob, "scene.json");
+    downloadBlob(blob, "scene.json");
     os.notify.send("Scene exported as JSON", "Export");
-  }
-
-  downloadBlob(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
   recalcNormals() {

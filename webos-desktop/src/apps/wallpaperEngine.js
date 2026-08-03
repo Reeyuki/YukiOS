@@ -10,7 +10,7 @@ import { videos, videos2 } from "../wallpaperList.js";
 import { getYuriWallpapers } from "../yuriWallpapers.js";
 import { vantaPresets } from "../vantaPresets.js";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
-import { FileKind } from "../shared/fileKindDetector.js";
+import { FileKind, isVideoFile } from "../shared/fileKindDetector.js";
 
 import { $, $$, bindEvent, setText, setHTML, createElement } from "../shared/domUtils.js";
 import { renderRangeSlider, bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
@@ -83,14 +83,6 @@ function extractVideoName(src) {
   const m2 = src.match(/\/([^/]+?)\.mp4$/);
   if (m2) return m2[1].replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return "Video Wallpaper";
-}
-
-function getExtension(filename) {
-  return filename?.split(".").pop()?.toLowerCase() || "";
-}
-
-function isVideoFile(name) {
-  return ["mp4", "webm", "mov", "avi", "gif"].includes(getExtension(name));
 }
 
 function loadJSON(key, fallback) {
