@@ -20,6 +20,19 @@ const EXISTING_NEWS_UPDATES = [
         ]
       },
       {
+        date: "August 3, 2026",
+        sections: [
+          {
+            icon: "fa-panel-left",
+            title: "Browser Upgrades",
+            items: [
+              ["fa-panel-left", "Zen Sidebar Tabs", "Move tabs to a collapsible left sidebar and reclaim your space!"],
+              ["fa-columns", "Split View", "View two tabs side by side and middle-click links into the other pane."]
+            ]
+          }
+        ]
+      },
+      {
         icon: "fa-mouse-pointer",
         title: "App Context Menus",
         items: [
@@ -624,7 +637,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-terminal",
             "Run Dialog",
-            "Press Ctrl+R to quickly launch apps, open URLs, or run commands from a single dialog."
+            "Press Ctrl+Alt+R to quickly launch apps, open URLs, or run commands from a single dialog."
           ]
         ]
       }

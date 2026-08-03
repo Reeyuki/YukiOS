@@ -18,6 +18,7 @@ import {
 } from "../shared/virtualFsNet.js";
 import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
 import { escapeHtml } from "../utils/utils.js";
+import { getWispUrl } from "../shared/wispConfig.js";
 
 const THEME_VARS = [
   "--brand",
@@ -123,7 +124,7 @@ export class BrowserApp extends BaseApp {
       });
       const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
       const history = os.storage.get(StorageKeys.browserHistory) || [];
-      const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+      const wispUrl = getWispUrl();
       const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
       iframe.contentWindow.postMessage(
         {
@@ -267,7 +268,10 @@ export class BrowserApp extends BaseApp {
         e.preventDefault();
         e.stopPropagation();
         if (element.dataset.snapZone === "maximize") os.window.maximize(element);
-        else os.window.maximize(element);
+        else {
+          element.classList.add("snapping");
+          os.window.applySnap(element, "maximize");
+        }
       });
     if (minBtn)
       minBtn.addEventListener("click", (e) => {
@@ -366,7 +370,7 @@ export class BrowserApp extends BaseApp {
 
     const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
     const history = os.storage.get(StorageKeys.browserHistory) || [];
-    const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+    const wispUrl = getWispUrl();
     const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
 
     this.iframe.contentWindow.postMessage(

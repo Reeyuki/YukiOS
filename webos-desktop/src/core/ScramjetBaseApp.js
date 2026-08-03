@@ -1,6 +1,7 @@
 import { BaseApp } from "./BaseApp.js";
 
-import { StorageKeys, os } from "../framework.js";
+import { os } from "../framework.js";
+import { getWispUrl } from "../shared/wispConfig.js";
 export class ScramjetBaseApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -17,7 +18,7 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   getWISPURL() {
-    return os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+    return getWispUrl();
   }
 
   getSandbox() {

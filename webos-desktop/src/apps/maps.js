@@ -1,6 +1,7 @@
 import "../styles/maps.css";
 
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
+import { getWispUrl } from "../shared/wispConfig.js";
 import { $, $$, bindEvent } from "../shared/domUtils.js";
 
 const SOURCE_OPTIONS = [
@@ -271,7 +272,7 @@ export class MapsApp extends BaseApp {
   }
 
   buildGoogleUrl(state) {
-    const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+    const wispUrl = getWispUrl();
     return (
       window.location.origin +
       "/scramapps/scramjet-template.html?wisp=" +

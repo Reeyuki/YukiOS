@@ -9,6 +9,7 @@ import { renderAccountsSettings } from "./accountsPanel.js";
 import { renderTilingSettings } from "./pane-tiling.js";
 import { renderChromeOsSettings } from "../modes/chromeos/settings.js";
 import { RESOLUTION_PRESETS, getViewportLabel } from "../resolution/resolutionManager.js";
+import { WISP_SERVERS } from "../shared/wispConfig.js";
 
 function getBrowserInfo() {
   const ua = navigator.userAgent;
@@ -913,7 +914,7 @@ export function renderAppearanceSettings(s) {
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">${brand("Yuri")} Easter Egg</span>
-            <span class="settings-label-desc">Force ${brand("YukiOS")} to boot as ${brand("YuriOS")} every time</span>
+            <span class="settings-label-desc">Force ${brand("YukiOS")} to boot as ${brand("YuriOS")} every time (Needs restart)</span>
           </div>
           <label class="settings-toggle">
             <input type="checkbox" id="settingsYuriMode" ${s.yuriMode ? "checked" : ""}/>
@@ -1236,10 +1237,7 @@ export function renderDataSettings() {
   `;
 }
 export function renderNetworkSettings(s) {
-  const wispServers = [
-    { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
-    { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
-  ];
+  const wispServers = WISP_SERVERS;
   const currentWisp = s.wispServer || wispServers[0].url;
   const isCustomWisp = !wispServers.some((w) => w.url === currentWisp);
 

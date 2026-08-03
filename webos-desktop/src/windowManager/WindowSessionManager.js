@@ -242,7 +242,7 @@ export class WindowSessionManager {
         }
 
         if (state.minimized) this.manager.minimizeWindow(win);
-        if (state.fullscreen) this.manager.toggleFullscreen(win);
+        if (state.fullscreen && win.dataset.appId !== "browserApp") this.manager.toggleFullscreen(win);
         if (state.snapZone) this.manager.applySnap(win, state.snapZone, true);
         win.style.zIndex = state.zIndex;
         this.manager.zIndexCounter = Math.max(this.manager.zIndexCounter, state.zIndex + 1);

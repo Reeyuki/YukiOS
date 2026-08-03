@@ -34,7 +34,8 @@
       import { default as EpoxyTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
 
       const urlParams = new URLSearchParams(window.location.search);
-      const WISP_URL = urlParams.get("wisp") || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+      const DEFAULT_WISP_URL = "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+      const WISP_URL = urlParams.get("wisp") || DEFAULT_WISP_URL;
       const TARGET_URL = urlParams.get("target") || "https://example.com";
 
       let basePath = location.pathname.replace(/[^/]*$/, "");

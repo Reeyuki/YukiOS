@@ -259,7 +259,7 @@ config editing.
 
 ## 🌐 Browser & Internet
 
-- Yuki Browser with bookmarks, proxy, tor, history, dark mode, tab system,screenshot
+- Yuki Browser with Sidebar Tabs mode, bookmarks, proxy, tor, history, dark mode, tab system,screenshot
 - WebTorrent Client
 - Tor Manager - tor browsing via WASM-based Tor client with Snowflake transport
 - VNC Client using novnc

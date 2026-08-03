@@ -10,7 +10,7 @@ const MODIFIER_ALIASES = {
 export const KEYBIND_DEFINITIONS = [
   {
     id: "global.run",
-    defaultKeys: ["Ctrl", "R"],
+    defaultKeys: ["Ctrl", "Alt", "R"],
     desc: "Open Run dialog",
     cat: "global",
     icon: "fas fa-terminal"

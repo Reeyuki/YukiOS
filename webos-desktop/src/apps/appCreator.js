@@ -1,8 +1,9 @@
 import "../styles/appCreator.css";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";
-import { $, $$, bindEvent, setText, setHTML, toggleClass, BaseApp, StorageKeys, os } from "../framework.js";
+import { $, $$, bindEvent, setText, setHTML, toggleClass, BaseApp, os } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { getWispUrl } from "../shared/wispConfig.js";
 import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
@@ -723,7 +724,7 @@ export class AppCreatorApp extends BaseApp {
     let finalUrl = secureUrl;
 
     if (scramjetEnabled) {
-      const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+      const wispUrl = getWispUrl();
       finalUrl = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(secureUrl)}`;
     } else if (proxyEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
       try {

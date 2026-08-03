@@ -116,6 +116,289 @@
         background: var(--bg);
       }
 
+      .browser-shell {
+        display: flex;
+        width: 100%;
+        height: 100%;
+      }
+      .browser-shell .browser-container {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+      }
+      .tab-sidebar {
+        width: 250px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 8px;
+        gap: 2px;
+        position: relative;
+      }
+      .sidebar-resizer {
+        width: 100%;
+        height: 12px;
+        margin-top: 2px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        cursor: col-resize;
+        opacity: 0.5;
+        transition: opacity 0.1s, color 0.1s;
+      }
+      .sidebar-resizer:hover,
+      .sidebar-resizer.resizing {
+        opacity: 1;
+        color: var(--brand);
+      }
+      .sidebar-resizer i {
+        font-size: 12px;
+        line-height: 1;
+      }
+      .sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px 8px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 4px;
+        overflow: hidden;
+      }
+      .sidebar-brand-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .sidebar-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
+      }
+      .sidebar-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+      .sidebar-action-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .sidebar-action-btn:hover {
+        background: var(--surface-hover);
+        color: var(--text);
+      }
+      .tab-sidebar.collapsed .sidebar-header {
+        justify-content: center;
+        padding: 4px 0;
+      }
+      .tab-sidebar.collapsed .sidebar-title,
+      .tab-sidebar.collapsed .sidebar-brand-icon,
+      .tab-sidebar.collapsed #newTabBtn {
+        display: none;
+      }
+      .tab-sidebar.collapsed #sidebar-collapse-btn {
+        transform: rotate(180deg);
+      }
+      .tab-sidebar.collapsed .sidebar-resizer {
+        display: none;
+      }
+      .tab-sidebar.hidden .sidebar-resizer {
+        display: none;
+      }
+      .browser-shell:not(.sidebar-mode) #tab-strip .sidebar-resizer {
+        display: none;
+      }
+      body.resizing-sidebar {
+        cursor: col-resize;
+        user-select: none;
+      }
+      .tab-sidebar.hidden {
+        display: none;
+      }
+      #tab-strip {
+        display: flex;
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        align-items: center;
+        min-width: 0;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+      }
+      .tab-sidebar #tab-strip {
+        flex-direction: column;
+        align-items: stretch;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .tab-sidebar #tab-strip .nav-btn-group {
+        width: 100%;
+        margin-bottom: 6px;
+        justify-content: center;
+      }
+      .tab-sidebar.collapsed #tab-strip .nav-btn-group {
+        display: none;
+      }
+      .browser-shell.sidebar-mode #tabs-container {
+        height: 40px;
+      }
+      #controls-slot {
+        margin-left: auto;
+      }
+      .tab-sidebar .tab {
+        width: 100%;
+        height: auto;
+        min-height: 38px;
+        margin-bottom: 2px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+      }
+      .tab-sidebar .tab.active {
+        border-color: var(--border-light);
+        box-shadow: inset 3px 0 0 var(--brand);
+      }
+      .tab-sidebar .new-tab {
+        width: 100%;
+        height: 34px;
+        margin-top: 4px;
+      }
+      .tab-sidebar .new-tab:hover,
+      .tab-sidebar .new-tab:active {
+        transform: none;
+      }
+      .tab-sidebar.collapsed {
+        width: 56px;
+        padding: 8px 6px;
+      }
+      .tab-sidebar.collapsed .tab {
+        justify-content: center;
+        padding: 8px 0;
+      }
+      .tab-sidebar.collapsed .tab-title,
+      .tab-sidebar.collapsed .tab-close,
+      .tab-sidebar.collapsed .tab-audio-icon {
+        display: none;
+      }
+
+      .command-palette {
+        position: absolute;
+        inset: 0;
+        z-index: 200;
+        background: rgba(8, 8, 8, 0.45);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 12vh;
+      }
+      .command-palette.hidden {
+        display: none;
+      }
+      .cp-box {
+        width: min(560px, 92vw);
+        max-height: 60vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+      }
+      .cp-search-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .cp-search-wrap i {
+        color: var(--text-muted);
+      }
+      .cp-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 15px;
+      }
+      .cp-list {
+        overflow-y: auto;
+        max-height: 45vh;
+        padding: 6px;
+      }
+      .cp-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .cp-item .cp-icon {
+        width: 20px;
+        text-align: center;
+        color: var(--text-muted);
+      }
+      .cp-item .cp-title {
+        flex: 1;
+        font-size: 13px;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cp-item .cp-sub {
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+      .cp-item.cp-active {
+        background: var(--surface-hover);
+      }
+      .cp-item.cp-active .cp-icon {
+        color: var(--brand);
+      }
+      .cp-item.cp-tab .cp-icon {
+        color: var(--accent);
+      }
+      .cp-footer {
+        padding: 8px 16px;
+        font-size: 11px;
+        color: var(--text-dim);
+        border-top: 1px solid var(--border);
+      }
+
+      .iframe-container.split-mode iframe:not(.hidden) {
+        border-right: 1px solid var(--border);
+      }
+      .iframe-container.split-mode iframe:not(.hidden):last-child {
+        border-right: none;
+      }
+
       .tabs {
         display: flex;
         align-items: flex-end;
@@ -279,6 +562,7 @@
       .nav-btn-group {
         display: flex;
         gap: 2px;
+        flex-shrink: 0;
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius-md);
@@ -293,7 +577,8 @@
         box-shadow: 0 0 0 1px var(--accent-glow);
       }
 
-      .nav button {
+      .nav button,
+      #tab-strip .nav-btn-group button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -308,13 +593,15 @@
         font-size: 14px;
       }
 
-      .nav button:hover {
+      .nav button:hover,
+      #tab-strip .nav-btn-group button:hover {
         background: var(--surface-hover);
         color: var(--text);
         transform: scale(1.06);
       }
 
-      .nav button:active {
+      .nav button:active,
+      #tab-strip .nav-btn-group button:active {
         animation: btnBounce 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
@@ -1893,6 +2180,138 @@
         min-height: 42px;
       }
 
+      .settings-layout-group {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.02);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      }
+      .settings-layout-group .settings-section-title {
+        margin-bottom: 6px;
+      }
+      .settings-layout-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+      .settings-layout-list {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .layout-option {
+        flex: 1;
+        min-width: 160px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg);
+        cursor: pointer;
+        transition: border-color var(--transition-fast), background var(--transition-fast);
+      }
+      .layout-option:hover {
+        border-color: var(--border-light);
+      }
+      .layout-option.selected {
+        border-color: var(--brand);
+        background: var(--surface-hover);
+      }
+      .layout-preview {
+        position: relative;
+        height: 96px;
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      .layout-preview-top .pv-topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 22px;
+        background: var(--surface-active);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px;
+        border-bottom: 1px solid var(--border);
+      }
+      .pv-topbar .pv-tab {
+        height: 10px;
+        width: 34px;
+        border-radius: 3px;
+        background: var(--border-light);
+      }
+      .pv-topbar .pv-tab.active {
+        background: var(--brand);
+      }
+      .layout-preview-side .pv-sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 40px;
+        background: var(--surface-active);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        padding-top: 8px;
+      }
+      .pv-sidebar .pv-tab {
+        width: 22px;
+        height: 12px;
+        border-radius: 3px;
+        background: var(--border-light);
+      }
+      .pv-sidebar .pv-tab.active {
+        background: var(--brand);
+      }
+      .pv-content {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 6px;
+      }
+      .layout-preview-top .pv-content {
+        top: 30px;
+      }
+      .layout-preview-side .pv-content {
+        left: 48px;
+        top: 8px;
+      }
+      .pv-content .pv-line {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-light);
+        width: 70%;
+      }
+      .pv-content .pv-line.short {
+        width: 45%;
+      }
+      .layout-option-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        text-align: center;
+      }
+      .layout-option-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: center;
+        line-height: 1.4;
+      }
+
       .settings-field-label {
         font-size: 18px;
         font-weight: 500;
@@ -2685,7 +3104,7 @@
     <script defer>
       const DEFAULT_WISP = "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
       const WISP_SERVERS = [
-        { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
+        { name: "Reeyuki Wisp", url: DEFAULT_WISP },
         { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
       ];
 
@@ -2746,6 +3165,11 @@
       let autoplayBlock = false;
       let searchRegion = "";
       let torEnabled = false;
+      let tabSidebar = false;
+      let sidebarCollapsed = false;
+      let sidebarWidth = 250;
+      let commandPaletteOpen = false;
+      let splitTabId = null;
 
       const faviconCache = new Map();
       function decodeUtf8Base64(b64) {
@@ -2775,7 +3199,10 @@
         AUTOPLAY_BLOCK: "scramjet_autoplay_block",
         SEARCH_REGION: "scramjet_search_region",
         CUSTOM_SEARCH_ENGINES: "scramjet_custom_engines",
-        TOR_ENABLED: "scramjet_tor_enabled"
+        TOR_ENABLED: "scramjet_tor_enabled",
+        SIDEBAR_TABS: "scramjet_sidebar_tabs",
+        SIDEBAR_COLLAPSED: "scramjet_sidebar_collapsed",
+        SIDEBAR_WIDTH: "scramjet_sidebar_width"
       };
 
       let isEmbedded = false;
@@ -2929,6 +3356,10 @@
             autoplayBlock = localStorage.getItem(STORAGE_KEYS.AUTOPLAY_BLOCK) === "true";
             searchRegion = localStorage.getItem(STORAGE_KEYS.SEARCH_REGION) || "";
             torEnabled = localStorage.getItem(STORAGE_KEYS.TOR_ENABLED) === "true";
+            tabSidebar = localStorage.getItem(STORAGE_KEYS.SIDEBAR_TABS) === "true";
+            sidebarCollapsed = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === "true";
+            sidebarWidth = parseInt(localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH)) || 250;
+            sidebarWidth = Math.min(500, Math.max(140, sidebarWidth));
           } catch (e) {
             console.error("Failed to load prefs:", e);
           }
@@ -3004,6 +3435,9 @@
           localStorage.setItem(STORAGE_KEYS.AUTOPLAY_BLOCK, String(autoplayBlock));
           localStorage.setItem(STORAGE_KEYS.SEARCH_REGION, searchRegion);
           localStorage.setItem(STORAGE_KEYS.TOR_ENABLED, String(torEnabled));
+          localStorage.setItem(STORAGE_KEYS.SIDEBAR_TABS, String(tabSidebar));
+          localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(sidebarCollapsed));
+          localStorage.setItem(STORAGE_KEYS.SIDEBAR_WIDTH, String(sidebarWidth));
         } catch (e) {}
       }
 
@@ -3109,7 +3543,7 @@
         initializeBrowser();
         if (new URLSearchParams(window.location.search).get("embed") === "1") {
           const observer = new MutationObserver(() => {
-            const els = document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container");
+            const els = document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container, .tab-sidebar");
             if (els.length) {
               els.forEach((el) => el.remove());
               observer.disconnect();
@@ -3136,17 +3570,30 @@
 
         const root = document.getElementById("app");
         root.innerHTML = `
-        <div class="browser-container">
-          <div class="flex tabs" id="tabs-container" style="display:flex;align-items:center;">
-            <div id="tab-strip" style="display:flex;flex:1;overflow-x:auto;overflow-x:overlay;overflow-y:hidden;align-items:center;min-width:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.15) transparent;"></div>
-            <div id="controls-slot" style="display:flex;align-items:center;flex-shrink:0;"></div>
+        <div class="browser-shell" id="browser-shell">
+        <div class="tab-sidebar" id="tab-sidebar">
+          <div class="sidebar-header">
+            <img src="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/static/icons/logo.png" class="sidebar-brand-icon" alt="Yuki Browser" />
+            <span class="sidebar-title">Yuki Browser</span>
+            <div class="sidebar-header-actions">
+              <button class="sidebar-action-btn" id="sidebar-collapse-btn" data-tooltip="Collapse sidebar to icons"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="m16 15-3-3 3-3"></path></svg></button>
+              <button class="sidebar-action-btn" id="newTabBtn" data-tooltip="Open a new blank tab"><i class="fa-solid fa-plus"></i></button>
+            </div>
           </div>
-          <div class="flex nav">
+          <div id="tab-strip">
             <div class="nav-btn-group">
               <button id="back-btn" data-tooltip="Go back to the previous page"><i class="fa-solid fa-chevron-left"></i></button>
               <button id="fwd-btn" data-tooltip="Go forward to the next page"><i class="fa-solid fa-chevron-right"></i></button>
               <button id="reload-btn" data-tooltip="Reload the current page"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
+            <div class="sidebar-resizer" id="sidebar-resizer" data-tooltip="Drag to resize sidebar"></div>
+          </div>
+        </div>
+        <div class="browser-container">
+          <div class="flex tabs" id="tabs-container" style="display:flex;align-items:center;">
+            <div id="controls-slot" style="display:flex;align-items:center;flex-shrink:0;"></div>
+          </div>
+          <div class="flex nav">
             <div class="address-wrapper">
               <i class="fa-solid fa-lock address-icon"></i>
               <input class="bar" id="address-bar" autocomplete="off" spellcheck="false" placeholder="Search or enter a URL" data-tooltip="Type a URL or search query. Use Enter to navigate, Ctrl+L to focus." />
@@ -3154,6 +3601,9 @@
               <button id="home-btn-nav" data-tooltip="Go to your configured homepage"><i class="fa-solid fa-house"></i></button>
             </div>
             <div class="nav-action-group">
+              <button id="sidebar-btn" data-tooltip="Toggle sidebar tabs (Ctrl+Shift+Y)"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="m16 15-3-3 3-3"></path></svg></button>
+              <button id="palette-btn" data-tooltip="Command palette (Ctrl+Shift+P)"><i class="fa-solid fa-keyboard"></i></button>
+              <button id="split-btn" data-tooltip="Split view: show current tab beside another"><i class="fa-solid fa-columns"></i></button>
               <button id="fullscreen-btn" data-tooltip="View the current page in fullscreen mode"><i class="fa-solid fa-expand"></i></button>
               <button id="darkmode-btn" data-tooltip="Toggle dark mode on and off"><i class="fa-solid fa-moon"></i></button>
               <button id="bookmarks-btn" data-tooltip="View, open, and manage your saved bookmarks"><i class="fa-solid fa-star"></i></button>
@@ -3232,17 +3682,28 @@
             </div>
           </div>
           <div id="tooltip"></div>
+        </div>
         </div>`;
 
         document.getElementById("back-btn").onclick = () => {
           if (_yukiActive) { closeYukiPage(); return; }
           if (_localActive && goLocalBack()) return;
-          getActiveTab()?.frame.back();
+          const tab = getActiveTab();
+          if (!tab || !tab.navStack || tab.navIndex <= 0) return;
+          tab.navIndex--;
+          tab.navSuppressed = true;
+          tab.frame.go(tab.navStack[tab.navIndex]);
+          tab.navSuppressed = false;
         };
         document.getElementById("fwd-btn").onclick = () => {
           if (_yukiActive) return;
           if (_localActive && goLocalForward()) return;
-          getActiveTab()?.frame.forward();
+          const tab = getActiveTab();
+          if (!tab || !tab.navStack || tab.navIndex == null || tab.navIndex >= tab.navStack.length - 1) return;
+          tab.navIndex++;
+          tab.navSuppressed = true;
+          tab.frame.go(tab.navStack[tab.navIndex]);
+          tab.navSuppressed = false;
         };
         document.getElementById("reload-btn").onclick = () => {
           if (_yukiActive) { closeYukiPage(); return; }
@@ -3257,6 +3718,12 @@
           else tab.frame.reload();
         };
         document.getElementById("star-btn").onclick = toggleBookmark;
+        document.getElementById("sidebar-btn").onclick = toggleTabSidebar;
+        document.getElementById("palette-btn").onclick = toggleCommandPalette;
+        document.getElementById("split-btn").onclick = toggleSplitView;
+        document.getElementById("sidebar-collapse-btn").onclick = toggleSidebarCollapse;
+        document.getElementById("newTabBtn").onclick = () => createTab(true);
+        initSidebarResizer();
         document.getElementById("wisp-settings-btn").onclick = function () { navigateToYukiPage("settings"); };
         document.getElementById("zoom-out-btn").onclick = () => {
           zoomLevel = Math.max(0.3, parseFloat((zoomLevel - 0.1).toFixed(1)));
@@ -3356,26 +3823,6 @@
         const bmCheck = document.getElementById("menu-bm-check");
         if (bmCheck) bmCheck.className = bookmarkBarVisible ? "fa-solid fa-check di-icon" : "fa-solid fa-minus di-icon";
 
-        function toggleBookmarkBar() {
-          bookmarkBarVisible = !bookmarkBarVisible;
-          const check = document.getElementById("menu-bm-check");
-          if (check) check.className = bookmarkBarVisible ? "fa-solid fa-check di-icon" : "fa-solid fa-minus di-icon";
-          localStorage.setItem(STORAGE_KEYS.BOOKMARKBAR_VISIBLE, String(bookmarkBarVisible));
-          renderBookmarkBar();
-        }
-
-        function clearBrowsingData() {
-          if (!confirm("Clear history, downloads, and bookmarks?")) return;
-          history = [];
-          downloads = [];
-          bookmarks = [];
-          localStorage.removeItem(STORAGE_KEYS.HISTORY);
-          localStorage.removeItem(STORAGE_KEYS.DOWNLOADS);
-          localStorage.removeItem(STORAGE_KEYS.BOOKMARKS);
-          renderBookmarkBar();
-          updateMenuBadges();
-        }
-
         const skipBtn = document.getElementById("skip-btn");
         if (skipBtn) {
           skipBtn.onclick = () => {
@@ -3414,7 +3861,7 @@
         window.addEventListener("message", (e) => {
           if (e.data?.type === "navigate") handleSubmit(e.data.url);
           if (e.data?.type === "hide-chrome") {
-            document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container, .bookmark-bar, .message-container, #tooltip").forEach((el) => el.remove());
+            document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container, .bookmark-bar, .message-container, #tooltip, .tab-sidebar").forEach((el) => el.remove());
           }
           if (e.data?.type === "browser-audio-playing") {
             const tab = getActiveTab();
@@ -3435,6 +3882,9 @@
           }
         });
 
+        buildPaletteOverlay();
+        applyTabLayout();
+
         if (restoreTabs && restoreTabState()) {
         } else {
           createTab(true);
@@ -3444,7 +3894,7 @@
         setupTooltips();
       }
 
-      function createTab(makeActive = true) {
+      function createTab(makeActive = true, opts = {}) {
         const frame = scramjet.createFrame();
         const requiredPerms = [
           "allow-scripts",
@@ -3464,13 +3914,16 @@
           url: "yuki://home",
           frame: frame,
           loading: false,
-          favicon: null,
+          favicon: DEFAULT_FAVICON,
           skipTimeout: null,
           isPlayingAudio: false,
           isPinned: false,
           isMuted: false,
           localStack: [],
           localIndex: -1,
+          navStack: [],
+          navIndex: -1,
+          navSuppressed: false,
         };
         _newTabId = tab.id;
 
@@ -3481,7 +3934,7 @@
             if (url && url.includes("NT.html")) {
               t.title = "Home";
               t.url = "yuki://home";
-              t.favicon = null;
+              t.favicon = DEFAULT_FAVICON;
               renderNewTab(f.element, url.indexOf("incognito") >= 0);
               if (t.id === activeTabId) showIframeLoading(false);
               updateTabsUI();
@@ -3491,6 +3944,11 @@
               return;
             }
             if (!url.includes("NT.html")) {
+              if (!t.navSuppressed && url !== t.navStack[t.navIndex]) {
+                t.navStack = t.navStack.slice(0, t.navIndex + 1);
+                t.navStack.push(url);
+                t.navIndex = t.navStack.length - 1;
+              }
               t.url = url;
               try {
                 const urlObj = new URL(url);
@@ -3518,8 +3976,21 @@
         };
         wrapFrameGo(frame, tab);
 
-        if (isIncognito) renderNewTab(frame.element, true);
-        else renderNewTab(frame.element, false);
+        if (opts.url && opts.url !== "yuki://home" && !opts.url.includes("NT.html")) {
+          tab.url = opts.url;
+          try {
+            const urlObj = new URL(opts.url);
+            tab.title = urlObj.hostname;
+            tab.favicon = getFaviconUrl(urlObj.hostname);
+          } catch {
+            tab.title = opts.url.split("/").pop() || opts.url;
+          }
+          frame.go(opts.url);
+        } else if (isIncognito) {
+          renderNewTab(frame.element, true);
+        } else {
+          renderNewTab(frame.element, false);
+        }
 
         frame.element.addEventListener("load", () => {
           tab.loading = false;
@@ -3539,7 +4010,7 @@
           try {
             if (tab.url === "yuki://home") {
               tab.title = "Home";
-              tab.favicon = null;
+              tab.favicon = DEFAULT_FAVICON;
             }
           } catch {}
 
@@ -3558,9 +4029,30 @@
             }
           } catch {}
 
+          if (!_localActive && !tab.navSuppressed) {
+            const decodedUrl = decodeFrameUrl(tab);
+            if (decodedUrl && decodedUrl !== tab.url && decodedUrl !== tab.navStack[tab.navIndex]) {
+              tab.navStack = tab.navStack.slice(0, tab.navIndex + 1);
+              tab.navStack.push(decodedUrl);
+              tab.navIndex = tab.navStack.length - 1;
+              tab.url = decodedUrl;
+              try {
+                const urlObj = new URL(decodedUrl);
+                tab.title = urlObj.hostname;
+                tab.favicon = getFaviconUrl(urlObj.hostname);
+              } catch {}
+            }
+          }
+
           updateTabsUI();
           updateAddressBar();
           updateLoadingBar(tab, 100);
+
+          if (splitTabId) {
+            injectSplitIntercept(tab);
+            const other = tabs.find((t) => t.id === (tab.id === activeTabId ? splitTabId : activeTabId));
+            if (other) injectSplitIntercept(other);
+          }
         });
 
         if (tabBehaviorNext && makeActive && activeTabId) {
@@ -3573,8 +4065,26 @@
         document.getElementById("iframe-container").appendChild(frame.element);
         if (defaultZoom !== 1.0) applyZoomToTab(tab);
         if (makeActive) switchTab(tab.id);
+        applySplitLayout();
         saveTabState();
         return tab;
+      }
+
+      function positionLoadingOverlays() {
+        const container = document.getElementById("iframe-container");
+        const loader = document.getElementById("loading");
+        const error = document.getElementById("error");
+        const split = !!(splitTabId && container && container.classList.contains("split-mode") && !_localActive && !_yukiActive);
+        const left = split ? "0" : "";
+        const width = split ? "50%" : "";
+        if (loader) {
+          loader.style.left = left;
+          loader.style.width = width;
+        }
+        if (error) {
+          error.style.left = left;
+          error.style.width = width;
+        }
       }
 
       function showIframeLoading(show, url = "") {
@@ -3592,6 +4102,7 @@
             urlText.textContent = url || "Loading content...";
             skipBtn.classList.remove("show");
           }
+          positionLoadingOverlays();
         }
       }
 
@@ -3604,6 +4115,7 @@
         if (tab) showIframeLoading(tab.loading, tab.url);
         updateTabsUI();
         updateAddressBar();
+        applySplitLayout();
       }
 
       function closeTab(tabId) {
@@ -3625,24 +4137,28 @@
           setTimeout(() => {
             closed.frame.element.remove();
             tabs.splice(idx, 1);
+            if (splitTabId === tabId) splitTabId = null;
             if (activeTabId === tabId) {
               if (tabs.length > 0) switchTab(tabs[Math.max(0, idx - 1)].id);
               else createTab(true);
             } else {
               updateTabsUI();
             }
+            applySplitLayout();
             saveTabState();
             updateMenuBadges();
           }, 200);
         } else {
           closed.frame.element.remove();
           tabs.splice(idx, 1);
+          if (splitTabId === tabId) splitTabId = null;
           if (activeTabId === tabId) {
             if (tabs.length > 0) switchTab(tabs[Math.max(0, idx - 1)].id);
             else createTab(true);
           } else {
             updateTabsUI();
           }
+          applySplitLayout();
           saveTabState();
           updateMenuBadges();
         }
@@ -3653,6 +4169,29 @@
         const url = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
         faviconCache.set(hostname, url);
         return url;
+      }
+
+      const DEFAULT_FAVICON = "https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/static/icons/logo.png";
+
+      function decodeFrameUrl(tab) {
+        try {
+          const frame = tab.frame;
+          if (!frame || !frame.prefix) return null;
+          const prefix = new URL(frame.prefix, location.href).href;
+          const href = frame.element.contentWindow.location.href;
+          if (!href || href.indexOf(prefix) !== 0) return null;
+          let rest = href.slice(prefix.length);
+          const qIdx = rest.indexOf("?");
+          const hIdx = rest.indexOf("#");
+          let encoded = rest;
+          if (qIdx >= 0 && (hIdx < 0 || qIdx < hIdx)) encoded = rest.slice(0, qIdx);
+          else if (hIdx >= 0) encoded = rest.slice(0, hIdx);
+          if (!encoded) return null;
+          const decoded = decodeURIComponent(encoded);
+          return /^https?:\/\//i.test(decoded) ? decoded : null;
+        } catch {
+          return null;
+        }
       }
 
       function renderNewTab(frameElement, incognito) {
@@ -3769,7 +4308,7 @@
 
         tabs.forEach((tab, idx) => {
           let el = els.get(tab.id);
-          const ref = Array.from(container.children).filter((c) => !c.classList.contains("new-tab"))[idx];
+          const ref = Array.from(container.children).filter((c) => !c.classList.contains("new-tab") && !c.classList.contains("sidebar-resizer") && !c.classList.contains("nav-btn-group"))[idx];
           if (!el) {
             el = buildTabElement(tab, idx);
             container.insertBefore(el, ref);
@@ -3797,14 +4336,20 @@
         }
 
         let newBtn = container.querySelector("button.new-tab");
-        if (!newBtn) {
-          newBtn = document.createElement("button");
-          newBtn.className = "new-tab";
-          newBtn.dataset.tooltip = "Open a new blank tab";
-          newBtn.innerHTML = "<i class='fa-solid fa-plus'></i>";
-          newBtn.onclick = () => createTab(true);
+        if (tabSidebar) {
+          if (newBtn && newBtn.parentNode === container) newBtn.remove();
+          const resizer = document.getElementById("sidebar-resizer");
+          if (resizer && resizer.parentNode !== container) container.insertBefore(resizer, container.firstChild);
+        } else {
+          if (!newBtn) {
+            newBtn = document.createElement("button");
+            newBtn.className = "new-tab";
+            newBtn.dataset.tooltip = "Open a new blank tab";
+            newBtn.innerHTML = "<i class='fa-solid fa-plus'></i>";
+            newBtn.onclick = () => createTab(true);
+          }
+          container.appendChild(newBtn);
         }
-        container.appendChild(newBtn);
       }
 
       function updateAddressBar() {
@@ -3819,6 +4364,356 @@
 
       function getActiveTab() {
         return tabs.find((t) => t.id === activeTabId);
+      }
+
+      function positionNavButtons() {
+        const navGroup = document.querySelector(".nav-btn-group");
+        if (!navGroup) return;
+        if (tabSidebar) {
+          const strip = document.getElementById("tab-strip");
+          if (navGroup.parentNode !== strip) {
+            const resizer = document.getElementById("sidebar-resizer");
+            strip.insertBefore(navGroup, resizer || strip.firstChild);
+          }
+        } else {
+          const navRow = document.querySelector(".flex.nav");
+          const address = navRow && navRow.querySelector(".address-wrapper");
+          if (address && navGroup.parentNode !== navRow) {
+            navRow.insertBefore(navGroup, address);
+          }
+        }
+      }
+
+      function applyTabLayout() {
+        const shell = document.getElementById("browser-shell");
+        const sidebar = document.getElementById("tab-sidebar");
+        const strip = document.getElementById("tab-strip");
+        const container = document.getElementById("tabs-container");
+        if (!shell || !sidebar || !strip || !container) return;
+        shell.classList.toggle("sidebar-mode", tabSidebar);
+        sidebar.classList.toggle("hidden", !tabSidebar);
+        sidebar.classList.toggle("collapsed", tabSidebar && sidebarCollapsed);
+        if (tabSidebar) {
+          sidebar.style.width = sidebarCollapsed ? "" : sidebarWidth + "px";
+          sidebar.insertBefore(strip, sidebar.firstChild);
+        } else {
+          sidebar.style.width = "";
+          container.insertBefore(strip, container.querySelector("#controls-slot"));
+        }
+        positionNavButtons();
+        updateTabsUI();
+        savePrefs();
+      }
+
+      function toggleTabSidebar() {
+        tabSidebar = !tabSidebar;
+        if (!tabSidebar) sidebarCollapsed = false;
+        applyTabLayout();
+      }
+
+      function toggleSidebarCollapse() {
+        sidebarCollapsed = !sidebarCollapsed;
+        applyTabLayout();
+      }
+
+      function renderLayoutPicker(prefix) {
+        const collapsedId = prefix + "-set-sidebar-collapsed";
+        return (
+          '<div class="settings-layout-group">' +
+            '<div class="settings-section-title"><i class="fa-solid fa-columns"></i> Browser Layout</div>' +
+            '<div class="settings-layout-desc">Choose the layout that suits you best</div>' +
+            '<div class="settings-layout-list">' +
+              '<div class="layout-option' + (tabSidebar ? "" : " selected") + '" data-layout="topbar" onclick="selectBrowserLayout(this)">' +
+                '<div class="layout-preview layout-preview-top">' +
+                  '<div class="pv-topbar"><div class="pv-tab active"></div><div class="pv-tab"></div><div class="pv-tab"></div></div>' +
+                  '<div class="pv-content"><div class="pv-line"></div><div class="pv-line short"></div></div>' +
+                '</div>' +
+                '<div class="layout-option-label">Top Toolbar</div>' +
+                '<div class="layout-option-sub">Tabs and toolbar sit at the top</div>' +
+              '</div>' +
+              '<div class="layout-option' + (tabSidebar ? " selected" : "") + '" data-layout="sidebar" onclick="selectBrowserLayout(this)">' +
+                '<div class="layout-preview layout-preview-side">' +
+                  '<div class="pv-sidebar"><div class="pv-tab active"></div><div class="pv-tab"></div><div class="pv-tab"></div></div>' +
+                  '<div class="pv-content"><div class="pv-line"></div><div class="pv-line short"></div></div>' +
+                '</div>' +
+                '<div class="layout-option-label">Sidebar</div>' +
+                '<div class="layout-option-sub">Vertical tabs on the left</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="settings-field-row" data-role="collapsed-row" style="' + (tabSidebar ? "" : "display:none;") + '">' +
+              '<span class="settings-field-label">Collapsed Rail</span>' +
+              '<label class="toggle-switch"><input type="checkbox" data-role="collapsed-toggle" id="' + collapsedId + '" ' + (sidebarCollapsed ? "checked" : "") + ' /><span class="toggle-slider"></span></label>' +
+            '</div>' +
+          '</div>'
+        );
+      }
+
+      function selectBrowserLayout(el) {
+        tabSidebar = el.dataset.layout === "sidebar";
+        if (!tabSidebar) sidebarCollapsed = false;
+        const group = el.closest(".settings-layout-group");
+        group.querySelectorAll(".layout-option").forEach((o) => o.classList.toggle("selected", o === el));
+        const row = group.querySelector("[data-role='collapsed-row']");
+        if (row) row.style.display = tabSidebar ? "" : "none";
+        const toggle = group.querySelector("[data-role='collapsed-toggle']");
+        if (toggle) toggle.checked = tabSidebar && sidebarCollapsed;
+        applyTabLayout();
+        savePrefs();
+      }
+
+      function initSidebarResizer() {
+        const sidebar = document.getElementById("tab-sidebar");
+        const resizer = document.getElementById("sidebar-resizer");
+        if (!sidebar || !resizer) return;
+        let startX = 0;
+        let startWidth = 0;
+        resizer.addEventListener("mousedown", function (e) {
+          if (e.button !== 0) return;
+          e.preventDefault();
+          startX = e.clientX;
+          startWidth = sidebar.offsetWidth;
+          resizer.classList.add("resizing");
+          document.body.classList.add("resizing-sidebar");
+          function onMove(ev) {
+            const width = Math.min(500, Math.max(140, startWidth + (ev.clientX - startX)));
+            sidebar.style.width = width + "px";
+            sidebarWidth = width;
+          }
+          function onUp() {
+            resizer.classList.remove("resizing");
+            document.body.classList.remove("resizing-sidebar");
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+            savePrefs();
+          }
+          window.addEventListener("mousemove", onMove);
+          window.addEventListener("mouseup", onUp);
+        });
+      }
+
+      const PALETTE_ACTIONS = [
+        { id: "new-tab", label: "New Tab", icon: "fa-plus", keywords: "tab create new", run: () => createTab(true) },
+        { id: "close-tab", label: "Close Current Tab", icon: "fa-times", keywords: "tab close", run: () => { const t = getActiveTab(); if (t) closeTab(t.id); } },
+        { id: "reopen-tab", label: "Reopen Closed Tab", icon: "fa-undo", keywords: "reopen closed", run: () => reopenLastClosedTab() },
+        { id: "duplicate-tab", label: "Duplicate Current Tab", icon: "fa-copy", keywords: "duplicate copy tab", run: () => { const t = getActiveTab(); if (t && t.url && t.url !== "yuki://home") createTab(true, { url: t.url }); } },
+        { id: "history", label: "History", icon: "fa-clock-rotate-left", keywords: "history visited", run: () => navigateToYukiPage("history") },
+        { id: "bookmarks", label: "Bookmarks", icon: "fa-star", keywords: "bookmarks saved", run: () => navigateToYukiPage("bookmarks") },
+        { id: "downloads", label: "Downloads", icon: "fa-download", keywords: "downloads files", run: () => navigateToYukiPage("downloads") },
+        { id: "toggle-bookmarkbar", label: "Toggle Bookmark Bar", icon: "fa-star", keywords: "bookmark bar show hide", run: () => toggleBookmarkBar() },
+        { id: "dark-mode", label: "Toggle Dark Mode", icon: "fa-moon", keywords: "dark theme", run: () => toggleDarkMode() },
+        { id: "reload", label: "Reload Current Tab", icon: "fa-rotate-right", keywords: "reload refresh", run: () => { const t = getActiveTab(); if (t) t.frame.go(t.url === "yuki://home" ? "NT.html" : t.url); } },
+        { id: "screenshot", label: "Screenshot Page", icon: "fa-camera", keywords: "capture screenshot", run: () => takeScreenshot() },
+        { id: "devtools", label: "Developer Tools", icon: "fa-code", keywords: "devtools inspect console", run: () => toggleDevTools() },
+        { id: "zoom-reset", label: "Reset Zoom", icon: "fa-expand", keywords: "zoom 100 reset", run: () => { zoomLevel = 1.0; savePrefs(); tabs.forEach((t) => applyZoomToTab(t)); updateZoomLabel(); } },
+        { id: "home", label: "Go to Homepage", icon: "fa-house", keywords: "home start", run: () => handleSubmit(homepageUrl) },
+        { id: "split", label: "Toggle Split View", icon: "fa-columns", keywords: "split side by side tiled", run: () => toggleSplitView() },
+        { id: "clear-data", label: "Delete Browsing Data", icon: "fa-trash-can", keywords: "clear delete history", run: () => clearBrowsingData() }
+      ];
+
+      let cpActiveIdx = 0;
+      let cpEntries = [];
+
+      function buildPaletteOverlay() {
+        const overlay = document.createElement("div");
+        overlay.className = "command-palette hidden";
+        overlay.id = "command-palette";
+        overlay.innerHTML =
+          '<div class="cp-box">' +
+          '<div class="cp-search-wrap"><i class="fa-solid fa-magnifying-glass"></i>' +
+          '<input id="cp-input" class="cp-input" placeholder="Search actions, tabs, bookmarks…" spellcheck="false" /></div>' +
+          '<div class="cp-list" id="cp-list"></div>' +
+          '<div class="cp-footer">Tab to jump · Enter to run · Esc to close</div>' +
+          "</div>";
+        overlay.addEventListener("mousedown", (e) => {
+          if (e.target === overlay) closeCommandPalette();
+        });
+        const input = overlay.querySelector("#cp-input");
+        input.addEventListener("input", () => {
+          cpActiveIdx = 0;
+          renderPaletteList(input.value, 0);
+        });
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            cpActiveIdx = Math.min(cpActiveIdx + 1, cpEntries.length - 1);
+            renderPaletteList(input.value, cpActiveIdx);
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            cpActiveIdx = Math.max(cpActiveIdx - 1, 0);
+            renderPaletteList(input.value, cpActiveIdx);
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            const entry = cpEntries[cpActiveIdx];
+            if (entry) runPaletteEntry(entry);
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            closeCommandPalette();
+          }
+        });
+        document.getElementById("app").appendChild(overlay);
+      }
+
+      function toggleCommandPalette() {
+        const cp = document.getElementById("command-palette");
+        if (!cp) return;
+        const willOpen = cp.classList.contains("hidden");
+        if (willOpen) {
+          cp.classList.remove("hidden");
+          const input = document.getElementById("cp-input");
+          input.value = "";
+          cpActiveIdx = 0;
+          input.focus();
+          renderPaletteList("", 0);
+        } else {
+          cp.classList.add("hidden");
+        }
+        commandPaletteOpen = !willOpen;
+      }
+
+      function closeCommandPalette() {
+        const cp = document.getElementById("command-palette");
+        if (cp) cp.classList.add("hidden");
+        commandPaletteOpen = false;
+      }
+
+      function buildPaletteEntries() {
+        const entries = [];
+        for (const a of PALETTE_ACTIONS) entries.push({ type: "action", ...a, hay: (a.label + " " + a.keywords).toLowerCase() });
+        for (const t of tabs) {
+          const title = (t.title || "Tab").toLowerCase();
+          const url = (t.url || "").toLowerCase();
+          entries.push({ type: "tab", id: "tab-" + t.id, label: t.title || "Tab", sub: t.url, icon: "fa-globe",
+            hay: title + " " + url, tabId: t.id });
+        }
+        for (const b of bookmarks) {
+          entries.push({ type: "bookmark", id: "bm-" + b.url, label: b.name || b.url, sub: b.url, icon: "fa-star",
+            hay: ((b.name || "") + " " + b.url).toLowerCase(), url: b.url });
+        }
+        return entries;
+      }
+
+      function scoreEntry(entry, q) {
+        if (!q) return 1;
+        const h = entry.hay;
+        const qi = h.indexOf(q);
+        if (qi === 0) return 0;
+        if (qi > 0) return 1;
+        let score = 2, cursor = 0;
+        for (const ch of q) {
+          const idx = h.indexOf(ch, cursor);
+          if (idx === -1) return Infinity;
+          score += idx > cursor ? 1 : 0;
+          cursor = idx + 1;
+        }
+        return score;
+      }
+
+      function renderPaletteList(query, activeIdx) {
+        const q = (query || "").trim().toLowerCase();
+        cpEntries = buildPaletteEntries()
+          .map((e) => ({ e, s: scoreEntry(e, q) }))
+          .filter((x) => x.s !== Infinity)
+          .sort((a, b) => a.s - b.s || a.e.label.localeCompare(b.e.label))
+          .slice(0, 50)
+          .map((x) => x.e);
+        const list = document.getElementById("cp-list");
+        list.innerHTML = "";
+        cpEntries.forEach((entry, i) => {
+          const el = document.createElement("div");
+          el.className = "cp-item" + (entry.type === "tab" ? " cp-tab" : "") + (i === activeIdx ? " cp-active" : "");
+          el.innerHTML = '<span class="cp-icon"><i class="fa-solid ' + entry.icon + '"></i></span>' +
+            '<span class="cp-title">' + escapeHtml(entry.label) + "</span>" +
+            (entry.sub ? '<span class="cp-sub">' + escapeHtml(entry.sub) + "</span>" : "");
+          el.addEventListener("mousemove", () => {
+            list.querySelectorAll(".cp-item").forEach((c, j) => c.classList.toggle("cp-active", j === i));
+          });
+          el.addEventListener("click", () => runPaletteEntry(entry));
+          list.appendChild(el);
+        });
+        const active = list.children[activeIdx];
+        if (active) active.scrollIntoView({ block: "nearest" });
+      }
+
+      function runPaletteEntry(entry) {
+        closeCommandPalette();
+        if (entry.type === "tab") switchTab(entry.tabId);
+        else if (entry.type === "bookmark") handleSubmit(entry.url);
+        else entry.run();
+      }
+
+      function applySplitLayout() {
+        const container = document.getElementById("iframe-container");
+        if (!container) return;
+        if (!splitTabId) {
+          tabs.forEach((t) => {
+            const el = t.frame.element;
+            el.classList.toggle("hidden", t.id !== activeTabId);
+            el.style.width = "";
+            el.style.left = "";
+          });
+          container.classList.remove("split-mode");
+          positionLoadingOverlays();
+          return;
+        }
+        const primary = tabs.find((t) => t.id === activeTabId);
+        const secondary = tabs.find((t) => t.id === splitTabId);
+        if (!primary || !secondary) {
+          splitTabId = null;
+          applySplitLayout();
+          return;
+        }
+        tabs.forEach((t) => {
+          const el = t.frame.element;
+          if (t.id !== activeTabId && t.id !== splitTabId) {
+            el.classList.add("hidden");
+            return;
+          }
+          el.classList.remove("hidden");
+          el.style.width = "50%";
+          el.style.left = t.id === activeTabId ? "0" : "50%";
+        });
+        container.classList.add("split-mode");
+        positionLoadingOverlays();
+      }
+
+      function toggleSplitView() {
+        if (splitTabId) {
+          splitTabId = null;
+          applySplitLayout();
+          return;
+        }
+        if (tabs.length < 2) createTab(true);
+        const activeIdx = tabs.findIndex((t) => t.id === activeTabId);
+        const candidate = tabs[(activeIdx + 1) % tabs.length];
+        splitTabId = candidate ? candidate.id : null;
+        applySplitLayout();
+        injectSplitIntercept(getActiveTab());
+        injectSplitIntercept(candidate);
+      }
+
+      const splitInterceptedDocs = new WeakSet();
+
+      function injectSplitIntercept(tab) {
+        if (!tab || !splitTabId) return;
+        try {
+          const doc = tab.frame.element.contentDocument || tab.frame.element.contentWindow.document;
+          if (!doc || splitInterceptedDocs.has(doc)) return;
+          splitInterceptedDocs.add(doc);
+          doc.addEventListener("click", (e) => {
+            if (e.button !== 1) return;
+            const anchor = e.target.closest("a");
+            if (!anchor) return;
+            const href = anchor.getAttribute("href");
+            if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+            e.preventDefault();
+            let resolved = "";
+            try { resolved = new URL(href, tab.url).href; } catch { resolved = href; }
+            const other = splitTabId && tab.id === activeTabId
+              ? tabs.find((t) => t.id === splitTabId)
+              : tabs.find((t) => t.id === activeTabId);
+            if (other && other.id !== tab.id) other.frame.go(resolved);
+          }, true);
+        } catch {}
       }
 
       function resolveSearchEngine(key) {
@@ -4104,6 +4999,7 @@
           updateAddressBar();
           updateTabsUI();
         }
+        applySplitLayout();
       }
 
       function goLocalBack() {
@@ -4380,6 +5276,7 @@
           updateAddressBar();
           updateTabsUI();
         }
+        applySplitLayout();
       }
 
       function yukiConfirm(msg) {
@@ -4668,6 +5565,7 @@
               '<span class="settings-field-label">Block Auto-play Media</span>' +
               '<label class="toggle-switch"><input type="checkbox" id="yuki-set-autoplay-block" ' + (autoplayBlock ? "checked" : "") + ' /><span class="toggle-slider"></span></label>' +
             '</div>' +
+            renderLayoutPicker("yuki") +
           '</div>' +
 
           '<div class="yuki-settings-section" data-section="privacy">' +
@@ -4890,6 +5788,10 @@
           autoplayBlock = this.checked;
           savePrefs();
         });
+        document.getElementById("yuki-set-sidebar-collapsed")?.addEventListener("change", function () {
+          sidebarCollapsed = this.checked;
+          applyTabLayout();
+        });
         document.getElementById("yuki-set-clear-on-exit")?.addEventListener("change", function () {
           clearOnExit = this.checked;
           savePrefs();
@@ -4959,28 +5861,6 @@
           renderYukiServerList();
         });
 
-        body.querySelectorAll("[data-yuki-remove-wisp]").forEach(function (btn) {
-          btn.addEventListener("click", async function (e) {
-            e.stopPropagation();
-            var urlToDelete = btn.dataset.yukiRemoveWisp;
-            if (!(await yukiConfirm("Remove this server?"))) return;
-            var wisps = getStoredWisps().filter(function (w) { return w.url !== urlToDelete; });
-            localStorage.setItem("customWisps", JSON.stringify(wisps));
-            if (localStorage.getItem("proxServer") === urlToDelete) {
-              setWisp(DEFAULT_WISP);
-            } else {
-              renderYukiServerList();
-            }
-          });
-        });
-
-        body.querySelectorAll(".wisp-option").forEach(function (item) {
-          item.addEventListener("click", function () {
-            var url = item.dataset.wispUrl;
-            if (url) setWisp(url);
-          });
-        });
-
         initYukiSelect(body);
 
         document.addEventListener("click", function () {
@@ -5013,6 +5893,26 @@
         list.querySelectorAll(".wisp-option").forEach(function (item) {
           var url = item.dataset.wispUrl;
           if (url) checkServerHealth(url, item);
+        });
+        list.querySelectorAll("[data-yuki-remove-wisp]").forEach(function (btn) {
+          btn.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            var urlToDelete = btn.dataset.yukiRemoveWisp;
+            if (!(await yukiConfirm("Remove this server?"))) return;
+            var wisps = getStoredWisps().filter(function (w) { return w.url !== urlToDelete; });
+            localStorage.setItem("customWisps", JSON.stringify(wisps));
+            if (localStorage.getItem("proxServer") === urlToDelete) {
+              setWisp(DEFAULT_WISP);
+            } else {
+              renderYukiServerList();
+            }
+          });
+        });
+        list.querySelectorAll(".wisp-option").forEach(function (item) {
+          item.addEventListener("click", function () {
+            var url = item.dataset.wispUrl;
+            if (url) setWisp(url);
+          });
         });
       }
 
@@ -5178,6 +6078,7 @@
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+              ${renderLayoutPicker("set")}
             </div>
 
             <div class="settings-section">
@@ -5331,6 +6232,10 @@
           document.getElementById("set-autoplay-block")?.addEventListener("change", function () {
             autoplayBlock = this.checked;
             savePrefs();
+          });
+          document.getElementById("set-sidebar-collapsed")?.addEventListener("change", function () {
+            sidebarCollapsed = this.checked;
+            applyTabLayout();
           });
           document.getElementById("set-clear-on-exit")?.addEventListener("change", function () {
             clearOnExit = this.checked;
@@ -5925,6 +6830,26 @@
         saveDownloads();
       }
 
+      function toggleBookmarkBar() {
+        bookmarkBarVisible = !bookmarkBarVisible;
+        const check = document.getElementById("menu-bm-check");
+        if (check) check.className = bookmarkBarVisible ? "fa-solid fa-check di-icon" : "fa-solid fa-minus di-icon";
+        localStorage.setItem(STORAGE_KEYS.BOOKMARKBAR_VISIBLE, String(bookmarkBarVisible));
+        renderBookmarkBar();
+      }
+
+      function clearBrowsingData() {
+        if (!confirm("Clear history, downloads, and bookmarks?")) return;
+        history = [];
+        downloads = [];
+        bookmarks = [];
+        localStorage.removeItem(STORAGE_KEYS.HISTORY);
+        localStorage.removeItem(STORAGE_KEYS.DOWNLOADS);
+        localStorage.removeItem(STORAGE_KEYS.BOOKMARKS);
+        renderBookmarkBar();
+        updateMenuBadges();
+      }
+
       function renderBookmarkBar() {
         const bar = document.getElementById("bookmark-bar");
         if (!bar) return;
@@ -6058,6 +6983,7 @@
         if (activeTab) {
           activeTab.frame.element.classList.remove("hidden");
         }
+        applySplitLayout();
       }
 
       function openBookmarksPanel() {
@@ -6288,6 +7214,8 @@
             if (dd && dd.classList.contains("open")) { dd.classList.remove("open"); return; }
             var omnibox = document.querySelector(".omnibox-dropdown");
             if (omnibox) { hideOmnibox(); return; }
+            var cp = document.getElementById("command-palette");
+            if (cp && !cp.classList.contains("hidden")) { closeCommandPalette(); return; }
           }
 
           const activeElement = document.activeElement;
@@ -6355,6 +7283,24 @@
             bookmarkBarVisible = !bookmarkBarVisible;
             savePrefs();
             renderBookmarkBar();
+            return;
+          }
+
+          if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "y") {
+            e.preventDefault();
+            toggleTabSidebar();
+            return;
+          }
+
+          if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "p") {
+            e.preventDefault();
+            toggleCommandPalette();
+            return;
+          }
+
+          if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") {
+            e.preventDefault();
+            toggleSplitView();
             return;
           }
 

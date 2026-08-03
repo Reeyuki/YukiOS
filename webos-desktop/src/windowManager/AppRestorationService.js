@@ -122,7 +122,7 @@ export class AppRestorationService {
       record.zIndex = parseInt(win.style.zIndex) || 1000;
       record.snapZone = win.dataset.snapZone || null;
       record.minimized = win.style.display === "none";
-      record.fullscreen = win.dataset.fullscreen === "true";
+      record.fullscreen = win.dataset.fullscreen === "true" && win.dataset.appId !== "browserApp";
       record.focused = win.classList.contains("active");
 
       const content = win.querySelector(".window-content");
@@ -331,7 +331,7 @@ export class AppRestorationService {
         if (state.minimized) {
           this.wm.minimizeWindow(win);
         }
-        if (state.fullscreen) {
+        if (state.fullscreen && win.dataset.appId !== "browserApp") {
           this.wm.toggleFullscreen(win);
         }
         if (state.snapZone) {

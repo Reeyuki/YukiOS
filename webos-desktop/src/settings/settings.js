@@ -1,4 +1,5 @@
 import { BaseApp, StorageKeys, os } from "../framework.js";
+import { getWispUrl } from "../shared/wispConfig.js";
 import { BusEvents } from "../core/EventBus.js";
 import { setCdnMirror, initializeMirrors } from "../shared/assetResolver.js";
 import { appMap } from "../games/gamesList.js";
@@ -111,7 +112,7 @@ export class SettingsApp extends BaseApp {
         mikuCursor: parseBool(os.storage.get(StorageKeys.mikuCursor), true),
         fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
         uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
-        wispServer: os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
+        wispServer: getWispUrl(),
         browserTransport: os.storage.get(StorageKeys.browserTransport) || "epoxy",
         virtualResolution: os.storage.get(StorageKeys.virtualResolution) || "native",
         cursorEffectEnabled: parseBool(os.storage.get(StorageKeys.cursorEffectEnabled), true),

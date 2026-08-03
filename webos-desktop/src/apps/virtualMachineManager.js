@@ -1,5 +1,6 @@
 import "../styles/virtualMachineManager.css";
 import { BaseApp, os, StorageKeys } from "../framework.js";
+import { getWispUrl } from "../shared/wispConfig.js";
 const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 
@@ -240,7 +241,7 @@ export class VirtualMachineManagerApp extends BaseApp {
   }
 
   scramjetUrl(url) {
-    const wispUrl = os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+    const wispUrl = getWispUrl();
     return (
       window.location.origin +
       "/s/index.html?wisp=" +

@@ -8,6 +8,7 @@ const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { StorageKeys, os, brand, yuriPageTitle } from "./framework.js";
+import { getWispUrl } from "./shared/wispConfig.js";
 import { parseBool } from "./utils/utils.js";
 import {
   fetchHtmlAsBlobUrl,
@@ -292,8 +293,7 @@ export class AppLauncher {
         let source = info.url;
 
         if (info?.scramjetEnabled) {
-          const wispUrl =
-            os.storage.get(StorageKeys.wispServer) || "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
+          const wispUrl = getWispUrl();
           source = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
         } else if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
