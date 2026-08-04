@@ -298,7 +298,7 @@ export class WindowManager {
         left: "0",
         top: "0",
         position: "fixed",
-        zIndex: this.zIndexCounter++
+        zIndex: this.nextWindowZIndex()
       });
     } else {
       Object.assign(win.style, {
@@ -307,7 +307,7 @@ export class WindowManager {
         left: `${position.left}px`,
         top: `${position.top}px`,
         position: disableDesktopStretchScroll ? "fixed" : "absolute",
-        zIndex: this.zIndexCounter++
+        zIndex: this.nextWindowZIndex()
       });
     }
 
@@ -369,6 +369,25 @@ export class WindowManager {
     this.onTilingWindowCreated(winId);
     this.bringToFront(win);
     animateWindowOpen(win);
+  }
+
+  nextWindowZIndex() {
+    if (this.zIndexCounter > 5000) {
+      this.normalizeWindowZIndexes();
+    }
+    return this.zIndexCounter++;
+  }
+
+  normalizeWindowZIndexes() {
+    const wins = Array.from(this.openWindows.keys())
+      .map((id) => document.getElementById(id))
+      .filter(Boolean)
+      .sort((a, b) => (parseInt(a.style.zIndex, 10) || 0) - (parseInt(b.style.zIndex, 10) || 0));
+    let z = 1000;
+    wins.forEach((w) => {
+      w.style.zIndex = String(z++);
+    });
+    this.zIndexCounter = z;
   }
 
   getWindowIconHtml(iconValue, color = null) {

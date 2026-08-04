@@ -42,7 +42,7 @@ export class WindowStateManager {
 
     applyFocusGlow(win);
     applyZDepthLift(win, true);
-    win.style.zIndex = this.manager.zIndexCounter++;
+    win.style.zIndex = this.manager.nextWindowZIndex();
     win.focus();
     this.manager.triggerSessionSave();
   }

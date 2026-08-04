@@ -768,6 +768,13 @@ export function bindAppearanceCategory(
     });
   }
 
+  const themeHubBtn = $("#settingsOpenThemeHub", win);
+  if (themeHubBtn) {
+    bindEvent(themeHubBtn, "click", () => {
+      os.app.launch("themeHubApp");
+    });
+  }
+
   bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl);
 }
 

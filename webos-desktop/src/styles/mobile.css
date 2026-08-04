@@ -177,7 +177,7 @@ html.is-mobile .window[data-snap-zone] {
 html.is-mobile #taskbar {
   height: var(--taskbar-h);
   padding: 0 4px;
-  z-index: 100;
+  z-index: 6000;
 }
 
 html.is-mobile #start-button {

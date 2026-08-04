@@ -1,7 +1,7 @@
 import { CDN_MIRRORS, resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
-import { getBasicThemes, getSpecialThemes, getCustomThemes } from "../shared/themeEngine.js";
+import { getBasicThemes, getCustomThemes } from "../shared/themeEngine.js";
 import { StorageKeys, os, brand } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
@@ -768,20 +768,9 @@ export function renderDesktopSettings(s) {
 }
 export function renderAppearanceSettings(s) {
   const basicThemes = getBasicThemes();
-  const specialThemes = getSpecialThemes();
   const customThemes = getCustomThemes();
 
   const basicThemeButtons = basicThemes
-    .map(
-      (theme) => `
-      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
-        <span>${theme.label}</span>
-      </button>
-    `
-    )
-    .join("");
-
-  const specialThemeButtons = specialThemes
     .map(
       (theme) => `
       <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
@@ -856,15 +845,6 @@ export function renderAppearanceSettings(s) {
         </div>
         <div class="settings-row settings-row--stacked">
           <div class="settings-label-group">
-            <span class="settings-label-title">Special Themes</span>
-            <span class="settings-label-desc">Additional color schemes</span>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
-            ${specialThemeButtons}
-          </div>
-        </div>
-        <div class="settings-row settings-row--stacked">
-          <div class="settings-label-group">
             <span class="settings-label-title">Custom Themes</span>
             <span class="settings-label-desc">Your saved themes</span>
           </div>
@@ -880,6 +860,15 @@ export function renderAppearanceSettings(s) {
           </div>
           <button class="settings-btn" id="settingsCustomColorsBtn">
             <i class="fas fa-palette"></i> Customize
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Theme Hub</span>
+            <span class="settings-label-desc">Browse, share, and install community themes</span>
+          </div>
+          <button class="settings-btn" id="settingsOpenThemeHub">
+            <i class="fas fa-share-nodes"></i> Open
           </button>
         </div>
         <div class="settings-row">

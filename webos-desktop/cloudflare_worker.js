@@ -11,10 +11,15 @@ const Caches = {
   peak: {},
   insights: {},
   live: { data: null, time: 0, promise: null },
-  appList: { data: null, time: 0, promise: null }
+  appList: { data: null, time: 0, promise: null },
+  themes: {},
+  adminThemes: {}
 };
 
 const CACHE_TTL = 5 * 60 * 1000;
+
+let themesInitPromise = null;
+let themeRateStore = new Map();
 
 async function withCache(cacheObj, key, fetcher, ttl = CACHE_TTL) {
   const now = Date.now();
@@ -42,6 +47,12 @@ async function withCache(cacheObj, key, fetcher, ttl = CACHE_TTL) {
       });
   }
   return entry.promise;
+}
+
+function invalidateThemeListCache() {
+  Object.keys(Caches.themes).forEach((key) => {
+    if (key.startsWith("list|")) delete Caches.themes[key];
+  });
 }
 
 function ipBlocked(env, ip) {
@@ -130,22 +141,27 @@ function isAppAllowed(app, appList) {
 
 async function fetchAppList(env) {
   const url = env.APP_LIST_URL || "https://yukios.netlify.app/app-list.json";
-  return withCache(Caches.appList, null, async () => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+  return withCache(
+    Caches.appList,
+    null,
+    async () => {
       try {
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) return null;
-        const data = await res.json();
-        return Array.isArray(data) ? data : null;
-      } finally {
-        clearTimeout(timeoutId);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        try {
+          const res = await fetch(url, { signal: controller.signal });
+          if (!res.ok) return null;
+          const data = await res.json();
+          return Array.isArray(data) ? data : null;
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      } catch {
+        return null;
       }
-    } catch {
-      return null;
-    }
-  }, 10 * 60 * 1000);
+    },
+    10 * 60 * 1000
+  );
 }
 
 function isTrustedIconUrl(url) {
@@ -658,6 +674,219 @@ async function fetchInsights(env, range) {
     app_avg_time: appAvgTime.results || [],
     dau_wau_mau: dauWauMau.results || [],
     session_durations: sdBuckets || { t: 0, a: 0, b: 0, c: 0, d: 0, e: 0, f: 0 }
+  };
+}
+
+function ensureThemesSchema(env) {
+  if (themesInitPromise) return themesInitPromise;
+  const statements = [
+    "CREATE TABLE IF NOT EXISTS themes (id TEXT PRIMARY KEY, author_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '', icon TEXT NOT NULL DEFAULT '', contract TEXT NOT NULL, colors TEXT NOT NULL DEFAULT '{}', effects TEXT NOT NULL DEFAULT '{}', upvotes INTEGER NOT NULL DEFAULT 0, downvotes INTEGER NOT NULL DEFAULT 0, score INTEGER NOT NULL DEFAULT 0, installs INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'approved', created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS theme_ratings (theme_id TEXT NOT NULL, daily_id TEXT NOT NULL, vote INTEGER NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (theme_id, daily_id))",
+    "CREATE TABLE IF NOT EXISTS theme_installs (theme_id TEXT NOT NULL, daily_id TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (theme_id, daily_id))",
+    "CREATE INDEX IF NOT EXISTS idx_themes_status_score ON themes (status, score DESC)",
+    "CREATE INDEX IF NOT EXISTS idx_themes_status_created ON themes (status, created_at DESC)"
+  ];
+  themesInitPromise = env.DB.batch(statements.map((sql) => env.DB.prepare(sql))).catch((e) => {
+    themesInitPromise = null;
+    throw e;
+  });
+  return themesInitPromise;
+}
+
+function themeRateLimit(env, ip, bucket) {
+  const limits = {
+    upload: [10, 15 * 60 * 1000],
+    rate: [30, 60 * 1000],
+    report: [5, 60 * 60 * 1000],
+    delete: [5, 10 * 60 * 1000]
+  };
+  const config = limits[bucket];
+  if (!config) return true;
+  const [max, window] = config;
+  const now = Date.now();
+  let buckets = themeRateStore.get(ip);
+  if (!buckets) {
+    buckets = new Map();
+    themeRateStore.set(ip, buckets);
+  }
+  let times = buckets.get(bucket) || [];
+  times = times.filter((t) => now - t < window);
+  if (times.length >= max) {
+    buckets.set(bucket, times);
+    return false;
+  }
+  times.push(now);
+  buckets.set(bucket, times);
+  if (themeRateStore.size > 10000) {
+    for (const [key, value] of themeRateStore) {
+      let empty = true;
+      for (const [b, t] of value) {
+        value.set(
+          b,
+          t.filter((x) => now - x < limits[b][1])
+        );
+        if (value.get(b).length > 0) empty = false;
+      }
+      if (empty) themeRateStore.delete(key);
+    }
+  }
+  return true;
+}
+
+const THEME_COLOR_KEYS = [
+  "brand",
+  "brand-hover",
+  "brand-dark",
+  "brand-glow",
+  "brand-dim",
+  "bg-base",
+  "bg-elev-1",
+  "bg-elev-2",
+  "bg-elev-3",
+  "bg-primary",
+  "bg-secondary",
+  "surface-solid",
+  "surface-hover",
+  "glass",
+  "glass-strong",
+  "glass-border",
+  "glass-hover",
+  "text-primary",
+  "text-secondary",
+  "text-muted",
+  "text-on-brand",
+  "tx-on-brand",
+  "border",
+  "border-strong",
+  "overlay-bg",
+  "error",
+  "error-bg",
+  "error-border",
+  "charging",
+  "menu-bg",
+  "window-bg",
+  "shadow-color"
+];
+
+const THEME_EFFECT_OPTIONS = {
+  open: [
+    "instant",
+    "fade",
+    "scaleCenter",
+    "scaleFromSource",
+    "slideUp",
+    "slideLeft",
+    "slideRight",
+    "glassBlurin",
+    "elasticBounce",
+    "blurReveal",
+    "perspective3D",
+    "cornerUnfold",
+    "slideInGrowth"
+  ],
+  close: [
+    "instant",
+    "scaleDownCenter",
+    "scaleToOrigin",
+    "fadeOut",
+    "slideDown",
+    "burn",
+    "shrinkToPoint",
+    "dissolveBlur"
+  ],
+  minimize: ["instant", "taskbarShrink", "dockZoomShrink", "magicLamp", "fadeToTaskbar", "elasticStretch", "spiralDown"]
+};
+
+function sanitizeColorValue(value) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const pattern =
+    /^(#[0-9a-fA-F]{3,8}|rgba?\([^()]{1,80}\)|hsla?\([^()]{1,80}\)|oklch\([^()]{1,120}\)|var\(--[a-zA-Z0-9-]{1,64}\)|transparent|currentcolor|none|inherit)$/i;
+  if (!pattern.test(trimmed)) return null;
+  const lower = trimmed.toLowerCase();
+  if (lower.includes("url(") || lower.includes("expression") || lower.includes("javascript")) return null;
+  return trimmed;
+}
+
+function sanitizeBackground(value) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return null;
+  if (trimmed.length > 300) return null;
+  const pattern = /^[a-zA-Z0-9#%(),.#\s\-/]+$/;
+  if (!pattern.test(trimmed)) return null;
+  const lower = trimmed.toLowerCase();
+  if (lower.includes("url(") || lower.includes("expression") || lower.includes("javascript")) return null;
+  return trimmed;
+}
+
+function sanitizeThemeContract(input) {
+  if (!input || typeof input !== "object") return { ok: false, errors: ["invalid contract"] };
+  const errors = [];
+  if (input.schemaVersion !== 1) errors.push("invalid schemaVersion");
+  if (input.type !== "yukios-theme") errors.push("invalid type");
+  if (typeof input.name !== "string" || input.name.trim().length === 0 || input.name.trim().length > 48)
+    errors.push("invalid name");
+  const description = typeof input.description === "string" ? input.description.trim().slice(0, 200) : "";
+  const author = typeof input.author === "string" ? input.author.trim().slice(0, 32) : "";
+  const icon = typeof input.icon === "string" ? input.icon.trim().slice(0, 64) : "fas fa-palette";
+  const name = typeof input.name === "string" ? input.name.trim() : "";
+  if (errors.length > 0) return { ok: false, errors };
+
+  let colors = {};
+  if (input.colors && typeof input.colors === "object") {
+    for (const key of Object.keys(input.colors)) {
+      if (!THEME_COLOR_KEYS.includes(key)) continue;
+      const sanitized = sanitizeColorValue(input.colors[key]);
+      if (sanitized) colors[key] = sanitized;
+    }
+  }
+  if (Object.keys(colors).length < 1) return { ok: false, errors: ["theme needs at least one color"] };
+
+  let effects = {};
+  if (input.effects && typeof input.effects === "object") {
+    if (
+      input.effects.windowAnimation === null ||
+      input.effects.windowAnimation === undefined ||
+      THEME_EFFECT_OPTIONS.open.includes(input.effects.windowAnimation)
+    ) {
+      effects.windowAnimation = input.effects.windowAnimation || null;
+    }
+    if (
+      input.effects.closeAnimation === null ||
+      input.effects.closeAnimation === undefined ||
+      THEME_EFFECT_OPTIONS.close.includes(input.effects.closeAnimation)
+    ) {
+      effects.closeAnimation = input.effects.closeAnimation || null;
+    }
+    if (
+      input.effects.minimizeAnimation === null ||
+      input.effects.minimizeAnimation === undefined ||
+      THEME_EFFECT_OPTIONS.minimize.includes(input.effects.minimizeAnimation)
+    ) {
+      effects.minimizeAnimation = input.effects.minimizeAnimation || null;
+    }
+    if (typeof input.effects.cursorOff === "boolean") effects.cursorOff = input.effects.cursorOff;
+    if (input.effects.background !== undefined) {
+      const bg = sanitizeBackground(input.effects.background);
+      if (bg) effects.background = bg;
+    }
+  }
+
+  return {
+    ok: true,
+    contract: {
+      schemaVersion: 1,
+      type: "yukios-theme",
+      name,
+      description,
+      author,
+      icon,
+      colors,
+      effects
+    },
+    errors: []
   };
 }
 
@@ -1194,6 +1423,358 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/themes" && request.method === "POST") {
+      if (!themeRateLimit(env, clientIP, "upload")) {
+        return jsonResponse({ error: "Rate limited" }, 429);
+      }
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+      if (!payload.contract) return jsonResponse({ error: "missing contract" }, 400);
+      if (JSON.stringify(payload.contract).length > 12000) {
+        return jsonResponse({ error: "Theme too large" }, 413);
+      }
+      const validated = sanitizeThemeContract(payload.contract);
+      if (!validated.ok) return jsonResponse({ error: validated.errors.join("; ") }, 400);
+      const authorId = await deriveDailyId(env, clientIP);
+      const id = "theme_" + crypto.randomUUID().replace(/-/g, "").slice(0, 14);
+      const now = new Date().toISOString();
+      try {
+        await env.DB.prepare(
+          `INSERT INTO themes (id, author_id, name, description, author, icon, contract, colors, effects, upvotes, downvotes, score, installs, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,0,0,0,0,'approved',?,?)`
+        )
+          .bind(
+            id,
+            authorId,
+            validated.contract.name,
+            validated.contract.description,
+            validated.contract.author,
+            validated.contract.icon,
+            JSON.stringify(validated.contract),
+            JSON.stringify(validated.contract.colors),
+            JSON.stringify(validated.contract.effects),
+            now,
+            now
+          )
+          .run();
+      } catch {
+        return jsonResponse({ error: "db error" }, 500);
+      }
+      invalidateThemeListCache();
+      return jsonResponse(
+        {
+          id,
+          name: validated.contract.name,
+          description: validated.contract.description,
+          author: validated.contract.author,
+          icon: validated.contract.icon,
+          colors: validated.contract.colors,
+          effects: validated.contract.effects,
+          upvotes: 0,
+          downvotes: 0,
+          score: 0,
+          installs: 0,
+          created_at: now
+        },
+        201
+      );
+    }
+
+    if (url.pathname === "/api/themes" && request.method === "GET") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const rawPage = parseInt(url.searchParams.get("page") || "1");
+      const page = Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1;
+      const rawPerPage = parseInt(url.searchParams.get("per_page") || "12");
+      let perPage = Number.isFinite(rawPerPage) ? rawPerPage : 12;
+      if (perPage < 1) perPage = 1;
+      if (perPage > 48) perPage = 48;
+      let sort = url.searchParams.get("sort") || "top";
+      if (!["top", "newest", "installs"].includes(sort)) sort = "top";
+      const search = (url.searchParams.get("search") || "").slice(0, 100);
+      const author = (url.searchParams.get("author") || "").slice(0, 32);
+      const result = await withCache(
+        Caches.themes,
+        "list|" + page + "|" + perPage + "|" + sort + "|" + search + "|" + author,
+        async () => {
+          const conditions = ["status = 'approved'"];
+          const params = [];
+          if (search) {
+            conditions.push("(name LIKE ? OR description LIKE ? OR author LIKE ?)");
+            const pattern = "%" + search + "%";
+            params.push(pattern, pattern, pattern);
+          }
+          if (author) {
+            conditions.push("author = ?");
+            params.push(author);
+          }
+          const where = conditions.join(" AND ");
+          const totalRow = await env.DB.prepare(`SELECT COUNT(*) AS count FROM themes WHERE ${where}`)
+            .bind(...params)
+            .first();
+          let orderBy = "score DESC, installs DESC";
+          if (sort === "newest") orderBy = "created_at DESC";
+          if (sort === "installs") orderBy = "installs DESC";
+          const offset = (page - 1) * perPage;
+          const rows = await env.DB.prepare(
+            `SELECT id, name, description, author, icon, colors, effects, upvotes, downvotes, score, installs, created_at FROM themes WHERE ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
+          )
+            .bind(...params, perPage, offset)
+            .all();
+          const themes = rows.results.map((row) => {
+            let colors = {};
+            let effects = {};
+            try {
+              colors = typeof row.colors === "string" ? JSON.parse(row.colors) : row.colors || {};
+            } catch {}
+            try {
+              effects = typeof row.effects === "string" ? JSON.parse(row.effects) : row.effects || {};
+            } catch {}
+            return { ...row, colors, effects };
+          });
+          const total = totalRow?.count || 0;
+          const pages = Math.max(1, Math.ceil(total / perPage));
+          return { themes, total, page, per_page: perPage, pages };
+        },
+        30000
+      );
+      return jsonResponse(result);
+    }
+
+    if (url.pathname.startsWith("/api/themes/") && request.method === "GET") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      const row = await env.DB.prepare(
+        `SELECT id, name, description, author, icon, colors, effects, upvotes, downvotes, score, installs, created_at FROM themes WHERE id = ? AND status = 'approved'`
+      )
+        .bind(id)
+        .first();
+      if (!row) return jsonResponse({ error: "Theme not found" }, 404);
+      const viewerId = await deriveDailyId(env, clientIP);
+      const ratingRow = await env.DB.prepare(`SELECT vote FROM theme_ratings WHERE theme_id = ? AND daily_id = ?`)
+        .bind(id, viewerId)
+        .first();
+      let colors = {};
+      let effects = {};
+      try {
+        colors = typeof row.colors === "string" ? JSON.parse(row.colors) : row.colors || {};
+      } catch {}
+      try {
+        effects = typeof row.effects === "string" ? JSON.parse(row.effects) : row.effects || {};
+      } catch {}
+      return jsonResponse({ theme: { ...row, colors, effects }, myVote: ratingRow?.vote ?? null });
+    }
+
+    if (url.pathname.startsWith("/api/themes/") && url.pathname.endsWith("/rate") && request.method === "POST") {
+      if (!themeRateLimit(env, clientIP, "rate")) {
+        return jsonResponse({ error: "Rate limited" }, 429);
+      }
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+      const vote = payload.vote;
+      if (vote !== 1 && vote !== -1 && vote !== 0) {
+        return jsonResponse({ error: "invalid vote" }, 400);
+      }
+      const dailyId = await deriveDailyId(env, clientIP);
+      const now = new Date().toISOString();
+      await env.DB.prepare(
+        `INSERT INTO theme_ratings (theme_id, daily_id, vote, updated_at) VALUES (?,?,?,?) ON CONFLICT (theme_id, daily_id) DO UPDATE SET vote = excluded.vote, updated_at = excluded.updated_at`
+      )
+        .bind(id, dailyId, vote, now)
+        .run();
+      await env.DB.prepare(
+        `UPDATE themes SET upvotes = (SELECT COUNT(*) FROM theme_ratings WHERE theme_id = ? AND vote = 1), downvotes = (SELECT COUNT(*) FROM theme_ratings WHERE theme_id = ? AND vote = -1), score = (SELECT COALESCE(SUM(vote), 0) FROM theme_ratings WHERE theme_id = ?), updated_at = ? WHERE id = ?`
+      )
+        .bind(id, id, id, now, id)
+        .run();
+      const updated = await env.DB.prepare(`SELECT upvotes, downvotes, score FROM themes WHERE id = ?`)
+        .bind(id)
+        .first();
+      if (!updated) return jsonResponse({ error: "Theme not found" }, 404);
+      return jsonResponse({
+        id,
+        upvotes: updated.upvotes,
+        downvotes: updated.downvotes,
+        score: updated.score,
+        myVote: vote
+      });
+    }
+
+    if (url.pathname.startsWith("/api/themes/") && url.pathname.endsWith("/install") && request.method === "POST") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      const dailyId = await deriveDailyId(env, clientIP);
+      const now = new Date().toISOString();
+      await env.DB.prepare(`INSERT OR IGNORE INTO theme_installs (theme_id, daily_id, created_at) VALUES (?, ?, ?)`)
+        .bind(id, dailyId, now)
+        .run();
+      await env.DB.prepare(
+        `UPDATE themes SET installs = (SELECT COUNT(*) FROM theme_installs WHERE theme_id = ?) WHERE id = ?`
+      )
+        .bind(id, id)
+        .run();
+      const updated = await env.DB.prepare(`SELECT installs FROM themes WHERE id = ?`).bind(id).first();
+      if (!updated) return jsonResponse({ error: "Theme not found" }, 404);
+      return jsonResponse({ installs: updated.installs });
+    }
+
+    if (url.pathname.startsWith("/api/themes/") && url.pathname.endsWith("/report") && request.method === "POST") {
+      if (!themeRateLimit(env, clientIP, "report")) {
+        return jsonResponse({ error: "Rate limited" }, 429);
+      }
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return jsonResponse({ error: "invalid json" }, 400);
+      }
+      const reason = typeof payload.reason === "string" ? payload.reason.slice(0, 200) : "No reason provided";
+      const theme = await env.DB.prepare(`SELECT name FROM themes WHERE id = ?`).bind(id).first();
+      if (!theme) return jsonResponse({ error: "Theme not found" }, 404);
+      await sendReportEmbed(env, {
+        title: "🚨 Theme Reported",
+        color: 15158332,
+        fields: [
+          { name: "Theme", value: theme.name, inline: true },
+          { name: "Theme ID", value: id, inline: true },
+          { name: "Reason", value: reason, inline: false },
+          { name: "Reporter ID", value: (await deriveDailyId(env, clientIP)).slice(0, 12), inline: false },
+          { name: "Timestamp", value: new Date().toISOString(), inline: false }
+        ]
+      });
+      return jsonResponse({ success: true });
+    }
+
+    if (url.pathname.startsWith("/api/themes/") && url.pathname.endsWith("/delete") && request.method === "POST") {
+      if (!themeRateLimit(env, clientIP, "delete")) {
+        return jsonResponse({ error: "Rate limited" }, 429);
+      }
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      const authorId = await deriveDailyId(env, clientIP);
+      const now = new Date().toISOString();
+      const result = await env.DB.prepare(
+        `UPDATE themes SET status = 'deleted', updated_at = ? WHERE id = ? AND author_id = ?`
+      )
+        .bind(now, id, authorId)
+        .run();
+      if (result.meta.changes === 0) return jsonResponse({ error: "Theme not found or not yours" }, 404);
+      return jsonResponse({ success: true });
+    }
+
+    if (url.pathname === "/admin/themes" && request.method === "GET") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const status = url.searchParams.get("status") || "all";
+      const safeStatus = ["all", "approved", "flagged", "deleted"].includes(status) ? status : "all";
+      const rawPage = parseInt(url.searchParams.get("page") || "1");
+      const page = Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1;
+      const rawPerPage = parseInt(url.searchParams.get("per_page") || "25");
+      let perPage = Number.isFinite(rawPerPage) ? rawPerPage : 25;
+      if (perPage < 1) perPage = 1;
+      if (perPage > 100) perPage = 100;
+      const result = await withCache(
+        Caches.adminThemes,
+        "list|" + safeStatus + "|" + page + "|" + perPage,
+        async () => {
+          const where = safeStatus === "all" ? "" : "WHERE status = '" + safeStatus + "'";
+          const totalRow = await env.DB.prepare(`SELECT COUNT(*) AS count FROM themes ${where}`).first();
+          const offset = (page - 1) * perPage;
+          const rows = await env.DB.prepare(
+            `SELECT id, author_id, name, author, contract, status, score, installs, created_at FROM themes ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+          )
+            .bind(perPage, offset)
+            .all();
+          const total = totalRow?.count || 0;
+          const pages = Math.max(1, Math.ceil(total / perPage));
+          return { themes: rows.results, total, page, per_page: perPage, pages };
+        },
+        15000
+      );
+      return jsonResponse(result);
+    }
+
+    if (url.pathname.startsWith("/admin/themes/") && url.pathname.endsWith("/approve") && request.method === "POST") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      await env.DB.prepare(`UPDATE themes SET status = 'approved', updated_at = ? WHERE id = ?`)
+        .bind(new Date().toISOString(), id)
+        .run();
+      return jsonResponse({ success: true });
+    }
+
+    if (url.pathname.startsWith("/admin/themes/") && url.pathname.endsWith("/flag") && request.method === "POST") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      await env.DB.prepare(`UPDATE themes SET status = 'flagged', updated_at = ? WHERE id = ?`)
+        .bind(new Date().toISOString(), id)
+        .run();
+      return jsonResponse({ success: true });
+    }
+
+    if (url.pathname.startsWith("/admin/themes/") && url.pathname.endsWith("/delete") && request.method === "POST") {
+      try {
+        await ensureThemesSchema(env);
+      } catch {
+        return jsonResponse({ error: "db not ready" }, 500);
+      }
+      const id = url.pathname.split("/")[3];
+      await env.DB.prepare(`DELETE FROM theme_ratings WHERE theme_id = ?`).bind(id).run();
+      await env.DB.prepare(`DELETE FROM theme_installs WHERE theme_id = ?`).bind(id).run();
+      await env.DB.prepare(`DELETE FROM themes WHERE id = ?`).bind(id).run();
+      return jsonResponse({ success: true });
+    }
+
     return new Response("Not Found", { status: 404, headers: corsHeaders("text/plain") });
   }
 };
@@ -1454,6 +2035,9 @@ canvas{width:100%!important;height:100%!important}
       <div class="nav-item" data-panel="downloadstelemetry" onclick="switchPanel('downloadstelemetry',this);loadDownloadsTelemetry()">
         <i class="fa-solid fa-download"></i>Downloads & Telemetry
       </div>
+      <div class="nav-item" data-panel="themes" onclick="switchPanel('themes',this);loadAdminThemes()">
+        <i class="fa-solid fa-palette"></i>Themes
+      </div>
 
     </nav>
     <div class="sidebar-footer">
@@ -1681,6 +2265,26 @@ canvas{width:100%!important;height:100%!important}
         </div>
       </div>
 
+      <div id="panel-themes" class="panel">
+        <div class="section-header">
+          <div class="section-title"><i class="fa-solid fa-palette"></i>Theme Management</div>
+          <div class="sort-bar">
+            <button class="sort-btn active" id="tsTabAll" onclick="loadAdminThemes('all')"><i class="fa-solid fa-circle-dot"></i>All</button>
+            <button class="sort-btn" id="tsTabApproved" onclick="loadAdminThemes('approved')"><i class="fa-solid fa-check"></i>Approved</button>
+            <button class="sort-btn" id="tsTabFlagged" onclick="loadAdminThemes('flagged')"><i class="fa-solid fa-flag"></i>Flagged</button>
+            <button class="sort-btn" id="tsTabDeleted" onclick="loadAdminThemes('deleted')"><i class="fa-solid fa-trash"></i>Deleted</button>
+            <button class="sort-btn" onclick="loadAdminThemes()"><i class="fa-solid fa-rotate"></i>Refresh</button>
+          </div>
+        </div>
+        <div class="flow-wrap" id="themeTableWrap">
+          <div id="themeEmpty" class="empty-state"><i class="fa-solid fa-palette"></i>Loading themes...</div>
+          <table class="flow-table" id="themeTable" style="display:none">
+            <thead id="themeThead"></thead>
+            <tbody id="themeTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1713,7 +2317,8 @@ var panelTitles={
   exploration:"Exploration Stats",
   insights:"Insights",
   data:"Data Management",
-  downloadstelemetry:"Downloads & Telemetry"
+  downloadstelemetry:"Downloads & Telemetry",
+  themes:"Theme Management"
 };
 
 function switchPanel(id,el){
@@ -2337,6 +2942,61 @@ function importData(input){
   };
   reader.readAsText(file);
   input.value="";
+}
+
+var _themeStatus="all";
+var _themeData=[];
+function loadAdminThemes(status){
+  if(status!==undefined)_themeStatus=status;
+  document.querySelectorAll("#panel-themes .sort-btn[id^=tsTab]").forEach(function(b){b.classList.remove("active");});
+  document.getElementById("tsTab"+(_themeStatus.charAt(0).toUpperCase()+_themeStatus.slice(1))).classList.add("active");
+  var empty=document.getElementById("themeEmpty");
+  var table=document.getElementById("themeTable");
+  table.style.display="none";
+  empty.style.display="block";
+  empty.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Loading themes...';
+  fetch("/admin/themes?status="+encodeURIComponent(_themeStatus),{headers:getHeaders()})
+    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+    .then(function(data){_themeData=data.themes||[];renderAdminThemes();})
+    .catch(function(e){empty.style.display="block";empty.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Error loading themes.';});
+}
+function renderAdminThemes(){
+  var table=document.getElementById("themeTable");
+  var empty=document.getElementById("themeEmpty");
+  if(!_themeData.length){table.style.display="none";empty.style.display="block";empty.innerHTML='<i class="fa-solid fa-circle-info"></i> No themes found for this filter.';return;}
+  table.style.display="";
+  empty.style.display="none";
+  document.getElementById("themeThead").innerHTML="<tr><th>Name</th><th>Author</th><th>Status</th><th>Score</th><th>Installs</th><th>Created</th><th>Actions</th></tr>";
+  document.getElementById("themeTbody").innerHTML=_themeData.map(function(t){
+    var badge=themeStatusBadge(t.status);
+    var date=new Date(t.created_at).toLocaleDateString();
+    var shortId=(t.id||"").slice(-8);
+    return "<tr>"+
+      "<td style=\"max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\">"+escapeHtml(t.name||"Untitled")+"</td>"+
+      "<td>"+escapeHtml(t.author||t.author_id||"—")+"</td>"+
+      "<td>"+badge+"</td>"+
+      "<td>"+t.score+"</td>"+
+      "<td>"+t.installs+"</td>"+
+      "<td>"+date+"</td>"+
+      "<td style=\"white-space:nowrap\">"+
+      "<button class=\"sort-btn\" title=\"Approve\" onclick=\"adminThemeAction('"+t.id+"','approve')\"><i class=\"fa-solid fa-check\"></i></button> "+
+      "<button class=\"sort-btn\" title=\"Flag\" onclick=\"adminThemeAction('"+t.id+"','flag')\"><i class=\"fa-solid fa-flag\"></i></button> "+
+      "<button class=\"sort-btn\" title=\"Delete\" onclick=\"adminThemeAction('"+t.id+"','delete')\" style=\"color:var(--red)\"><i class=\"fa-solid fa-trash\"></i></button>"+
+      "<div style=\"font-size:9px;color:var(--muted);margin-top:3px\">"+shortId+"</div>"+
+      "</td>"+
+      "</tr>";
+  }).join("");
+}
+function themeStatusBadge(s){
+  var map={approved:'<span style="color:var(--green)">approved</span>',flagged:'<span style="color:var(--yellow)">flagged</span>',deleted:'<span style="color:var(--red)">deleted</span>'};
+  return map[s]||escapeHtml(s||"unknown");
+}
+function adminThemeAction(id,action){
+  if(action==="delete"&&!confirm("Permanently delete theme "+id+"? This removes it from the hub."))return;
+  fetch("/admin/themes/"+id+"/"+action,{method:"POST",headers:getHeaders()})
+    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+    .then(function(){loadAdminThemes();})
+    .catch(function(e){alert("Action failed: "+e.message);});
 }
 <\/script>
 </body>

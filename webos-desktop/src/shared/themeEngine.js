@@ -389,7 +389,7 @@ const BUILTIN_THEMES = [
       "glass-strong": "rgba(205, 214, 244, 0.09)",
       "glass-border": "rgba(205, 214, 244, 0.12)",
       "glass-hover": "rgba(205, 214, 244, 0.14)",
-      "text-primary": "#cdd6f4",
+      "text-primary": "#000000",
       "text-secondary": "#a6adc8",
       "text-muted": "#6c7086",
       "text-on-brand": "#1e1e2e",
@@ -528,7 +528,7 @@ function loadCustomThemes() {
 
 function saveCustomThemes() {
   try {
-    os.storage.set(StorageKeys.customThemes, JSON.stringify(customThemes));
+    os.storage.set(StorageKeys.customThemes, customThemes);
   } catch (e) {
     console.warn("Failed to save custom themes:", e);
   }
@@ -550,6 +550,10 @@ export function getSpecialThemes() {
     loadCustomThemes();
   }
   return [...BUILTIN_THEMES.filter((t) => t.category === "special"), ...customThemes];
+}
+
+export function getFeaturedThemes() {
+  return BUILTIN_THEMES.filter((t) => t.category === "special");
 }
 
 export function getThemeByValue(value) {

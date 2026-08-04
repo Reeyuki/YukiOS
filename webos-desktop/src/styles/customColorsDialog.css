@@ -1,0 +1,16 @@
+.custom-colors-preview .window-header {
+  font-size: 12px;
+  padding: 4px 8px;
+  grid-template-columns: 1fr auto;
+  margin-bottom: 12px;
+}
+
+.custom-colors-preview .window-controls button {
+  width: 24px;
+  height: 20px;
+}
+
+.custom-colors-preview .window-controls button svg {
+  width: 8px;
+  height: 8px;
+}

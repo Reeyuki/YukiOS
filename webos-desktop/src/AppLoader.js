@@ -15,6 +15,7 @@ import { EmulatorApp } from "./apps/emulator.js";
 import { AchievementsApp } from "./achievements.js";
 import { RuffleApp } from "./apps/ruffle.js";
 import { ShortcutsApp } from "./apps/shortcuts.js";
+import { ThemeHubApp } from "./apps/themeHub.js";
 import { YukiConvertApp } from "./apps/yukiConvert.js";
 import { SetupApp } from "./apps/setupApp.js";
 import { DataEditorApp } from "./apps/dataEditor.js";
@@ -57,6 +58,7 @@ const APP_CLASS_MAP = {
   cameraApp: CameraApp,
   aboutApp: AboutApp,
   newsApp: NewsApp,
+  themeHubApp: ThemeHubApp,
   calculatorApp: CalculatorApp,
   taskManagerApp: TaskManagerApp,
   weatherApp: WeatherApp,

@@ -5,6 +5,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { $, $$ } from "../shared/domUtils.js";
 import { applyResolution as applyResolutionTransform } from "../resolution/resolutionManager.js";
 import { animateThemeChange } from "./themeTransition.js";
+import { initThemeEffects } from "../shared/themeEffects.js";
 const desktop = document.getElementById("desktop");
 
 const LIGHT_THEMES = new Set([
@@ -54,17 +55,17 @@ export function applyTheme(theme, getCustomColors) {
       Object.entries(themeColors).forEach(([varName, value]) => {
         customCSS += `:root[data-theme], :root[n] { --${varName}: ${value}; }\n`;
       });
-    } else {
-      const customColors = getCustomColors();
-      if (customColors) {
-        Object.entries(customColors).forEach(([varName, value]) => {
-          customCSS += `:root[data-theme], :root[n] { --${varName}: ${value}; }\n`;
-        });
-      }
+    }
+    const customColors = getCustomColors();
+    if (customColors) {
+      Object.entries(customColors).forEach(([varName, value]) => {
+        customCSS += `:root[data-theme], :root[n] { --${varName}: ${value}; }\n`;
+      });
     }
 
     styleEl.textContent = customCSS;
   });
+  initThemeEffects();
 }
 
 export function applyWindowTransparency(value) {

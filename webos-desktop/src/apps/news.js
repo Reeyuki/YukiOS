@@ -6,6 +6,22 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "August 4, 2026",
+    sections: [
+      {
+        icon: "fa-share-nodes",
+        title: "Theme Hub",
+        items: [
+          [
+            "fa-share-nodes",
+            "Theme Hub",
+            "Publish your themes straight to the community hub, upvote and downvote them to rank the best ones on top, and search through pages of community themes with ease."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "August 3, 2026",
     sections: [
       {
@@ -25,16 +41,11 @@ const EXISTING_NEWS_UPDATES = [
         ]
       },
       {
-        date: "August 3, 2026",
-        sections: [
-          {
-            icon: "fa-panel-left",
-            title: "Browser Upgrades",
-            items: [
-              ["fa-panel-left", "Zen Sidebar Tabs", "Move tabs to a collapsible left sidebar and reclaim your space!"],
-              ["fa-columns", "Split View", "View two tabs side by side and middle-click links into the other pane."]
-            ]
-          }
+        icon: "fa-panel-left",
+        title: "Browser Upgrades",
+        items: [
+          ["fa-panel-left", "Zen Sidebar Tabs", "Move tabs to a collapsible left sidebar and reclaim your space!"],
+          ["fa-columns", "Split View", "View two tabs side by side and middle-click links into the other pane."]
         ]
       },
       {
