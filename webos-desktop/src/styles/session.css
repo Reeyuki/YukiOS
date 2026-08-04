@@ -125,78 +125,12 @@
   gap: 8px;
 }
 
-.session-boot-preview-btn {
-  position: absolute;
-  top: 20px;
-  left: 64px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  opacity: 0.5;
-  transition:
-    opacity 0.2s,
-    background 0.2s,
-    color 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
-  pointer-events: auto;
-  backdrop-filter: blur(32px);
-}
-
-.session-boot-preview-btn:hover {
-  opacity: 1;
-  background: var(--glass-hover);
-  color: var(--brand);
-  border-color: var(--brand);
-  transform: scale(1.1);
-}
-
-.session-support-btn {
-  position: absolute;
-  top: 20px;
-  left: 108px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  opacity: 0.5;
-  transition:
-    opacity 0.2s,
-    background 0.2s,
-    color 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
-  pointer-events: auto;
-  backdrop-filter: blur(32px);
-}
-
-.session-support-btn:hover {
-  opacity: 1;
-  background: var(--glass-hover);
-  color: var(--brand);
-  border-color: var(--brand);
-  transform: scale(1.1);
-}
-
+.session-boot-preview-btn,
+.session-support-btn,
+.session-github-btn,
 .session-discord-btn {
   position: absolute;
   top: 20px;
-  left: 152px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -219,6 +153,25 @@
   backdrop-filter: blur(32px);
 }
 
+.session-boot-preview-btn {
+  left: 64px;
+}
+
+.session-support-btn {
+  left: 108px;
+}
+
+.session-github-btn {
+  left: 152px;
+}
+
+.session-discord-btn {
+  left: 196px;
+}
+
+.session-boot-preview-btn:hover,
+.session-support-btn:hover,
+.session-github-btn:hover,
 .session-discord-btn:hover {
   opacity: 1;
   background: var(--glass-hover);

@@ -225,6 +225,7 @@ export class SessionManager {
             : `<button class="session-support-btn" id="session-support-btn" title="Support ${brand("YukiOS")}"><i class="fas fa-heart"></i></button>`
         }
         <a class="session-discord-btn" href="https://discord.gg/wufbWFwr4G" target="_blank" rel="noopener" title="Join Discord"><i class="fab fa-discord"></i></a>
+        <a class="session-github-btn" href="https://github.com/Reeyuki/YukiOS" target="_blank" rel="noopener" title="Star Us On Github"><i class="fab fa-github"></i></a>
         <div class="session-boot-preview-modal" id="session-boot-preview-modal" style="display: none;">
           <div class="boot-preview-modal-content">
             <div class="boot-preview-modal-header">
