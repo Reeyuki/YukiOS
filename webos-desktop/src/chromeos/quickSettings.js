@@ -340,10 +340,7 @@ export class ChromeOsQuickSettings {
     if (!icon) return `<span class="chromeos-qs-tray-glyph">${(label || "?").charAt(0)}</span>`;
     const s = String(icon);
     const isUrl =
-      s.startsWith("http") ||
-      s.startsWith("data:") ||
-      s.startsWith("/") ||
-      /\.(webp|png|jpg|jpeg|gif|svg)$/.test(s);
+      s.startsWith("http") || s.startsWith("data:") || s.startsWith("/") || /\.(webp|png|jpg|jpeg|gif|svg)$/.test(s);
     if (isUrl) {
       return `<img src="${s}" alt="${label || ""}" />`;
     }
@@ -395,6 +392,11 @@ export class ChromeOsQuickSettings {
 
     panel.querySelectorAll(".chromeos-qs-tile[data-tray]").forEach((btn) => {
       btn.addEventListener("click", () => this.handleTrayTile(btn));
+      btn.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleTrayContextMenu(e, btn);
+      });
     });
 
     panel.querySelectorAll(".chromeos-qs-boot-btn").forEach((btn) => {
@@ -438,6 +440,13 @@ export class ChromeOsQuickSettings {
     if (!callIfFunction(item.onClick)) {
       trayManager.restoreFromTray(winId);
     }
+  }
+
+  handleTrayContextMenu(e, btn) {
+    const winId = btn.dataset.tray;
+    const item = trayManager.items.get(winId);
+    if (!item) return;
+    trayManager.showContextMenu(e, winId, item.label || winId);
   }
 
   applyBrightness(value) {
