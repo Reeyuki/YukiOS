@@ -1,7 +1,7 @@
 import "../styles/markdown.css";
 import { decodeDataURLContent } from "../fileDisplay.js";
 
-import { $ } from "../framework.js";
+import { $, createElement } from "../framework.js";
 import { BaseApp, os } from "../framework.js";
 export class MarkdownApp extends BaseApp {
   constructor(services) {
@@ -39,7 +39,7 @@ export class MarkdownApp extends BaseApp {
       return;
     }
 
-    const link = document.createElement("link");
+    const link = createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-dark.min.css";
     link.setAttribute("data-markdown-css", "true");

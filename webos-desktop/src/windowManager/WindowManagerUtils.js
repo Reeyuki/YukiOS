@@ -1,4 +1,4 @@
-import { $ } from "../shared/domUtils.js";
+import { $, createElement } from "../shared/domUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
@@ -173,7 +173,7 @@ export class WindowManagerUtils {
       }
 
       if (src.startsWith("data:")) {
-        const a = document.createElement("a");
+        const a = createElement("a");
         a.href = src;
         a.download = filename + ".html";
         a.click();
@@ -189,7 +189,7 @@ export class WindowManagerUtils {
         }
       } catch (e) {}
 
-      const a = document.createElement("a");
+      const a = createElement("a");
       a.href = src;
       a.download = filename + ".html";
       a.target = "blank";
@@ -206,7 +206,7 @@ export class WindowManagerUtils {
   saveHtmlAsFile(html, filename) {
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = createElement("a");
     a.href = url;
     a.download = filename + ".html";
     a.click();
@@ -238,7 +238,10 @@ export class WindowManagerUtils {
       <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
       ${externalBtn}
       ${downloadBtn}
-      <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
+      <button class="maximize-btn" title="Maximize">
+        <svg class="maximize-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg>
+        <svg class="restore-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M3 3V0h7v7h-3v3H0V3h3zm6-1H4v4h5V2zM2 4v4h4V4H2z"></path></svg>
+      </button>
       <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
     </div>`;
   }

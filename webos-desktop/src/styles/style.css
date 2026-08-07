@@ -81,6 +81,9 @@
 
   --charging: oklch(65% 0.2 140);
 
+  --status-online: oklch(65% 0.2 140);
+  --status-online-bg: oklch(65% 0.2 140 / 0.14);
+
   --shadow-color: rgba(0, 0, 0, 0.65);
   --surface-1: rgba(18, 18, 24, 0.85);
   --surface-2: rgba(22, 22, 30, 0.8);

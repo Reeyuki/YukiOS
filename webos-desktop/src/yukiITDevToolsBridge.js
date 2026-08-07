@@ -135,7 +135,7 @@ a {
 
 *::-webkit-scrollbar-thumb {
   background: oklch(100% 0 0 / 0.12);
-  border-radius: 999px;
+  border-radius: 25px;
 }
 `;
 
@@ -240,7 +240,7 @@ function buildBridgeScript() {
   watchParent();
   patchHistoryApi();
   setTimeout(()=> {
-    const homeButton = document.querySelector('a[aria-label="Home"]');
+    const homeButton = $('a[aria-label="Home"]');
     if (homeButton) {
         homeButton.click();
     }

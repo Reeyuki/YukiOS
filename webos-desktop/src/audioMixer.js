@@ -1,7 +1,8 @@
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { $, $$, createElement, setStyle } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
-import { StorageKeys, os, MODES } from "./framework.js";
+import { StorageKeys } from "./StorageKeys.js";
+import { os, MODES } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
 import { getTrayPosition } from "./tray/tray.js";
 export const SystemAudio = Object.freeze({
@@ -80,7 +81,7 @@ class AudioMixer {
     if (!ch) return;
 
     const effectiveVolume = this.muted || ch.muted ? 0 : this.masterVolume * ch.volume;
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
     if (!win.querySelector("iframe, audio, video, ruffle-player")) return;
 
@@ -216,7 +217,7 @@ class AudioMixer {
           this.intensityValues.set(winId, currentIntensity);
 
           if (this.isOpen && this.panel) {
-            const intensityEl = document.getElementById(`intensity-${winId}`);
+            const intensityEl = $(`#intensity-${winId}`);
             if (intensityEl) {
               intensityEl.style.width = `${currentIntensity}%`;
             }
@@ -264,7 +265,7 @@ class AudioMixer {
   }
 
   watchIframesInWindow(winId) {
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
 
     const applyOnLoad = (iframe) => {
@@ -429,7 +430,7 @@ class AudioMixer {
   }
 
   updateTrayBars() {
-    const svg = document.getElementById("tray-audio-bars");
+    const svg = $("#tray-audio-bars");
     if (!svg) {
       this.setupTrayIcon();
       return;
@@ -524,7 +525,7 @@ class AudioMixer {
   }
 
   updateMasterLabel() {
-    const label = document.getElementById("am-master-label");
+    const label = $("#am-master-label");
     const slider = this.panel?.querySelector(".am-master-slider");
     const displayValue = this.muted ? 0 : Math.round(this.masterVolume * 100);
     if (label) label.textContent = `${displayValue}%`;
@@ -532,7 +533,7 @@ class AudioMixer {
   }
 
   updateSystemLabel() {
-    const label = document.getElementById("am-system-label");
+    const label = $("#am-system-label");
     const slider = this.panel?.querySelector(".am-system-slider");
     const displayValue = !this.systemAudioEnabled ? 0 : Math.round(this.systemVolume * 100);
     if (label) label.textContent = `${displayValue}%`;
@@ -543,8 +544,8 @@ class AudioMixer {
   }
 
   renderSliders() {
-    const container = document.getElementById("am-channels");
-    const emptyMsg = document.getElementById("am-empty");
+    const container = $("#am-channels");
+    const emptyMsg = $("#am-empty");
     if (!container) return;
 
     container.innerHTML = "";

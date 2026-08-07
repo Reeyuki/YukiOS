@@ -1,9 +1,9 @@
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, $, createElement } from "../framework.js";
 import { getWispUrl } from "../shared/wispConfig.js";
 import { BusEvents } from "../core/EventBus.js";
 import { setCdnMirror, initializeMirrors } from "../shared/assetResolver.js";
 import { appMap } from "../games/gamesList.js";
-import { turboManager } from "../shared/turboManager.js";
+import { performanceManager } from "../shared/performanceManager.js";
 import { parseBool } from "../utils/utils.js";
 
 import { buildSettingsHTML } from "./settingRenderer.js";
@@ -93,7 +93,7 @@ export class SettingsApp extends BaseApp {
         startMenuWidth: Number(os.storage.get(StorageKeys.startMenuWidth)) || 650,
         startMenuHeight: Number(os.storage.get(StorageKeys.startMenuHeight)) || 500,
         startMenuCats: os.storage.get(StorageKeys.startMenuCats) || {},
-        turboMode: turboManager.getMode(),
+        performanceMode: performanceManager.getMode(),
         showWorkspace: parseBool(os.storage.get(StorageKeys.showWorkspace), true),
         notificationsEnabled: parseBool(os.storage.get(StorageKeys.notificationsEnabled), true),
         notificationsRemoveTimeout: parseBool(os.storage.get(StorageKeys.notificationsRemoveTimeout), true),
@@ -177,7 +177,7 @@ export class SettingsApp extends BaseApp {
 
   open(options = {}) {
     const winId = "yukiOS-settings";
-    const existing = document.getElementById(winId);
+    const existing = $("#" + winId);
     if (existing) {
       os.window.focus(existing);
       if (options && typeof options.section === "string") {
@@ -272,7 +272,8 @@ export class SettingsApp extends BaseApp {
       const transparentUI = !!gc("#settingsTransparentUI");
       const disableBootScreen = !!gc("#settingsDisableBootScreen");
       const windowSessionPersistence = !!gc("#settingsWindowSessionPersistence");
-      const selectedTurboMode = win.querySelector(".settings-btn[data-turbo-val].active")?.dataset.turboVal || "high";
+      const selectedPerformanceMode =
+        win.querySelector(".settings-btn[data-performance-val].active")?.dataset.performanceVal || "high";
       const startMenuWidth = Number(getRangeSliderValue("settingsStartMenuWidth", win)) || 650;
       const startMenuHeight = Number(getRangeSliderValue("settingsStartMenuHeight", win)) || 500;
       const selectedFontFamily = os.storage.get(StorageKeys.customFont) ? "__custom__" : "opensans";
@@ -311,7 +312,7 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.transparentUI, String(transparentUI));
       os.storage.set(StorageKeys.disableBootScreen, String(disableBootScreen));
       os.storage.set(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
-      os.storage.set(StorageKeys.turboMode, selectedTurboMode);
+      os.storage.set(StorageKeys.performanceMode, selectedPerformanceMode);
       os.storage.set(StorageKeys.startMenuWidth, String(startMenuWidth));
       os.storage.set(StorageKeys.startMenuHeight, String(startMenuHeight));
       os.storage.set(StorageKeys.startMenuCats, startMenuCats);
@@ -357,7 +358,7 @@ export class SettingsApp extends BaseApp {
         startMenuWidth,
         startMenuHeight,
         startMenuCats,
-        turboMode: selectedTurboMode,
+        performanceMode: selectedPerformanceMode,
         notificationsEnabled,
         notificationsRemoveTimeout,
         notificationsPopAnimation,
@@ -389,7 +390,7 @@ export class SettingsApp extends BaseApp {
       applyDesktopStretchScrollDisabled(disableDesktopStretchScroll);
       applyStartMenuSize(startMenuWidth, startMenuHeight);
       applyStartMenuCats(startMenuCats);
-      turboManager.setMode(selectedTurboMode);
+      performanceManager.setMode(selectedPerformanceMode);
       applyTransparentUI(transparentUI);
       applyFontFamily(selectedFontFamily);
       applyDockIconSize(this.settings.dockIconSize);
@@ -433,8 +434,12 @@ export class SettingsApp extends BaseApp {
     bindNetworkCategory(win, save, this.settings, showSaved);
     bindAudioCategory(win, this.settings, showSaved);
     bindAccountsCategory(win);
-    bindTilingCategory(win, save, this.settings);
-    bindChromeOsCategory(win, showSaved);
+    if (modeManager.isActive(MODES.TILING)) {
+      bindTilingCategory(win, save, this.settings);
+    }
+    if (modeManager.isActive(MODES.CHROME_OS)) {
+      bindChromeOsCategory(win, showSaved);
+    }
   }
 
   showSavedMessage(win) {
@@ -444,7 +449,7 @@ export class SettingsApp extends BaseApp {
       toast.remove();
     }
 
-    toast = document.createElement("div");
+    toast = createElement("div");
     toast.className = "settings-saved-toast";
     toast.innerHTML = `<i class="fas fa-check-circle"></i> Saved`;
     const content = win.querySelector(".window-content");
@@ -495,7 +500,7 @@ export class SettingsApp extends BaseApp {
       const w = Math.max(1, Math.round(srcW * scale));
       const h = Math.max(1, Math.round(srcH * scale));
 
-      const canvas = document.createElement("canvas");
+      const canvas = createElement("canvas");
       canvas.width = w;
       canvas.height = h;
       const ctx = canvas.getContext("2d");

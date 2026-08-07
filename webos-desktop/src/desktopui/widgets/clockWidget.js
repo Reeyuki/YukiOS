@@ -1,5 +1,6 @@
 import { WidgetBase } from "../widgetManager.js";
 import { subscribeTimeTick } from "../../services/timeWorker.js";
+import { $ } from "../../shared/domUtils.js";
 
 export class ClockWidget extends WidgetBase {
   constructor(manager, id) {
@@ -29,7 +30,7 @@ export class ClockWidget extends WidgetBase {
       hours = hours % 12 || 12;
     }
     const timeStr = `${hours.toString().padStart(2, "0")}:${minutes}${this.showSeconds ? ":" + seconds : ""}${ampm}`;
-    const timeEl = document.getElementById(`w-clock-time-${this.id}`);
+    const timeEl = $(`#w-clock-time-${this.id}`);
     if (timeEl) timeEl.textContent = timeStr;
 
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -48,7 +49,7 @@ export class ClockWidget extends WidgetBase {
       "December"
     ];
     const dateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-    const dateEl = document.getElementById(`w-clock-date-${this.id}`);
+    const dateEl = $(`#w-clock-date-${this.id}`);
     if (dateEl) dateEl.textContent = dateStr;
   }
 

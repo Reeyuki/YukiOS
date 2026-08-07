@@ -91,7 +91,7 @@ body.tiling-active #tiling-bar {
   height: 28px;
   padding: 0 6px;
   background: var(--tiling-bar-pill-bg);
-  border-radius: 999px;
+  border-radius: 25px;
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -110,7 +110,7 @@ body.tiling-active #tiling-bar {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: 25px;
   cursor: pointer;
   color: var(--tiling-bar-text-secondary);
   transition:
@@ -146,7 +146,7 @@ body.tiling-active #tiling-bar {
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: 25px;
   border: none;
   background: rgba(255, 255, 255, 0.08);
   color: var(--tiling-bar-text-secondary);
@@ -179,7 +179,7 @@ body.tiling-active #tiling-bar {
   height: 26px;
   min-width: 26px;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: 25px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.04);
   cursor: default;
@@ -189,7 +189,7 @@ body.tiling-active #tiling-bar {
   width: 24px;
   height: 24px;
   font-size: 12px;
-  border-radius: 999px;
+  border-radius: 25px;
 }
 
 .tiling-tray-dedicated .tray-icon-btn img {
@@ -286,7 +286,7 @@ body.tiling-active #tiling-bar {
   width: 26px;
   height: 26px;
   font-size: 12px;
-  border-radius: 999px;
+  border-radius: 25px;
 }
 
 .tiling-tray-items .tray-icon-btn img {
@@ -380,7 +380,7 @@ body.tiling-active #tiling-bar {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 999px;
+  border-radius: 25px;
   border: none;
   background: transparent;
   color: var(--tiling-bar-text-secondary);
@@ -442,7 +442,7 @@ body.tiling-active #tiling-bar {
 .tiling-cal-today {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
+  border-radius: 25px;
   padding: 4px 12px;
   font-size: 11px;
   color: var(--tiling-bar-text);
@@ -709,7 +709,7 @@ body.tiling-active #tiling-bar {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: 25px;
   cursor: pointer;
   color: var(--tiling-bar-text-secondary);
   transition:
@@ -859,7 +859,7 @@ body.tiling-active #tiling-bar {
   gap: 6px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
+  border-radius: 25px;
   padding: 4px 12px;
   font-size: 11px;
   color: var(--tiling-bar-text-secondary);

@@ -1,4 +1,4 @@
-import { $, $$, setStyle, setText, setHTML } from "../shared/domUtils.js";
+import { $, createElement, setStyle, setText, setHTML } from "../shared/domUtils.js";
 import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
@@ -13,8 +13,20 @@ class ClipboardManagerApp extends BaseApp {
     this.historySize = os.storage.get(StorageKeys.clipboardHistorySize) || 50;
     this.popupVisible = false;
     this.dialogOpen = false;
+    this.suppressOutsideClick = false;
     this.initTray();
     this.applySettings();
+    this.clipboardManager.onChange(() => this.updateTrayVisibility());
+    this.updateTrayVisibility();
+  }
+
+  updateTrayVisibility() {
+    if (!this.enabled || os.modes.isActive(MODES.MAC)) return;
+    const trayAppVisibility = os.storage.get(StorageKeys.trayAppVisibility) || {};
+    const hasItems = this.clipboardManager.getHistory().length > 0;
+    trayAppVisibility[this.winId] = hasItems;
+    os.storage.set(StorageKeys.trayAppVisibility, trayAppVisibility);
+    os.tray.updateItemVisibility(this.winId, hasItems);
   }
 
   shouldSuppressNotification() {
@@ -56,7 +68,7 @@ class ClipboardManagerApp extends BaseApp {
   openPopup() {
     if (this.popupVisible) return;
 
-    const existingPopup = document.getElementById(this.popupId);
+    const existingPopup = $("#" + this.popupId);
     if (existingPopup) {
       existingPopup.remove();
     }
@@ -64,7 +76,7 @@ class ClipboardManagerApp extends BaseApp {
     const history = this.clipboardManager.getHistory();
     const currentItem = this.clipboardManager.get();
 
-    const popup = document.createElement("div");
+    const popup = createElement("div");
     popup.id = this.popupId;
     popup.className = "clipboard-tray-popup";
     popup.innerHTML = `
@@ -110,6 +122,7 @@ class ClipboardManagerApp extends BaseApp {
     popup.style.display = "block";
 
     this.popupVisible = true;
+    this.suppressOutsideClick = true;
     this.renderHistory(popup, history, currentItem);
     this.bindEvents(popup, this.popupId);
 
@@ -117,7 +130,7 @@ class ClipboardManagerApp extends BaseApp {
   }
 
   closePopup() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (popup) {
       popup.classList.add("closing");
       popup.addEventListener(
@@ -134,8 +147,12 @@ class ClipboardManagerApp extends BaseApp {
 
   handleOutsideClick = (e) => {
     if (this.dialogOpen) return;
-    const popup = document.getElementById(this.popupId);
-    const trayEl = document.getElementById("app-tray");
+    if (this.suppressOutsideClick) {
+      this.suppressOutsideClick = false;
+      return;
+    }
+    const popup = $("#" + this.popupId);
+    const trayEl = $("#app-tray");
     if (popup && !e.target.closest("#clipboard-tray-popup") && !e.target.closest("#app-tray")) {
       this.closePopup();
     }
@@ -186,7 +203,7 @@ class ClipboardManagerApp extends BaseApp {
       })
       .join("");
 
-    const currentPopup = document.getElementById(this.popupId);
+    const currentPopup = $("#" + this.popupId);
     container.querySelectorAll(".clipboard-item").forEach((el) => {
       el.addEventListener("click", async (e) => {
         if (e.target.closest(".clipboard-action-btn")) return;
@@ -208,7 +225,7 @@ class ClipboardManagerApp extends BaseApp {
             transition: "all 0.3s ease"
           });
 
-          const copiedIndicator = document.createElement("div");
+          const copiedIndicator = createElement("div");
           copiedIndicator.className = "clipboard-copied-indicator";
           copiedIndicator.textContent = "Copied!";
           setStyle(copiedIndicator, {
@@ -409,7 +426,7 @@ class ClipboardManagerApp extends BaseApp {
 
     this.clipboardManager.onChange((item) => {
       if (this.isCopyingFromHistory) return;
-      const currentPopup = document.getElementById(this.popupId);
+      const currentPopup = $("#" + this.popupId);
       if (currentPopup) {
         this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
       }

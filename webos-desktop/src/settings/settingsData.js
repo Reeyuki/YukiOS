@@ -1,4 +1,4 @@
-import { os } from "../framework.js";
+import { os, createElement } from "../framework.js";
 import { audioMixer } from "../audioMixer.js";
 import { downloadBlob } from "../utils/utils.js";
 
@@ -62,7 +62,7 @@ export async function importData(fs, showStatus = () => {}) {
   );
   if (!confirmed) return;
 
-  const input = document.createElement("input");
+  const input = createElement("input");
   input.type = "file";
   input.accept = "application/json,.json";
   input.style.display = "none";

@@ -1,5 +1,5 @@
 import "../styles/clock.css";
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys, createElement } from "../framework.js";
 
 import { renderSelectMenu, getSelectMenuValue, bindSelectMenu } from "../shared/selectMenu.js";
 
@@ -281,7 +281,7 @@ export class ClockApp extends BaseApp {
   }
 
   showAlarmDialog(alarm) {
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "clock-alarm-overlay";
     overlay.innerHTML = `
       <div class="clock-alarm-dialog">
@@ -674,7 +674,7 @@ export class ClockApp extends BaseApp {
     const recurring = existing ? existing.recurring || [] : [];
     const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "clock-modal-overlay";
     overlay.innerHTML = `
       <div class="clock-modal">

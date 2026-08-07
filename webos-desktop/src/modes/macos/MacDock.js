@@ -1,7 +1,7 @@
 import "./style.css";
 import { os, brand } from "../../framework.js";
 import { modeManager, MODES } from "../../modeManager.js";
-import { createElement } from "../../shared/domUtils.js";
+import { createElement, $ } from "../../shared/domUtils.js";
 import { resolveIconUrl } from "../../shared/assetResolver.js";
 import { BusEvents } from "../../core/EventBus.js";
 import { getSetting } from "../../utils/utils.js";
@@ -149,7 +149,7 @@ export class MacDock {
     if (!this.container) return;
     if (this.runningItems.has(winId)) return;
 
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     const appId = win?.dataset?.appId;
     const pinned = appId ? this.pinnedItems.find((p) => p.appId === appId) : null;
 
@@ -180,7 +180,7 @@ export class MacDock {
     item.addEventListener("click", () => this.handleItemClick(winId));
     item.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      const targetWin = document.getElementById(winId);
+      const targetWin = $("#" + winId);
       if (!targetWin) return;
       showStartStyleMenu(e, (addMenuItem, addSeparator) => {
         this.manager.buildContextMenuItems(addMenuItem, addSeparator, targetWin);
@@ -283,7 +283,7 @@ export class MacDock {
         e.preventDefault();
         const openWinId = app.winId && this.manager.openWindows?.has(app.winId) ? app.winId : null;
         if (openWinId) {
-          const targetWin = document.getElementById(openWinId);
+          const targetWin = $("#" + openWinId);
           if (targetWin) {
             showStartStyleMenu(e, (addMenuItem, addSeparator) => {
               this.manager.buildContextMenuItems(addMenuItem, addSeparator, targetWin);
@@ -336,7 +336,7 @@ export class MacDock {
   }
 
   handleItemClick(winId) {
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
     if (win.style.display === "none") {
       win.style.display = "";

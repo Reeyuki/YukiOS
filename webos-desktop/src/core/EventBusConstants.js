@@ -25,6 +25,8 @@ export const BusEvents = Object.freeze({
   CLIPBOARD_READ: "clipboard:read",
   CLIPBOARD_CLEAR: "clipboard:clear",
   PROFILE_UPDATED: "profile:updated",
+  SOCIAL_PRESENCE_CHANGED: "social:presence-changed",
+  SOCIAL_DND_CHANGED: "social:dnd-changed",
   TILING_MODE_CHANGED: "tiling:mode-changed",
   TILING_LAYOUT_CHANGED: "tiling:layout-changed",
   MODE_ENTERED: "mode:entered",

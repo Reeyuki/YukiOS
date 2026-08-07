@@ -1,7 +1,7 @@
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { parseBool } from "../utils/utils.js";
 
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, $ } from "../framework.js";
 export class WindowSessionManager {
   constructor(manager) {
     this.manager = manager;
@@ -42,7 +42,7 @@ export class WindowSessionManager {
 
     const windowStates = [];
     const sortedWindows = Array.from(this.manager.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean)
       .sort((a, b) => (parseInt(a.style.zIndex) || 0) - (parseInt(b.style.zIndex) || 0));
 
@@ -83,7 +83,7 @@ export class WindowSessionManager {
         const metadata = SYSTEM_APPS[appId];
         if (!metadata || metadata.persistContentState !== false) {
           const appInstance = this.manager.appLauncher[appId] || this.manager.appLauncher[`${appId}App`];
-          if (appInstance && typeof appInstance.getSnapshot === "function") {
+          if (appInstance) {
             try {
               record.appStateSnapshot = await appInstance.getSnapshot(win.id);
             } catch (e) {
@@ -181,7 +181,7 @@ export class WindowSessionManager {
 
       const lastFocused = windowStates.find((s) => s.focused);
       if (lastFocused) {
-        const win = document.getElementById(lastFocused.id);
+        const win = $("#" + lastFocused.id);
         if (win) this.manager.bringToFront(win);
       }
     } catch (e) {
@@ -232,7 +232,7 @@ export class WindowSessionManager {
 
       await this.manager.appLauncher.launch(appId, state.appType === "swf", launchOptions);
 
-      const win = document.getElementById(state.id);
+      const win = $("#" + state.id);
       if (win) {
         const entry = this.manager.openWindows.get(state.id);
         if (entry?.record) {
@@ -256,7 +256,7 @@ export class WindowSessionManager {
 
         if (shouldPersistContent && state.appStateSnapshot) {
           const appInstance = this.manager.appLauncher[state.appId] || this.manager.appLauncher[`${state.appId}App`];
-          if (appInstance && typeof appInstance.restoreSnapshot === "function") {
+          if (appInstance) {
             await appInstance.restoreSnapshot(win.id, state.appStateSnapshot);
           }
         }

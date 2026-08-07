@@ -1,4 +1,4 @@
-import { $$ } from "./domUtils.js";
+import { $$, createElement } from "./domUtils.js";
 import { os } from "../framework.js";
 
 export class Shell {
@@ -384,7 +384,7 @@ export class Shell {
 
     let gpu = "Unknown";
     try {
-      const canvas = document.createElement("canvas");
+      const canvas = createElement("canvas");
       const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
       if (gl) {
         gpu = gl.getParameter(gl.RENDERER);

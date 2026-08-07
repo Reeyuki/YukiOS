@@ -1,13 +1,14 @@
 import { os, $ } from "./framework.js";
 import { StorageKeys } from "./StorageKeys.js";
+import { getLiveUserId, ensureLiveUserId } from "./social/userIdentity.js";
+import { SOCIAL_BASE } from "./social/endpoints.js";
 
 const ANALYTICS_QUEUE_KEY = StorageKeys.analyticsQueue;
 import { parseBool } from "./utils/utils.js";
 
-const ENDPOINT_BASE = "https://analytics.liventcord-a60.workers.dev";
-const ENDPOINT = ENDPOINT_BASE + "/analytics";
-const DOWNLOAD_ENDPOINT = ENDPOINT_BASE + "/api/download";
-const ELECTRON_USAGE_ENDPOINT = ENDPOINT_BASE + "/api/electron-usage";
+const ENDPOINT = SOCIAL_BASE + "/analytics";
+const DOWNLOAD_ENDPOINT = SOCIAL_BASE + "/api/download";
+const ELECTRON_USAGE_ENDPOINT = SOCIAL_BASE + "/api/electron-usage";
 const hostname = window.location.hostname;
 const ANALYTICS_DISABLED = () => parseBool(os.storage.get(StorageKeys.analyticsDisabled));
 const FLUSH_INTERVAL_MS = 30000;
@@ -83,6 +84,8 @@ function scheduleFlush() {
 
 function queueEvent(event) {
   if (ANALYTICS_DISABLED()) return;
+  const userId = getLiveUserId();
+  if (userId) event.userId = userId;
   const queue = loadQueue();
   queue.push(event);
   if (queue.length >= MAX_QUEUE_SIZE) {
@@ -100,6 +103,7 @@ function queueEvent(event) {
 
 export function initAnalytics() {
   if (ANALYTICS_DISABLED()) return;
+  ensureLiveUserId().catch(() => {});
   pageLoadTime = Date.now();
   flushQueue();
   queueEvent({
@@ -128,7 +132,7 @@ export function sendLaunchAnalytics(app) {
 export function recordUsage(winId) {
   if (ANALYTICS_DISABLED()) return;
   const start = Date.now();
-  const win = document.getElementById(winId);
+  const win = $("#" + winId);
   if (!win) return;
   const appId = win.dataset.appId;
   if (shouldExcludeFromAnalytics(appId)) return;
@@ -147,6 +151,18 @@ export function recordUsage(winId) {
   win.querySelector(".close-btn")?.addEventListener("click", send);
 }
 
+export function recordUsageDuration(appId, durationMs) {
+  if (ANALYTICS_DISABLED()) return;
+  if (!appId || shouldExcludeFromAnalytics(appId)) return;
+  queueEvent({
+    app: appId,
+    event: "usage",
+    durationMs: Math.max(1000, Number(durationMs) || 0),
+    timestamp: Date.now(),
+    sessionAgeMs: Date.now() - pageLoadTime
+  });
+}
+
 export async function fetchGamePlayCounts() {
   if (ANALYTICS_DISABLED()) {
     console.error("Analytics disabled, skipping gameplay count fetch");
@@ -157,7 +173,7 @@ export async function fetchGamePlayCounts() {
 
   playCountsPromise = (async () => {
     try {
-      const res = await fetch(ENDPOINT_BASE + "/api/game-play-counts");
+      const res = await fetch(SOCIAL_BASE + "/api/game-play-counts");
       if (!res.ok) return {};
       const data = await res.json();
       cachedPlayCounts = data;
@@ -181,7 +197,7 @@ export async function fetchLiveStats() {
   if (liveStatsPromise) return liveStatsPromise;
   liveStatsPromise = (async () => {
     try {
-      const res = await fetch(ENDPOINT_BASE + "/live");
+      const res = await fetch(SOCIAL_BASE + "/live");
       if (!res.ok) return null;
       const data = await res.json();
       cachedLiveStats = data;

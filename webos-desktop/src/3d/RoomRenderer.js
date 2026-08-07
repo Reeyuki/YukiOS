@@ -6,6 +6,7 @@ import { Reflector } from "three/examples/jsm/objects/Reflector.js";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { PlayerBody } from "./PlayerBody.js";
+import { createElement } from "../shared/domUtils.js";
 
 export class RoomRenderer {
   constructor(container) {
@@ -278,7 +279,7 @@ export class RoomRenderer {
     {
       const as = 0.08;
       ["prev", "next"].forEach((d) => {
-        const c = document.createElement("canvas");
+        const c = createElement("canvas");
         c.width = 30;
         c.height = 30;
         const cx = c.getContext("2d");
@@ -457,7 +458,7 @@ export class RoomRenderer {
 
   buildKeyboard() {
     const T = this.THREE;
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = 128;
     canvas.height = 48;
     const ctx = canvas.getContext("2d");
@@ -790,7 +791,7 @@ export class RoomRenderer {
 
   buildWallArt() {
     const T = this.THREE;
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = 256;
     canvas.height = 192;
     const ctx = canvas.getContext("2d");
@@ -999,7 +1000,7 @@ export class RoomRenderer {
 
   buildRugPattern() {
     const T = this.THREE;
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = 256;
     canvas.height = 170;
     const ctx = canvas.getContext("2d");
@@ -1065,7 +1066,7 @@ export class RoomRenderer {
 
   buildColorButton() {
     const T = this.THREE;
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");

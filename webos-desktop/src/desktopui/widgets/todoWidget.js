@@ -1,5 +1,5 @@
 import { WidgetBase } from "../widgetManager.js";
-import { os, StorageKeys } from "../../framework.js";
+import { os, StorageKeys, $ } from "../../framework.js";
 
 export class TodoWidget extends WidgetBase {
   constructor(manager, id) {
@@ -45,7 +45,7 @@ export class TodoWidget extends WidgetBase {
   }
 
   addTodo() {
-    const input = document.getElementById(`w-todo-input-${this.id}`);
+    const input = $(`#w-todo-input-${this.id}`);
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
@@ -72,7 +72,7 @@ export class TodoWidget extends WidgetBase {
   }
 
   render() {
-    const listEl = document.getElementById(`w-todo-list-${this.id}`);
+    const listEl = $(`#w-todo-list-${this.id}`);
     if (!listEl) return;
 
     if (this.todos.length === 0) {

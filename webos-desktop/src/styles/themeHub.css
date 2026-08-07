@@ -87,7 +87,9 @@
   font-family: var(--font-ui);
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .theme-hub-nav-item i {
@@ -129,7 +131,9 @@
   font-family: var(--font-ui);
   cursor: pointer;
   box-shadow: 0 8px 22px var(--shadow-color);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .theme-hub-create:hover {
@@ -317,7 +321,10 @@
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .theme-hub-card:hover {
@@ -386,7 +393,10 @@
   cursor: pointer;
   font-size: 12px;
   font-family: var(--font-ui);
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .theme-hub-vote-up:hover,
@@ -591,7 +601,7 @@
 .theme-hub-effect-chip {
   display: inline-flex;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 25px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
   font-size: 12px;
@@ -933,7 +943,9 @@
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-ui);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .theme-hub-advanced-toggle:hover {
@@ -987,7 +999,9 @@
   cursor: pointer;
   font-size: 12px;
   font-family: var(--font-ui);
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .theme-hub-featured-toggle:hover {

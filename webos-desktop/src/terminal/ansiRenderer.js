@@ -1,17 +1,19 @@
+import { createElement } from "../shared/domUtils.js";
+
 export class AnsiRenderer {
   constructor(containerElement) {
     this.container = containerElement;
   }
 
   render(text) {
-    const line = document.createElement("div");
+    const line = createElement("div");
     const fragments = this.parseAnsi(text);
     for (const frag of fragments) {
       if (!frag.text) continue;
       if (frag.styles.length === 0 && !frag.isBold && !frag.isItalic && !frag.isUnderline) {
         line.appendChild(document.createTextNode(frag.text));
       } else {
-        const span = document.createElement("span");
+        const span = createElement("span");
         if (frag.fg) span.style.color = this.ansiColorToCSS(frag.fg, false);
         if (frag.bg) span.style.backgroundColor = this.ansiColorToCSS(frag.bg, true);
         if (frag.isBold) span.style.fontWeight = "bold";

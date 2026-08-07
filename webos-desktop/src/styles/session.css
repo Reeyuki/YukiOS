@@ -55,218 +55,6 @@
   pointer-events: auto;
 }
 
-.session-info-btn {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  opacity: 0.5;
-  transition:
-    opacity 0.2s,
-    background 0.2s,
-    color 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
-  pointer-events: auto;
-  backdrop-filter: blur(32px);
-}
-
-.session-info-btn:hover {
-  opacity: 1;
-  background: var(--glass-hover);
-  color: var(--brand);
-  border-color: var(--brand);
-  transform: scale(1.1);
-}
-.session-info-modal {
-  position: absolute;
-  top: 65px;
-  left: 20px;
-  z-index: 10;
-  pointer-events: auto;
-}
-
-.info-modal-content {
-  background: var(--bg-primary);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(32px);
-  min-width: 200px;
-  overflow: hidden;
-}
-
-.info-modal-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.info-modal-header h3 {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.info-modal-body {
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.session-boot-preview-btn,
-.session-support-btn,
-.session-github-btn,
-.session-discord-btn {
-  position: absolute;
-  top: 20px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  opacity: 0.5;
-  transition:
-    opacity 0.2s,
-    background 0.2s,
-    color 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
-  pointer-events: auto;
-  backdrop-filter: blur(32px);
-}
-
-.session-boot-preview-btn {
-  left: 64px;
-}
-
-.session-support-btn {
-  left: 108px;
-}
-
-.session-github-btn {
-  left: 152px;
-}
-
-.session-discord-btn {
-  left: 196px;
-}
-
-.session-boot-preview-btn:hover,
-.session-support-btn:hover,
-.session-github-btn:hover,
-.session-discord-btn:hover {
-  opacity: 1;
-  background: var(--glass-hover);
-  color: var(--brand);
-  border-color: var(--brand);
-  transform: scale(1.1);
-}
-
-.session-boot-preview-modal {
-  position: absolute;
-  top: 65px;
-  left: 64px;
-  z-index: 10;
-  pointer-events: auto;
-}
-
-.boot-preview-modal-content {
-  background: var(--bg-primary);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(32px);
-  min-width: 160px;
-  overflow: hidden;
-}
-
-.boot-preview-modal-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.boot-preview-modal-header h3 {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.boot-preview-modal-body {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.boot-preview-option {
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.boot-preview-option:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.boot-preview-option:active {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.boot-preview-option i {
-  display: none;
-  margin-left: auto;
-  font-size: 10px;
-}
-
-.boot-preview-option.selected i {
-  display: inline-block;
-}
-
-.boot-preview-option.selected {
-  background: var(--brand);
-  color: var(--text-on-brand);
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.info-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 12px;
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
 .session-time {
   font-size: 80px;
   font-weight: 200;
@@ -283,6 +71,7 @@
 }
 
 .session-brand {
+  display: none;
   font-size: 22px;
   font-weight: 600;
   letter-spacing: 6px;
@@ -292,13 +81,17 @@
   opacity: 0.9;
 }
 
+html[data-yuri] .session-brand {
+  display: block;
+}
+
 .avatar-edit-btn {
   position: absolute;
   bottom: 0;
   right: 0;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: var(--brand);
   border: 2px solid var(--glass-border);
   color: var(--text-on-brand);
@@ -428,21 +221,33 @@
 
 .session-modes {
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.session-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+}
+
+.session-modes-3d {
+  display: flex;
 }
 
 .session-mode-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-width: 84px;
-  padding: 10px 14px;
+  justify-content: center;
+  gap: 4px;
+  min-width: 76px;
+  padding: 8px 10px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   transition:
     background-color 0.15s,
@@ -451,8 +256,19 @@
   user-select: none;
 }
 
+.session-mode-btn svg {
+  width: 30px;
+  height: 30px;
+}
+
 .session-mode-btn i {
-  font-size: 18px;
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .session-mode-btn:hover {
@@ -464,125 +280,6 @@
   border-color: var(--brand);
   color: var(--text-primary);
   background: color-mix(in srgb, var(--brand) 18%, transparent);
-}
-
-.session-electron-banner {
-  position: fixed;
-  top: 50%;
-  left: 32px;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  padding: 20px 28px;
-  border-radius: 14px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  z-index: 10;
-  width: 280px;
-  text-align: center;
-  transition: opacity 0.3s ease;
-}
-
-.session-electron-banner > i {
-  color: var(--brand);
-  font-size: 28px;
-}
-
-.session-electron-banner span {
-  line-height: 1.5;
-}
-
-.session-electron-banner strong {
-  color: var(--text-primary);
-}
-
-.session-electron-banner__close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-
-.session-electron-banner__close:hover {
-  background: var(--glass-hover);
-  color: var(--text-primary);
-}
-
-.electron-banner-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.electron-download-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-primary);
-  text-decoration: none;
-  font-weight: 500;
-  padding: 10px 24px;
-  border-radius: 10px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  font-size: 14px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.electron-download-link:hover {
-  background: var(--glass-hover);
-}
-
-.electron-download-link i {
-  font-size: 14px;
-}
-
-.electron-releases-link {
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 11px;
-  text-decoration: none;
-  transition: color 0.15s;
-}
-
-.electron-releases-link:hover {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: underline;
-}
-
-.session-features-link {
-  position: fixed;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 12px;
-  text-decoration: none;
-  transition: color 0.15s;
-  z-index: 10;
-}
-
-.session-features-link:hover {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .action-button {
@@ -619,7 +316,7 @@
 .system-icon {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
   color: var(--text-secondary);
@@ -716,7 +413,7 @@
 .avatar-tile {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
+  border-radius: 25px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
@@ -764,15 +461,6 @@
     opacity: 1;
     transform: scale(1);
   }
-}
-
-.session-electron-banner--hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-.session-electron-banner--reveal {
-  opacity: 1;
 }
 
 .preview-name {
@@ -934,149 +622,17 @@
   transition: opacity 0.3s ease;
 }
 
-.online-users-badge {
-  position: absolute;
-  top: -60px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--brand);
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 6px 14px;
-  backdrop-filter: blur(32px);
-  pointer-events: auto;
-  font-weight: 600;
-}
-
-.online-users-badge i {
-  font-size: 13px;
-  color: var(--brand);
-}
-
-.session-activity-widget {
-  position: absolute;
-  top: -20px;
-  right: 20px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.session-activity-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--brand);
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 6px 14px;
-  backdrop-filter: blur(32px);
-  cursor: pointer;
-}
-
-.session-activity-toggle > i:first-child {
-  font-size: 13px;
-  color: var(--brand);
-}
-
-.session-activity-toggle .fa-chevron-down {
-  font-size: 11px;
-  color: var(--text-secondary);
-  transition: transform 0.2s;
-}
-
-.session-activity-widget:not(.collapsed) .session-activity-toggle .fa-chevron-down {
-  transform: rotate(180deg);
-}
-
 .session-activity-panel {
-  margin-top: 8px;
-  width: 310px;
-  max-height: 360px;
-  overflow-y: auto;
-  background: var(--bg-secondary);
+  border-radius: 10px;
+  background: var(--glass);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
-  padding: 12px 15px;
-}
-
-.session-activity-widget.collapsed .session-activity-panel {
-  display: none;
-}
-
-.session-news-widget {
-  position: fixed;
-  bottom: 40px;
-  right: 40px;
-  z-index: 10;
-  width: 310px;
-  max-height: 320px;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(32px);
-  overflow: hidden;
-}
-
-.session-news-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.session-news-header > i {
-  color: var(--brand);
-  font-size: 15px;
-}
-
-.session-news-close {
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.session-news-close:hover {
-  background: var(--glass-hover);
-  color: var(--text-primary);
-}
-
-.session-news-close i {
-  font-size: 13px;
+  padding: 10px 12px;
 }
 
 .session-news-list {
   overflow-y: auto;
-  max-height: 340px;
+  flex: 1 1 auto;
+  min-height: 140px;
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
@@ -1093,7 +649,7 @@
 
 .session-news-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
+  border-radius: 25px;
 }
 
 .session-news-update {
@@ -1146,10 +702,6 @@
   color: var(--text-secondary);
   line-height: 1.5;
   margin-top: 2px;
-}
-
-.session-news-widget.closed {
-  display: none;
 }
 
 .remember-me-row {
@@ -1217,4 +769,360 @@
 .action-button.transitioning-in {
   opacity: 1;
   transform: translateY(0);
+}
+
+.session-status-widget {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.session-status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  backdrop-filter: blur(32px);
+  cursor: pointer;
+}
+
+.session-status-toggle > i:first-child {
+  color: var(--brand);
+  font-size: 13px;
+}
+
+.session-status-toggle .fa-chevron-down {
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+
+.session-status-widget.open .session-status-toggle .fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+.session-status-panel {
+  display: none;
+  margin-top: 8px;
+  width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 14px 16px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-status-widget.open .session-status-panel {
+  display: flex;
+}
+
+.status-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-info-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.status-info-value {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 2px 0;
+}
+
+.status-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.online-users-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.online-users-count i {
+  font-size: 13px;
+  color: var(--brand);
+}
+
+.online-users-count span {
+  font-weight: 600;
+}
+
+.session-live-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.session-live-toggle i {
+  color: var(--brand);
+  font-size: 13px;
+}
+
+.session-support-btn,
+.session-github-btn,
+.session-discord-btn {
+  position: absolute;
+  top: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 25px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  opacity: 0.7;
+  transition:
+    opacity 0.2s,
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  pointer-events: auto;
+  backdrop-filter: blur(32px);
+  z-index: 11;
+}
+
+.session-support-btn:hover,
+.session-github-btn:hover,
+.session-discord-btn:hover {
+  opacity: 1;
+  background: var(--glass-hover);
+  color: var(--brand);
+  border-color: var(--brand);
+  transform: scale(1.08);
+}
+
+.session-support-btn {
+  left: 20px;
+}
+
+.session-github-btn {
+  left: 64px;
+}
+
+.session-discord-btn {
+  left: 108px;
+}
+
+.session-electron-banner {
+  position: fixed;
+  top: 50%;
+  left: 32px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 220px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  z-index: 10;
+}
+
+.session-electron-banner > i {
+  color: var(--brand);
+  font-size: 24px;
+}
+
+.session-electron-banner span {
+  line-height: 1.4;
+}
+
+.session-electron-banner strong {
+  color: var(--text-primary);
+}
+
+.electron-banner-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.electron-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 9px 22px;
+  border-radius: 10px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.electron-download-link:hover {
+  background: var(--glass-hover);
+}
+
+.electron-download-link i {
+  font-size: 13px;
+}
+
+.electron-releases-link {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.electron-releases-link:hover {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+
+.session-electron-banner__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 25px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.session-electron-banner__close:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+}
+
+.session-settings-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 25px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  z-index: 20;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  backdrop-filter: blur(32px);
+}
+
+.session-settings-btn:hover {
+  background: var(--glass-hover);
+  color: var(--brand);
+  border-color: var(--brand);
+  transform: scale(1.08);
+}
+
+.session-settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.session-settings-modal.open {
+  display: flex;
+}
+
+.session-settings-content {
+  max-width: 380px;
+  width: 92%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.session-settings-content .modal-body {
+  overflow-y: auto;
+}
+
+.session-settings-content .settings-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.session-settings-content .settings-card:last-child {
+  margin-bottom: 0;
+}
+
+.status-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-block[hidden] {
+  display: none;
 }

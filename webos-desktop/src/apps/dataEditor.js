@@ -1,5 +1,5 @@
 import "../styles/dataeditor.css";
-import { $, $$, setText, toggleClass, setHTML } from "../shared/domUtils.js";
+import { $, $$, setText, toggleClass, setHTML, createElement } from "../shared/domUtils.js";
 import { BaseApp, os } from "../framework.js";
 import { formatSize, downloadBlob } from "../utils/utils.js";
 
@@ -299,10 +299,10 @@ export class DataEditorApp extends BaseApp {
   }
 
   buildKeyItem(win, label, onclick, keyValue = null, storeContext = null) {
-    const container = document.createElement("div");
+    const container = createElement("div");
     container.className = "de-key-item";
 
-    const checkbox = document.createElement("input");
+    const checkbox = createElement("input");
     checkbox.type = "checkbox";
     checkbox.addEventListener("change", (e) => {
       e.stopPropagation();
@@ -316,7 +316,7 @@ export class DataEditorApp extends BaseApp {
     });
     checkbox.addEventListener("click", (e) => e.stopPropagation());
 
-    const labelEl = document.createElement("span");
+    const labelEl = createElement("span");
     labelEl.title = label;
     labelEl.textContent = label;
 
@@ -438,7 +438,7 @@ export class DataEditorApp extends BaseApp {
       const dbs = await indexedDB.databases();
       for (const dbInfo of dbs) {
         const dbName = dbInfo.name;
-        const header = document.createElement("div");
+        const header = createElement("div");
         header.className = "de-db-header";
         header.textContent = dbName;
         keyList.appendChild(header);
@@ -493,7 +493,7 @@ export class DataEditorApp extends BaseApp {
             }
 
             if (this.idbPagination.total > this.idbPagination.pageSize) {
-              const paginationEl = document.createElement("div");
+              const paginationEl = createElement("div");
               paginationEl.className = "de-pagination";
               paginationEl.innerHTML = `
                 <span>Page ${this.idbPagination.page} of ${Math.ceil(this.idbPagination.total / this.idbPagination.pageSize)}</span>
@@ -518,7 +518,7 @@ export class DataEditorApp extends BaseApp {
       keyList.innerHTML = `<div class="de-no-keys" style="color:var(--error);">Failed to enumerate databases</div>`;
     }
     if (!keyList.querySelector(".de-key-item")) {
-      const noKeys = document.createElement("div");
+      const noKeys = createElement("div");
       noKeys.className = "de-no-keys";
       noKeys.textContent = "Nothing to show";
       keyList.appendChild(noKeys);

@@ -3,11 +3,12 @@
  */
 
 import { audioMixer, SystemAudio } from "../audioMixer.js";
+import { createElement } from "./domUtils.js";
 
 export function showAlert(title, message, buttonText = "OK") {
   return new Promise((resolve) => {
     audioMixer().playSystemSound(SystemAudio.ERROR);
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
       <div class="fd-dialog">
@@ -39,7 +40,7 @@ export function showAlert(title, message, buttonText = "OK") {
 
 export function showPrompt(title, message, defaultValue = "", confirmText = "OK") {
   return new Promise((resolve) => {
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
       <div class="fd-dialog">
@@ -107,7 +108,7 @@ export function showPrompt(title, message, defaultValue = "", confirmText = "OK"
 
 export function showConfirm(title, message, confirmText = "OK", cancelText = "Cancel") {
   return new Promise((resolve) => {
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     overlay.innerHTML = `
       <div class="fd-dialog">
@@ -163,7 +164,7 @@ export const customConfirm = async (message, title = "Confirm") => {
 export function showCdnPrompt(mirrors, currentMirror) {
   return new Promise((resolve) => {
     audioMixer().playSystemSound(SystemAudio.ERROR);
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "explorer-confirmation-overlay";
     const optionsHtml = mirrors
       .map((m) => `<option value="${m.id}" ${m.id === currentMirror ? "selected" : ""}>${m.name}</option>`)

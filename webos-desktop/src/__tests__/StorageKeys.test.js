@@ -14,15 +14,20 @@ describe("StorageKeys", () => {
     }
   });
 
-  it("all values start with yukiOS or yukios or browser_ or wm_ or steam_", () => {
+  it("all values start with a registered namespace prefix", () => {
     for (const [key, value] of Object.entries(StorageKeys)) {
       const valid =
         value.startsWith("yukiOS_") ||
         value.startsWith("yukios_") ||
+        value.startsWith("yuki_") ||
         value.startsWith("browser_") ||
         value.startsWith("wm_") ||
         value.startsWith("steam_") ||
-        value.startsWith("youtube_");
+        value.startsWith("youtube_") ||
+        value.startsWith("wx_") ||
+        value.startsWith("roblox_") ||
+        value.startsWith("settings:") ||
+        value.startsWith("rm3d_");
       expect(valid, `Key "${key}" has unexpected prefix: "${value}"`).toBe(true);
     }
   });

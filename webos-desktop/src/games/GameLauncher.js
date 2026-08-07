@@ -3,7 +3,7 @@ import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { lazyImg, observeLazyImages, SteamDataManager, launcher, steamAudio } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { os } from "../framework.js";
-import { $$ } from "../shared/domUtils.js";
+import { $$, createElement } from "../shared/domUtils.js";
 
 export class GameLauncher {
   constructor(renderer) {
@@ -124,7 +124,7 @@ export class GameLauncher {
     const yukiosContent = target.querySelector(".steam-yukios-content");
     if (!yukiosContent) return;
 
-    const placeholder = document.createElement("div");
+    const placeholder = createElement("div");
     placeholder.id = "archive-section-placeholder";
     placeholder.style.minHeight = "36px";
     placeholder.innerHTML = `
@@ -157,23 +157,22 @@ export class GameLauncher {
       let archiveIndex = 0;
 
       const renderArchiveChunk = (deadline) => {
-        while (
-          archiveIndex < this.renderer.archiveGamesCache.length &&
-          (deadline ? deadline.timeRemaining() > 2 : true)
-        ) {
+        let hasBudget = !deadline || archiveIndex === 0 || deadline.timeRemaining() > 2;
+        while (archiveIndex < this.renderer.archiveGamesCache.length && hasBudget) {
           const end = Math.min(archiveIndex + CHUNK, this.renderer.archiveGamesCache.length);
           for (let i = archiveIndex; i < end; i++) {
             this.appendArchiveGameToSidebar(container, this.renderer.archiveGamesCache[i], onLaunch);
           }
           archiveIndex = end;
           if (!deadline) break;
+          hasBudget = deadline.timeRemaining() > 2;
         }
         if (archiveIndex < this.renderer.archiveGamesCache.length) {
           requestIdleCallback(renderArchiveChunk, { timeout: 200 });
         }
       };
 
-      requestIdleCallback(renderArchiveChunk, { timeout: 100 });
+      renderArchiveChunk();
 
       const cards = this.renderer.archiveGamesCache
         .map(({ appId, title, url: fullUrl, thumb }) => {
@@ -333,7 +332,7 @@ export class GameLauncher {
     const yukiosContent = target.querySelector(".steam-yukios-content");
     if (!yukiosContent) return;
 
-    const placeholder = document.createElement("div");
+    const placeholder = createElement("div");
     placeholder.id = "luminsdk-section-placeholder";
     placeholder.innerHTML = `
       <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">

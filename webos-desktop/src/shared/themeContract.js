@@ -69,10 +69,12 @@ export const THEME_EFFECT_OPTIONS = {
     "fadeToTaskbar",
     "elasticStretch",
     "spiralDown"
-  ]
+  ],
+  restore: ["fromTaskbar", "scaleCenter", "fade", "slideUp", "instant"]
 };
 
-const COLOR_VALUE_RE = /^(#[0-9a-fA-F]{3,8}|rgba?\([^()]{1,80}\)|hsla?\([^()]{1,80}\)|oklch\([^()]{1,120}\)|var\(--[a-zA-Z0-9-]{1,64}\)|transparent|currentcolor|none|inherit)$/i;
+const COLOR_VALUE_RE =
+  /^(#[0-9a-fA-F]{3,8}|rgba?\([^()]{1,80}\)|hsla?\([^()]{1,80}\)|oklch\([^()]{1,120}\)|var\(--[a-zA-Z0-9-]{1,64}\)|transparent|currentcolor|none|inherit)$/i;
 const COLOR_BLOCKED_RE = /url\(|expression|javascript/i;
 const BACKGROUND_VALUE_RE = /^[a-zA-Z0-9#%(),.#\s\-/]+$/;
 const BACKGROUND_BLOCKED_RE = /url\(|expression|javascript/i;
@@ -139,6 +141,11 @@ export function sanitizeThemeContract(input) {
   if (rawEffects.minimizeAnimation != null) {
     if (THEME_EFFECT_OPTIONS.minimize.includes(rawEffects.minimizeAnimation)) {
       effects.minimizeAnimation = rawEffects.minimizeAnimation;
+    }
+  }
+  if (rawEffects.restoreAnimation != null) {
+    if (THEME_EFFECT_OPTIONS.restore.includes(rawEffects.restoreAnimation)) {
+      effects.restoreAnimation = rawEffects.restoreAnimation;
     }
   }
   if (typeof rawEffects.cursorOff === "boolean") {

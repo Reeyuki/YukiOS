@@ -1,5 +1,6 @@
 import { StorageKeys } from "./StorageKeys.js";
 import { os } from "./os/index.js";
+import { $, createElement } from "./shared/domUtils.js";
 
 const YURI_THEME_COLORS = {
   brand: "oklch(66% 0.2 352)",
@@ -183,9 +184,9 @@ export function applyYuriTheme() {
   root.setAttribute("data-yuri", "true");
   root.setAttribute("data-theme", "yuri");
   root.setAttribute("data-theme-mode", "dark");
-  let override = document.getElementById("yuri-theme-override");
+  let override = $("#yuri-theme-override");
   if (!override) {
-    override = document.createElement("style");
+    override = createElement("style");
     override.id = "yuri-theme-override";
     document.head.appendChild(override);
   }
@@ -196,7 +197,7 @@ export function applyYuriTheme() {
   if (!override.parentNode) {
     document.head.appendChild(override);
   }
-  const themeOverride = document.getElementById("yukios-theme-override");
+  const themeOverride = $("#yukios-theme-override");
   if (themeOverride && themeOverride.nextSibling) {
     document.head.insertBefore(override, themeOverride.nextSibling);
   }

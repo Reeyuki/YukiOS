@@ -1,6 +1,6 @@
 import { CDN_MIRRORS, setCdnMirror, getCdnMirror } from ".././shared/assetResolver.js";
 
-import { BaseApp, StorageKeys, os, $ } from "../framework.js";
+import { BaseApp, StorageKeys, os, $, createElement } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
 class NetworkTrayApp extends BaseApp {
@@ -86,7 +86,7 @@ class NetworkTrayApp extends BaseApp {
       existingPopup.remove();
     }
 
-    const popup = document.createElement("div");
+    const popup = createElement("div");
     popup.id = this.popupId;
     popup.className = "network-tray-popup";
     popup.innerHTML = this.buildPopupContent();

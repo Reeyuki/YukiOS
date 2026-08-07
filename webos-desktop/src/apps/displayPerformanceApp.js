@@ -1,4 +1,4 @@
-import { turboManager } from "../shared/turboManager.js";
+import { performanceManager } from "../shared/performanceManager.js";
 const BRIGHTNESS_PRESETS = {
   default: { brightness: 100, contrast: 1, gamma: 1, temperature: 50, label: "Default" },
   reading: { brightness: 90, contrast: 1.1, gamma: 1.1, temperature: 35, label: "Reading" },
@@ -8,7 +8,7 @@ const BRIGHTNESS_PRESETS = {
   highClarity: { brightness: 110, contrast: 1.3, gamma: 1.2, temperature: 50, label: "High Clarity" }
 };
 import { Achievements } from "../achievements.js";
-import { $, $$, setStyle, BusEvents, BaseApp, StorageKeys, os, MODES } from "../framework.js";
+import { $, $$, setStyle, createElement, BusEvents, BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
 import { getTrayPosition } from "../tray/tray.js";
@@ -20,7 +20,7 @@ class DisplayPerformanceApp extends BaseApp {
     this.popupId = "display-performance-tray-popup";
     this.popupVisible = false;
 
-    this.powerMode = turboManager.getMode();
+    this.powerMode = performanceManager.getMode();
     this.batteryInfo = { level: 1, charging: true };
 
     this.brightness = parseInt(os.storage.get(StorageKeys.brightness), 10) || 100;
@@ -105,7 +105,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   updateBatteryDisplay() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (!popup) return;
     const batteryPercent = popup.querySelector(".battery-percent");
     const batteryStatus = popup.querySelector(".battery-status");
@@ -129,7 +129,7 @@ class DisplayPerformanceApp extends BaseApp {
         this.togglePopup();
       },
       contextMenuItems: [
-        { label: "Turbo", icon: "fa-bolt", action: () => this.setPowerMode("turbo") },
+        { label: "Performance", icon: "fa-bolt", action: () => this.setPowerMode("performance") },
         { label: "Balanced", icon: "fa-balance-scale", action: () => this.setPowerMode("balanced") },
         { label: "Quality", icon: "fa-gem", action: () => this.setPowerMode("high") },
         { type: "divider" },
@@ -283,12 +283,12 @@ class DisplayPerformanceApp extends BaseApp {
 
   setPowerMode(mode) {
     this.powerMode = mode;
-    turboManager.setMode(mode);
+    performanceManager.setMode(mode);
 
     this.os.app.incrementPowerProfileChange();
 
     const modeNames = {
-      turbo: "Turbo",
+      performance: "Performance",
       balanced: "Balanced",
       high: "Quality"
     };
@@ -305,7 +305,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   updatePowerModeButtons() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (!popup) return;
 
     const modeBtns = popup.querySelectorAll(".power-mode-btn");
@@ -318,7 +318,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   updatePopupSliders() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (!popup) return;
 
     const brightnessSlider = popup.querySelector("#brightness-slider");
@@ -349,12 +349,12 @@ class DisplayPerformanceApp extends BaseApp {
   openPopup() {
     if (this.popupVisible) return;
 
-    const existingPopup = document.getElementById(this.popupId);
+    const existingPopup = $("#" + this.popupId);
     if (existingPopup) {
       existingPopup.remove();
     }
 
-    const popup = document.createElement("div");
+    const popup = createElement("div");
     popup.id = this.popupId;
     popup.className = "display-performance-tray-popup";
     const batteryPercent = Math.round(this.batteryInfo.level * 100);
@@ -380,9 +380,9 @@ class DisplayPerformanceApp extends BaseApp {
             <span>Power Mode</span>
           </div>
           <div class="power-mode-options">
-            <button class="power-mode-btn ${this.powerMode === "turbo" ? "active" : ""}" data-mode="turbo">
+            <button class="power-mode-btn ${this.powerMode === "performance" ? "active" : ""}" data-mode="performance">
               <i class="fas fa-bolt"></i>
-              <span>Turbo</span>
+              <span>Performance</span>
             </button>
             <button class="power-mode-btn ${this.powerMode === "balanced" ? "active" : ""}" data-mode="balanced">
               <i class="fas fa-balance-scale"></i>
@@ -476,7 +476,7 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   closePopup() {
-    const popup = document.getElementById(this.popupId);
+    const popup = $("#" + this.popupId);
     if (popup) {
       popup.classList.add("closing");
       popup.addEventListener(
@@ -492,8 +492,8 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   handleOutsideClick = (e) => {
-    const popup = document.getElementById(this.popupId);
-    const trayEl = document.getElementById("app-tray");
+    const popup = $("#" + this.popupId);
+    const trayEl = $("#app-tray");
     if (popup && !e.target.closest("#display-performance-tray-popup") && !e.target.closest("#app-tray")) {
       this.closePopup();
     }

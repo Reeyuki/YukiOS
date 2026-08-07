@@ -1,16 +1,16 @@
-import { os, StorageKeys, BusEvents } from "../framework.js";
+import { os, StorageKeys, BusEvents, $, createElement } from "../framework.js";
 import { sanitizeBackground, THEME_EFFECT_OPTIONS } from "./themeContract.js";
 
 const EFFECTS_STYLE_ID = "yukios-theme-effects";
 
 function applyEffectsStyle(effects) {
   const hasBg = effects && typeof effects.background === "string" && effects.background.length > 0;
-  const existing = document.getElementById(EFFECTS_STYLE_ID);
+  const existing = $("#" + EFFECTS_STYLE_ID);
   if (!hasBg) {
     if (existing) existing.remove();
     return;
   }
-  const el = existing || document.createElement("style");
+  const el = existing || createElement("style");
   el.id = EFFECTS_STYLE_ID;
   let css = ":root { } ";
   if (hasBg) css += `body { background: ${effects.background} !important; }`;
@@ -40,9 +40,19 @@ export function applyThemeEffects(effects) {
       os.storage.set(StorageKeys.windowCloseAnimation, effects.closeAnimation);
       sanitized.closeAnimation = effects.closeAnimation;
     }
-    if (typeof effects.minimizeAnimation === "string" && THEME_EFFECT_OPTIONS.minimize.includes(effects.minimizeAnimation)) {
+    if (
+      typeof effects.minimizeAnimation === "string" &&
+      THEME_EFFECT_OPTIONS.minimize.includes(effects.minimizeAnimation)
+    ) {
       os.storage.set(StorageKeys.windowMinimizeAnimation, effects.minimizeAnimation);
       sanitized.minimizeAnimation = effects.minimizeAnimation;
+    }
+    if (
+      typeof effects.restoreAnimation === "string" &&
+      THEME_EFFECT_OPTIONS.restore.includes(effects.restoreAnimation)
+    ) {
+      os.storage.set(StorageKeys.windowRestoreAnimation, effects.restoreAnimation);
+      sanitized.restoreAnimation = effects.restoreAnimation;
     }
     if (typeof effects.cursorOff === "boolean") {
       if (effects.cursorOff) {
@@ -69,8 +79,9 @@ export function clearThemeEffects() {
     os.storage.set(StorageKeys.windowOpenAnimation, "scaleCenter");
     os.storage.set(StorageKeys.windowCloseAnimation, "scaleDownCenter");
     os.storage.set(StorageKeys.windowMinimizeAnimation, "taskbarShrink");
+    os.storage.set(StorageKeys.windowRestoreAnimation, "fromTaskbar");
     os.storage.set(StorageKeys.cursorEffectEnabled, true);
-    const existing = document.getElementById(EFFECTS_STYLE_ID);
+    const existing = $("#" + EFFECTS_STYLE_ID);
     if (existing) existing.remove();
     os.storage.remove(StorageKeys.themeHubEffects);
     os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "themeEffects", value: {} });
@@ -96,6 +107,7 @@ export function collectCurrentEffects() {
     windowAnimation: os.storage.get(StorageKeys.windowOpenAnimation) || null,
     closeAnimation: os.storage.get(StorageKeys.windowCloseAnimation) || null,
     minimizeAnimation: os.storage.get(StorageKeys.windowMinimizeAnimation) || null,
+    restoreAnimation: os.storage.get(StorageKeys.windowRestoreAnimation) || null,
     cursorOff: os.storage.get(StorageKeys.cursorEffectEnabled) === false,
     background: null
   };

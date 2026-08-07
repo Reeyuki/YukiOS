@@ -1,7 +1,7 @@
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 import { parseBool } from "../utils/utils.js";
+import { StorageKeys, os, $ } from "../framework.js";
 
-import { StorageKeys, os } from "../framework.js";
 export class AppRestorationService {
   constructor(windowManager) {
     this.wm = windowManager;
@@ -41,12 +41,12 @@ export class AppRestorationService {
   findWindowForApp(appId, originalWindowId) {
     if (!appId || !this.wm) return null;
 
-    let win = document.getElementById(originalWindowId);
+    let win = $("#" + originalWindowId);
     if (win) return win;
 
     const allWindows = Array.from(this.wm.openWindows.entries());
     for (const [winId, entry] of allWindows) {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (win && !win.dataset.appId) {
         return win;
       }
@@ -104,7 +104,7 @@ export class AppRestorationService {
 
     const windowStates = [];
     const sortedWindows = Array.from(this.wm.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean)
       .sort((a, b) => (parseInt(a.style.zIndex) || 0) - (parseInt(b.style.zIndex) || 0));
 
@@ -149,7 +149,7 @@ export class AppRestorationService {
         const appMetadata = this.appRegistry.get(appId);
         if (this.wm.appLauncher && (!appMetadata || appMetadata.persistContentState !== false)) {
           const appInstance = this.getAppInstance(appId);
-          if (appInstance && typeof appInstance.getSnapshot === "function") {
+          if (appInstance) {
             try {
               record.appStateSnapshot = await appInstance.getSnapshot(win.id);
             } catch (e) {
@@ -256,7 +256,7 @@ export class AppRestorationService {
 
       const lastFocused = windowStates.find((s) => s.focused);
       if (lastFocused) {
-        const win = document.getElementById(lastFocused.id);
+        const win = $("#" + lastFocused.id);
         if (win) {
           try {
             this.wm.bringToFront(win);
@@ -298,7 +298,7 @@ export class AppRestorationService {
         return;
       }
 
-      const existingWin = document.getElementById(state.id);
+      const existingWin = $("#" + state.id);
       if (existingWin) {
         this.wm.closeWindow(existingWin);
       }
@@ -319,7 +319,7 @@ export class AppRestorationService {
         return;
       }
 
-      const win = document.getElementById(state.id);
+      const win = $("#" + state.id);
       if (!win) {
         this.logRestore(`Failed: Window ${state.id} not created by ${appId}`);
         return;
@@ -358,7 +358,7 @@ export class AppRestorationService {
       if (shouldPersistContent && state.appStateSnapshot) {
         try {
           const appInstance = this.getAppInstance(appId);
-          if (appInstance && typeof appInstance.restoreSnapshot === "function") {
+          if (appInstance) {
             await appInstance.restoreSnapshot(win.id, state.appStateSnapshot);
           }
         } catch (e) {}

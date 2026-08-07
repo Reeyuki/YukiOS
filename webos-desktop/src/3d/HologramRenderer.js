@@ -1,9 +1,10 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
+import { createElement } from "../shared/domUtils.js";
 
 export class HologramRenderer {
   constructor(pixelScale = 2) {
     this.pixelScale = pixelScale;
-    this.canvas = document.createElement("canvas");
+    this.canvas = createElement("canvas");
     this.canvas.width = 800 * pixelScale;
     this.canvas.height = 500 * pixelScale;
     this.ctx = this.canvas.getContext("2d");

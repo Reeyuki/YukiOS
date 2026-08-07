@@ -1,5 +1,5 @@
 import "../styles/launchpad.css";
-import { BaseApp } from "../framework.js";
+import { BaseApp, createElement } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { KeybindManager } from "../keybindManager.js";
 import { resolveIconHtml } from "../shared/iconUtils.js";
@@ -25,7 +25,7 @@ export class LaunchpadApp extends BaseApp {
       if (!this.overlay.classList.contains("launchpad-closing")) this.close();
       return;
     }
-    this.overlay = document.createElement("div");
+    this.overlay = createElement("div");
     this.overlay.className = "launchpad-overlay";
     this.overlay.innerHTML = `
       <div class="launchpad-inner">

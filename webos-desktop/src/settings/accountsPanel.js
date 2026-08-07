@@ -1,10 +1,25 @@
 import { BusEvents } from "../core/EventBus.js";
 import { refreshSteamUI } from "../games/games.js";
-import { resolveAvatarUrl } from "../shared/avatarResolver.js";
+import { resolveAvatarUrl } from "../social/avatarResolver.js";
 import { PREDEFINED_AVATARS, generateUUID } from "../utils/avatarData.js";
-import { timeAgo } from "../utils/utils.js";
+import { escapeHtml, formatSize, timeAgo } from "../utils/utils.js";
+import { ACCOUNT_DISCLAIMER, buildAccountBlockHtml, bindAccountBlock } from "../social/accountUI.js";
+import { isSocialDisabled } from "../social/socialSettings.js";
+import {
+  SYNC_COMPONENTS,
+  isSyncEnabledPref,
+  setSyncEnabledPref,
+  getToggles,
+  setToggle,
+  buildBundle,
+  syncPush,
+  syncPull,
+  getCloudSummary
+} from "../account/syncEngine.js";
+import { isLoggedIn, getSession } from "../account/session.js";
+import { getLiveUserId } from "../social/userIdentity.js";
 import { StorageKeys, os } from "../framework.js";
-import { $, $$, bindEvent, setText, setHTML } from "../shared/domUtils.js";
+import { $, $$, bindEvent, setText, setHTML, createElement } from "../shared/domUtils.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 
 let win = null;
@@ -36,6 +51,18 @@ function getSelectedUser() {
   return user || getCurrentUser();
 }
 
+function markCurrentUserCloud() {
+  const cloudId = getLiveUserId();
+  if (!cloudId) return;
+  const currentUserId = os.storage.get(StorageKeys.userId);
+  const history = getUserHistory();
+  const entry = history.find((u) => u.userId === currentUserId);
+  if (!entry) return;
+  if (entry.cloudAccountId === cloudId) return;
+  entry.cloudAccountId = cloudId;
+  os.storage.set(StorageKeys.userHistory, history);
+}
+
 function showStatus(message) {
   const status = $("#account-status", win);
   if (status) {
@@ -58,6 +85,7 @@ export function renderUserList() {
       const isCurrentUser = user.userId === currentUser.userId;
       const isSelected = user.userId === (selectedUserId || currentUser.userId);
       const lastLogin = user.lastLogin ? timeAgo(new Date(user.lastLogin)) : "Never";
+      const isCloud = Boolean(user.cloudAccountId);
       return `
         <div class="accounts-user-item ${isSelected ? "selected" : ""} ${isCurrentUser ? "current" : ""}"
              data-user-id="${user.userId}" data-avatar="${user.avatar}">
@@ -67,7 +95,12 @@ export function renderUserList() {
           <div class="accounts-user-info">
             <div class="accounts-user-name">${user.name}</div>
             <div class="accounts-user-meta">
-              ${isCurrentUser ? '<i class="fas fa-check-circle"></i> Current' : `Last: ${lastLogin}`}
+              ${
+                isCloud
+                  ? '<span class="accounts-user-cloud"><i class="fas fa-cloud"></i> Cloud</span>'
+                  : '<span class="accounts-user-local"><i class="fas fa-user"></i> Local</span>'
+              }
+              ${isCurrentUser ? '<span class="accounts-user-now"><i class="fas fa-check-circle"></i> Current</span>' : `<span class="accounts-user-last">${lastLogin}</span>`}
             </div>
           </div>
         </div>
@@ -130,40 +163,9 @@ export function renderAccountsSettings() {
   customImageDataUrl = null;
   isCreating = false;
 
-  const sponsorDismissed = os.storage.get(StorageKeys.sponsorDismissed) === "true";
-
   return `
     <div id="pane-accounts" class="settings-category-pane">
       <div class="settings-category-header">Accounts</div>
-      ${
-        !sponsorDismissed
-          ? `
-      <div class="accounts-sponsor-banner" id="accounts-sponsor-banner">
-        <div class="sponsor-banner-content">
-          <div class="sponsor-banner-icon">
-            <i class="fas fa-mug-hot"></i>
-          </div>
-          <div class="sponsor-banner-text">
-            <div class="sponsor-banner-title">Support YukiOS</div>
-            <div class="sponsor-banner-desc">Your support accelerates development and new features</div>
-          </div>
-          <div class="sponsor-banner-buttons">
-            <a href="https://ko-fi.com/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-kofi">
-              <i class="fas fa-mug-hot"></i> Ko-fi
-            </a>
-            <a href="https://www.patreon.com/Reeyuki" target="_blank" class="sponsor-banner-btn" id="sponsor-link-patreon"><i class="fab fa-patreon"></i> Patreon</a>
-            <span class="sponsor-banner-btn donation-monero-btn" id="sponsor-link-monero" style="cursor:pointer;">
-              <i class="fab fa-monero"></i> Monero
-            </span>
-          </div>
-          <button class="sponsor-banner-close" id="sponsor-close" title="Don't show again">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-      `
-          : ""
-      }
       <div class="accounts-layout">
         <div class="accounts-sidebar">
           <div class="accounts-sidebar-header">
@@ -179,6 +181,15 @@ export function renderAccountsSettings() {
         <div class="accounts-detail" id="accounts-detail">
           ${getAccountsDetailHTML()}
         </div>
+      </div>
+      <div class="accounts-cloud" id="accounts-cloud">
+        <div class="accounts-cloud-head"><i class="fas fa-user-lock"></i> <span>YukiOS Account</span></div>
+        <div class="accounts-cloud-host" id="accounts-cloud-host"></div>
+        <p class="yukios-account-disclaimer">${escapeHtml(ACCOUNT_DISCLAIMER)}</p>
+      </div>
+      <div class="accounts-sync" id="accounts-sync">
+        <div class="accounts-sync-head"><i class="fas fa-cloud-arrow-up"></i> <span>Cloud Sync</span></div>
+        <div class="accounts-sync-body" id="accounts-sync-body"></div>
       </div>
       <div id="account-status" class="accounts-status"></div>
     </div>
@@ -422,7 +433,7 @@ function openAvatarPicker() {
     <div class="accounts-avatar-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px;">
       ${PREDEFINED_AVATARS.map(
         (avatar) => `
-        <div class="accounts-avatar-option" data-src="${avatar}" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s;">
+        <div class="accounts-avatar-option" data-src="${avatar}" style="width: 64px; height: 64px; border-radius: 25px; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s;">
           <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
       `
@@ -481,7 +492,7 @@ function selectAvatar(option) {
 }
 
 async function uploadAvatar() {
-  const input = document.createElement("input");
+  const input = createElement("input");
   input.type = "file";
   input.accept = "image/png,image/jpeg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp";
   input.style.display = "none";
@@ -526,8 +537,182 @@ async function uploadAvatar() {
   input.click();
 }
 
+async function loadCloudStatus() {
+  const host = $("#sync-cloud-status", win);
+  if (!host) return;
+  const session = getSession();
+  const nickname = (session && session.nickname) || "Account";
+  const head = `
+    <span class="sync-account-name"><i class="fas fa-user-check"></i> Signed in as <strong>${escapeHtml(nickname)}</strong></span>
+  `;
+  setHTML(host, head);
+  const summary = await getCloudSummary();
+  if (!summary) {
+    setHTML(host, ``);
+    return;
+  }
+  let extra = "";
+  if (summary.needsReauth) {
+    extra = `<p class="sync-hint">Session expired — sign in again.</p>`;
+  } else if (summary.error) {
+    extra = `<p class="sync-hint">${escapeHtml(summary.error)}</p>`;
+  } else {
+    const lastSynced = summary.updatedAt ? new Date(summary.updatedAt).toLocaleString() : "Never";
+    let quotaHtml = "";
+    if (summary.quota && summary.quota.limit > 0) {
+      const used = summary.quota.used || 0;
+      const pct = Math.min(100, Math.round((used / summary.quota.limit) * 100));
+      quotaHtml = `
+        <div class="sync-quota">
+          <div class="sync-quota-bar"><div class="sync-quota-fill" style="width:${pct}%"></div></div>
+          <span>${formatSize(used)} / ${formatSize(summary.quota.limit)}</span>
+        </div>
+      `;
+    }
+    let listHtml = "";
+    if (summary.components && summary.components.length) {
+      listHtml = summary.components
+        .map(
+          (c) => `
+          <div class="sync-cloud-item"><i class="fas ${c.icon}"></i><span>${escapeHtml(c.label)}</span><span class="sync-cloud-item-size">${formatSize(c.bytes)}</span></div>
+        `
+        )
+        .join("");
+      listHtml = `<div class="sync-cloud-list">${listHtml}</div>`;
+    } else if (summary.totalBytes > 0) {
+      listHtml = `<p class="sync-hint">Your cloud has data, but no recognized components.</p>`;
+    }
+    extra = `
+      <div class="sync-cloud-meta">
+        <span>Last synced: ${escapeHtml(lastSynced)}</span>
+        <span>In cloud: <strong>${formatSize(summary.totalBytes)}</strong></span>
+      </div>
+      ${quotaHtml}
+      ${listHtml}
+    `;
+  }
+  setHTML(host, head + extra);
+}
+
+async function renderSyncPanel(bodyEl) {
+  const loggedIn = isLoggedIn();
+  if (!loggedIn) {
+    setHTML(
+      bodyEl,
+      `<p class="accounts-cloud-note"><i class="fas fa-lock"></i> Sign in to your YukiOS Account above to sync settings across devices. Cloud sync is off by default and everything works locally without it.</p>`
+    );
+    return;
+  }
+
+  const enabled = isSyncEnabledPref();
+  const bundle = buildBundle();
+  const sizes = {};
+  if (bundle && bundle.components) {
+    Object.keys(bundle.components).forEach((id) => {
+      sizes[id] = bundle.components[id].bytes || 0;
+    });
+  }
+  const toggles = getToggles();
+  const total = (bundle && bundle.totalBytes) || 0;
+
+  const componentRows = SYNC_COMPONENTS.map((c) => {
+    const checked = enabled && toggles[c.id] ? "checked" : "";
+    const size = formatSize(sizes[c.id] || 0);
+    const disabled = enabled ? "" : "disabled";
+    return `
+      <label class="sync-component-row">
+        <input type="checkbox" class="sync-component-toggle" data-id="${c.id}" ${checked} ${disabled} />
+        <span class="sync-component-info">
+          <i class="fas ${c.icon}"></i>
+          <span>
+            <span class="sync-component-name">${escapeHtml(c.label)}</span>
+            <span class="sync-component-desc">${escapeHtml(c.description)}</span>
+          </span>
+        </span>
+        <span class="sync-component-size">${size}</span>
+      </label>
+    `;
+  }).join("");
+
+  setHTML(
+    bodyEl,
+    `
+    <div class="sync-cloud-status" id="sync-cloud-status"></div>
+    <div class="sync-master">
+      <label class="sync-master-row">
+        <input type="checkbox" id="sync-enabled-toggle" ${enabled ? "checked" : ""} />
+        <span><i class="fas fa-toggle-on"></i> Enable cloud sync</span>
+      </label>
+      <span class="sync-total">${formatSize(total)} selected</span>
+    </div>
+    <p class="sync-hint">Choose what gets synced to the cloud. Only enabled components below are uploaded; OS settings and browser data are enabled by default.</p>
+    <div class="sync-components">${componentRows}</div>
+    <div class="sync-actions">
+      <button class="settings-btn" id="sync-now-btn" ${enabled ? "" : "disabled"}><i class="fas fa-cloud-arrow-up"></i> Sync now</button>
+      <button class="settings-btn" id="sync-pull-btn" ${enabled ? "" : "disabled"}><i class="fas fa-cloud-arrow-down"></i> Pull from cloud</button>
+    </div>
+    <div id="sync-status" class="accounts-status"></div>
+  `
+  );
+
+  loadCloudStatus();
+
+  bindEvent($("#sync-enabled-toggle", win), "change", (e) => {
+    setSyncEnabledPref(e.target.checked);
+    renderSyncPanel(bodyEl);
+  });
+
+  $$(".sync-component-toggle", win).forEach((input) => {
+    bindEvent(input, "change", (e) => {
+      setToggle(e.target.dataset.id, e.target.checked);
+      renderSyncPanel(bodyEl);
+    });
+  });
+
+  const syncNow = $("#sync-now-btn", win);
+  if (syncNow) {
+    bindEvent(syncNow, "click", async () => {
+      syncNow.disabled = true;
+      const status = $("#sync-status", win);
+      if (status) setText(status, "Syncing...");
+      const res = await syncPush();
+      if (status) {
+        if (res.ok) {
+          setText(status, "Synced!");
+          if (res.quota) os.storage.set(StorageKeys.accountQuota, res.quota);
+        } else if (res.error) {
+          setText(status, res.error);
+        }
+      }
+      syncNow.disabled = false;
+      if (res && res.ok) setTimeout(() => renderSyncPanel(bodyEl), 1200);
+    });
+  }
+
+  const pullBtn = $("#sync-pull-btn", win);
+  if (pullBtn) {
+    bindEvent(pullBtn, "click", async () => {
+      pullBtn.disabled = true;
+      const status = $("#sync-status", win);
+      if (status) setText(status, "Pulling from cloud...");
+      const res = await syncPull();
+      if (status) {
+        if (res.ok) setText(status, "Pulled from cloud.");
+        else if (res.error) setText(status, res.error);
+      }
+      pullBtn.disabled = false;
+      if (res && res.ok) setTimeout(() => renderSyncPanel(bodyEl), 1200);
+    });
+  }
+}
+
 export function bindAccountsCategory(settingsWin) {
   win = settingsWin;
+
+  const syncBody = $("#accounts-sync-body", win);
+  if (syncBody) {
+    renderSyncPanel(syncBody);
+  }
 
   os.events.on(BusEvents.SESSION_INITIALIZED, () => {
     if (win && win.isConnected) {
@@ -546,30 +731,34 @@ export function bindAccountsCategory(settingsWin) {
   bindDetailEvents();
   refreshAvatarImages();
 
-  const sponsorClose = $("#sponsor-close", win);
-  if (sponsorClose) {
-    bindEvent(sponsorClose, "click", () => {
-      os.storage.set(StorageKeys.sponsorDismissed, "true");
-      const banner = $("#accounts-sponsor-banner", win);
-      if (banner) banner.remove();
-    });
-  }
-
-  const moneroBtn = $("#sponsor-link-monero", win);
-  if (moneroBtn) {
-    bindEvent(moneroBtn, "click", () => {
-      const address = "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
-      navigator.clipboard
-        .writeText(address)
-        .then(() => {
-          moneroBtn.innerHTML = '<i class="fab fa-monero"></i> Copied!';
-          setTimeout(() => {
-            moneroBtn.innerHTML = '<i class="fab fa-monero"></i> Monero';
-          }, 2000);
+  const cloudHost = $("#accounts-cloud-host", win);
+  if (cloudHost) {
+    const renderCloud = () => {
+      markCurrentUserCloud();
+      const localName = String(os.storage.get(StorageKeys.username) || "").slice(0, 32);
+      setHTML(
+        cloudHost,
+        buildAccountBlockHtml(undefined, {
+          socialDisabled: isSocialDisabled(),
+          prefillNickname: localName
         })
-        .catch(() => {
-          os.dialog.alert("Monero Address", address);
-        });
-    });
+      );
+      bindAccountBlock(cloudHost, {
+        onChange: () => {
+          if (isLoggedIn()) {
+            buildBundle();
+            syncPush().catch(() => {});
+          }
+          if (syncBody) renderSyncPanel(syncBody);
+          markCurrentUserCloud();
+          renderCloud();
+          refreshUserList();
+          refreshDetailPanel();
+          refreshSteamUI();
+        },
+        onEnableSocial: () => os.app.launch("steamApp", { steamPage: "settings" })
+      });
+    };
+    renderCloud();
   }
 }

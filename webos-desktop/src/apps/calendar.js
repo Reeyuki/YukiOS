@@ -250,7 +250,7 @@ function positionCalendarPopup() {
 
   requestAnimationFrame(() => {
     if (!calendarPopup) return;
-    const dateCandidates = [$("#time-container"), $("#date"), $(".shelf-clock")];
+    const dateCandidates = [$("#time-container"), $("#date"), $(".shelf-status-clock"), $(".shelf-clock")];
     const dateEl =
       dateCandidates.find((el) => {
         if (!el) return false;

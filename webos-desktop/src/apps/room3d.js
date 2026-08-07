@@ -1,5 +1,5 @@
 import "../styles/room3d.css";
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys, createElement } from "../framework.js";
 import { $ } from "../shared/domUtils.js";
 import { gameBridge } from "../game-bridge/GameBridge.js";
 import { RoomRenderer } from "../3d/RoomRenderer.js";
@@ -77,7 +77,7 @@ export class Room3DApp extends BaseApp {
   }
 
   async open(opts = {}) {
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.style.cssText =
       "position:fixed;inset:0;z-index:999999;background:#000;opacity:0;transition:opacity 0.4s ease";
     document.body.appendChild(overlay);
@@ -107,7 +107,7 @@ export class Room3DApp extends BaseApp {
   async launchSystemMode(onExit) {
     this.systemOnExit = onExit;
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.id = "room3d-system-overlay";
     overlay.style.cssText =
       "position:fixed;inset:0;z-index:999999;background:#000;opacity:0;transition:opacity 0.4s ease";
@@ -1048,7 +1048,7 @@ export class Room3DApp extends BaseApp {
           const now = new Date();
           const pad = (n) => String(n).padStart(2, "0");
           const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
-          const a = document.createElement("a");
+          const a = createElement("a");
           a.href = dataUrl;
           a.download = `yukios-room-${ts}.png`;
           a.style.display = "none";
@@ -1350,7 +1350,7 @@ export class Room3DApp extends BaseApp {
       },
       painting: (T) => {
         const group = new T.Group();
-        const canvas = document.createElement("canvas");
+        const canvas = createElement("canvas");
         canvas.width = 192;
         canvas.height = 128;
         const ctx = canvas.getContext("2d");

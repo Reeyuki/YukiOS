@@ -1,4 +1,5 @@
 import { OSBridge, AppAPI } from "./OSBridge.js";
+import { createElement } from "../shared/domUtils.js";
 
 let bridge = null;
 
@@ -50,7 +51,7 @@ const noopNotify = {
 };
 
 const noopWindow = {
-  create: () => document.createElement("div"),
+  create: () => createElement("div"),
   close: NOOP,
   closeAll: NOOP,
   getOpenWindows: () => undefined,
@@ -64,6 +65,7 @@ const noopWindow = {
   maximize: NOOP,
   toggleFullscreen: NOOP,
   applySnap: NOOP,
+  unsnap: NOOP,
   bringToFront: NOOP,
   addToTaskbar: NOOP,
   removeFromTaskbar: NOOP,
@@ -213,6 +215,31 @@ const noopPorts = {
   list: () => []
 };
 
+const noopAccount = {
+  client: { signIn: () => Promise.reject(new Error("[OS Bridge] Not initialized")), signOut: () => Promise.reject() },
+  signIn: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
+  signUp: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
+  signOut: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
+  isAccount: () => Promise.resolve(false),
+  isSynced: () => Promise.resolve(false),
+  getInfo: () => Promise.resolve(null),
+  updateInfo: () => Promise.reject(new Error("[OS Bridge] Not initialized")),
+  reauth: () => Promise.resolve({ needsSignIn: true }),
+  sync: {
+    enabled: () => false,
+    enable: NOOP,
+    components: () => ({}),
+    toggleComponent: NOOP,
+    getEnabledComponents: () => ({}),
+    buildBundle: () => null,
+    push: () => Promise.resolve({ error: "Not signed in." }),
+    pull: () => Promise.resolve({ error: "Not signed in." })
+  },
+  onAccountChange: () => NOOP,
+  getSession: () => null,
+  formatSize: () => ""
+};
+
 const noopAPIs = {
   storage: noopStorage,
   events: noopEvents,
@@ -227,6 +254,7 @@ const noopAPIs = {
   tiling: noopTiling,
   modes: noopModes,
   achievements: noopAchievements,
+  account: noopAccount,
   clipboardManager: null,
   fileSystemManager: null
 };

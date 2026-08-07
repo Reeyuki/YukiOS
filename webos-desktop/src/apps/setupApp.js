@@ -5,11 +5,10 @@ import { SystemUtilities } from "../system.js";
 import { Achievements } from "../achievements.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
-import { applyFontFamily } from "../settings/settingsApply.js";
-import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
+import { applyFontFamily, applyTheme } from "../settings/settingsApply.js";
+import { $, $$, bindEvent, setText, setHTML, toggleClass, createElement } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";
 import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
-import { animateThemeChange } from "../settings/themeTransition.js";
 import { BaseApp, StorageKeys, os, brand } from "../framework.js";
 import { startIntroTour } from "./introTour.js";
 import { modeManager, MODES } from "../modeManager.js";
@@ -61,7 +60,7 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-paint-brush",
       title: "Full Customization",
-      desc: "Themes, wallpapers, UI scaling, and Turbo Mode"
+      desc: "Themes, wallpapers, UI scaling, and Performance Mode"
     },
     {
       icon: "fas fa-bell",
@@ -198,9 +197,9 @@ export const FEATURE_DATA = {
   ],
   step6: {
     keyboardShortcuts: KEYBIND_DEFINITIONS.map((s) => ({ keys: s.defaultKeys.join("+"), desc: s.desc, cat: s.cat })),
-    turboModes: [
+    performanceModes: [
       { value: "balanced", title: "Balanced", desc: "Recommended for most users" },
-      { value: "turbo", title: "Turbo", desc: "Maximize speed, reduce effects" },
+      { value: "performance", title: "Performance", desc: "Maximize speed, reduce effects" },
       { value: "quality", title: "Quality", desc: "Best visuals, may be slower" }
     ],
     suggestedApps: [
@@ -241,7 +240,7 @@ export class SetupApp extends BaseApp {
       sound: true,
       achievements: true,
       analytics: true,
-      turboMode: "balanced",
+      performanceMode: "balanced",
       transparency: "medium",
       username: os.storage.get(StorageKeys.username) || "Guest",
       profilePicture: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
@@ -502,16 +501,16 @@ export class SetupApp extends BaseApp {
     `;
   }
 
-  buildTurboSelector() {
+  buildPerformanceSelector() {
     return `
       <div class="settings-half">
-        <label class="section-label">Turbo</label>
-        <div class="turbo-selector">
-          ${FEATURE_DATA.step6.turboModes
+        <label class="section-label">Performance</label>
+        <div class="performance-selector">
+          ${FEATURE_DATA.step6.performanceModes
             .map(
               (m) => `
-            <button class="turbo-btn ${this.userChoices.turboMode === m.value ? "active" : ""}" data-mode="${m.value}">
-              <div class="turbo-title">${m.title}</div>
+            <button class="performance-btn ${this.userChoices.performanceMode === m.value ? "active" : ""}" data-mode="${m.value}">
+              <div class="performance-title">${m.title}</div>
             </button>
           `
             )
@@ -560,7 +559,7 @@ export class SetupApp extends BaseApp {
         </div>
 
         <div class="settings-row">
-          ${this.buildTurboSelector()}
+          ${this.buildPerformanceSelector()}
           ${this.buildTransparencySelector()}
         </div>
       </div>
@@ -590,7 +589,7 @@ export class SetupApp extends BaseApp {
     const profilePic = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
     const avatarsHtml = PREDEFINED_AVATARS.map(
       (avatar) => `
-        <div class="setup-avatar-option ${avatar === profilePic ? "selected" : ""}" data-src="${avatar}" style="border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; width: 56px; height: 56px; position: relative;">
+        <div class="setup-avatar-option ${avatar === profilePic ? "selected" : ""}" data-src="${avatar}" style="border-radius: 25px; overflow: hidden; cursor: pointer; border: 2px solid var(--glass-border); transition: all 0.15s; width: 56px; height: 56px; position: relative;">
           <img data-src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" />
           <div style="position: absolute; inset: 0; display: ${avatar === profilePic ? "flex" : "none"}; align-items: center; justify-content: center; background: color-mix(in srgb, var(--brand) 55%, transparent); color: var(--text-on-brand); font-size: 12px;"><i class="fas fa-check"></i></div>
         </div>
@@ -604,7 +603,7 @@ export class SetupApp extends BaseApp {
         </h2>
         <div class="personalize-section" style="display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--brand-dim); border-radius: 8px; border: 1px solid var(--brand);">
-            <div style="width: 46px; height: 46px; border-radius: 50%; overflow: hidden; border: 2px solid var(--brand); flex-shrink: 0;">
+            <div style="width: 46px; height: 46px; border-radius: 25px; overflow: hidden; border: 2px solid var(--brand); flex-shrink: 0;">
               <img id="setup-profile-preview-img" data-src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;" />
             </div>
             <div style="min-width: 0;">
@@ -642,7 +641,7 @@ export class SetupApp extends BaseApp {
 
         <div class="summary-grid">
           <div class="summary-item" style="grid-column: 1 / -1; display: flex; align-items: center; gap: 10px;">
-            <img id="setup-summary-profile-img" data-src="${profilePic}" alt="${username}" style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--glass-border); object-fit: cover;">
+            <img id="setup-summary-profile-img" data-src="${profilePic}" alt="${username}" style="width: 30px; height: 30px; border-radius: 25px; border: 1px solid var(--glass-border); object-fit: cover;">
             <span id="setup-summary-profile-name">Profile: ${username}</span>
           </div>
           <div class="summary-item">
@@ -675,7 +674,7 @@ export class SetupApp extends BaseApp {
           </div>
           <div class="summary-item">
             <i class="fas fa-tachometer-alt"></i>
-            <span>Turbo: ${this.userChoices.turboMode}</span>
+            <span>Performance: ${this.userChoices.performanceMode}</span>
           </div>
           <div class="summary-item">
             <i class="fas fa-adjust"></i>
@@ -743,7 +742,7 @@ export class SetupApp extends BaseApp {
         this.userChoices.theme = theme;
         themeBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
-        this.applyTheme(theme);
+        applyTheme(theme, () => os.storage.get(StorageKeys.customColors));
       });
     });
 
@@ -781,11 +780,11 @@ export class SetupApp extends BaseApp {
       uploadBtn.addEventListener("click", () => this.handleWallpaperUpload(win));
     }
 
-    const perfBtns = $$(".turbo-btn", win);
+    const perfBtns = $$(".performance-btn", win);
     perfBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const mode = btn.dataset.mode;
-        this.userChoices.turboMode = mode;
+        this.userChoices.performanceMode = mode;
         perfBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
       });
@@ -921,14 +920,6 @@ export class SetupApp extends BaseApp {
     stepEl.querySelectorAll(".summary-item").forEach((item, i) => item.style.setProperty("--i", i));
   }
 
-  applyTheme(theme) {
-    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
-    const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
-    animateThemeChange(() => {
-      document.documentElement.setAttribute("data-theme", effective);
-    });
-  }
-
   async completeSetup(win) {
     const finalizedName = (this.userChoices.username || "").trim() || "Guest";
     const finalizedAvatar = this.userChoices.profilePicture || PREDEFINED_AVATARS[0];
@@ -952,7 +943,7 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.analyticsDisabled, (!this.userChoices.analytics).toString());
     os.storage.set(StorageKeys.setupCompleted, "true");
 
-    os.storage.set(StorageKeys.turboMode, this.userChoices.turboMode);
+    os.storage.set(StorageKeys.performanceMode, this.userChoices.performanceMode);
     os.storage.set(StorageKeys.transparency, this.userChoices.transparency);
 
     os.storage.set(StorageKeys.fontFamily, this.userChoices.fontFamily);
@@ -988,7 +979,7 @@ export class SetupApp extends BaseApp {
 
 Here's what you picked:
 - Theme: ${this.userChoices.theme}
-- Turbo Mode: ${this.userChoices.turboMode}
+- Performance Mode: ${this.userChoices.performanceMode}
 - Transparency: ${this.userChoices.transparency}
 - Weather: ${this.userChoices.weather ? "On" : "Off"}
 - Notifications: ${this.userChoices.notifications ? "On" : "Off"}
@@ -1052,7 +1043,7 @@ Have fun!`;
   }
 
   async handleWallpaperUpload(win) {
-    const input = document.createElement("input");
+    const input = createElement("input");
     input.type = "file";
     input.accept = "image/*";
     input.onchange = async (e) => {
@@ -1073,7 +1064,7 @@ Have fun!`;
 
           const grid = $("#wallpaper-grid", win);
           if (grid) {
-            const newThumb = document.createElement("div");
+            const newThumb = createElement("div");
             newThumb.className = "wallpaper-thumb active";
             newThumb.dataset.wallpaper = fileName;
             newThumb.dataset.type = "custom";
@@ -1137,7 +1128,7 @@ Have fun!`;
     });
 
     uploadBtn.addEventListener("click", () => {
-      const input = document.createElement("input");
+      const input = createElement("input");
       input.type = "file";
       input.accept = "image/*";
       input.onchange = (e) => {
@@ -1168,7 +1159,7 @@ Have fun!`;
               height = Math.round(height * ratio);
             }
 
-            const canvas = document.createElement("canvas");
+            const canvas = createElement("canvas");
             canvas.width = width;
             canvas.height = height;
             const ctx = canvas.getContext("2d");

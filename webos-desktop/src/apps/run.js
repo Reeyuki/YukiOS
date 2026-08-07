@@ -1,5 +1,5 @@
 import "../styles/run.css";
-import { BaseApp, os, StorageKeys } from "../framework.js";
+import { BaseApp, os, StorageKeys, $, createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 export class RunApp extends BaseApp {
@@ -13,17 +13,17 @@ export class RunApp extends BaseApp {
   registerGlobalShortcut() {
     document.addEventListener("keydown", (e) => {
       if (!KeybindManager.matches(e, "global.run") && !KeybindManager.matches(e, "global.runMeta")) return;
-      const seoOverlay = document.getElementById("seo-overlay");
+      const seoOverlay = $("#seo-overlay");
       if (seoOverlay && !seoOverlay.classList.contains("hidden")) return;
-      if (document.getElementById("session-overlay")) return;
-      if (document.getElementById("room3d-canvas")) return;
+      if ($("#session-overlay")) return;
+      if ($("#room3d-canvas")) return;
       e.preventDefault();
       this.open();
     });
   }
 
   open() {
-    if (this.win && document.getElementById(this.winId)) {
+    if (this.win && $("#" + this.winId)) {
       os.window.bringToFront(this.win);
       this.focusInput();
       return;
@@ -37,7 +37,7 @@ export class RunApp extends BaseApp {
     this.win.classList.add("run-window");
     this.win.innerHTML = this.buildUI();
 
-    this.suggestionsEl = document.createElement("div");
+    this.suggestionsEl = createElement("div");
     this.suggestionsEl.className = "run-suggestions";
     this.suggestionsEl.id = "run-suggestions";
     this.suggestionsEl.style.display = "none";

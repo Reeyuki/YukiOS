@@ -1,5 +1,5 @@
 import "./styles/donationPopup.css";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, createElement } from "./framework.js";
 import { $, bindEvent } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
 
@@ -25,12 +25,9 @@ function getOverlayHTML() {
           YukiOS is built and maintained by one person in their free time.
           Your support keeps development active and helps fund new features.
           <br><br>
-          You can donate via Ko-fi, Patreon, or Monero. It takes less than a minute.
+          You can donate via Patreon or Monero. It takes less than a minute.
         </div>
         <div class="donation-buttons">
-          <a href="https://ko-fi.com/Reeyuki" target="_blank" class="donation-btn donation-btn-kofi">
-            <i class="fas fa-mug-hot"></i> Ko-fi
-          </a>
           <a href="https://www.patreon.com/Reeyuki" target="_blank" class="donation-btn donation-btn-patreon"><i class="fab fa-patreon"></i> Patreon</a>
           <button class="donation-btn donation-btn-monero" id="donation-show-monero">
             <i class="fab fa-monero"></i> Monero
@@ -55,7 +52,7 @@ function getOverlayHTML() {
 function showPopup() {
   if (overlay) return;
 
-  const wrapper = document.createElement("div");
+  const wrapper = createElement("div");
   wrapper.innerHTML = getOverlayHTML();
   overlay = wrapper.firstElementChild;
 

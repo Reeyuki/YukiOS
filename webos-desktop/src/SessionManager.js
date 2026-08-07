@@ -1,11 +1,10 @@
 import { BusEvents } from "./core/EventBus.js";
-import { Achievements } from "./achievements.js";
 import { PREDEFINED_AVATARS } from "./utils/avatarData.js";
 import { SystemUtilities } from "./system.js";
 import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
-import { resolveAvatarUrl } from "./shared/avatarResolver.js";
-import { $ } from "./shared/domUtils.js";
+import { resolveAvatarUrl } from "./social/avatarResolver.js";
+import { $, createElement } from "./shared/domUtils.js";
 import { renderLiveStats } from "./shared/liveStats.js";
 import { resolveAppId, generateUUID, timeAgo } from "./utils/utils.js";
 import { StorageKeys, os, brand, wasRandomYuriTrigger } from "./framework.js";
@@ -13,14 +12,11 @@ import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 import { fetchLiveStats } from "./analytics.js";
-import { liveActivityManager } from "./liveActivityManager.js";
-import { runBootPreview } from "./bootScreen.js";
-import { BOOT_ANIMATIONS } from "./bootAnimations.js";
+import { liveActivityManager } from "./social/liveActivityManager.js";
 import { modeManager, MODES } from "./modeManager.js";
 import { applyMacSettings, disableMacSettings } from "./modes/macos/session.js";
 import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/session.js";
 import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
-import { showDonationPopup } from "./donationPopup.js";
 import { getRecentNews } from "./apps/news.js";
 
 export class SessionManager {
@@ -140,7 +136,7 @@ export class SessionManager {
   }
 
   async showLogin() {
-    const seoOverlay = document.getElementById("seo-overlay");
+    const seoOverlay = $("#seo-overlay");
     if (seoOverlay && !seoOverlay.classList.contains("hidden")) {
       return new Promise((resolve) => {
         const observer = new MutationObserver(() => {
@@ -179,16 +175,16 @@ export class SessionManager {
   }
 
   async createSessionUI(state, onComplete) {
-    if (document.getElementById("session-overlay")) return;
+    if ($("#session-overlay")) return;
 
     this.sessionState = state;
     this.onSessionComplete = onComplete;
-    this.container = document.createElement("div");
+    this.container = createElement("div");
     this.container.id = "session-overlay";
     this.container.className = "session-overlay";
 
     const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const timeStr = this.formatLoginClock(now);
     const dateStr = now.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
 
     const lastUsername = os.storage.get(StorageKeys.username) || "";
@@ -213,72 +209,54 @@ export class SessionManager {
         <div class="session-date">${dateStr}</div>
 
         <div class="session-extra">
-        <div class="session-info-btn" id="session-info-btn">
-          <i class="fas fa-info"></i>
+        <div class="session-support-btn" id="session-support-btn" title="Support ${brand("YukiOS")}">
+          <i class="fas fa-heart"></i>
         </div>
-        <div class="session-boot-preview-btn" id="session-boot-preview-btn">
-          <i class="fas fa-play"></i>
-        </div>
-        ${
-          os.storage.get(StorageKeys.donationDismissed) === "true"
-            ? ""
-            : `<button class="session-support-btn" id="session-support-btn" title="Support ${brand("YukiOS")}"><i class="fas fa-heart"></i></button>`
-        }
-        <a class="session-discord-btn" href="https://discord.gg/wufbWFwr4G" target="_blank" rel="noopener" title="Join Discord"><i class="fab fa-discord"></i></a>
-        <a class="session-github-btn" href="https://github.com/Reeyuki/YukiOS" target="_blank" rel="noopener" title="Star Us On Github"><i class="fab fa-github"></i></a>
-        <div class="session-boot-preview-modal" id="session-boot-preview-modal" style="display: none;">
-          <div class="boot-preview-modal-content">
-            <div class="boot-preview-modal-header">
-              <h3>Boot Animations</h3>
-            </div>
-            <div class="boot-preview-modal-body" id="boot-preview-list">
-            </div>
-          </div>
-        </div>
-        <div class="session-info-modal" id="session-info-modal" style="display: none;">
-          <div class="info-modal-content">
-            <div class="info-modal-header">
-              <h3>System Info</h3>
-            </div>
-            <div class="info-modal-body">
-              <div class="info-row">
-                <span class="info-label">Version</span>
-                <span class="info-value">${brand("YukiOS")} ${YUKIOS_VERSION}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Build</span>
-                <span class="info-value">${__GIT_COMMIT__}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Uptime</span>
-                <span class="info-value" id="uptime-display">0s</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="online-users-badge" id="online-users-badge">
-          <i class="fas fa-users"></i>
-          <span id="online-users-count">--</span> online
-        </div>
-        <div class="session-activity-widget" id="session-activity-widget">
-          <button class="session-activity-toggle" id="session-activity-toggle" title="Toggle live activity">
-            <i class="fas fa-gamepad"></i>
-            <span>Live Activity</span>
+        <a class="session-github-btn" href="https://github.com/Reeyuki/YukiOS" target="_blank" rel="noopener" title="Star Us On Github">
+          <i class="fab fa-github"></i>
+        </a>
+        <a class="session-discord-btn" href="https://discord.gg/wufbWFwr4G" target="_blank" rel="noopener" title="Join Discord">
+          <i class="fab fa-discord"></i>
+        </a>
+        <div class="session-status-widget" id="session-status-widget">
+          <button class="session-status-toggle" id="session-status-toggle" title="System status" type="button">
+            <i class="fas fa-circle-info"></i>
+            <span>Status</span>
             <i class="fas fa-chevron-down"></i>
           </button>
-          <div class="session-activity-panel" id="session-activity-panel">
-            <div style="color:var(--text-secondary);font-size:12px;text-align:center;padding-top:24px;">Loading...</div>
+          <div class="session-status-panel" id="session-status-panel">
+            <div class="status-info-row">
+              <span class="status-info-label">Version</span>
+              <span class="status-info-value">${brand("YukiOS")} ${YUKIOS_VERSION}</span>
+            </div>
+            <div class="status-info-row">
+              <span class="status-info-label">Build</span>
+              <span class="status-info-value">${__GIT_COMMIT__}</span>
+            </div>
+            <div class="status-info-row">
+              <span class="status-info-label">Uptime</span>
+              <span class="status-info-value" id="uptime-display">0s</span>
+            </div>
+            <div class="status-block" data-block="online">
+              <div class="status-divider"></div>
+              <div class="online-users-count"><i class="fas fa-users"></i><span id="online-users-count">--</span> online</div>
+            </div>
+            <div class="status-block" data-block="live">
+              <div class="status-divider"></div>
+              <button type="button" class="session-live-toggle" id="session-activity-toggle">
+                <i class="fas fa-gamepad"></i>
+                <span>Live Activity</span>
+              </button>
+              <div class="session-activity-panel" id="session-activity-panel">
+                <div style="color:var(--text-secondary);font-size:12px;text-align:center;padding-top:24px;">Loading...</div>
+              </div>
+            </div>
+            <div class="status-block" data-block="news">
+              <div class="status-divider"></div>
+              <div class="status-section-title">What's New</div>
+              <div class="session-news-list" id="session-news-list"></div>
+            </div>
           </div>
-        </div>
-        <div class="session-news-widget" id="session-news-widget">
-          <div class="session-news-header">
-            <i class="fas fa-newspaper"></i>
-            <span>What's New</span>
-            <button class="session-news-close" id="session-news-close" aria-label="Close" title="Close">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="session-news-list" id="session-news-list"></div>
         </div>
         <div class="user-carousel-row" id="user-carousel-row"></div>
 
@@ -316,26 +294,30 @@ export class SessionManager {
 
         <div class="session-selector" id="session-selector">
           <div class="session-modes" id="session-modes">
-            <button type="button" class="session-mode-btn" data-mode="reset">
-              <i class="fas fa-snowflake"></i>
-              <span>${brand("YukiOS")}</span>
-            </button>
-            <button type="button" class="session-mode-btn" data-mode="mac">
-              <i class="fab fa-apple"></i>
-              <span>Mac</span>
-            </button>
-            <button type="button" class="session-mode-btn" data-mode="chromeos">
-              <i class="fab fa-chrome"></i>
-              <span>Chrome OS</span>
-            </button>
-            <button type="button" class="session-mode-btn" data-mode="tiling">
-              <i class="fas fa-th-large"></i>
-              <span>Tiling</span>
-            </button>
-            <button type="button" class="session-mode-btn" data-mode="3d">
-              <i class="fas fa-cube"></i>
-              <span>3D Fps</span>
-            </button>
+            <div class="session-modes-grid">
+              <button type="button" class="session-mode-btn" data-mode="reset">
+                <i class="fas fa-snowflake"></i>
+                <span>${brand("YukiOS")}</span>
+              </button>
+              <button type="button" class="session-mode-btn" data-mode="mac">
+                <i class="fab fa-apple"></i>
+                <span>Mac</span>
+              </button>
+              <button type="button" class="session-mode-btn" data-mode="chromeos">
+                <i class="fab fa-chrome"></i>
+                <span>Chrome OS</span>
+              </button>
+              <button type="button" class="session-mode-btn" data-mode="tiling">
+                <i class="fas fa-th-large"></i>
+                <span>Tiling</span>
+              </button>
+            </div>
+            <div class="session-modes-3d">
+              <button type="button" class="session-mode-btn" data-mode="3d">
+                <i class="fas fa-cube"></i>
+                <span>3D Fps Game</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -344,15 +326,16 @@ export class SessionManager {
             <i class="fas fa-times"></i>
           </button>
           <i class="fas fa-download"></i>
-          <span><strong>${brand("YukiOS")} now has a desktop app.</strong> Persistent storage, system tray, remote desktop, and better performance. The ${brand("YukiOS")} you know, now as a real desktop application.</span>
+          <span><strong>${brand("YukiOS")} desktop app</strong> Persistent storage, system tray, remote desktop, and faster performance.</span>
           <div class="electron-banner-actions">
             <span class="electron-download-link" id="electron-download-btn"><i class="fas fa-download"></i> Download</span>
             <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-releases-link">View all releases</a>
           </div>
         </div>
-
-        <a href="/features.html" class="session-features-link">Explore Features</a>
         </div>
+        <button class="session-settings-btn" id="session-settings-btn" title="Login settings" type="button">
+          <i class="fas fa-gear"></i>
+        </button>
       </div>
 
       <div class="avatar-edit-modal" id="avatar-edit-modal" style="display: none;">
@@ -375,6 +358,157 @@ export class SessionManager {
             </div>
         </div>
       </div>
+      </div>
+
+      <div class="session-settings-modal" id="session-settings-modal">
+        <div class="modal-content session-settings-content">
+          <div class="modal-header">
+            <h3>Login Screen</h3>
+            <button class="modal-close" id="session-settings-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="settings-card">
+              <div class="settings-card-header"><i class="fas fa-clock"></i> Clock</div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">12-Hour Format</span>
+                  <span class="settings-label-desc">Show times as 1:30 PM instead of 13:30</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-clock-12h />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">24-Hour Format</span>
+                  <span class="settings-label-desc">Show times as 13:30</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-clock-24h />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card-header"><i class="fas fa-layer-group"></i> Session Modes</div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">${brand("YukiOS")}</span>
+                  <span class="settings-label-desc">Default desktop session</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-mode-toggle="reset" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Mac</span>
+                  <span class="settings-label-desc">macOS-style dock and menus</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-mode-toggle="mac" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Chrome OS</span>
+                  <span class="settings-label-desc">ChromeOS-style shell</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-mode-toggle="chromeos" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Tiling</span>
+                  <span class="settings-label-desc">Window tiling manager layout</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-mode-toggle="tiling" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">3D Fps Game</span>
+                  <span class="settings-label-desc">First-person game mode</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-mode-toggle="3d" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card-header"><i class="fas fa-chart-line"></i> Status Panel</div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Online Count</span>
+                  <span class="settings-label-desc">Show users currently online</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-section-toggle="online" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Live Activity</span>
+                  <span class="settings-label-desc">Show live session activity</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-section-toggle="live" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">What's New</span>
+                  <span class="settings-label-desc">Show recent news updates</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-section-toggle="news" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card-header"><i class="fas fa-people-arrows"></i> Community</div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Social Buttons</span>
+                  <span class="settings-label-desc">Show support, GitHub, and Discord</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-social-toggle />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="settings-card-header"><i class="fas fa-download"></i> Desktop App</div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Show Download Banner</span>
+                  <span class="settings-label-desc">Promote the desktop build on login</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-banner-toggle />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+          </div>
 
     `;
 
@@ -405,13 +539,9 @@ export class SessionManager {
     if (newsList) {
       newsList.innerHTML = this.renderRecentNews();
     }
-    const newsWidget = this.container.querySelector("#session-news-widget");
-    const newsCloseBtn = this.container.querySelector("#session-news-close");
-    if (newsWidget && newsCloseBtn) {
-      newsCloseBtn.addEventListener("click", () => {
-        newsWidget.classList.add("closed");
-      });
-    }
+
+    this.applySessionPreferences();
+    this.bindSettingsEvents();
 
     await this.applySessionWallpaper(this.container);
     await this.bindSessionEvents(onComplete);
@@ -534,7 +664,7 @@ export class SessionManager {
     const needsReplacement = !bgEl || currentTag === "div" || wp.isVideo !== (currentTag === "video");
     if (needsReplacement) {
       if (bgEl) bgEl.remove();
-      bgEl = wp.isVideo ? document.createElement("video") : document.createElement("img");
+      bgEl = wp.isVideo ? createElement("video") : createElement("img");
       bgEl.className = "session-wallpaper";
       container.insertBefore(bgEl, container.firstChild);
     }
@@ -557,7 +687,7 @@ export class SessionManager {
           unsub();
           return;
         }
-        timeEl.textContent = data.timeStr;
+        timeEl.textContent = this.formatLoginClock(new Date(data.timestamp));
       };
       const unsub = subscribeTimeTick(update);
       this.timeWorkerUnsub = unsub;
@@ -576,6 +706,166 @@ export class SessionManager {
         uptimeEl.textContent = this.formatUptime(uptime);
       }
     }, 1000);
+  }
+
+  formatLoginClock(date) {
+    const use24h = os.storage.get(StorageKeys.loginClock24h) !== "false";
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    if (use24h) {
+      return `${String(hours).padStart(2, "0")}:${minutes}`;
+    }
+    const h12 = hours % 12 || 12;
+    const suffix = hours >= 12 ? "PM" : "AM";
+    return `${h12}:${minutes} ${suffix}`;
+  }
+
+  loadSessionPrefs() {
+    const sections = os.storage.get(StorageKeys.sessionSectionVisibility) || {};
+    const modes = os.storage.get(StorageKeys.sessionModeVisibility) || {};
+    const showSocial = os.storage.get(StorageKeys.sessionShowSocial) !== "false";
+    const showBanner = os.storage.get(StorageKeys.sessionShowBanner) !== "false";
+    return {
+      sections: {
+        online: sections.online !== false,
+        live: sections.live !== false,
+        news: sections.news !== false
+      },
+      modes: {
+        reset: modes.reset !== false,
+        mac: modes.mac !== false,
+        chromeos: modes.chromeos !== false,
+        tiling: modes.tiling !== false,
+        "3d": modes["3d"] !== false
+      },
+      showSocial,
+      showBanner
+    };
+  }
+
+  applySessionPreferences() {
+    if (!this.container) return;
+    const prefs = this.loadSessionPrefs();
+
+    ["session-support-btn", "session-github-btn", "session-discord-btn"].forEach((cls) => {
+      const el = this.container.querySelector(`.${cls}`);
+      if (el) el.style.display = prefs.showSocial ? "" : "none";
+    });
+
+    ["online", "live", "news"].forEach((block) => {
+      const el = this.container.querySelector(`.status-block[data-block="${block}"]`);
+      if (el) el.hidden = !prefs.sections[block];
+    });
+
+    this.container.querySelectorAll("#session-modes .session-mode-btn").forEach((btn) => {
+      btn.style.display = prefs.modes[btn.dataset.mode] ? "" : "none";
+    });
+
+    const banner = this.container.querySelector("#session-electron-banner");
+    if (banner) {
+      const dismissed = os.storage.get(StorageKeys.electronBannerDismissed);
+      const inElectron = typeof window.electronAPI !== "undefined";
+      banner.style.display = !prefs.showBanner || dismissed || inElectron ? "none" : "";
+    }
+  }
+
+  bindSettingsEvents() {
+    const container = this.container;
+    if (!container) return;
+
+    const gearBtn = container.querySelector("#session-settings-btn");
+    const modal = container.querySelector("#session-settings-modal");
+    if (!gearBtn || !modal) return;
+
+    const openModal = () => {
+      modal.classList.add("open");
+      this.syncSettingsUI();
+    };
+    const closeModal = () => {
+      modal.classList.remove("open");
+    };
+
+    gearBtn.addEventListener("click", openModal);
+
+    const closeBtn = modal.querySelector("#session-settings-close");
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    ["data-clock-12h", "data-clock-24h"].forEach((attr) => {
+      const cb = modal.querySelector(`[${attr}]`);
+      if (!cb) return;
+      cb.addEventListener("change", () => {
+        const use24h = attr === "data-clock-24h";
+        os.storage.set(StorageKeys.loginClock24h, use24h ? "true" : "false");
+        this.syncSettingsUI();
+        const timeEl = container.querySelector(".session-time");
+        if (timeEl) timeEl.textContent = this.formatLoginClock(new Date());
+      });
+    });
+
+    modal.querySelectorAll("[data-mode-toggle]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const modes = os.storage.get(StorageKeys.sessionModeVisibility) || {};
+        modes[cb.dataset.modeToggle] = cb.checked;
+        os.storage.set(StorageKeys.sessionModeVisibility, modes);
+        this.applySessionPreferences();
+      });
+    });
+
+    modal.querySelectorAll("[data-section-toggle]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const sections = os.storage.get(StorageKeys.sessionSectionVisibility) || {};
+        sections[cb.dataset.sectionToggle] = cb.checked;
+        os.storage.set(StorageKeys.sessionSectionVisibility, sections);
+        this.applySessionPreferences();
+      });
+    });
+
+    const socialCb = modal.querySelector("[data-social-toggle]");
+    if (socialCb) {
+      socialCb.addEventListener("change", () => {
+        os.storage.set(StorageKeys.sessionShowSocial, socialCb.checked ? "true" : "false");
+        this.applySessionPreferences();
+      });
+    }
+
+    const bannerCb = modal.querySelector("[data-banner-toggle]");
+    if (bannerCb) {
+      bannerCb.addEventListener("change", () => {
+        os.storage.set(StorageKeys.sessionShowBanner, bannerCb.checked ? "true" : "false");
+        if (bannerCb.checked) {
+          os.storage.remove(StorageKeys.electronBannerDismissed);
+        }
+        this.applySessionPreferences();
+      });
+    }
+  }
+
+  syncSettingsUI() {
+    const modal = this.container?.querySelector("#session-settings-modal");
+    if (!modal) return;
+    const prefs = this.loadSessionPrefs();
+
+    const clock12 = modal.querySelector("[data-clock-12h]");
+    const clock24 = modal.querySelector("[data-clock-24h]");
+    if (clock12 && clock24) {
+      const use24h = os.storage.get(StorageKeys.loginClock24h) !== "false";
+      clock12.checked = !use24h;
+      clock24.checked = use24h;
+    }
+
+    modal.querySelectorAll("[data-mode-toggle]").forEach((cb) => {
+      cb.checked = prefs.modes[cb.dataset.modeToggle];
+    });
+    modal.querySelectorAll("[data-section-toggle]").forEach((cb) => {
+      cb.checked = prefs.sections[cb.dataset.sectionToggle];
+    });
+    const socialCb = modal.querySelector("[data-social-toggle]");
+    if (socialCb) socialCb.checked = prefs.showSocial;
+    const bannerCb = modal.querySelector("[data-banner-toggle]");
+    if (bannerCb) bannerCb.checked = prefs.showBanner;
   }
 
   formatUptime(ms) {
@@ -636,9 +926,7 @@ export class SessionManager {
   }
 
   async loadSessionActivity() {
-    const widget = this.container?.querySelector("#session-activity-widget");
-    if (!widget || widget.classList.contains("collapsed")) return;
-    const panel = widget.querySelector("#session-activity-panel");
+    const panel = this.container?.querySelector("#session-activity-panel");
     if (!panel) return;
 
     const stats = await fetchLiveStats();
@@ -647,18 +935,7 @@ export class SessionManager {
   }
 
   initSessionActivity() {
-    const widget = this.container?.querySelector("#session-activity-widget");
-    if (!widget) return;
-    const toggle = widget.querySelector("#session-activity-toggle");
-    const collapsed = os.storage.get(StorageKeys.sessionActivityCollapsed) === "true";
-    if (collapsed) widget.classList.add("collapsed");
-    toggle?.addEventListener("click", () => {
-      const nowCollapsed = !widget.classList.contains("collapsed");
-      widget.classList.toggle("collapsed", nowCollapsed);
-      os.storage.set(StorageKeys.sessionActivityCollapsed, nowCollapsed ? "true" : "false");
-      if (!nowCollapsed) this.loadSessionActivity();
-    });
-    if (!collapsed) this.loadSessionActivity();
+    this.loadSessionActivity();
   }
 
   startSessionActivityPolling() {
@@ -687,50 +964,17 @@ export class SessionManager {
     const avatarModal = this.container.querySelector("#avatar-edit-modal");
     const avatarModalClose = this.container.querySelector("#avatar-modal-close");
     const avatarGrid = this.container.querySelector("#avatar-grid");
-    const infoBtn = this.container.querySelector("#session-info-btn");
-    const infoModal = this.container.querySelector("#session-info-modal");
-    const bootPreviewBtn = this.container.querySelector("#session-boot-preview-btn");
-    const bootPreviewModal = this.container.querySelector("#session-boot-preview-modal");
-    const bootPreviewList = this.container.querySelector("#boot-preview-list");
-    const supportBtn = this.container.querySelector("#session-support-btn");
-    const electronBanner = this.container.querySelector("#session-electron-banner");
 
-    const showBootModal = () => {
-      bootPreviewModal.style.display = "block";
-      if (electronBanner) {
-        electronBanner.classList.add("session-electron-banner--hidden");
-        electronBanner.classList.remove("session-electron-banner--reveal");
-      }
-    };
-
-    const hideBootModal = () => {
-      bootPreviewModal.style.display = "none";
-      if (electronBanner) {
-        electronBanner.classList.remove("session-electron-banner--hidden");
-      }
-    };
-
-    const savedAnimId = os.storage.get(StorageKeys.selectedBootAnimation);
-    BOOT_ANIMATIONS.forEach((anim) => {
-      const item = document.createElement("div");
-      item.className = "boot-preview-option";
-      if (anim.id === savedAnimId) item.classList.add("selected");
-      item.innerHTML = `<span>${anim.label || anim.id}</span><i class="fas fa-check"></i>`;
-      item.addEventListener("click", () => {
-        const wasSelected = item.classList.contains("selected");
-        bootPreviewList.querySelectorAll(".boot-preview-option").forEach((el) => el.classList.remove("selected"));
-        if (!wasSelected) {
-          item.classList.add("selected");
-          os.storage.set(StorageKeys.selectedBootAnimation, anim.id);
-          os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.BootStyler });
-        } else {
-          os.storage.remove(StorageKeys.selectedBootAnimation);
-        }
-        hideBootModal();
-        runBootPreview(anim);
+    const statusWidget = this.container.querySelector("#session-status-widget");
+    const statusToggle = this.container.querySelector("#session-status-toggle");
+    if (statusWidget && statusToggle) {
+      statusToggle.addEventListener("click", () => {
+        const open = !statusWidget.classList.contains("open");
+        statusWidget.classList.toggle("open", open);
+        statusToggle.classList.toggle("open", open);
+        if (open) this.loadSessionActivity();
       });
-      bootPreviewList.appendChild(item);
-    });
+    }
 
     let selectedAvatar = this.selectedUser.avatar;
 
@@ -815,31 +1059,6 @@ export class SessionManager {
       this.enterSleepMode();
     });
 
-    infoBtn.addEventListener("click", () => {
-      hideBootModal();
-      const isVisible = infoModal.style.display !== "none";
-      infoModal.style.display = isVisible ? "none" : "block";
-    });
-
-    bootPreviewBtn.addEventListener("click", () => {
-      infoModal.style.display = "none";
-      const isVisible = bootPreviewModal.style.display !== "none";
-      if (isVisible) {
-        hideBootModal();
-      } else {
-        showBootModal();
-      }
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!infoBtn.contains(e.target) && !infoModal.contains(e.target)) {
-        infoModal.style.display = "none";
-      }
-      if (!bootPreviewBtn.contains(e.target) && !bootPreviewModal.contains(e.target)) {
-        hideBootModal();
-      }
-    });
-
     const sessionModes = this.container.querySelectorAll("#session-modes .session-mode-btn");
     const modeToSession = {
       reset: "Yuki Desktop(Default)",
@@ -872,14 +1091,19 @@ export class SessionManager {
       electronDownloadBtn.addEventListener("click", () => this.handleElectronDownload());
     }
 
-    if (supportBtn) supportBtn.addEventListener("click", () => showDonationPopup());
+    const supportBtn = this.container.querySelector("#session-support-btn");
+    if (supportBtn) {
+      supportBtn.addEventListener("click", () => {
+        import("./donationPopup.js").then(({ showDonationPopup }) => showDonationPopup());
+      });
+    }
 
     this.keyboardHandler = (e) => this.handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);
   }
 
   async handleElectronDownload() {
-    const btn = document.getElementById("electron-download-btn");
+    const btn = $("#electron-download-btn");
     if (!btn) return;
     const originalText = btn.innerHTML;
     btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Detecting...`;
@@ -908,7 +1132,7 @@ export class SessionManager {
       }
 
       btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading...`;
-      const a = document.createElement("a");
+      const a = createElement("a");
       a.href = asset.browser_download_url;
       a.download = asset.name;
       document.body.appendChild(a);
@@ -1165,7 +1389,7 @@ export class SessionManager {
 
     os.window.closeAll();
 
-    const startMenu = document.getElementById("start-menu");
+    const startMenu = $("#start-menu");
     if (startMenu) {
       startMenu.style.display = "none";
       startMenu.classList.remove("closing");
@@ -1238,12 +1462,12 @@ export class SessionManager {
 
     this.container.classList.add("sleep");
 
-    const sleepOverlay = document.createElement("div");
+    const sleepOverlay = createElement("div");
     sleepOverlay.className = "sleep-overlay";
     sleepOverlay.id = "sleep-overlay";
     this.container.appendChild(sleepOverlay);
 
-    const wakeLayer = document.createElement("div");
+    const wakeLayer = createElement("div");
     wakeLayer.className = "sleep-wake-layer";
     wakeLayer.id = "sleep-wake-layer";
     this.container.appendChild(wakeLayer);

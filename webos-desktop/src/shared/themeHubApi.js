@@ -1,4 +1,6 @@
-export const THEME_HUB_BASE = "https://analytics.liventcord-a60.workers.dev";
+import { SOCIAL_BASE } from "../social/endpoints.js";
+
+export const THEME_HUB_BASE = SOCIAL_BASE;
 
 const REQUEST_TIMEOUT_MS = 8000;
 

@@ -5,7 +5,7 @@ import { SystemUtilities } from "../system.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 import { parseBool } from "../utils/utils.js";
 
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, $, createElement } from "../framework.js";
 export class InputHandler {
   constructor(manager) {
     this.manager = manager;
@@ -24,7 +24,7 @@ export class InputHandler {
         e.preventDefault();
 
         const allWindows = Array.from(this.manager.openWindows.keys())
-          .map((id) => document.getElementById(id))
+          .map((id) => $("#" + id))
           .filter(Boolean);
 
         const anyVisible = allWindows.some((w) => w.style.display !== "none");
@@ -38,7 +38,7 @@ export class InputHandler {
             win.style.transform = "";
             win.style.filter = "";
             win.getAnimations().forEach((anim) => anim.cancel());
-            const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+            const taskbarItem = $(`#taskbar-${win.id}`);
             if (taskbarItem) taskbarItem.classList.remove("minimized");
           });
         }
@@ -47,7 +47,7 @@ export class InputHandler {
 
     document.addEventListener("keydown", (e) => {
       const focused = Array.from(this.manager.openWindows.keys())
-        .map((id) => document.getElementById(id))
+        .map((id) => $("#" + id))
         .filter(Boolean)
         .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex))[0];
       if (!focused) return;
@@ -353,7 +353,7 @@ export class InputHandler {
   getWindowsForSwitcher() {
     const settings = this.getSwitcherSettings();
     const allWindows = Array.from(this.manager.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean);
 
     let windows = allWindows;
@@ -424,7 +424,7 @@ export class InputHandler {
     if (selectedWindow) {
       if (selectedWindow.style.display === "none") {
         selectedWindow.style.display = "";
-        const taskbarItem = document.getElementById(`taskbar-${selectedWindow.id}`);
+        const taskbarItem = $(`#taskbar-${selectedWindow.id}`);
         if (taskbarItem) taskbarItem.classList.remove("minimized");
       }
       this.bringToFront(selectedWindow);
@@ -441,11 +441,11 @@ export class InputHandler {
   showSwitcherOverlay() {
     if (this.windowSwitcherOverlay) return;
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.id = "window-switcher-overlay";
     overlay.className = "ws-overlay";
 
-    const content = document.createElement("div");
+    const content = createElement("div");
     content.id = "window-switcher-content";
     content.className = "ws-content";
 
@@ -470,16 +470,16 @@ export class InputHandler {
       const iconValue = entry?.iconValue || "";
       const color = entry?.color || null;
 
-      const item = document.createElement("div");
+      const item = createElement("div");
       item.className = `ws-item ${isActive ? "active" : ""}`;
 
-      const previewContainer = document.createElement("div");
+      const previewContainer = createElement("div");
       previewContainer.className = "ws-preview";
 
       const icon = this.buildSwitcherIcon(iconValue, title, color, isActive);
       previewContainer.appendChild(icon);
 
-      const titleSpan = document.createElement("span");
+      const titleSpan = createElement("span");
       titleSpan.textContent = title;
       titleSpan.className = `ws-title ${isActive ? "active" : ""}`;
 
@@ -501,12 +501,12 @@ export class InputHandler {
     const isDataUrl = iconValue && iconValue.startsWith("data:image");
 
     if (isImage || isDataUrl) {
-      const icon = document.createElement("img");
+      const icon = createElement("img");
       icon.src = iconValue;
       icon.className = `ws-icon-image ${isActive ? "active" : ""}`;
 
       icon.onerror = () => {
-        const fallback = document.createElement("i");
+        const fallback = createElement("i");
         fallback.className = "fas fa-window-maximize ws-icon-fallback";
         icon.replaceWith(fallback);
       };
@@ -514,7 +514,7 @@ export class InputHandler {
       return icon;
     }
 
-    const icon = document.createElement("i");
+    const icon = createElement("i");
 
     if (typeof iconValue === "string" && iconValue.length > 0) {
       icon.className = `${iconValue.startsWith("fa") ? iconValue : `fa ${iconValue}`} ws-icon ${isActive ? "active" : ""}`;
@@ -535,7 +535,7 @@ export class InputHandler {
     this.clearTaskbarHighlights();
     const win = this.windowSwitcherWindows[index];
     if (win) {
-      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         taskbarItem.style.boxShadow = "0 0 0 2px var(--brand, #0078d7)";
         taskbarItem.style.transition = "box-shadow 0.15s ease";
@@ -545,7 +545,7 @@ export class InputHandler {
 
   clearTaskbarHighlights() {
     this.windowSwitcherWindows.forEach((win) => {
-      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         taskbarItem.style.boxShadow = "";
       }

@@ -2,7 +2,7 @@ import { AICore } from "./aiAssistant/aiCore.js";
 import { ActionParser } from "./aiAssistant/actionParser.js";
 import { OSBridge } from "./aiAssistant/osBridge.js";
 import { AIMemory } from "./aiAssistant/memory.js";
-import { $, $$, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
+import { $, $$, createElement, bindEvent, setText, setHTML, toggleClass } from "../shared/domUtils.js";
 import "./aiAssistant/aiAssistant.css";
 
 import { BaseApp, StorageKeys, os, MODES, brand } from "../framework.js";
@@ -614,7 +614,7 @@ Say what you're about to do before running an action. If it could be destructive
   showPendingActions(actions, win) {
     const logContainer = $("#ai-action-log", win);
     actions.forEach((action) => {
-      const item = document.createElement("div");
+      const item = createElement("div");
       item.className = "ai-log-item pending";
       item.innerHTML = `
         <span class="ai-log-action">${action.action}</span>
@@ -656,7 +656,7 @@ Say what you're about to do before running an action. If it could be destructive
 
   logAction(action, result, win) {
     const logContainer = $("#ai-action-log", win);
-    const item = document.createElement("div");
+    const item = createElement("div");
     item.className = `ai-log-item ${result.error ? "error" : "success"}`;
     item.innerHTML = `
       <span class="ai-log-action">${action.action}</span>
@@ -671,7 +671,7 @@ Say what you're about to do before running an action. If it could be destructive
     const historyContainer = win ? $("#ai-chat-history", win) : $("#ai-chat-history");
     if (!historyContainer) return;
 
-    const msgDiv = document.createElement("div");
+    const msgDiv = createElement("div");
     msgDiv.className = `ai-message ai-message-${role}`;
     msgDiv.innerHTML = `
       <div class="ai-message-role">${role === "user" ? "You" : "Assistant"}</div>
@@ -686,7 +686,7 @@ Say what you're about to do before running an action. If it could be destructive
     if (!historyContainer) return null;
 
     const pendingId = `ai-pending-${Date.now()}`;
-    const msgDiv = document.createElement("div");
+    const msgDiv = createElement("div");
     msgDiv.className = "ai-message ai-message-assistant ai-message-pending";
     msgDiv.dataset.pendingId = pendingId;
     msgDiv.innerHTML = `

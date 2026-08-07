@@ -2,7 +2,7 @@ import { CDN_MIRRORS, resolveIconUrl, resolveGhUrl } from "../shared/assetResolv
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
 import { getBasicThemes, getCustomThemes } from "../shared/themeEngine.js";
-import { StorageKeys, os, brand } from "../framework.js";
+import { StorageKeys, os, brand, MODES, createElement } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
@@ -98,7 +98,7 @@ function getOSInfo() {
 
 function getGraphicsInfo() {
   try {
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     if (gl) {
       const ext = gl.getExtension("WEBGL_debug_rendererinfo");
@@ -211,6 +211,8 @@ function renderSystemInfo() {
 }
 
 export function buildSettingsHTML(settings, wm) {
+  const tilingActive = os.modes.isActive(MODES.TILING);
+  const chromeOsActive = os.modes.isActive(MODES.CHROME_OS);
   return `
   <div class="window-header">
     <span><i class="fas fa-cog" style="color:white;margin-right:6px;font-size:25px;vertical-align:middle;"></i>Settings</span>
@@ -226,8 +228,8 @@ export function buildSettingsHTML(settings, wm) {
           <li class="active" data-target="pane-system"><i class="fas fa-desktop"></i> System</li>
           <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
           <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
-          <li data-target="pane-tiling"><i class="fas fa-th-large"></i> Tiling</li>
-          <li data-target="pane-chromeos"><i class="fab fa-chrome"></i> Chrome OS</li>
+          ${tilingActive ? '<li data-target="pane-tiling"><i class="fas fa-th-large"></i> Tiling</li>' : ""}
+          ${chromeOsActive ? '<li data-target="pane-chromeos"><i class="fab fa-chrome"></i> Chrome OS</li>' : ""}
           <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
           <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
           <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
@@ -240,8 +242,8 @@ export function buildSettingsHTML(settings, wm) {
         ${renderSystemSettings(settings)}
         ${renderDesktopSettings(settings)}
         ${renderAppearanceSettings(settings)}
-        ${renderTilingSettings()}
-        ${renderChromeOsSettings()}
+        ${tilingActive ? renderTilingSettings() : ""}
+        ${chromeOsActive ? renderChromeOsSettings() : ""}
         ${renderDataSettings()}
         ${renderNetworkSettings(settings)}
         ${renderAudioSettings(settings)}
@@ -299,13 +301,13 @@ export function renderSystemSettings(s) {
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
-            <span class="settings-label-title">Turbo Mode</span>
+            <span class="settings-label-title">Performance Mode</span>
             <span class="settings-label-desc">Reduce heavy visual effects and animations</span>
           </div>
           <div class="settings-button-group">
-            <button class="settings-btn ${s.turboMode === "high" ? "active" : ""}" data-turbo-val="high"><i class="fas fa-tachometer-alt"></i> Quality</button>
-            <button class="settings-btn ${s.turboMode === "balanced" ? "active" : ""}" data-turbo-val="balanced"><i class="fas fa-balance-scale"></i> Balanced</button>
-            <button class="settings-btn ${s.turboMode === "turbo" ? "active" : ""}" data-turbo-val="turbo"><i class="fas fa-bolt"></i> Turbo</button>
+            <button class="settings-btn ${s.performanceMode === "high" ? "active" : ""}" data-performance-val="high"><i class="fas fa-tachometer-alt"></i> Quality</button>
+            <button class="settings-btn ${s.performanceMode === "balanced" ? "active" : ""}" data-performance-val="balanced"><i class="fas fa-balance-scale"></i> Balanced</button>
+            <button class="settings-btn ${s.performanceMode === "performance" ? "active" : ""}" data-performance-val="performance"><i class="fas fa-bolt"></i> Performance</button>
           </div>
         </div>
       </div>
@@ -1023,6 +1025,23 @@ export function renderAppearanceSettings(s) {
               { value: "spiralDown", label: "Spiral Down" }
             ],
             os.storage.get(StorageKeys.windowMinimizeAnimation) || "taskbarShrink"
+          )}
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Restore Animation</span>
+            <span class="settings-label-desc">Effect when a window returns from the taskbar.</span>
+          </div>
+          ${renderSelectMenu(
+            "settingsRestoreAnimation",
+            [
+              { value: "fromTaskbar", label: "From Taskbar" },
+              { value: "scaleCenter", label: "Scale Center" },
+              { value: "fade", label: "Fade In" },
+              { value: "slideUp", label: "Slide Up" },
+              { value: "instant", label: "Instant (No Animation)" }
+            ],
+            os.storage.get(StorageKeys.windowRestoreAnimation) || "fromTaskbar"
           )}
         </div>
         <div class="settings-row">

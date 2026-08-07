@@ -1,5 +1,5 @@
 import { WidgetBase } from "../widgetManager.js";
-import { $$ } from "../../shared/domUtils.js";
+import { $, $$, createElement } from "../../shared/domUtils.js";
 import { audioMixer } from "../../audioMixer.js";
 
 export class MusicControlWidget extends WidgetBase {
@@ -136,14 +136,14 @@ export class MusicControlWidget extends WidgetBase {
 
   update() {
     const mixer = audioMixer();
-    const channelsEl = document.getElementById(`w-music-channels-${this.id}`);
-    const npLabel = document.getElementById(`w-music-np-label-${this.id}`);
-    const playBtn = document.getElementById(`w-music-play-${this.id}`);
-    const volSlider = document.getElementById(`w-music-vol-${this.id}`);
-    const volPct = document.getElementById(`w-music-vol-pct-${this.id}`);
-    const coverImg = document.getElementById(`w-music-cover-img-${this.id}`);
-    const coverFallback = document.getElementById(`w-music-cover-fallback-${this.id}`);
-    const infoEl = document.getElementById(`w-music-info-${this.id}`);
+    const channelsEl = $(`#w-music-channels-${this.id}`);
+    const npLabel = $(`#w-music-np-label-${this.id}`);
+    const playBtn = $(`#w-music-play-${this.id}`);
+    const volSlider = $(`#w-music-vol-${this.id}`);
+    const volPct = $(`#w-music-vol-pct-${this.id}`);
+    const coverImg = $(`#w-music-cover-img-${this.id}`);
+    const coverFallback = $(`#w-music-cover-fallback-${this.id}`);
+    const infoEl = $(`#w-music-info-${this.id}`);
 
     const active = this.getActiveChannel();
 
@@ -151,7 +151,7 @@ export class MusicControlWidget extends WidgetBase {
       channelsEl.innerHTML = "";
       if (mixer.channels.size > 0) {
         mixer.channels.forEach((ch, winId) => {
-          const btn = document.createElement("button");
+          const btn = createElement("button");
           btn.className = "widget-music-channel-btn";
           if (winId === this.activeWinId) btn.classList.add("active");
           if (ch.nowPlaying && ch.nowPlaying.playbackState === "playing") btn.classList.add("playing");

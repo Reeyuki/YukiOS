@@ -1,4 +1,4 @@
-import { $, $$ } from "../../shared/domUtils.js";
+import { $, $$, createElement } from "../../shared/domUtils.js";
 import { os, StorageKeys } from "../../framework.js";
 import { FileKind } from "../../shared/fileKindDetector.js";
 import { BusEvents } from "../../core/EventBus.js";
@@ -153,7 +153,7 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
                 quickAccess.push({ path: relPath, label: itemName });
                 os.storage.set(StorageKeys.explorerQuickAccess, quickAccess);
               }
-              const win = document.getElementById(inst.winId);
+              const win = $("#" + inst.winId);
               if (win) explorer.sidebarRebuild(win, inst);
             },
             "fa-thumbtack"
@@ -492,14 +492,14 @@ export function showBackgroundContextMenu(explorer, e, inst) {
       item(
         "Add Folder",
         () => {
-          const input = document.createElement("input");
+          const input = createElement("input");
           input.type = "file";
           input.multiple = true;
           input.setAttribute("webkitdirectory", "");
           input.addEventListener("change", async () => {
             const files = Array.from(input.files);
             if (!files.length) return;
-            const win = document.getElementById(inst.winId);
+            const win = $("#" + inst.winId);
             await handleFileUpload(explorer, files, true, win, inst);
           });
           input.click();
@@ -652,7 +652,7 @@ export function showSidebarItemContextMenu(explorer, e, path, label, inst) {
               if (!hiddenDefaultsList.includes(path)) hiddenDefaultsList.push(path);
               os.storage.set(StorageKeys.explorerQuickAccessHidden, hiddenDefaultsList);
             }
-            const win = document.getElementById(inst.winId);
+            const win = $("#" + inst.winId);
             if (win) explorer.sidebarRebuild(win, inst);
           },
           "fa-thumbtack"
@@ -670,7 +670,7 @@ export function showSidebarItemContextMenu(explorer, e, path, label, inst) {
               quickAccess.push({ path, label });
               os.storage.set(StorageKeys.explorerQuickAccess, quickAccess);
             }
-            const win = document.getElementById(inst.winId);
+            const win = $("#" + inst.winId);
             if (win) explorer.sidebarRebuild(win, inst);
           },
           "fa-thumbtack"

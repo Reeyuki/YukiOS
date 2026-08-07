@@ -99,7 +99,7 @@
   font-weight: 700;
   color: var(--brand);
   background: var(--brand-dim);
-  border-radius: 999px;
+  border-radius: 25px;
   padding: 2px 9px;
 }
 

@@ -1,10 +1,12 @@
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
-import { injectAdsterraAd } from "../ads.js";
+import { injectAdsterraAd, suppressAdBlocks } from "../ads.js";
 import { steamAudio } from "./steamAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { parseBool } from "../utils/utils.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, createElement } from "../framework.js";
+import { showContextMenu } from "../shared/contextMenu.js";
+import { startSteamTour } from "../apps/steamIntro.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
 }
@@ -36,6 +38,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
             <span class="steam-menu-item steam-dropdown-trigger" data-dropdown="steam-menu">Steam</span>
             <div class="steam-dropdown-menu" id="steam-menu-dropdown">
               <div class="steam-dropdown-item" data-action="steam-settings">Settings</div>
+              <div class="steam-dropdown-item" data-action="steam-account">Account</div>
               <div class="steam-dropdown-separator"></div>
               <div class="steam-dropdown-item" data-action="steam-exit">Exit</div>
             </div>
@@ -57,8 +60,13 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         </div>
         <div class="steam-top-right">
           <div class="steam-notifications"><i class="fas fa-bell"></i></div>
+          <button type="button" class="steam-quick-nav-btn" data-steam-nav="quests" title="Daily Quests"><i class="fas fa-clipboard-list"></i></button>
+          <button type="button" class="steam-quick-nav-btn" data-steam-nav="shop" title="Profile Store"><i class="fas fa-store"></i></button>
+          <button type="button" class="steam-quick-nav-btn" data-steam-nav="login" title="Account"><i class="fas fa-gear"></i></button>
           <div class="steam-user-profile">
-            <span>${username}</span>
+            <span class="steam-profile-name">${username}</span>
+            <span class="steam-profile-coins" title="YukiCoins"><i class="fas fa-coins"></i> <span class="steam-profile-coins-value"></span></span>
+            <span class="steam-profile-streak steam-profile-streak--hidden" title="Day streak"><i class="fas fa-fire"></i> <span class="steam-profile-streak-value"></span> days</span>
             <img src="${profilePic}" />
           </div>
           <div class="steam-window-controls-slot"></div>
@@ -76,6 +84,13 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
           <span class="steam-tab" data-page="community">Community</span>
           <span class="steam-tab" data-page="user">${username}</span>
         </div>
+      </div>
+      <div class="steam-address-bar hidden">
+        <i class="fas fa-globe"></i>
+        <span class="steam-address-text"></span>
+        <button type="button" class="steam-address-reload" title="Reload page">
+          <i class="fas fa-rotate-right"></i>
+        </button>
       </div>
 
       <div class="steam-content-area">
@@ -136,9 +151,16 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
               </div>
             </div>
           </div>
-          <div class="steam-community-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
-            Community Page
-          </div>
+          <div class="steam-community-page hidden"></div>
+          <div class="steam-user-page hidden"></div>
+          <div class="steam-friends-page hidden"></div>
+          <div class="steam-profile-page hidden"></div>
+          <div class="steam-edit-page hidden"></div>
+          <div class="steam-login-page hidden"></div>
+          <div class="steam-games-page hidden"></div>
+          <div class="steam-achievements-page hidden"></div>
+          <div class="steam-quests-page hidden"></div>
+          <div class="steam-shop-page hidden"></div>
           <div class="steam-downloads-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
             Downloads Center
           </div>
@@ -194,10 +216,34 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
 
                 <div class="settings-item">
                   <div class="settings-item-label">
+                    <div class="settings-item-title">Do Not Disturb</div>
+                    <div class="settings-item-description">Mute activity popups from friends</div>
+                  </div>
+                  <div class="settings-toggle" data-setting="dnd">
+                    <div class="settings-toggle-slider"></div>
+                  </div>
+                </div>
+
+                <div class="settings-item">
+                  <div class="settings-item-label">
                     <div class="settings-item-title">Share My Activity</div>
                     <div class="settings-item-description">Send what you're playing and load friends' live activity</div>
                   </div>
                   <div class="settings-toggle" data-setting="shareLiveActivity">
+                    <div class="settings-toggle-slider"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3 class="settings-section-title">Privacy</h3>
+
+                <div class="settings-item">
+                  <div class="settings-item-label">
+                    <div class="settings-item-title">Disable Social Features</div>
+                    <div class="settings-item-description">Turn off friends, community, live activity and account sign-in</div>
+                  </div>
+                  <div class="settings-toggle" data-setting="socialDisabled">
                     <div class="settings-toggle-slider"></div>
                   </div>
                 </div>
@@ -275,6 +321,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
 export class SteamSettings {
   static DEFAULTS = {
     currentlyPlayingPopups: true,
+    dnd: false,
     shareLiveActivity: true,
     runOnStartup: false,
     startMinimized: false,
@@ -282,7 +329,8 @@ export class SteamSettings {
     recentlyPlayedRow: true,
     gridSize: "medium",
     hideArchiveGames: false,
-    hideLuminSDK: false
+    hideLuminSDK: false,
+    socialDisabled: false
   };
 
   static KEY = StorageKeys.steamSettings;
@@ -325,13 +373,10 @@ export class SteamSettings {
   }
 }
 
-export function initSettingsPage(container) {
-  const settingsPage = container.querySelector(".steam-settings-page");
-  if (!settingsPage) return;
-
+export function initSettingsToggles(root) {
   const settings = SteamSettings.load();
 
-  settingsPage.querySelectorAll(".settings-toggle").forEach((toggle) => {
+  root.querySelectorAll(".settings-toggle").forEach((toggle) => {
     if (toggle.inited) return;
     toggle.inited = true;
     const setting = toggle.dataset.setting;
@@ -351,7 +396,16 @@ export function initSettingsPage(container) {
       steamAudio.playSelect();
       SteamSettings.set(setting, !isActive);
 
-      if (["hideArchiveGames", "hideLuminSDK", "recentlyPlayedRow", "shareLiveActivity"].includes(setting)) {
+      if (
+        [
+          "hideArchiveGames",
+          "hideLuminSDK",
+          "recentlyPlayedRow",
+          "shareLiveActivity",
+          "dnd",
+          "socialDisabled"
+        ].includes(setting)
+      ) {
         window.dispatchEvent(
           new CustomEvent("steam-settings-changed", {
             detail: { setting, value: !isActive }
@@ -360,7 +414,15 @@ export function initSettingsPage(container) {
       }
     });
   });
+}
 
+export function initSettingsPage(container) {
+  const settingsPage = container.querySelector(".steam-settings-page");
+  if (!settingsPage) return;
+
+  initSettingsToggles(settingsPage);
+
+  const settings = SteamSettings.load();
   settingsPage.querySelectorAll(".settings-select").forEach((select) => {
     if (select.inited) return;
     select.inited = true;
@@ -386,6 +448,33 @@ export function initSettingsPage(container) {
 
 export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
   const allDropdownMenus = container.querySelectorAll(".steam-dropdown-menu");
+
+  const userProfile = container.querySelector(".steam-user-profile");
+  if (userProfile) {
+    userProfile.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const items = [
+        { id: "up-my-profile", action: "up-my-profile", label: "My Profile", icon: "fa-user" },
+        { id: "up-quests", action: "up-quests", label: "Daily Quests", icon: "fa-clipboard-list" },
+        { id: "up-shop", action: "up-shop", label: "Profile Store", icon: "fa-store" },
+        "hr",
+        { id: "up-friends", action: "up-friends", label: "Friends & Chat", icon: "fa-user-group" },
+        { id: "up-settings", action: "up-settings", label: "Settings", icon: "fa-gear" },
+        { id: "up-account", action: "up-account", label: "Account", icon: "fa-user-lock" },
+        { id: "up-social-tour", action: "up-social-tour", label: "Steam Tour", icon: "fa-question-circle" }
+      ];
+      const handlers = {
+        "up-my-profile": () => navigateTo("user"),
+        "up-quests": () => navigateTo("quests"),
+        "up-shop": () => navigateTo("shop"),
+        "up-friends": () => openFriendsWindow(wm),
+        "up-settings": () => navigateTo("settings"),
+        "up-account": () => navigateTo("login"),
+        "up-social-tour": () => startSteamTour()
+      };
+      showContextMenu(e, items, handlers);
+    });
+  }
 
   const closeAll = () =>
     allDropdownMenus.forEach((m) => {
@@ -430,6 +519,9 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
       if (action === "steam-settings") {
         steamAudio.playSelect();
         navigateTo("settings");
+      } else if (action === "steam-account") {
+        steamAudio.playSelect();
+        navigateTo("login");
       } else if (action === "steam-exit") {
         steamAudio.playBack();
         const winRoot = container.closest(".window");
@@ -465,6 +557,17 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
         steamAudio.playBack();
       } else {
         steamAudio.playNavigate();
+      }
+    });
+  });
+
+  container.querySelectorAll(".steam-quick-nav-btn").forEach((btn) => {
+    btn.addEventListener("mouseenter", () => steamAudio.playHover());
+    btn.addEventListener("click", () => {
+      const page = btn.dataset.steamNav;
+      if (page) {
+        steamAudio.playNavigate();
+        navigateTo(page);
       }
     });
   });
@@ -676,7 +779,7 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
   heroDesc.textContent = descriptionMap[heroImgs[0].app] || heroImgs[0].desc;
 
   heroImgs.forEach((h, i) => {
-    const thumb = document.createElement("div");
+    const thumb = createElement("div");
     thumb.className = "store-hero-thumb" + (i === 0 ? " active" : "");
     thumb.innerHTML = `<img src="${h.img}" />`;
 
@@ -719,7 +822,7 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
   const grid = storePage.querySelector("#store-games-grid");
   if (grid) {
     STORE_GAMES.forEach((g) => {
-      const card = document.createElement("div");
+      const card = createElement("div");
       card.className = "store-game-card";
       card.innerHTML = `
   <div class="store-game-card-img">
@@ -756,6 +859,7 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
     });
   }
 
+  suppressAdBlocks(storePage);
   injectAdsterraAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160, 0);
   injectAdsterraAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160, 1000);
 }

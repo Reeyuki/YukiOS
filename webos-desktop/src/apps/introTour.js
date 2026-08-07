@@ -19,6 +19,7 @@ import { applyMacSettings, disableMacSettings } from "../modes/macos/session.js"
 import { applyChromeOsSettings, disableChromeOsSettings } from "../modes/chromeos/session.js";
 import { applyTilingSettings, disableTilingSettings } from "../modes/tiling/session.js";
 import { SystemUtilities } from "../system.js";
+import { callIfFunction, hasMethod, isFunction } from "../shared/functionUtils.js";
 
 const OVERLAY_SELECTOR = ".intro-tour-overlay";
 const DIM_SELECTOR = ".intro-tour-dim";
@@ -136,7 +137,11 @@ export function isIntroTourKeepingStartMenuOpen() {
   return !!tour && !!tour.currentStep?.openMenu;
 }
 
-export function startIntroTour() {
+export function isAnyTourActive() {
+  return !!tour && !!$(OVERLAY_SELECTOR);
+}
+
+function runTour(steps, options = {}) {
   if (tour) return;
   if ($(OVERLAY_SELECTOR)) return;
   const dim = createElement("div", { className: "intro-tour-dim" });
@@ -146,6 +151,11 @@ export function startIntroTour() {
   document.body.appendChild(dim);
   document.body.appendChild(overlay);
   tour = {
+    steps,
+    seenKey: options.seenKey || null,
+    customActions: options.actions || {},
+    grantAchievement: options.grantAchievement !== false,
+    stepsCount: steps.length,
     overlay,
     dim,
     spotlight: $(SPOTLIGHT_SELECTOR, overlay),
@@ -169,13 +179,25 @@ export function startIntroTour() {
   showStep(0);
 }
 
+function onTourEnd() {
+  if (tour?.seenKey) os.storage.set(tour.seenKey, "true");
+}
+
+export function startIntroTour() {
+  runTour(STEPS);
+}
+
+export function startGuidedTour(steps, options = {}) {
+  runTour(steps, options);
+}
+
 function onWindowCreated(payload) {
   if (!tour) return;
   const step = tour.currentStep;
   if (!step?.waitForWindow) return;
   const winId = payload?.winId || "";
   const matcher = step.waitForWindow;
-  const matched = typeof matcher === "function" ? matcher(winId) : matcher === "any" ? true : winId.includes(matcher);
+  const matched = isFunction(matcher) ? matcher(winId) : matcher === "any" ? true : winId.includes(matcher);
   if (matched) advance();
 }
 
@@ -186,7 +208,7 @@ function checkCurrentStep() {
     advance();
     return;
   }
-  if (step?.id === "palette" && !tour.palettePhraseShown && $(PALETTE_WIN_SELECTOR)) {
+  if (step?.id === "palette" && tour.steps === STEPS && !tour.palettePhraseShown && $(PALETTE_WIN_SELECTOR)) {
     tour.palettePhraseShown = true;
     setText($(BODY_SELECTOR, tour.card), "Now type 'steam' and press Enter.");
   }
@@ -200,10 +222,10 @@ function showStep(index) {
     exitAllPreviewModes();
     tour.modesPreviewed = false;
   }
-  const step = STEPS[index];
+  const step = tour.steps[index];
   tour.stepIndex = index;
   tour.currentStep = step;
-  if (index >= STEPS.length - 1) tour.tourCompleted = true;
+  if (index >= tour.steps.length - 1) tour.tourCompleted = true;
   tour.waitPrimed = !step.waitFor;
   window.clearTimeout(tour.primeTimer);
   if (step.waitFor) {
@@ -218,7 +240,7 @@ function showStep(index) {
   tour.actions = { secondary: secondary.action, primary: primary.action };
   setHTML(
     tour.card,
-    `<div class="intro-tour-counter">Step ${index + 1} of ${STEPS.length}</div>
+    `<div class="intro-tour-counter">Step ${index + 1} of ${tour.steps.length}</div>
      <div class="intro-tour-icon"><i class="${step.icon}"></i></div>
      <h2 class="intro-tour-title"></h2>
      <p class="intro-tour-body"></p>
@@ -256,6 +278,7 @@ function showStep(index) {
   toggleClass(tour.card, CARD_COMPACT_CLASS, !!step.compact);
   if (step.openMenu) scheduleStartMenuOpen();
   else closeStartMenu();
+  callIfFunction(step.onEnter);
   positionElements();
 }
 
@@ -272,6 +295,10 @@ function runAction(action) {
   } else if (action === "browser") {
     os.app.launch("browserApp").catch(() => {});
     swapPrimaryToDone();
+  } else if (isFunction(action)) {
+    action();
+  } else if (hasMethod(tour.customActions, action)) {
+    tour.customActions[action]();
   } else {
     finish();
   }
@@ -335,7 +362,7 @@ function exitAllPreviewModes() {
 
 function advance() {
   if (!tour) return;
-  if (tour.stepIndex >= STEPS.length - 1) {
+  if (tour.stepIndex >= tour.steps.length - 1) {
     finish();
     return;
   }
@@ -343,7 +370,7 @@ function advance() {
 }
 
 function finish() {
-  if (tour?.tourCompleted) {
+  if (tour?.tourCompleted && tour.grantAchievement) {
     os.app.triggerAchievement(Achievements.IntroTourComplete);
   }
   cleanup();
@@ -355,6 +382,7 @@ function skip() {
 
 function cleanup() {
   if (!tour) return;
+  onTourEnd();
   window.clearInterval(tour.tick);
   window.clearTimeout(tour.primeTimer);
   window.clearTimeout(tour.menuOpenTimer);
@@ -426,15 +454,15 @@ function positionElements() {
   const gap = CARD_GAP;
   const cardWidth = card.offsetWidth;
   const cardHeight = card.offsetHeight;
+  const clampLeft = (v) => Math.max(16, Math.min(v, vw - cardWidth - 16));
+  const clampTop = (v) => Math.max(16, Math.min(v, vh - cardHeight - 16));
   if (step?.cardSide === "right") {
-    const cardLeft = Math.min(Math.max(rect.right + gap, 16), vw - cardWidth - 16);
-    const cardTop = Math.round(
-      Math.min(Math.max(rect.top + rect.height / 2 - cardHeight / 2, 16), vh - cardHeight - 16)
-    );
+    const cardLeft = clampLeft(rect.right + gap);
+    const cardTop = clampTop(Math.round(rect.top + rect.height / 2 - cardHeight / 2));
     setStyle(card, { left: cardLeft + "px", top: cardTop + "px" });
     return;
   }
-  let cardLeft = Math.round(Math.min(Math.max(rect.left, 16), vw - cardWidth - 16));
+  const cardLeft = clampLeft(Math.round(rect.left));
   let cardTop;
   const canPlaceTop = rect.top - gap - cardHeight >= 0;
   const canPlaceBottom = rect.bottom + gap + cardHeight <= vh;
@@ -447,7 +475,7 @@ function positionElements() {
   } else {
     cardTop = Math.round(vh - cardHeight - 24);
   }
-  setStyle(card, { left: cardLeft + "px", top: cardTop + "px" });
+  setStyle(card, { left: cardLeft + "px", top: clampTop(cardTop) + "px" });
 }
 
 function raiseElement(el) {

@@ -60,7 +60,7 @@ export class WeatherApp extends BaseApp {
     win.innerHTML = `
       <div class="window-content">
         <div class="wx-toolbar">
-          <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><svg width="10" height="12" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></button>
+          <button class="wx-loc-btn" id="wx-loc-btn" title="Use my location"><i class="fas fa-location-crosshairs"></i></button>
           <input class="wx-search" id="wx-search-input" type="text" placeholder="Search city..." />
           <button class="wx-btn" id="wx-search-btn">GO</button>
           <button class="wx-unit-toggle" id="wx-unit-btn">°C</button>
@@ -161,7 +161,7 @@ export class WeatherApp extends BaseApp {
         return `
         <div class="wx-forecast-day">
           <span class="wx-fday">${this.getDayName(date, i)}</span>
-          <span class="wx-ficon">${info.icon}</span>
+          <span class="wx-ficon"><i class="${info.icon}"></i></span>
           <span class="wx-ftemp">
             <span class="wx-fmax">${Math.round(daily.temperature_2m_max?.[i] ?? 0)}°</span>
             <span class="wx-fmin">${Math.round(daily.temperature_2m_min?.[i] ?? 0)}°</span>
@@ -177,7 +177,7 @@ export class WeatherApp extends BaseApp {
     <div class="wx-main">
       <div class="wx-hero">
         <div class="wx-location">${data.cityName}, ${data.country}</div>
-        <div class="wx-icon-big">${wInfo.icon}</div>
+        <div class="wx-icon-big"><i class="${wInfo.icon}"></i></div>
         <div class="wx-temp-big">${Math.round(cur.temperature_2m)}${unitSymbol}</div>
         <div class="wx-condition">${wInfo.label}</div>
         <div class="wx-feels">Feels like ${Math.round(cur.apparent_temperature)}${unitSymbol}</div>
@@ -185,19 +185,19 @@ export class WeatherApp extends BaseApp {
 
       <div class="wx-stats">
         <div class="wx-stat">
-          <span class="wx-stat-icon">💧</span>
+          <span class="wx-stat-icon"><i class="fas fa-droplet"></i></span>
           <span class="wx-stat-val">${cur.relative_humidity_2m}%</span>
           <span class="wx-stat-label">Humidity</span>
         </div>
 
         <div class="wx-stat">
-          <span class="wx-stat-icon">💨</span>
+          <span class="wx-stat-icon"><i class="fas fa-wind"></i></span>
           <span class="wx-stat-val">${Math.round(cur.wind_speed_10m)} ${windUnitLabel}</span>
           <span class="wx-stat-label">Wind</span>
         </div>
 
         <div class="wx-stat">
-          <span class="wx-stat-icon">🌧️</span>
+          <span class="wx-stat-icon"><i class="fas fa-cloud-rain"></i></span>
           <span class="wx-stat-val">${cur.precipitation} mm</span>
           <span class="wx-stat-label">Precip</span>
         </div>
@@ -211,7 +211,7 @@ export class WeatherApp extends BaseApp {
     );
   }
   renderError(container, message) {
-    setHTML(container, `<div class="wx-error">⚠️ ${message}</div>`);
+    setHTML(container, `<div class="wx-error"><i class="fas fa-circle-exclamation"></i> ${message}</div>`);
   }
 
   renderPlaceholder(container, message = "Check the Weather") {
@@ -219,12 +219,12 @@ export class WeatherApp extends BaseApp {
       container,
       `
     <div class="wx-placeholder">
-      <div class="wx-placeholder-icon">🌤️</div>
+      <div class="wx-placeholder-icon"><i class="fas fa-cloud-sun"></i></div>
       <div class="wx-placeholder-title">${message}</div>
       <div class="wx-placeholder-desc">Get real-time weather for any location</div>
       <div class="wx-placeholder-tips">
-        <div class="wx-tip">📍 Click the location button to auto-detect your location</div>
-        <div class="wx-tip">🔍 Or search for any city manually</div>
+        <div class="wx-tip"><i class="fas fa-location-dot"></i> Click the location button to auto-detect your location</div>
+        <div class="wx-tip"><i class="fas fa-magnifying-glass"></i> Or search for any city manually</div>
       </div>
     </div>
   `

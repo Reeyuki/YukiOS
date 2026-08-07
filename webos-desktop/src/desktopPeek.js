@@ -1,4 +1,5 @@
 import { animateWindowOpen } from "./windowManager/AnimationSystem.js";
+import { $, createElement } from "./shared/domUtils.js";
 
 export class DesktopPeekManager {
   constructor(windowManager) {
@@ -11,10 +12,10 @@ export class DesktopPeekManager {
   }
 
   setupPeekButton() {
-    const systemTray = document.getElementById("system-tray");
+    const systemTray = $("#system-tray");
     if (!systemTray) return;
 
-    const btn = document.createElement("div");
+    const btn = createElement("div");
     btn.id = "desktop-peek-btn";
     btn.className = "desktop-peek-btn";
     btn.title = "Show Desktop";
@@ -53,7 +54,7 @@ export class DesktopPeekManager {
   minimizeAllWindows() {
     this.windowStates.clear();
     this.wm.openWindows.forEach((entry, id) => {
-      const win = document.getElementById(id);
+      const win = $("#" + id);
       if (win && entry.record && !entry.record.minimized) {
         this.windowStates.set(id, { wasMinimized: false });
         this.wm.minimizeWindow(win);
@@ -67,10 +68,10 @@ export class DesktopPeekManager {
     this.wm.openWindows.forEach((entry, id) => {
       const state = this.windowStates.get(id);
       if (state && !state.wasMinimized) {
-        const win = document.getElementById(id);
+        const win = $("#" + id);
         if (!win) return;
         win.style.display = "";
-        const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+        const taskbarItem = $(`#taskbar-${win.id}`);
         if (taskbarItem) {
           taskbarItem.classList.remove("minimized");
         }
@@ -89,7 +90,7 @@ export class DesktopPeekManager {
     this.hoverTimer = setTimeout(() => {
       if (this.peekActive) return;
       this.wm.openWindows.forEach((entry, id) => {
-        const win = document.getElementById(id);
+        const win = $("#" + id);
         if (win && win.style.display !== "none" && entry.record && !entry.record.minimized) {
           this.hoverWindows.push(win);
           win.classList.add("desktop-peek-hidden");

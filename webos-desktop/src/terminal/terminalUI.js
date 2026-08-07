@@ -1,4 +1,4 @@
-import { setStyle } from "../shared/domUtils.js";
+import { setStyle, createElement } from "../shared/domUtils.js";
 export class TerminalRawMode {
   constructor(terminalElement, inputElement) {
     this.terminal = terminalElement;
@@ -88,7 +88,7 @@ export class TerminalRawMode {
   }
 
   write(text) {
-    const el = document.createElement("span");
+    const el = createElement("span");
     el.textContent = text;
     this.terminal.appendChild(el);
     this.terminal.scrollTop = this.terminal.scrollHeight;
@@ -110,7 +110,7 @@ export class TerminalRawMode {
 
   createCursor() {
     if (this.cursorEl) return;
-    this.cursorEl = document.createElement("div");
+    this.cursorEl = createElement("div");
     setStyle(this.cursorEl, {
       position: "absolute",
       width: "8px",
@@ -184,7 +184,7 @@ export class AltScreenManager {
       const el = renderer.render(text);
       outputEl.appendChild(el);
     } else {
-      const div = document.createElement("div");
+      const div = createElement("div");
       div.textContent = text;
       outputEl.appendChild(div);
     }

@@ -6,6 +6,187 @@ const appNewsEntries = APP_MANIFESTS.filter((manifest) => manifest.news).map((ma
 
 const EXISTING_NEWS_UPDATES = [
   {
+    date: "August 7, 2026",
+    label: "Chrome OS Shell",
+    sections: [
+      {
+        icon: "fa-window-maximize",
+        title: "Chrome OS Quick Settings",
+        items: [
+          [
+            "fa-bolt",
+            "Quick Settings panel",
+            "Tap the status pill (network, battery, clock) to open a unified panel with brightness, volume, power mode, dark mode, DND and more."
+          ],
+          [
+            "fa-power-off",
+            "Power menu in Chrome OS",
+            "Boot actions now live on the shelf: lock, sign out, sleep, restart and shut down straight from the status panel."
+          ]
+        ]
+      },
+      {
+        icon: "fa-window-restore",
+        title: "Restore From Taskbar",
+        items: [
+          [
+            "fa-wand-magic-sparkles",
+            "Restore Animation",
+            "Unminimize windows now fly out of the taskbar into place, with a new Restore Animation setting."
+          ]
+        ]
+      },
+      {
+        icon: "fa-user-lock",
+        title: "Media Player Tray App",
+        items: [
+          [
+            "fa-circle-play",
+            "Media Player Tray App",
+            "When videos or music play, a tray player offers seek, speed, and playback controls."
+          ]
+        ]
+      },
+      {
+        icon: "fa-user-lock",
+        title: "YukiOS Account & Cloud Sync",
+        items: [
+          [
+            "fa-user-lock",
+            "YukiOS Account",
+            "Sign in to a YukiOS Account to carry your identity (nickname, avatar, bio) across every device."
+          ],
+          [
+            "fa-cloud-arrow-up",
+            "Cloud Sync",
+            "Sync OS settings, browser data and desktop layout to the cloud when you want, with per-component toggles."
+          ]
+        ]
+      },
+      {
+        icon: "fa-comment-dots",
+        title: "Steam-style Friends panel",
+        items: [
+          [
+            "fa-unlock",
+            "Friends page",
+            "Open yukisteam://profiles/{you}/friends from the Friends window to see your list, pending requests and a Friend Code someone can use to add you."
+          ]
+        ]
+      },
+      {
+        icon: "fa-map-signs",
+        title: "Live Tour for Steam",
+        items: [
+          [
+            "fa-map-signs",
+            "Steam Tour",
+            "Steam greets you with a quick walkthrough of the store, library, quests, and community on first open."
+          ]
+        ]
+      },
+      {
+        icon: "fa-gamepad",
+        title: "Profile Games Tracking",
+        items: [
+          [
+            "fa-gamepad",
+            "Profile Games Tracking",
+            "Profiles now track and display played games, playtime, and milestones."
+          ]
+        ]
+      },
+      {
+        icon: "fa-store",
+        title: "Profile Store",
+        items: [["fa-store", "Profile Store", "Spend YukiCoins on profile banners, frames, name tags, and badges."]]
+      },
+      {
+        icon: "fa-clipboard-list",
+        title: "Daily Quests",
+        items: [
+          [
+            "fa-clipboard-list",
+            "Daily Quests",
+            "Complete quests each day to earn YukiCoins and keep your streak alive."
+          ],
+          ["fa-fire", "Day Streaks", "Return daily to grow your streak and track it right on your profile."],
+          ["fa-coins", "YukiCoins", "Earn YukiCoins from quests and watch your balance on your profile."]
+        ]
+      }
+    ]
+  },
+  {
+    date: "August 5, 2026",
+    sections: [
+      {
+        icon: "fa-user-friends",
+        title: "Friends & Community",
+        items: [
+          [
+            "fa-user-plus",
+            "Add Friends",
+            "Add friends from profiles and community, then accept requests in the Friends window."
+          ],
+          ["fa-heart", "Profile Reactions", "React to profiles with hearts, fire, GG, stars, and thumbs up."],
+          [
+            "fa-trophy",
+            "Weekly Leaderboards",
+            "Climb weekly leaderboards for playtime, level, reactions, and achievements."
+          ]
+        ]
+      },
+      {
+        icon: "fa-users",
+        title: "Steam Community Profiles",
+        items: [
+          [
+            "fa-users",
+            "Steam Community Profiles",
+            "Steam Community profiles now show every player's achievements, playtime, current activity, and editable bios publicly."
+          ]
+        ]
+      },
+      {
+        icon: "fa-eye-slash",
+        title: "Appear Offline",
+        items: [
+          [
+            "fa-eye-slash",
+            "Appear Offline",
+            "Pick your status as online, invisible, or offline and mute friend activity popups."
+          ],
+          [
+            "fa-pen",
+            "Profile Edit Page",
+            "Edit your profile on its own dedicated page with quick notifications toggles."
+          ],
+          [
+            "fa-user-lock",
+            "Accounts & Sign In",
+            "Create an account with nickname and password to keep your profile across devices."
+          ]
+        ]
+      },
+      {
+        icon: "fa-user-shield",
+        title: "Accounts & Privacy",
+        items: [
+          [
+            "fa-user-gear",
+            "Account Hub",
+            "Turn your local profile into a registered account on a dedicated Steam login page."
+          ],
+          [
+            "fa-user-slash",
+            "Disable Social",
+            "Turn off friends, community, and activity completely from Steam Settings."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     date: "August 4, 2026",
     sections: [
       {
@@ -797,17 +978,6 @@ const EXISTING_NEWS_UPDATES = [
     date: "June 23, 2026",
     sections: [
       {
-        icon: "fa-shield-halved",
-        title: "New Apps",
-        items: [
-          [
-            "fa-display",
-            "VNC Client",
-            "Connect to remote desktops via VNC with saved profiles, fullscreen mode, clipboard sync, and WebSocket support."
-          ]
-        ]
-      },
-      {
         icon: "fa-snowflake",
         title: "Anonymous Browsing",
         items: [
@@ -1287,7 +1457,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-bolt",
             "Power Indicator",
-            "New tray app for power management. Switch between Turbo, Balanced, and Quality modes with a single click."
+            "New tray app for power management. Switch between Performance, Balanced, and Quality modes with a single click."
           ]
         ]
       },
@@ -1325,7 +1495,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-bolt",
             "Power Indicator",
-            "New tray app for power management. Switch between Turbo, Balanced, and Quality modes with a single click."
+            "New tray app for power management. Switch between Performance, Balanced, and Quality modes with a single click."
           ]
         ]
       },
@@ -1429,7 +1599,7 @@ const EXISTING_NEWS_UPDATES = [
           [
             "fa-rocket",
             "Setup Wizard Enhancement",
-            "Enhanced setup wizard with keyboard shortcuts reference, filesystem introduction, turbo mode selection, start menu pinning, and transparency level options."
+            "Enhanced setup wizard with keyboard shortcuts reference, filesystem introduction, performance mode selection, start menu pinning, and transparency level options."
           ]
         ]
       }
@@ -1496,7 +1666,7 @@ const EXISTING_NEWS_UPDATES = [
             "Start Menu Customization",
             "Add option to customize start menu categories and items."
           ],
-          ["fa-rocket", "Turbo Mode", "Added turbo mode to os."],
+          ["fa-rocket", "Performance Mode", "Added performance mode to os."],
           ["fa-gear", "Settings App", "Reworked settings app interface and navigation."],
           ["fa-minimize", "Window Animations", "Added smooth window drag animations."]
         ]
@@ -1583,12 +1753,15 @@ const EXISTING_NEWS_UPDATES = [
         icon: "fa-wand-magic-sparkles",
         title: "Features & Improvements",
         items: [
-          ["fa-steam-symbol", "Steam Improvement", "Improved steam ui and added settings."],
+          [
+            "fa-steam-symbol",
+            "Steam Improvement",
+            "Improved steam ui and settings, with a data pack install option and faster loading."
+          ],
           ["fa-film", "Ruffle App", "Added ruffle."],
           ["fa-mobile-screen", "PWA Support", "Added progressive web app support for YukiOS."],
           ["fa-sliders", "Taskbar Customization support", "Added taskbar alignment options."],
           ["fa-user", "Profile Customization support", "Added Customize Profile app."],
-          ["fa-brands fa-steam", "Steam Improvement", "Added data pack install option steam and optimize load speed"],
           ["fa-arrow-pointer", "Cursor Support", "Added custom cursor support"],
           ["fa-route", "Add proxy support for custom apps", "Added proxy support for created web apps"],
           ["fa-wrench", "App Creator Improvements", "Improved the App Creator workflow and usability."],
@@ -1754,7 +1927,7 @@ const EXISTING_NEWS_UPDATES = [
             "Desktop Auto-Refresh",
             "The desktop now automatically reflects file changes without a manual refresh."
           ],
-          ["fa-film", "Video Turbo", "Smoother video playback across the system."],
+          ["fa-film", "Video Performance", "Smoother video playback across the system."],
           [
             "fa-star",
             "Custom Shortcuts",
@@ -1864,7 +2037,7 @@ export class NewsApp extends BaseApp {
               </div>
               <div class="news-hero-title">
                 <h1>What's New</h1>
-                <p>The latest updates and changes shipped to your desktop.</p>
+                <p>The latest updates and fixes for YukiOS</p>
               </div>
             </div>
             <div class="news-hero-meta">

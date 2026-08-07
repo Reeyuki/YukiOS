@@ -1,4 +1,4 @@
-import { createElement } from "./shared/domUtils.js";
+import { $, createElement } from "./shared/domUtils.js";
 import { detectUserLocation, getCached, setCache } from "./apps/weather.js";
 import { getWeatherIcon } from "./shared/weatherCodes.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR, STATIC_FALLBACK_WALLPAPERS } from "./wallpaperConfig.js";
@@ -9,20 +9,11 @@ import { BusEvents } from "./core/EventBus.js";
 import { getVantaPresetById } from "./vantaPresets.js";
 import { vantaPresets } from "./vantaPresets.js";
 import { loadVantaEffect } from "./vanta/vantaLoader.js";
-import { parseBool } from "./utils/utils.js";
+import { parseBool, isBlobLike } from "./utils/utils.js";
+import { isFunction } from "./shared/functionUtils.js";
 
 import { StorageKeys, os, MODES, isYuri } from "./framework.js";
 import { getYuriWallpapers } from "./yuriWallpapers.js";
-function isBlob(obj) {
-  if (!obj) return false;
-  return (
-    obj instanceof Blob ||
-    (typeof obj === "object" &&
-      typeof obj.size === "number" &&
-      typeof obj.type === "string" &&
-      typeof obj.slice === "function")
-  );
-}
 
 class WallpaperStore {
   static currentWallpaperBlobUrl = null;
@@ -172,8 +163,8 @@ class WallpaperManager {
 
   static async applyVantaConfig(preset, failureMessage, cleanupOnError = false) {
     WallpaperStore.destroyVantaInstance();
-    document.getElementById("wallpaper-img")?.remove();
-    document.getElementById("wallpaper-video")?.remove();
+    $("#wallpaper-img")?.remove();
+    $("#wallpaper-video")?.remove();
 
     const container = createElement("div");
     container.id = "vanta-container";
@@ -341,7 +332,7 @@ class WallpaperManager {
         os.storage.set(StorageKeys.wallpaperKey, wallpaperURL);
         os.storage.set(StorageKeys.manualWallpaper, "true");
         os.storage.set(StorageKeys.cycleWallpaper, "false");
-        const toggle = document.getElementById("settingsCycleWallpaper");
+        const toggle = $("#settingsCycleWallpaper");
         if (toggle) toggle.checked = false;
         os.events.emit(BusEvents.WALLPAPER_CHANGED, { wallpaper: wallpaperURL });
       }
@@ -356,21 +347,21 @@ class WallpaperManager {
         os.storage.set(StorageKeys.manualWallpaper, "true");
         os.storage.set(StorageKeys.cycleWallpaper, "false");
         os.storage.set(StorageKeys.vantaWallpaper, presetId);
-        const toggle = document.getElementById("settingsCycleWallpaper");
+        const toggle = $("#settingsCycleWallpaper");
         if (toggle) toggle.checked = false;
         os.events.emit(BusEvents.WALLPAPER_CHANGED, { wallpaper: wallpaperURL });
       }
       return;
     }
 
-    if (isBlob(wallpaperURL)) {
+    if (isBlobLike(wallpaperURL)) {
       const type = wallpaperURL.type.startsWith("video/") ? "video" : "img";
       await WallpaperStore.storeWallpaperBlob(wallpaperURL);
       os.storage.set(StorageKeys.wallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
       os.storage.set(StorageKeys.manualWallpaper, "true");
       os.storage.set(StorageKeys.cycleWallpaper, "false");
       os.storage.remove(StorageKeys.vantaWallpaper);
-      const toggle = document.getElementById("settingsCycleWallpaper");
+      const toggle = $("#settingsCycleWallpaper");
       if (toggle) toggle.checked = false;
 
       this.applyBlob(wallpaperURL, type);
@@ -386,7 +377,7 @@ class WallpaperManager {
     os.storage.set(StorageKeys.cycleWallpaper, "false");
     os.storage.remove(StorageKeys.vantaWallpaper);
 
-    const toggle = document.getElementById("settingsCycleWallpaper");
+    const toggle = $("#settingsCycleWallpaper");
     if (toggle) toggle.checked = false;
 
     if (WallpaperStore.isBase64Video(wallpaperURL)) {
@@ -420,7 +411,7 @@ class WallpaperManager {
       return;
     }
 
-    if (isBlob(wallpaperURL)) {
+    if (isBlobLike(wallpaperURL)) {
       const type = wallpaperURL.type.startsWith("video/") ? "video" : "img";
       await WallpaperStore.storeWallpaperBlob(wallpaperURL, WallpaperStore.WP_LOGIN_BLOB_KEY);
       os.storage.set(StorageKeys.loginWallpaperKey, type === "video" ? "__blob_video__" : "__blob_image__");
@@ -516,12 +507,12 @@ class WallpaperManager {
 
   static renderElement(tag, src) {
     WallpaperStore.destroyVantaInstance();
-    document.getElementById("vanta-container")?.remove();
-    document.getElementById("wallpaper-img")?.remove();
-    document.getElementById("wallpaper-video")?.remove();
+    $("#vanta-container")?.remove();
+    $("#wallpaper-img")?.remove();
+    $("#wallpaper-video")?.remove();
 
     const isVideo = tag === "video";
-    const el = document.createElement(tag);
+    const el = createElement(tag);
     el.id = isVideo ? "wallpaper-video" : "wallpaper-img";
     el.src = src;
 
@@ -562,7 +553,7 @@ class WallpaperManager {
       const tryPlay = () => {
         try {
           const p = el.play?.();
-          if (p && typeof p.catch === "function")
+          if (p && isFunction(p.catch))
             p.catch(() => {
               if (retryCount < 3) {
                 retryCount++;
@@ -670,12 +661,12 @@ export class SystemUtilities {
   }
 
   static startClock() {
-    const clock = document.getElementById("clock");
-    const date = document.getElementById("date");
-    const uptime = document.getElementById("uptime");
+    const clock = $("#clock");
+    const date = $("#date");
+    const uptime = $("#uptime");
     if (!clock || !date) return;
 
-    const timeContainer = document.getElementById("time-container");
+    const timeContainer = $("#time-container");
     const clickTarget = timeContainer || date;
     clickTarget.style.cursor = "pointer";
     clickTarget.addEventListener("click", (e) => {
@@ -776,7 +767,7 @@ export class SystemUtilities {
   }
   static disableVantaWallpaper() {
     WallpaperStore.destroyVantaInstance();
-    document.getElementById("vanta-container")?.remove();
+    $("#vanta-container")?.remove();
     const fallback = WallpaperManager.pickStaticFallbackWallpaper();
     WallpaperManager.applyWallpaper(fallback);
   }

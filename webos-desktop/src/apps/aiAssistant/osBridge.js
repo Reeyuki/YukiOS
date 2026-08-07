@@ -1,5 +1,5 @@
 import { audioMixer } from "../../audioMixer.js";
-import { os, StorageKeys } from "../../framework.js";
+import { $$, os, StorageKeys } from "../../framework.js";
 
 export class OSBridge {
   constructor(os) {
@@ -331,7 +331,7 @@ export class OSBridge {
   }
 
   getSystemState() {
-    const windows = Array.from(document.querySelectorAll(".window")).map((win) => ({
+    const windows = $$(".window").map((win) => ({
       id: win.id,
       title: os.window.getTitle(win.id) || "Unknown",
       appId: win.dataset.appId || null,

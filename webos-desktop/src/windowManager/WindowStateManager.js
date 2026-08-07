@@ -1,4 +1,4 @@
-import { os, brand, yuriPageTitle } from "../framework.js";
+import { os, brand, yuriPageTitle, $ } from "../framework.js";
 import { BusEvents } from "../core/EventBus.js";
 import { animateWindowClose, animateWindowMinimize, applyFocusGlow, applyZDepthLift } from "./AnimationSystem.js";
 import { getSetting } from "../utils/utils.js";
@@ -24,7 +24,7 @@ export class WindowStateManager {
     }
 
     const allWins = Array.from(this.manager.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean);
     allWins.forEach((w) => applyZDepthLift(w, false));
 
@@ -48,7 +48,7 @@ export class WindowStateManager {
   }
 
   minimizeWindow(win) {
-    const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+    const taskbarItem = $(`#taskbar-${win.id}`);
     if (taskbarItem) {
       taskbarItem.classList.remove("active");
       taskbarItem.classList.add("minimized");
@@ -151,7 +151,7 @@ export class WindowStateManager {
   closeAll() {
     const winIds = Array.from(this.manager.openWindows.keys());
     for (const winId of winIds) {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (win) {
         this.silenceWindow(win);
         win.remove();
@@ -186,7 +186,7 @@ export class WindowStateManager {
 
   registerCloseWindow(closeButton, winId) {
     closeButton.addEventListener("click", () => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (!win) return;
       this.animateAndRemove(win);
       this.manager.removeFromTaskbar(winId);

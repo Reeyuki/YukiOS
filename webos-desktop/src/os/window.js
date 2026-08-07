@@ -208,6 +208,10 @@ export class WindowAPI {
     this.wm.applySnap?.(win, direction);
   }
 
+  unsnap(win) {
+    this.wm.unsnap?.(win);
+  }
+
   getOpenWindows() {
     return this.wm.openWindows;
   }

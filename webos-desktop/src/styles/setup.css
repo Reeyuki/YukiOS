@@ -594,7 +594,7 @@
   width: 20px;
   height: 20px;
   background: #fff;
-  border-radius: 50%;
+  border-radius: 25px;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -891,12 +891,12 @@ html[data-theme-mode="light"]::-webkit-scrollbar-thumb {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.turbo-selector {
+.performance-selector {
   display: flex;
   gap: 8px;
 }
 
-.turbo-btn {
+.performance-btn {
   flex: 1;
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.05);
@@ -914,17 +914,17 @@ html[data-theme-mode="light"]::-webkit-scrollbar-thumb {
   gap: 2px;
 }
 
-.turbo-btn:hover {
+.performance-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.turbo-btn.active {
+.performance-btn.active {
   background: var(--brand);
   border-color: var(--brand);
   color: #fff;
 }
 
-.turbo-title {
+.performance-title {
   font-weight: 600;
 }
 
@@ -973,13 +973,13 @@ html[data-theme-mode="light"] .shortcut-item {
   color: rgba(0, 0, 0, 0.6);
 }
 
-html[data-theme-mode="light"] .turbo-btn {
+html[data-theme-mode="light"] .performance-btn {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.8);
 }
 
-html[data-theme-mode="light"] .turbo-btn:hover {
+html[data-theme-mode="light"] .performance-btn:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -989,7 +989,7 @@ html[data-theme-mode="light"] .turbo-btn:hover {
   margin: 0 0 12px;
 }
 
-html[data-theme-mode="light"] .turbo-btn.active {
+html[data-theme-mode="light"] .performance-btn.active {
   color: rgba(255, 255, 255, 0.8);
 }
 

@@ -18,7 +18,7 @@ export class SystemAppsApp extends BaseApp {
   }
 
   open() {
-    const existingWin = document.getElementById("system-apps-win");
+    const existingWin = $("#system-apps-win");
     if (existingWin) {
       os.window.focus("system-apps-win");
       return existingWin;
@@ -95,11 +95,11 @@ export class SystemAppsApp extends BaseApp {
   }
 
   renderGrid(query) {
-    const sectionNative = document.querySelector("#system-apps-section-native");
-    const sectionWeb = document.querySelector("#system-apps-section-web");
-    const containerNative = document.querySelector("#system-apps-win #system-apps-grid-native");
-    const containerWeb = document.querySelector("#system-apps-win #system-apps-grid-web");
-    const emptyEl = document.querySelector("#system-apps-win #system-apps-empty");
+    const sectionNative = $("#system-apps-section-native");
+    const sectionWeb = $("#system-apps-section-web");
+    const containerNative = $("#system-apps-win #system-apps-grid-native");
+    const containerWeb = $("#system-apps-win #system-apps-grid-web");
+    const emptyEl = $("#system-apps-win #system-apps-empty");
     if (!containerNative || !containerWeb) return;
 
     const q = (query || "").toLowerCase();

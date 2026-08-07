@@ -1,4 +1,4 @@
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, $, createElement } from "./framework.js";
 import { parseBool } from "./utils/utils.js";
 
 export function shouldEnableAds() {
@@ -15,12 +15,12 @@ export function shouldEnableAds() {
 
 export function injectAdsterraAd(containerId, key, width, height, delay = 0, format = "iframe") {
   const doInject = () => {
-    const slot = document.getElementById(containerId);
+    const slot = $("#" + containerId);
     if (!slot) return;
-    const cfgScript = document.createElement("script");
+    const cfgScript = createElement("script");
     cfgScript.text = `atOptions = { 'key': '${key}', 'format': '${format}', 'height': ${height}, 'width': ${width}, 'params': {} };`;
     slot.appendChild(cfgScript);
-    const invokeScript = document.createElement("script");
+    const invokeScript = createElement("script");
     invokeScript.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
     invokeScript.async = true;
     slot.appendChild(invokeScript);
@@ -34,9 +34,9 @@ export function injectAdsterraAd(containerId, key, width, height, delay = 0, for
 }
 
 export function injectNativeAd(containerId) {
-  const slot = document.getElementById(containerId);
+  const slot = $("#" + containerId);
   if (!slot) return;
-  const s = document.createElement("script");
+  const s = createElement("script");
   s.async = true;
   s.setAttribute("data-cfasync", "false");
   s.src = "https://pl29381085.effectivecpmnetwork.com/5f797791a9771b6940fb9385a69ce168/invoke.js";
@@ -49,4 +49,11 @@ export function maybeTriggerSmartlink() {
 
 export function initPopunder() {
   return;
+}
+
+export function suppressAdBlocks(container) {
+  if (!container) return;
+  container.querySelectorAll(".store-ad-block, [id^='container-']").forEach((el) => {
+    el.style.display = "none";
+  });
 }

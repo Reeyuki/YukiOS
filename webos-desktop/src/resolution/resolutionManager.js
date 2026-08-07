@@ -1,3 +1,5 @@
+import { $, createElement } from "../shared/domUtils.js";
+
 export const RESOLUTION_PRESETS = [
   { value: "native", label: "Native (Use Actual Display)" },
   { value: "640x480", label: "640 × 480 (4:3)" },
@@ -65,7 +67,7 @@ export function applyResolution(value, guiScale) {
 
 function fixWallpaperLayer(totalScale) {
   const styleId = "yukios-resolution-wallpaper-fix";
-  const existing = document.getElementById(styleId);
+  const existing = $("#" + styleId);
   if (totalScale === 1) {
     existing?.remove();
     return;
@@ -84,7 +86,7 @@ function fixWallpaperLayer(totalScale) {
   if (existing) {
     existing.textContent = css;
   } else {
-    const style = document.createElement("style");
+    const style = createElement("style");
     style.id = styleId;
     style.textContent = css;
     document.head.appendChild(style);

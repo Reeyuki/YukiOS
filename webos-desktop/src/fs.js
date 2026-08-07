@@ -9,7 +9,7 @@ import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
 import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
-import { parseBool } from "./utils/utils.js";
+import { parseBool, isBlobLike } from "./utils/utils.js";
 import { ISOFileSystem } from "./isoFS.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
 
@@ -23,16 +23,6 @@ function defaultWallpaperUrl(nameOrPath) {
 }
 
 const WALLPAPER_STATICALLY_GH_BASE = CDN_BASES.MAIN;
-function isBlob(obj) {
-  if (!obj) return false;
-  return (
-    obj instanceof Blob ||
-    (typeof obj === "object" &&
-      typeof obj.size === "number" &&
-      typeof obj.type === "string" &&
-      typeof obj.slice === "function")
-  );
-}
 
 const DEFAULT_TILING_CONFIG = JSON.stringify(
   {
@@ -1068,7 +1058,7 @@ export class FileSystemManager {
     const fileKind = kind || this.inferKind(uniqueName);
     const fileIcon = icon || (fileKind === FileKind.TEXT ? "static/icons/notepad.webp" : "static/icons/file.webp");
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
-    if (isBlob(content)) {
+    if (isBlobLike(content)) {
       const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(uniqueName) });
       if (this.isElectron) {
         const bytes = new Uint8Array(await typedBlob.arrayBuffer());
@@ -1216,7 +1206,7 @@ export class FileSystemManager {
       const kind = this.inferKind(name);
       const icon = kind === FileKind.TEXT ? "static/icons/notepad.webp" : "static/icons/file.webp";
       await this.createFile(path, name, content, kind, icon);
-    } else if (isBlob(content)) {
+    } else if (isBlobLike(content)) {
       const typedBlob = content.type ? content : new Blob([content], { type: mimeFromName(name) });
       if (this.isElectron) {
         const bytes = new Uint8Array(await typedBlob.arrayBuffer());
@@ -1467,10 +1457,10 @@ export class FileSystemManager {
       [FileKind.TEXT]: "static/icons/notepad.webp"
     };
     const fileIcon = icon || iconMap[fileKind] || "static/icons/file.webp";
-    const fileSize = isBlob(blob) ? blob.size : 0;
+    const fileSize = isBlobLike(blob) ? blob.size : 0;
 
     await this.p("mkdir", dir, { recursive: true }).catch(() => {});
-    const typedBlob = isBlob(blob) && !blob.type ? new Blob([blob], { type: mimeFromName(name) }) : blob;
+    const typedBlob = isBlobLike(blob) && !blob.type ? new Blob([blob], { type: mimeFromName(name) }) : blob;
     if (this.isElectron) {
       const bytes = new Uint8Array(await typedBlob.arrayBuffer());
       await this.p("writeFile", fullPath2, bytes);

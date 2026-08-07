@@ -1,7 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 
-import { BusEvents, BaseApp, os, $, $$, setStyle } from "../framework.js";
+import { BusEvents, BaseApp, os, $, $$, setStyle, createElement } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import {
   normalizePath,
@@ -271,7 +271,7 @@ export class V86App extends BaseApp {
 
       setLog(log, "Booting up…");
 
-      const screenContainer = document.createElement("div");
+      const screenContainer = createElement("div");
       setStyle(screenContainer, { width: "100%", height: "100%" });
       screenDiv.appendChild(screenContainer);
 
@@ -333,7 +333,7 @@ export class V86App extends BaseApp {
     }
 
     this.v86LoadPromise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
+      const script = createElement("script");
       script.src = "https://copy.sh/v86/build/libv86.js";
       script.onload = () => {
         const checkReady = (attempts = 0) => {

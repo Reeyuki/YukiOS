@@ -1,5 +1,6 @@
 import * as CANNON from "cannon-es";
 import { GENRES } from "./GameState.js";
+import { createElement } from "../shared/domUtils.js";
 
 const SHELF_Y_LEVELS = [0.5, 1.25, 2.0];
 const SHELF_WIDTH = 0.55;
@@ -73,7 +74,7 @@ export class ShelfManager {
       const b2 = colorHex & 0xff;
       const colorStr = `rgb(${r}, ${g}, ${b2})`;
 
-      const canvas = document.createElement("canvas");
+      const canvas = createElement("canvas");
       canvas.width = 256;
       canvas.height = 64;
       const ctx = canvas.getContext("2d");

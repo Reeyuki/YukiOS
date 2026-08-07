@@ -1,7 +1,7 @@
 import "../styles/emojiSelector.css";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, createElement } from "../framework.js";
 export class EmojiSelectorApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -23,7 +23,7 @@ export class EmojiSelectorApp extends BaseApp {
     }
 
     return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
+      const script = createElement("script");
       script.src = scriptUrl;
       script.onload = resolve;
       script.onerror = reject;
@@ -51,7 +51,7 @@ export class EmojiSelectorApp extends BaseApp {
   }
 
   copyEmojiWithSelection(value) {
-    const textArea = document.createElement("textarea");
+    const textArea = createElement("textarea");
     textArea.value = value;
     textArea.readOnly = true;
     textArea.className = "emoji-selector-copy-buffer";

@@ -1,6 +1,6 @@
 import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { $, $$, setStyle, BaseApp, os } from "../framework.js";
+import { $, $$, setStyle, BaseApp, os, createElement } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
@@ -136,7 +136,7 @@ export class NotepadApp extends BaseApp {
 
   createDialog(win, html, style) {
     this.closeDialogs(win);
-    const dialog = document.createElement("div");
+    const dialog = createElement("div");
     dialog.className = "notepad-dialog";
     dialog.innerHTML = html;
     if (style) setStyle(dialog, style);
@@ -419,7 +419,7 @@ export class NotepadApp extends BaseApp {
     const instance = this.instances.get(winId);
     if (!instance) return;
     const triggerFilePicker = () => {
-      const input = document.createElement("input");
+      const input = createElement("input");
       input.type = "file";
       input.onchange = (e) => {
         const file = e.target.files[0];
@@ -864,7 +864,7 @@ export class NotepadApp extends BaseApp {
         observer.disconnect();
       }
     });
-    const desktop = document.getElementById("desktop");
+    const desktop = $("#desktop");
     if (desktop) observer.observe(desktop, { childList: true });
   }
 

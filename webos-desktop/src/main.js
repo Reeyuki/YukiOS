@@ -36,7 +36,7 @@ import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
 import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
-import { $ } from "./shared/domUtils.js";
+import { $, createElement } from "./shared/domUtils.js";
 import { showBootScreen } from "./bootScreen.js";
 import { initYuriEasterEgg, applyYuriTheme, isYuri } from "./easterYuri.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
@@ -136,6 +136,7 @@ fileSystemManager.setDesktopUI(desktopUI);
 setDesktopUI(desktopUI);
 
 const sessionManager = new SessionManager(os);
+os.app.register("sessionManager", sessionManager);
 const commandPalette = new CommandPalette(os);
 
 const menuBar = new MenuBarManager(os);
@@ -145,9 +146,19 @@ SystemUtilities.setSettings(settingsApp);
 SystemUtilities.startTaskbarWeather();
 
 async function start() {
+  setTimeout(() => {
+    import("./account/syncEngine.js").then(({ syncPull, syncPush, isSyncEnabledPref }) => {
+      import("./account/session.js").then(({ isLoggedIn }) => {
+        if (isLoggedIn() && isSyncEnabledPref()) {
+          syncPull().catch(() => {});
+          syncPush().catch(() => {});
+        }
+      });
+    });
+  }, 2500);
   const faScript = $('script[src*="font-awesome"], script[src*="fontawesome"]');
   if (!faScript) {
-    const s = document.createElement("script");
+    const s = createElement("script");
     s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js";
     s.defer = true;
     s.crossOrigin = "anonymous";
@@ -247,7 +258,7 @@ async function start() {
 
   if (window.electronAPI && window.electronAPI.onTrayAction) {
     import("./audioMixer.js").then(({ audioMixer }) => {
-      import("./shared/turboManager.js").then(({ turboManager }) => {
+      import("./shared/performanceManager.js").then(({ performanceManager }) => {
         import("./modeManager.js").then(({ modeManager, MODES }) => {
           const getSessionMode = () => {
             const active = modeManager.getActiveModes();
@@ -265,7 +276,7 @@ async function start() {
             window.electronAPI.sendTrayState({
               dnd: os.notify.getDoNotDisturb(),
               muted: mixer ? mixer.muted : false,
-              powerMode: turboManager.getMode(),
+              powerMode: performanceManager.getMode(),
               sessionMode: getSessionMode(),
               remoteDesktopActive: !!(remoteApp && remoteApp.hostStreaming),
               remoteDesktopCode: (remoteApp && remoteApp.hostRoomCode) || null
@@ -295,7 +306,7 @@ async function start() {
                 break;
               }
               case "set-power-mode": {
-                turboManager.setMode(value);
+                performanceManager.setMode(value);
                 window.electronAPI.sendTrayState({ powerMode: value });
                 break;
               }

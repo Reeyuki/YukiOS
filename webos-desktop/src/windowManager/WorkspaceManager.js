@@ -1,7 +1,7 @@
 import { sanitizeTitle } from "../utils/utils.js";
 import { $$ } from "../shared/domUtils.js";
 
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, $, createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { bus, BusEvents } from "../core/EventBus.js";
 export class WorkspaceManager {
@@ -41,11 +41,11 @@ export class WorkspaceManager {
 
   render() {
     if (!this.barEl) {
-      this.barEl = document.createElement("div");
+      this.barEl = createElement("div");
       this.barEl.id = "workspace-bar";
-      const taskbar = document.getElementById("taskbar");
+      const taskbar = $("#taskbar");
       if (taskbar) {
-        taskbar.insertBefore(this.barEl, document.getElementById("system-tray"));
+        taskbar.insertBefore(this.barEl, $("#system-tray"));
       }
       Promise.resolve().then(() => {
         const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
@@ -55,7 +55,7 @@ export class WorkspaceManager {
 
     this.barEl.innerHTML = "";
 
-    const overviewBtn = document.createElement("button");
+    const overviewBtn = createElement("button");
     overviewBtn.className = "workspace-btn workspace-overview-btn" + (this.overviewOpen ? " active" : "");
     overviewBtn.title = "Workspace Overview";
     overviewBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
@@ -65,12 +65,12 @@ export class WorkspaceManager {
     overviewBtn.addEventListener("click", () => this.toggleOverview());
     this.barEl.appendChild(overviewBtn);
 
-    const sep = document.createElement("div");
+    const sep = createElement("div");
     sep.className = "workspace-sep";
     this.barEl.appendChild(sep);
 
     this.workspaces.forEach((ws) => {
-      const btn = document.createElement("button");
+      const btn = createElement("button");
       btn.className = "workspace-btn" + (ws.id === this.activeId ? " active" : "");
       btn.textContent = ws.name;
       btn.title = `Switch to ${ws.name} (dblclick to rename)`;
@@ -101,7 +101,7 @@ export class WorkspaceManager {
       });
 
       if (this.workspaces.length > 1) {
-        const del = document.createElement("span");
+        const del = createElement("span");
         del.className = "workspace-close";
         del.textContent = "×";
         del.title = "Remove workspace";
@@ -115,7 +115,7 @@ export class WorkspaceManager {
       this.barEl.appendChild(btn);
     });
 
-    const addBtn = document.createElement("button");
+    const addBtn = createElement("button");
     addBtn.className = "workspace-btn workspace-add";
     addBtn.textContent = "+";
     addBtn.title = "New workspace";
@@ -142,7 +142,7 @@ export class WorkspaceManager {
     if (!ws) return;
 
     ws.windows.forEach((winId) => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (win) {
         this.wm.silenceWindow(win);
         os.window.removeFromTaskbar(winId);
@@ -223,16 +223,16 @@ export class WorkspaceManager {
     const incomingWins = [];
 
     prevWs?.windows.forEach((winId) => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (win) outgoingWins.push(win);
     });
 
     nextWs?.windows.forEach((winId) => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (win) incomingWins.push(win);
     });
 
-    const desktop = document.getElementById("desktop");
+    const desktop = $("#desktop");
     if (desktop) desktop.classList.add("workspace-clipping");
 
     const incomingStartX = direction * VW;
@@ -285,7 +285,7 @@ export class WorkspaceManager {
     this.workspaces.forEach((ws) => {
       const isActive = ws.id === this.activeId;
       ws.windows.forEach((winId) => {
-        const taskItem = document.getElementById(`taskbar-${winId}`);
+        const taskItem = $(`#taskbar-${winId}`);
         if (taskItem) taskItem.style.display = isActive ? "" : "none";
       });
     });
@@ -295,8 +295,8 @@ export class WorkspaceManager {
     this.workspaces.forEach((ws) => {
       const isActive = ws.id === this.activeId;
       ws.windows.forEach((winId) => {
-        const win = document.getElementById(winId);
-        const taskItem = document.getElementById(`taskbar-${winId}`);
+        const win = $("#" + winId);
+        const taskItem = $(`#taskbar-${winId}`);
         if (win) {
           win.style.visibility = isActive ? "" : "hidden";
           win.style.pointerEvents = isActive ? "" : "none";
@@ -312,7 +312,7 @@ export class WorkspaceManager {
     this.unregisterWindow(winId);
     const target = this.workspaces.find((w) => w.id === targetWorkspaceId);
     if (target) target.windows.add(winId);
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (win) {
       win.style.transition = "none";
       win.style.transform = "";
@@ -334,7 +334,7 @@ export class WorkspaceManager {
     this.render();
 
     if (!this.overviewEl) {
-      this.overviewEl = document.createElement("div");
+      this.overviewEl = createElement("div");
       this.overviewEl.id = "workspace-overview";
       document.body.appendChild(this.overviewEl);
     }
@@ -373,10 +373,10 @@ export class WorkspaceManager {
     clone.querySelectorAll("input,textarea,button,select").forEach((n) => n.setAttribute("disabled", "disabled"));
 
     clone.querySelectorAll("iframe, video, audio, canvas").forEach((n) => {
-      const placeholder = document.createElement("div");
+      const placeholder = createElement("div");
       placeholder.style.cssText =
         "width:100%;height:100%;background:var(--surface-1);display:flex;align-items:center;justify-content:center;";
-      const tempDiv = document.createElement("div");
+      const tempDiv = createElement("div");
       tempDiv.innerHTML = this.wm.getWindowIconHtml(meta?.iconValue, meta?.color || "white");
       const iconEl = tempDiv.firstElementChild;
       if (iconEl) {
@@ -413,24 +413,24 @@ export class WorkspaceManager {
     const el = this.overviewEl;
     el.innerHTML = "";
 
-    const desktop = document.getElementById("desktop");
+    const desktop = $("#desktop");
     const dw = desktop.offsetWidth;
     const dh = desktop.offsetHeight;
 
     const desktopBg = window.getComputedStyle(desktop).backgroundImage;
     const desktopBgColor = window.getComputedStyle(desktop).backgroundColor;
 
-    const header = document.createElement("div");
+    const header = createElement("div");
     header.className = "ov-header";
 
     const previewAspect = dw / dh;
 
     this.workspaces.forEach((ws) => {
-      const wsBtn = document.createElement("button");
+      const wsBtn = createElement("button");
       wsBtn.className = "ov-ws-btn" + (ws.id === this.activeId ? " ov-ws-active" : "");
       wsBtn.dataset.wsId = String(ws.id);
 
-      const wsLabel = document.createElement("span");
+      const wsLabel = createElement("span");
       wsLabel.className = "ov-ws-label";
       wsLabel.textContent = ws.name;
       wsBtn.appendChild(wsLabel);
@@ -438,7 +438,7 @@ export class WorkspaceManager {
       const previewH = 100;
       const previewW = Math.round(previewH * previewAspect);
 
-      const wsPreview = document.createElement("div");
+      const wsPreview = createElement("div");
       wsPreview.className = "ov-ws-preview";
       wsPreview.style.width = previewW + "px";
       wsPreview.style.height = previewH + "px";
@@ -449,7 +449,7 @@ export class WorkspaceManager {
       wsPreview.style.overflow = "hidden";
 
       ws.windows.forEach((winId) => {
-        const realWin = document.getElementById(winId);
+        const realWin = $("#" + winId);
         if (!realWin || realWin.style.display === "none") return;
         const entry = this.wm.openWindows.get(winId);
         const clone = this.cloneWindowForPreview(realWin, entry, previewW, previewH, dw, dh);
@@ -489,7 +489,7 @@ export class WorkspaceManager {
       header.appendChild(wsBtn);
     });
 
-    const addWsBtn = document.createElement("button");
+    const addWsBtn = createElement("button");
     addWsBtn.className = "ov-ws-btn ov-ws-add";
     addWsBtn.textContent = "+";
     addWsBtn.title = "Add workspace";
@@ -498,18 +498,18 @@ export class WorkspaceManager {
 
     el.appendChild(header);
 
-    const taskbarH = document.getElementById("taskbar")?.offsetHeight ?? 40;
+    const taskbarH = $("#taskbar")?.offsetHeight ?? 40;
     const vpW = window.innerWidth;
     const vpH = window.innerHeight - taskbarH - 160;
 
     const activeWs = this.workspaces.find((w) => w.id === this.activeId);
 
-    const mainArea = document.createElement("div");
+    const mainArea = createElement("div");
     mainArea.className = "ov-main-area";
     mainArea.style.width = "100%";
     mainArea.style.height = vpH + "px";
 
-    const bgLayer = document.createElement("div");
+    const bgLayer = createElement("div");
     bgLayer.className = "ov-section-bg";
     bgLayer.style.backgroundImage = desktopBg;
     bgLayer.style.backgroundColor = desktopBgColor;
@@ -517,7 +517,7 @@ export class WorkspaceManager {
     bgLayer.style.backgroundPosition = "center";
     mainArea.appendChild(bgLayer);
 
-    const tilesLayer = document.createElement("div");
+    const tilesLayer = createElement("div");
     tilesLayer.className = "ov-tiles-layer";
 
     if (activeWs && activeWs.windows.size > 0) {
@@ -539,7 +539,7 @@ export class WorkspaceManager {
 
       let idx = 0;
       activeWs.windows.forEach((winId) => {
-        const realWin = document.getElementById(winId);
+        const realWin = $("#" + winId);
         if (!realWin) return;
 
         const entry = this.wm.openWindows.get(winId);
@@ -574,13 +574,13 @@ export class WorkspaceManager {
         const x = rowStartX + cellOffsetX + tileOffsetX;
         const y = startY + row * (cellH + gap) + tileOffsetY;
 
-        const tile = document.createElement("div");
+        const tile = createElement("div");
         tile.className = "ov-window-tile";
         tile.dataset.winId = winId;
         tile.style.width = tileW + "px";
         tile.style.height = tileH + "px";
 
-        const cloneArea = document.createElement("div");
+        const cloneArea = createElement("div");
         cloneArea.className = "ov-tile-clone-area";
         cloneArea.style.width = tileW + "px";
         cloneArea.style.height = tileH + "px";
@@ -608,11 +608,11 @@ export class WorkspaceManager {
           });
 
           clone.querySelectorAll("iframe, video, audio, canvas").forEach((n) => {
-            const placeholder = document.createElement("div");
+            const placeholder = createElement("div");
             placeholder.style.cssText =
               "width:100%;height:100%;background:var(--surface-1);display:flex;align-items:center;justify-content:center;";
 
-            const tempDiv = document.createElement("div");
+            const tempDiv = createElement("div");
             tempDiv.innerHTML = this.wm.getWindowIconHtml(entry?.iconValue, entry?.color || "white");
             const iconEl = tempDiv.firstElementChild;
 
@@ -641,7 +641,7 @@ export class WorkspaceManager {
 
           cloneArea.appendChild(clone);
         } else {
-          const iconWrap = document.createElement("div");
+          const iconWrap = createElement("div");
           iconWrap.style.cssText =
             "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface-1);";
           iconWrap.innerHTML = this.wm.getWindowIconHtml(entry?.iconValue, entry?.color || "white");
@@ -658,7 +658,7 @@ export class WorkspaceManager {
 
         tile.appendChild(cloneArea);
 
-        const closeBtn = document.createElement("button");
+        const closeBtn = createElement("button");
         closeBtn.className = "ov-tile-close";
         closeBtn.innerHTML = "×";
         closeBtn.title = "Close window";
@@ -671,12 +671,12 @@ export class WorkspaceManager {
 
         tile.appendChild(closeBtn);
 
-        const tileHeader = document.createElement("div");
+        const tileHeader = createElement("div");
         tileHeader.className = "ov-tile-header";
         tileHeader.textContent = sanitizeTitle(title);
         tile.appendChild(tileHeader);
 
-        const tileWrapper = document.createElement("div");
+        const tileWrapper = createElement("div");
         tileWrapper.style.position = "absolute";
         tileWrapper.style.width = tileW + "px";
         tileWrapper.style.height = tileH + "px";
@@ -695,7 +695,7 @@ export class WorkspaceManager {
           e.stopPropagation();
           this.closeOverview();
           setTimeout(() => {
-            const win = document.getElementById(winId);
+            const win = $("#" + winId);
             if (win) this.wm.bringToFront(win);
           }, 0);
         });
@@ -704,7 +704,7 @@ export class WorkspaceManager {
         idx++;
       });
     } else {
-      const emptyMsg = document.createElement("div");
+      const emptyMsg = createElement("div");
       emptyMsg.className = "ov-empty";
       emptyMsg.textContent = "No windows in this workspace";
       tilesLayer.appendChild(emptyMsg);
@@ -754,14 +754,14 @@ export class WorkspaceManager {
     const el = this.overviewEl;
     const old = el.querySelector(".ov-main-area");
 
-    const desktop = document.getElementById("desktop");
+    const desktop = $("#desktop");
     const dw = desktop.offsetWidth;
     const dh = desktop.offsetHeight;
 
-    const taskbarH = document.getElementById("taskbar")?.offsetHeight ?? 40;
+    const taskbarH = $("#taskbar")?.offsetHeight ?? 40;
     const vpH = window.innerHeight - taskbarH - 160;
 
-    const newMain = document.createElement("div");
+    const newMain = createElement("div");
     newMain.className = "ov-main-area";
     newMain.style.width = "100%";
     newMain.style.height = vpH + "px";
@@ -770,14 +770,14 @@ export class WorkspaceManager {
     const desktopBg = window.getComputedStyle(desktop).backgroundImage;
     const desktopBgColor = window.getComputedStyle(desktop).backgroundColor;
 
-    const bgLayer = document.createElement("div");
+    const bgLayer = createElement("div");
     bgLayer.className = "ov-section-bg";
     bgLayer.style.backgroundImage = desktopBg;
     bgLayer.style.backgroundColor = desktopBgColor;
     bgLayer.style.backgroundSize = "cover";
     bgLayer.style.backgroundPosition = "center";
 
-    const tilesLayer = document.createElement("div");
+    const tilesLayer = createElement("div");
     tilesLayer.className = "ov-tiles-layer";
 
     newMain.appendChild(bgLayer);

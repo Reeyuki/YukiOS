@@ -1,4 +1,5 @@
 import { WidgetBase } from "../widgetManager.js";
+import { createElement } from "../../shared/domUtils.js";
 
 export class NotesWidget extends WidgetBase {
   constructor(manager, id) {
@@ -8,7 +9,7 @@ export class NotesWidget extends WidgetBase {
   }
 
   onRender(contentEl) {
-    const textarea = document.createElement("textarea");
+    const textarea = createElement("textarea");
     textarea.className = "widget-notes-input";
     textarea.placeholder = "Type something...";
     textarea.value = this.text;

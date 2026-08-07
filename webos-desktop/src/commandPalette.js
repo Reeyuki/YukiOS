@@ -38,7 +38,7 @@ export class CommandPalette {
   }
 
   toggle() {
-    const existing = document.getElementById("command-palette-overlay");
+    const existing = $("#command-palette-overlay");
     if (existing) {
       this.close();
     } else {
@@ -47,15 +47,15 @@ export class CommandPalette {
   }
 
   async open() {
-    if (document.getElementById("session-overlay")) return;
-    if (document.getElementById("command-palette-overlay")) return;
+    if ($("#session-overlay")) return;
+    if ($("#command-palette-overlay")) return;
 
     this.isOpen = true;
     this.currentSubpalette = null;
     this.activeIndex = 0;
 
     const overlay = createElement("div", { id: "command-palette-overlay", className: "command-palette-overlay" });
-    const parent = document.getElementById("session-overlay") || document.body;
+    const parent = $("#session-overlay") || document.body;
     parent.appendChild(overlay);
 
     overlay.innerHTML = `
@@ -139,7 +139,7 @@ export class CommandPalette {
   }
 
   close() {
-    const overlay = document.getElementById("command-palette-overlay");
+    const overlay = $("#command-palette-overlay");
     if (overlay) {
       overlay.remove();
     }
@@ -535,7 +535,7 @@ export class CommandPalette {
     }
 
     this.results.forEach((item, index) => {
-      const el = document.createElement("div");
+      const el = createElement("div");
       el.className = `command-palette-item ${index === this.activeIndex ? "active" : ""}`;
       el.dataset.index = index;
 
@@ -683,8 +683,8 @@ export class CommandPalette {
     }));
     entries.push(
       {
-        title: "Settings: Turbo Mode",
-        subtitle: "Switch between Quality, Balanced, and Turbo",
+        title: "Settings: Performance Mode",
+        subtitle: "Switch between Quality, Balanced, and Performance",
         tag: "settings",
         icon: "fas fa-tachometer-alt",
         execute: () => go("pane-system", "sc-general")

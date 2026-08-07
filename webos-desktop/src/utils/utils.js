@@ -1,4 +1,4 @@
-import { os, MODES, StorageKeys } from "../framework.js";
+import { os, MODES, StorageKeys, $, createElement } from "../framework.js";
 
 export { isTextFile, mimeFromExt } from "../shared/fileKindDetector.js";
 
@@ -29,6 +29,18 @@ export function formatSize(bytes) {
 
 export function pluralize(count, singular, plural = singular + "s") {
   return count === 1 ? singular : plural;
+}
+
+export function isBlobLike(obj) {
+  if (!obj) return false;
+
+  return (
+    (typeof Blob !== "undefined" && obj instanceof Blob) ||
+    (typeof obj === "object" &&
+      typeof obj.size === "number" &&
+      typeof obj.type === "string" &&
+      typeof obj.slice === "function")
+  );
 }
 
 export function isArchiveFile(name) {
@@ -105,7 +117,7 @@ export function buildClipboardIcons(selectedItems, itemName, isFile, view, curre
 }
 
 export function isWindowFocused(winId) {
-  const winEl = document.getElementById(winId);
+  const winEl = $("#" + winId);
   if (!winEl) return false;
   return winEl.contains(document.activeElement);
 }
@@ -121,7 +133,7 @@ export function sanitizeTitle(title) {
 
 export function isTaskbarTop() {
   if (os.modes.isActive(MODES.MAC)) return true;
-  const taskbar = document.getElementById("taskbar");
+  const taskbar = $("#taskbar");
   return taskbar && taskbar.classList.contains("position-top");
 }
 
@@ -225,7 +237,7 @@ export function titleCase(str) {
 
 export function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  const link = createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);

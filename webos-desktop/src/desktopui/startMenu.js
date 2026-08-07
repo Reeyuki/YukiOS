@@ -9,7 +9,7 @@ import { showDynamicContextMenu, refreshIcons } from "../shared/contextMenu.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
-import { resolveAvatarUrl } from "../shared/avatarResolver.js";
+import { resolveAvatarUrl } from "../social/avatarResolver.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "../settings/settingsNav.js";
 import { addAppToDesktop, isAppOnDesktop } from "../shared/desktopShortcuts.js";
 import { isAppPinnedToTaskbar, toggleTaskbarPin, showAppProperties } from "../shared/appContextActions.js";
@@ -150,12 +150,18 @@ async function openStartMenu({ focusSearch = false, openDefaultPage = true } = {
   el.style.display = "flex";
   focusMode = "categories";
   clearSelection();
-  renderedCategories.clear();
+  const appsSig = computeAppsSignature();
+  if (appsSig !== appsSignature) {
+    appsSignature = appsSig;
+    renderedCategories.clear();
+  }
   updateFavoritesUI();
 
   ["all", "system", "games"].forEach((cat) => {
-    populateCategoryPage(cat);
-    renderedCategories.add(cat);
+    if (!renderedCategories.has(cat)) {
+      populateCategoryPage(cat);
+      renderedCategories.add(cat);
+    }
   });
 
   if (openDefaultPage) {
@@ -168,10 +174,11 @@ async function openStartMenu({ focusSearch = false, openDefaultPage = true } = {
         console.error("[StartMenu]", e);
       }
     }
-    let defaultCat = "all";
-    if (cats.menu === false || cats.all === false) {
+    const deletedCats = getCategoryDeleted();
+    let defaultCat = "favorites";
+    if (cats.favorites === false || deletedCats.has("favorites")) {
       const catNames = ["all", WEB_MENU_CATEGORY, "favorites", "games", "system", "help", "settingsApp"];
-      const firstEnabled = catNames.find((c) => cats[c] !== false);
+      const firstEnabled = catNames.find((c) => cats[c] !== false && !deletedCats.has(c));
       if (firstEnabled) defaultCat = firstEnabled;
     }
     el.querySelector(`.start-cat[data-cat="${defaultCat}"]`)?.click();
@@ -292,6 +299,56 @@ const WEB_CATEGORY_LABELS = {
   graphics: "Graphics",
   development: "Development"
 };
+
+let mergedAllAppsCache = null;
+let mergedAllAppsSig = "";
+let appsSignature = "";
+let searchIndexCache = null;
+let searchIndexSig = "";
+
+function computeAppsSignature() {
+  const appRegistry = getAppRegistry();
+  const renamed = Object.entries(appRegistry.renamedApps)
+    .map(([key, value]) => key + "=" + value)
+    .join(",");
+  return [
+    Object.keys(appMap).length,
+    Object.keys(os.app.getAllApps()).length,
+    appRegistry.disabledApps.size,
+    appRegistry.uninstalledApps.size,
+    renamed
+  ].join("|");
+}
+
+function getAllAppsMerged() {
+  const sig = computeAppsSignature();
+  if (!mergedAllAppsCache || sig !== mergedAllAppsSig) {
+    mergedAllAppsSig = sig;
+    mergedAllAppsCache = { ...appMap, ...os.app.getAllApps() };
+  }
+  return mergedAllAppsCache;
+}
+
+function getSearchIndex() {
+  const sig = computeAppsSignature();
+  if (searchIndexCache && sig === searchIndexSig) return searchIndexCache;
+  searchIndexSig = sig;
+  const appRegistry = getAppRegistry();
+  const index = [];
+  for (const [appId, appData] of Object.entries(getAllAppsMerged())) {
+    if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) continue;
+    index.push({
+      appId,
+      appData,
+      titleLower: (appData.title || appId).toLowerCase(),
+      descLower: (APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "").toLowerCase(),
+      isWeb: isWebApp(appId, appData),
+      isGame: appData.type === "game"
+    });
+  }
+  searchIndexCache = index;
+  return index;
+}
 
 function getAppCategory(appId, appData) {
   return appData.category || SYSTEM_APPS[appId]?.category || "system";
@@ -506,7 +563,7 @@ function updateRecentlyUsedUI() {
   }
 
   const appRegistry = getAppRegistry();
-  const allApps = { ...appMap, ...os.app.getAllApps() };
+  const allApps = getAllAppsMerged();
   const recentApps = getRecentlyUsed();
   const validApps = recentApps.filter((appId) => {
     const appData = allApps[appId];
@@ -699,7 +756,7 @@ export function updateFavoritesUI() {
   }
 
   const appRegistry = getAppRegistry();
-  const allApps = { ...appMap, ...os.app.getAllApps() };
+  const allApps = getAllAppsMerged();
 
   favorites.forEach((appName) => {
     const appData = allApps[appName];
@@ -984,20 +1041,15 @@ export function setupStartMenu(sessionManager) {
       const resultsContainer = $(".search-results-container", resultsPage);
       resultsContainer.innerHTML = "";
 
-      const appRegistry = getAppRegistry();
-      const allApps = { ...appMap, ...os.app.getAllApps() };
       const results = { core: [], web: [], games: [], files: [] };
       const seenAppIds = new Set();
 
-      Object.entries(allApps).forEach(([appId, appData]) => {
+      getSearchIndex().forEach(({ appId, appData, titleLower, descLower, isWeb, isGame }) => {
         if (seenAppIds.has(appId)) return;
-        if (appRegistry.isAppUninstalled(appId) || appRegistry.isAppDisabled(appId)) return;
-        const title = (appData.title || appId).toLowerCase();
-        const description = (APP_DESCRIPTIONS[appId] || descriptionMap[appId] || "").toLowerCase();
-        if (!fuzzyMatch(q, title) && !wordBoundaryMatch(q, description)) return;
+        if (!fuzzyMatch(q, titleLower) && !wordBoundaryMatch(q, descLower)) return;
         seenAppIds.add(appId);
         const item = createAppItem(appId, appData);
-        const bucket = isWebApp(appId, appData) ? "web" : appData.type === "game" ? "games" : "core";
+        const bucket = isWeb ? "web" : isGame ? "games" : "core";
         results[bucket].push({ element: item, title: appData.title || appId });
       });
 
@@ -1670,7 +1722,7 @@ function populateCategoryPage(category) {
   grid.innerHTML = "";
 
   const appRegistry = getAppRegistry();
-  const allApps = { ...appMap, ...os.app.getAllApps() };
+  const allApps = getAllAppsMerged();
 
   const apps = [];
   Object.entries(allApps).forEach(([appId, appData]) => {

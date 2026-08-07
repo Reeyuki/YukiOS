@@ -1,5 +1,5 @@
 import "../styles/colorPicker.css";
-import { $, $$, setStyle } from "../shared/domUtils.js";
+import { $, $$, setStyle, createElement } from "../shared/domUtils.js";
 import { BaseApp, BusEvents, os, StorageKeys } from "../framework.js";
 import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
@@ -195,7 +195,7 @@ export class ColorPickerApp extends BaseApp {
   }
 
   createOverlay() {
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "cp-overlay";
     overlay.id = "cp-overlay";
 
@@ -223,7 +223,7 @@ export class ColorPickerApp extends BaseApp {
       window.html2canvas = mod.default || mod;
       return;
     }
-    const s = document.createElement("script");
+    const s = createElement("script");
     s.src = "https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js";
     document.head.appendChild(s);
     await new Promise((resolve, reject) => {
@@ -249,14 +249,14 @@ export class ColorPickerApp extends BaseApp {
 
       if (!document.body.contains(overlay)) return;
 
-      const magnifier = document.createElement("div");
+      const magnifier = createElement("div");
       magnifier.className = "cp-magnifier";
-      const magCanvas = document.createElement("canvas");
+      const magCanvas = createElement("canvas");
       magCanvas.width = 160;
       magCanvas.height = 160;
       magnifier.appendChild(magCanvas);
 
-      const info = document.createElement("div");
+      const info = createElement("div");
       info.className = "cp-magnifier-info";
 
       document.body.appendChild(magnifier);

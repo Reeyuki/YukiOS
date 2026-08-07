@@ -1,6 +1,6 @@
 import "../styles/shortcuts.css";
 import { Achievements } from "../achievements.js";
-import { BusEvents, os, BaseApp, brand } from "../framework.js";
+import { BusEvents, os, BaseApp, brand, createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const MODIFIER_KEY_MAP = {
@@ -243,7 +243,7 @@ export class ShortcutsApp extends BaseApp {
         }
         if (e.key === "Shift" || e.key === "Control" || e.key === "Alt" || e.key === "Meta") {
           listeningPreview.innerHTML = "";
-          const msg = document.createElement("div");
+          const msg = createElement("div");
           msg.className = "sc-listening-msg";
           msg.textContent = "Press a non-modifier key...";
           listeningPreview.appendChild(msg);
@@ -260,7 +260,7 @@ export class ShortcutsApp extends BaseApp {
         if (KeybindManager.isCustomizationValid(recorded)) {
           KeybindManager.setKeys(this.listeningId, recorded);
           listeningPreview.innerHTML = "";
-          const ok = document.createElement("div");
+          const ok = createElement("div");
           ok.className = "sc-listening-ok";
           ok.innerHTML = `<i class="fas fa-check"></i> Set to ${this.formatKeys(recorded)}`;
           listeningPreview.appendChild(ok);
@@ -268,7 +268,7 @@ export class ShortcutsApp extends BaseApp {
           render();
         } else {
           listeningPreview.innerHTML = "";
-          const err = document.createElement("div");
+          const err = createElement("div");
           err.className = "sc-listening-err";
           err.textContent = "Invalid shortcut (must include exactly one non-modifier key)";
           listeningPreview.appendChild(err);
@@ -287,7 +287,7 @@ export class ShortcutsApp extends BaseApp {
       listeningClear.onclick = () => {
         KeybindManager.reset(this.listeningId);
         listeningPreview.innerHTML = "";
-        const ok = document.createElement("div");
+        const ok = createElement("div");
         ok.className = "sc-listening-ok";
         ok.innerHTML = `<i class="fas fa-undo"></i> Reset to default`;
         listeningPreview.appendChild(ok);
@@ -301,10 +301,10 @@ export class ShortcutsApp extends BaseApp {
 
       if (type === "launchApp") {
         const appId = currentConfig?.appId || "";
-        const label = document.createElement("label");
+        const label = createElement("label");
         label.className = "sc-custom-label";
         label.textContent = "App ID";
-        const input = document.createElement("input");
+        const input = createElement("input");
         input.type = "text";
         input.className = "sc-custom-input sc-custom-config-input";
         input.placeholder = "e.g. terminal, calculator, notepad";
@@ -313,12 +313,12 @@ export class ShortcutsApp extends BaseApp {
         customConfigFields.appendChild(label);
         customConfigFields.appendChild(input);
 
-        const hint = document.createElement("div");
+        const hint = createElement("div");
         hint.className = "sc-custom-hint";
         hint.textContent = "TIP: Use os.app.getAllApps() to see all available app IDs";
         customConfigFields.appendChild(hint);
 
-        const appList = document.createElement("div");
+        const appList = createElement("div");
         appList.className = "sc-custom-app-list";
         appList.id = "sc-custom-app-list";
         customConfigFields.appendChild(appList);
@@ -340,7 +340,7 @@ export class ShortcutsApp extends BaseApp {
             }
 
             entries.forEach(([id, info]) => {
-              const item = document.createElement("div");
+              const item = createElement("div");
               item.className = "sc-custom-app-item";
               const icon = info.icon || "fas fa-puzzle-piece";
               item.innerHTML = `<i class="${icon}"></i><span class="sc-custom-app-title">${info.title || id}</span><span class="sc-custom-app-id">${id}</span>`;
@@ -359,10 +359,10 @@ export class ShortcutsApp extends BaseApp {
         input.addEventListener("focus", () => renderAppSuggestions(input.value));
       } else if (type === "openUrl") {
         const url = currentConfig?.url || "";
-        const label = document.createElement("label");
+        const label = createElement("label");
         label.className = "sc-custom-label";
         label.textContent = "URL";
-        const input = document.createElement("input");
+        const input = createElement("input");
         input.type = "text";
         input.className = "sc-custom-input sc-custom-config-input";
         input.placeholder = "https://example.com";
@@ -372,15 +372,15 @@ export class ShortcutsApp extends BaseApp {
         customConfigFields.appendChild(input);
       } else if (type === "runCode") {
         const code = currentConfig?.code || "";
-        const label = document.createElement("label");
+        const label = createElement("label");
         label.className = "sc-custom-label";
         label.textContent = "JavaScript Code";
-        const warning = document.createElement("div");
+        const warning = createElement("div");
         warning.className = "sc-custom-warning";
         warning.innerHTML =
           '<i class="fas fa-exclamation-triangle"></i> The <code>os</code> object is available. Be careful with eval-style execution.';
         customConfigFields.appendChild(warning);
-        const textarea = document.createElement("textarea");
+        const textarea = createElement("textarea");
         textarea.className = "sc-custom-textarea sc-custom-config-input";
         textarea.placeholder = `os.notify.send("Hello", "World");`;
         textarea.value = code;
@@ -391,10 +391,10 @@ export class ShortcutsApp extends BaseApp {
       } else if (type === "notify") {
         const title = currentConfig?.title || "";
         const message = currentConfig?.message || "";
-        const label1 = document.createElement("label");
+        const label1 = createElement("label");
         label1.className = "sc-custom-label";
         label1.textContent = "Notification Title";
-        const input1 = document.createElement("input");
+        const input1 = createElement("input");
         input1.type = "text";
         input1.className = "sc-custom-input sc-custom-config-input";
         input1.placeholder = "Shortcut Triggered!";
@@ -402,10 +402,10 @@ export class ShortcutsApp extends BaseApp {
         input1.dataset.configKey = "title";
         customConfigFields.appendChild(label1);
         customConfigFields.appendChild(input1);
-        const label2 = document.createElement("label");
+        const label2 = createElement("label");
         label2.className = "sc-custom-label";
         label2.textContent = "Message";
-        const input2 = document.createElement("input");
+        const input2 = createElement("input");
         input2.type = "text";
         input2.className = "sc-custom-input sc-custom-config-input";
         input2.placeholder = "Your custom shortcut was executed.";
@@ -521,7 +521,7 @@ export class ShortcutsApp extends BaseApp {
         }
         if (e.key === "Shift" || e.key === "Control" || e.key === "Alt" || e.key === "Meta") {
           listeningPreview.innerHTML = "";
-          const msg = document.createElement("div");
+          const msg = createElement("div");
           msg.className = "sc-listening-msg";
           msg.textContent = "Press a non-modifier key...";
           listeningPreview.appendChild(msg);
@@ -539,14 +539,14 @@ export class ShortcutsApp extends BaseApp {
           customRecordedKeys = recorded;
           customKeysPlaceholder.textContent = this.formatKeys(recorded);
           listeningPreview.innerHTML = "";
-          const ok = document.createElement("div");
+          const ok = createElement("div");
           ok.className = "sc-listening-ok";
           ok.innerHTML = `<i class="fas fa-check"></i> Set to ${this.formatKeys(recorded)}`;
           listeningPreview.appendChild(ok);
           stopListening();
         } else {
           listeningPreview.innerHTML = "";
-          const err = document.createElement("div");
+          const err = createElement("div");
           err.className = "sc-listening-err";
           err.textContent = "Invalid shortcut (must include exactly one non-modifier key)";
           listeningPreview.appendChild(err);
@@ -627,7 +627,7 @@ export class ShortcutsApp extends BaseApp {
       }
 
       shortcuts.forEach((item) => {
-        const card = document.createElement("div");
+        const card = createElement("div");
         card.className = "sc-card";
         card.id = getItemId(item);
         if (KeybindManager.isCustomized(item.id)) {

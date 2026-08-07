@@ -459,6 +459,9 @@ export class TaskbarSystem {
         w.style.display = "block";
         const taskbarItem = $(`#taskbar-${winId}`);
         if (taskbarItem) taskbarItem.classList.remove("minimized");
+        if (!w.id || !w.id.startsWith("browser-app-")) {
+          requestAnimationFrame(() => animateWindowOpen(w, true));
+        }
       }
 
       this.manager.bringToFront(w);

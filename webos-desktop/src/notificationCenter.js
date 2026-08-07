@@ -105,6 +105,7 @@ export class NotificationCenter {
       if (!os.tray.isRegistered(this.notificationWinId)) {
         os.tray.register(this.notificationWinId, "fas fa-bell", "Notifications", {
           showInTray: true,
+          alwaysVisible: true,
           onClick: () => this.toggleCenter()
         });
         this.updateTrayIcon();

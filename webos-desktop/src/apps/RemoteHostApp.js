@@ -1,5 +1,5 @@
 import "../styles/RemoteHostApp.css";
-import { BaseApp, os, brand } from "../framework.js";
+import { BaseApp, os, brand, createElement } from "../framework.js";
 import "../../remote/RemoteClientCore.js";
 import "../../remote/RemoteHostCore.js";
 const RemoteClientCore = window.RemoteClientCore;
@@ -243,7 +243,7 @@ export class RemoteHostApp extends BaseApp {
     const electronAPI = window.electronAPI;
 
     const log = (msg, type = "info") => {
-      const entry = document.createElement("div");
+      const entry = createElement("div");
       entry.className = `log-entry ${type}`;
       entry.textContent = msg;
       eventLog.insertBefore(entry, eventLog.firstChild);

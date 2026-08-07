@@ -5,7 +5,7 @@ import { showContextMenu } from "../shared/contextMenu.js";
 import { addAppToDesktop, isAppOnDesktop } from "../shared/desktopShortcuts.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
 
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, $, createElement } from "../framework.js";
 export class InstalledAppsApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -59,7 +59,7 @@ export class InstalledAppsApp extends BaseApp {
     }
 
     const observer = new MutationObserver(() => {
-      if (!document.getElementById(winId)) {
+      if (!$("#" + winId)) {
         this.removeInstance(winId);
         observer.disconnect();
       }
@@ -142,7 +142,7 @@ export class InstalledAppsApp extends BaseApp {
       }
 
       this.updateBulkActions(win, inst);
-      this.renderCurrentPage(document.getElementById(inst.winId), inst);
+      this.renderCurrentPage($("#" + inst.winId), inst);
     });
 
     bulkToggleBtn.addEventListener("click", () => {
@@ -160,7 +160,7 @@ export class InstalledAppsApp extends BaseApp {
     bulkClearBtn.addEventListener("click", () => {
       inst.selectedApps.clear();
       this.updateBulkActions(win, inst);
-      this.renderCurrentPage(document.getElementById(inst.winId), inst);
+      this.renderCurrentPage($("#" + inst.winId), inst);
     });
   }
 
@@ -178,7 +178,7 @@ export class InstalledAppsApp extends BaseApp {
   loadApps(inst) {
     const allApps = this.appRegistry.getAllApps(os.app.getAllApps());
     inst.apps = allApps;
-    this.renderApps(document.getElementById(inst.winId), inst);
+    this.renderApps($("#" + inst.winId), inst);
   }
 
   renderApps(win, inst) {
@@ -247,10 +247,10 @@ export class InstalledAppsApp extends BaseApp {
         const action = btn.dataset.action;
         if (action === "prev" && inst.currentPage > 0) {
           inst.currentPage--;
-          this.renderCurrentPage(document.getElementById(inst.winId), inst);
+          this.renderCurrentPage($("#" + inst.winId), inst);
         } else if (action === "next" && inst.currentPage < totalPages - 1) {
           inst.currentPage++;
-          this.renderCurrentPage(document.getElementById(inst.winId), inst);
+          this.renderCurrentPage($("#" + inst.winId), inst);
         }
       });
     });
@@ -281,7 +281,7 @@ export class InstalledAppsApp extends BaseApp {
   }
 
   createAppCard(app, inst) {
-    const card = document.createElement("div");
+    const card = createElement("div");
     card.className = "ia-card";
     card.dataset.appId = app.id;
 
@@ -468,7 +468,7 @@ export class InstalledAppsApp extends BaseApp {
         inst.selectedApps.delete(app.id);
         card.classList.remove("is-selected");
       }
-      this.updateBulkActions(document.getElementById(inst.winId), inst);
+      this.updateBulkActions($("#" + inst.winId), inst);
     });
   }
 

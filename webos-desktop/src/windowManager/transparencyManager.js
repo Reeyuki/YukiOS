@@ -1,6 +1,7 @@
 import { getSetting } from "../utils/utils.js";
+import { $ } from "../shared/domUtils.js";
 
-const styleEl = document.getElementById("window-style");
+const styleEl = $("#window-style");
 const styleParent = styleEl?.parentNode;
 
 export function hideTransparency() {

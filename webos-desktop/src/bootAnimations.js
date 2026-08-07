@@ -1,3 +1,5 @@
+import { createElement } from "./shared/domUtils.js";
+
 const current = {
   id: "current",
   label: "Current",
@@ -26,7 +28,7 @@ const digitalScan = {
   id: "digitalScan",
   label: "Digital Scan",
   createExtra: (overlay) => {
-    const sl = document.createElement("div");
+    const sl = createElement("div");
     sl.className = "boot-scanline";
     overlay.appendChild(sl);
     return { scanline: sl };
@@ -63,14 +65,14 @@ const orbitalConverge = {
   label: "Orbital Converge",
   createExtra: (overlay) => {
     const wrap = overlay.querySelector(".boot-logo-wrap");
-    const pc = document.createElement("div");
+    const pc = createElement("div");
     pc.className = "boot-particles-container";
     wrap.prepend(pc);
 
     const count = 16;
     const particles = [];
     for (let i = 0; i < count; i++) {
-      const el = document.createElement("div");
+      const el = createElement("div");
       el.className = "boot-particle";
       pc.appendChild(el);
       particles.push(el);
@@ -149,7 +151,7 @@ const lightBeam = {
   id: "lightBeam",
   label: "Light Beam",
   createExtra: (overlay) => {
-    const beam = document.createElement("div");
+    const beam = createElement("div");
     beam.className = "boot-light-beam";
     overlay.appendChild(beam);
     return { beam };
@@ -241,7 +243,7 @@ const pixelate = {
   label: "Pixelate",
   createExtra: (overlay) => {
     const wrap = overlay.querySelector(".boot-logo-wrap");
-    const grid = document.createElement("div");
+    const grid = createElement("div");
     grid.className = "boot-pixel-grid";
     wrap.prepend(grid);
 
@@ -250,7 +252,7 @@ const pixelate = {
     const blocks = [];
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const block = document.createElement("div");
+        const block = createElement("div");
         block.className = "boot-pixel-block";
         block.style.left = `${(c / cols) * 100}%`;
         block.style.top = `${(r / rows) * 100}%`;
@@ -297,7 +299,7 @@ const typewriter = {
   label: "Typewriter",
   createExtra: (overlay) => {
     const brand = overlay.querySelector(".boot-brand");
-    const cursor = document.createElement("span");
+    const cursor = createElement("span");
     cursor.className = "boot-cursor";
     brand.appendChild(cursor);
     return { cursor };

@@ -3,11 +3,12 @@ import { appMap } from "../games/gamesList.js";
 import { resolveAppName, resolveAppIcon, escapeHtml } from "../utils/utils.js";
 import { resolveIconUrl } from "./assetResolver.js";
 import { $$, bindEvent } from "./domUtils.js";
+import { isFunction } from "./functionUtils.js";
 
 export function renderLiveStats(stats, target, options = {}) {
   if (!target) return;
 
-  const clickable = typeof options.onAppClick === "function";
+  const clickable = isFunction(options.onAppClick);
 
   if (!stats) {
     target.innerHTML = `<div class="live-stats-message">Could not load live stats.</div>`;

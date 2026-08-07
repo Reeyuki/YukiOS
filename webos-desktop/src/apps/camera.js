@@ -300,7 +300,7 @@ export class CameraApp extends BaseApp {
   }
 
   async takePhoto(state) {
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = this.video.videoWidth;
     canvas.height = this.video.videoHeight;
     canvas.getContext("2d").drawImage(this.video, 0, 0);
@@ -528,15 +528,15 @@ export class CameraApp extends BaseApp {
   createHistoryItem(rec, state) {
     const type = this.getRecordingType(rec);
     const isPhoto = type === "photo";
-    const item = document.createElement("div");
+    const item = createElement("div");
     item.className = "cam-history-item";
     item.onclick = () => this.openMediaViewer(rec);
 
-    const thumbnail = document.createElement("div");
+    const thumbnail = createElement("div");
     thumbnail.className = "cam-history-thumb";
 
     if (state.bulkSelectMode) {
-      const checkbox = document.createElement("input");
+      const checkbox = createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "history-checkbox";
       checkbox.checked = state.selectedItems.includes(rec.id);
@@ -550,41 +550,41 @@ export class CameraApp extends BaseApp {
     }
 
     if (isPhoto) {
-      const img = document.createElement("img");
+      const img = createElement("img");
       img.src = rec.url;
       img.className = "cam-media-fill";
       thumbnail.appendChild(img);
     } else {
-      const video = document.createElement("video");
+      const video = createElement("video");
       video.src = rec.url;
       video.muted = true;
       video.className = "cam-media-fill";
       thumbnail.appendChild(video);
     }
 
-    const info = document.createElement("div");
+    const info = createElement("div");
     info.className = "cam-history-info";
 
-    const name = document.createElement("div");
+    const name = createElement("div");
     name.className = "cam-history-name";
     name.textContent = rec.id;
 
-    const timestamp = document.createElement("div");
+    const timestamp = createElement("div");
     timestamp.className = "cam-history-timestamp";
     timestamp.textContent = this.formatTimestamp(rec.id);
 
     info.appendChild(name);
     info.appendChild(timestamp);
 
-    const size = document.createElement("div");
+    const size = createElement("div");
     size.className = "cam-history-size";
     size.textContent = rec.blob ? formatSize(rec.blob.size) : "";
     info.appendChild(size);
 
-    const actions = document.createElement("div");
+    const actions = createElement("div");
     actions.className = "cam-history-actions";
 
-    const renameBtn = document.createElement("button");
+    const renameBtn = createElement("button");
     renameBtn.innerHTML = '<i class="fas fa-pencil"></i>';
     renameBtn.className = "cam-hist-btn";
     renameBtn.title = "Rename";
@@ -594,7 +594,7 @@ export class CameraApp extends BaseApp {
     };
     actions.appendChild(renameBtn);
 
-    const deleteBtn = document.createElement("button");
+    const deleteBtn = createElement("button");
     deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
     deleteBtn.className = "cam-hist-btn danger";
     deleteBtn.title = "Delete";
@@ -619,7 +619,7 @@ export class CameraApp extends BaseApp {
 
   async getVideoDuration(url) {
     return new Promise((resolve) => {
-      const video = document.createElement("video");
+      const video = createElement("video");
       video.src = url;
       video.onloadedmetadata = () => {
         resolve(video.duration);
@@ -657,7 +657,7 @@ export class CameraApp extends BaseApp {
   }
 
   startInlineRename(rec, state, nameEl) {
-    const input = document.createElement("input");
+    const input = createElement("input");
     input.type = "text";
     input.className = "cam-inline-rename-input";
     input.value = rec.name;
@@ -686,7 +686,7 @@ export class CameraApp extends BaseApp {
         }
       }
 
-      const restoredName = document.createElement("div");
+      const restoredName = createElement("div");
       restoredName.className = "cam-history-name";
       restoredName.textContent = rec.id;
       input.replaceWith(restoredName);

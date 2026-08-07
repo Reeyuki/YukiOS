@@ -5,11 +5,14 @@ import { GameLauncher } from "./GameLauncher.js";
 import { GameUI } from "./GameUI.js";
 import { LargeModeAudio } from "./steamAudio.js";
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
+import { resolveAvatarUrl } from "../social/avatarResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
-import { $, $$ } from "../shared/domUtils.js";
+import { $, $$, setText } from "../shared/domUtils.js";
 import { STEAM_NEWS_ITEMS } from "./steamNewsData.js";
+import { fetchSocialMe } from "../social/socialMeApi.js";
+import { offerSteamTour } from "../apps/steamIntro.js";
 import { StorageKeys, os, MODES } from "../framework.js";
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
@@ -37,7 +40,7 @@ export function refreshSteamUI() {
   const username = user.name;
   const profilePic = user.avatar;
 
-  const steamUserProfiles = $$(".steam-user-profile span");
+  const steamUserProfiles = $$(".steam-profile-name");
   steamUserProfiles.forEach((span) => {
     if (span && span.textContent !== username) {
       span.textContent = username;
@@ -49,21 +52,46 @@ export function refreshSteamUI() {
     userTab.textContent = username;
   }
 
-  const steamProfileImgs = $$(".steam-user-profile img");
-  steamProfileImgs.forEach((img) => {
-    if (img instanceof HTMLImageElement && img.src !== profilePic) {
-      img.src = profilePic;
-    }
-  });
-
   const friendsName = $(".friends-name");
   if (friendsName && friendsName.textContent !== username) {
     friendsName.textContent = username;
   }
 
+  const steamProfileImgs = $$(".steam-user-profile img");
   const friendsProfileImg = $(".friends-profile img");
-  if (friendsProfileImg instanceof HTMLImageElement && friendsProfileImg.src !== profilePic) {
-    friendsProfileImg.src = profilePic;
+  const avatarImgs = [...steamProfileImgs];
+  if (friendsProfileImg instanceof HTMLImageElement) avatarImgs.push(friendsProfileImg);
+  if (avatarImgs.length > 0) {
+    resolveAvatarUrl(profilePic, "static/icons/guest.webp").then((url) => {
+      avatarImgs.forEach((img) => {
+        if (img instanceof HTMLImageElement && img.src !== url) img.src = url;
+      });
+    });
+  }
+
+  updateSteamProfileCoins();
+}
+
+export async function updateSteamProfileCoins() {
+  const coinsEl = $(".steam-profile-coins");
+  const streakEl = $(".steam-profile-streak");
+  if (!coinsEl && !streakEl) return;
+  const me = await fetchSocialMe().catch(() => null);
+  const coins = me && typeof me.coins === "number" ? me.coins : null;
+  const valueEl = $(".steam-profile-coins-value", coinsEl);
+  if (coins == null) {
+    if (coinsEl) coinsEl.classList.add("steam-profile-coins--hidden");
+  } else {
+    if (valueEl) setText(valueEl, String(coins));
+    coinsEl.classList.remove("steam-profile-coins--hidden");
+  }
+  const streakVal = me && typeof me.streak === "number" && me.streak > 0 ? me.streak : null;
+  const valueStreakEl = $(".steam-profile-streak-value", streakEl);
+  if (streakVal == null) {
+    if (streakEl) streakEl.classList.add("steam-profile-streak--hidden");
+  } else {
+    if (valueStreakEl) setText(valueStreakEl, String(streakVal));
+    streakEl.classList.remove("steam-profile-streak--hidden");
   }
 }
 
@@ -321,14 +349,14 @@ export const SteamDataManager = {
 
 const STEAM_WIN_ID = "games-app-win";
 
-const dispatchSteamNavigate = (page) => {
-  const container = document.getElementById("games-app-container");
+const dispatchSteamNavigate = (page, navData = {}) => {
+  const container = $("#games-app-container");
   if (!container) return;
-  container.dispatchEvent(new CustomEvent("steam-navigate", { detail: { page } }));
+  container.dispatchEvent(new CustomEvent("steam-navigate", { detail: { page, ...navData } }));
 };
 
-export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId = null, page = null) {
-  const existing = document.getElementById(STEAM_WIN_ID);
+export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId = null, page = null, navData = {}) {
+  const existing = $("#" + STEAM_WIN_ID);
   if (existing) {
     if (existing.style.display === "none") {
       os.tray.restoreFromTray(STEAM_WIN_ID);
@@ -336,14 +364,14 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
       existing.style.display = "flex";
       wm.bringToFront(existing);
     }
-    const taskbarItem = document.getElementById(`taskbar-${STEAM_WIN_ID}`);
+    const taskbarItem = $(`#taskbar-${STEAM_WIN_ID}`);
     if (taskbarItem) {
       taskbarItem.style.display = "";
       taskbarItem.classList.remove("minimized");
     }
 
     if (page) {
-      setTimeout(() => dispatchSteamNavigate(page), 50);
+      setTimeout(() => dispatchSteamNavigate(page, navData), 50);
       return;
     }
 
@@ -435,7 +463,9 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
   }
 
   if (page) {
-    setTimeout(() => dispatchSteamNavigate(page), 900);
+    setTimeout(() => dispatchSteamNavigate(page, navData), 900);
+  } else if (!gameId) {
+    setTimeout(() => offerSteamTour(), 1200);
   }
 }
 
@@ -462,6 +492,7 @@ class GameWindowRenderer {
     this.archiveGamesCache = [];
     this.hasRendered = false;
     this.ctrlFBound = false;
+    this.profileUserId = null;
     this.newsItems =
       STEAM_NEWS_ITEMS.length > 0
         ? STEAM_NEWS_ITEMS

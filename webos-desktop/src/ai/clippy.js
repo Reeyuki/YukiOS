@@ -3,7 +3,7 @@ import { $$ } from "../shared/domUtils.js";
 import { parseBool } from "../utils/utils.js";
 
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, createElement } from "../framework.js";
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 export const ClippyAnimation = Object.freeze({
@@ -65,7 +65,7 @@ async function setupClippy() {
     return window.clippyAgent;
   }
 
-  const script = document.createElement("script");
+  const script = createElement("script");
   script.type = "module";
   script.textContent = `
     import { initAgent } from "${getLibraryUrl("clippyjs", "module")}";

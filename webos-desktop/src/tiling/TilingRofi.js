@@ -1,4 +1,4 @@
-import { $ } from "../shared/domUtils.js";
+import { $, createElement } from "../shared/domUtils.js";
 import { os, StorageKeys } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { escapeHtml } from "../utils/utils.js";
@@ -41,11 +41,11 @@ export class TilingRofi {
   }
 
   init() {
-    this.backdrop = document.createElement("div");
+    this.backdrop = createElement("div");
     this.backdrop.id = "tiling-rofi-backdrop";
     document.body.appendChild(this.backdrop);
 
-    this.overlay = document.createElement("div");
+    this.overlay = createElement("div");
     this.overlay.id = "tiling-rofi-overlay";
     this.overlay.innerHTML = `
       <div class="rofi-input-wrapper">
@@ -422,14 +422,14 @@ export class TilingRofi {
     }
 
     if (label) {
-      const labelEl = document.createElement("div");
+      const labelEl = createElement("div");
       labelEl.className = "rofi-section-label";
       labelEl.textContent = label;
       this.resultsEl.appendChild(labelEl);
     }
 
     items.forEach((item, idx) => {
-      const el = document.createElement("div");
+      const el = createElement("div");
       el.className = "rofi-item";
       el.dataset.index = idx;
 
@@ -447,28 +447,28 @@ export class TilingRofi {
           item.icon.startsWith("far"));
 
       if (isUrl) {
-        const img = document.createElement("img");
+        const img = createElement("img");
         img.src = item.icon;
         img.alt = item.title;
         el.appendChild(img);
       } else if (isFa) {
-        const i = document.createElement("i");
+        const i = createElement("i");
         i.className = item.icon;
         el.appendChild(i);
       } else {
-        const i = document.createElement("i");
+        const i = createElement("i");
         i.className = "fas fa-cube";
         el.appendChild(i);
       }
 
-      const info = document.createElement("div");
+      const info = createElement("div");
       info.className = "rofi-item-info";
-      const titleEl = document.createElement("div");
+      const titleEl = createElement("div");
       titleEl.className = "rofi-item-title";
       titleEl.textContent = item.title;
       info.appendChild(titleEl);
       if (item.desc) {
-        const descEl = document.createElement("div");
+        const descEl = createElement("div");
         descEl.className = "rofi-item-desc";
         descEl.textContent = item.desc;
         info.appendChild(descEl);

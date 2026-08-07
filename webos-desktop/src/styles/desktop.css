@@ -488,7 +488,7 @@
   position: fixed;
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: rgba(var(--brand-rgb, 79, 158, 255), 0.45);
   transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
@@ -651,7 +651,7 @@ body.is-resizing * {
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 50%;
+  border-radius: 25px;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   color: rgba(255, 255, 255, 0.85);
@@ -684,7 +684,7 @@ body.is-resizing * {
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 50%;
+  border-radius: 25px;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   color: rgba(255, 255, 255, 0.85);
@@ -752,7 +752,7 @@ body.is-resizing * {
 .window-controls.mac-controls button {
   width: 13px;
   height: 13px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: transparent;
   padding: 0;
   flex-shrink: 0;
@@ -765,7 +765,7 @@ body.is-resizing * {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 50%;
+  border-radius: 25px;
   opacity: 0;
   transition: opacity 0.15s;
   background-image: var(--mac-icon);
@@ -1146,7 +1146,7 @@ html[data-theme="light"] .window {
   transform: translateX(-50%);
   width: 5px;
   height: 5px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: var(--text-primary);
   opacity: 0;
   transition: opacity 0.15s ease;

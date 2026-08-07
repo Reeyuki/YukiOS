@@ -3,7 +3,7 @@ import { $, $$, bindEvent } from "../shared/domUtils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import { formatSize, downloadBlob } from "../utils/utils.js";
 
-import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES, createElement } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -514,7 +514,7 @@ export class TorrentClientApp extends BaseApp {
       for (const url of CDN_URLS) {
         try {
           await new Promise((resolve, reject) => {
-            const script = document.createElement("script");
+            const script = createElement("script");
             script.src = url;
             script.crossOrigin = "anonymous";
             script.onload = () => {
@@ -709,7 +709,7 @@ export class TorrentClientApp extends BaseApp {
       })
       .join("");
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "torrent-dialog-overlay";
     overlay.innerHTML = `
       <div class="torrent-dialog">
@@ -1143,7 +1143,7 @@ export class TorrentClientApp extends BaseApp {
     const torrent = this.activeTorrents.get(infoHash);
     if (!torrent) return;
 
-    const row = document.querySelector(`.torrent-row[data-infohash="${infoHash}"]`);
+    const row = $(`.torrent-row[data-infohash="${infoHash}"]`);
     if (row) {
       const progress = Math.round(torrent.progress * 100);
       const fill = row.querySelector(".torrent-progress-fill");

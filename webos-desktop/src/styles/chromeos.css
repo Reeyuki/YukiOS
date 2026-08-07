@@ -86,7 +86,7 @@ html.chromeos-mode #chromeos-shelf {
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 25px;
   border: none;
   background: transparent;
   color: rgba(255, 255, 255, 0.8);
@@ -175,7 +175,7 @@ html.chromeos-mode #chromeos-shelf {
   transform: translateX(-50%);
   width: 4px;
   height: 4px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: var(--brand);
   opacity: 0;
   transition: opacity 0.15s;
@@ -197,12 +197,6 @@ html.chromeos-mode #chromeos-shelf {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.shelf-battery-pct {
-  font-size: 11px;
-  font-weight: 500;
-  margin-left: 3px;
-}
-
 .shelf-clock {
   display: flex;
   flex-direction: column;
@@ -210,7 +204,7 @@ html.chromeos-mode #chromeos-shelf {
   padding: 0 8px;
   height: 36px;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: 25px;
   transition: background 0.12s;
 }
 
@@ -242,7 +236,7 @@ html.chromeos-mode #chromeos-shelf {
 .shelf-tray-items .tray-icon-btn {
   width: 32px;
   height: 32px;
-  border-radius: 999px;
+  border-radius: 25px;
   font-size: 12px;
 }
 
@@ -380,7 +374,7 @@ html.chromeos-mode #chromeos-shelf {
 
 .launcher-grid::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
+  border-radius: 25px;
 }
 
 .launcher-grid::-webkit-scrollbar-thumb:hover {
@@ -476,29 +470,327 @@ html.chromeos-mode .window-controls button svg {
   height: 11.5px !important;
 }
 
-.shelf-pos-bottom.shelf-autohide {
-  transform: translateY(100%);
+.shelf-status {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 36px;
+  padding: 0 6px;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.19);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.12s;
 }
 
-.shelf-pos-bottom.shelf-autohide:hover,
-.shelf-pos-bottom.shelf-autohide.show {
-  transform: translateY(0);
+.shelf-pos-left .shelf-status,
+.shelf-pos-right .shelf-status {
+  flex-direction: column;
+  height: auto;
+  padding: 6px 0;
 }
 
-.shelf-pos-left.shelf-autohide {
-  transform: translateX(-100%);
+.shelf-status:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.shelf-pos-left.shelf-autohide:hover,
-.shelf-pos-left.shelf-autohide.show {
-  transform: translateX(0);
+.shelf-status-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.12s;
 }
 
-.shelf-pos-right.shelf-autohide {
-  transform: translateX(100%);
+.shelf-status-clock:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.shelf-pos-right.shelf-autohide:hover,
-.shelf-pos-right.shelf-autohide.show {
-  transform: translateX(0);
+.shelf-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 25px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: background 0.12s;
+}
+
+.shelf-status-icons:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.shelf-status-battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#chromeos-quick-settings {
+  display: none;
+  position: fixed;
+  z-index: 10001;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  background: rgba(10, 10, 20, 0.8);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  padding: 16px;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  animation: qs-panel-in 0.18s cubic-bezier(0.2, 0, 0.3, 1);
+}
+
+#chromeos-quick-settings.closing {
+  animation: qs-panel-out 0.15s ease forwards;
+}
+
+@keyframes qs-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes qs-panel-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.chromeos-qs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chromeos-qs-battery {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+.chromeos-qs-battery-date {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chromeos-qs-battery-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.chromeos-qs-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px;
+}
+
+.chromeos-qs-row .range-slider {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+}
+
+.chromeos-qs-icon-circle {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.chromeos-qs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chromeos-qs-section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  margin: 2px;
+}
+
+.chromeos-qs-boot {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+}
+
+.chromeos-qs-user {
+  display: flex;
+  align-items: center;
+}
+
+.chromeos-qs-user-avatar {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+  margin-right: 6px;
+}
+
+.chromeos-qs-boot-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.chromeos-qs-boot-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--brand);
+}
+
+.chromeos-qs-boot-btn i {
+  font-size: 13px;
+}
+
+.chromeos-qs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-height: 440px;
+  padding-right: 2px;
+}
+
+.chromeos-qs-grid-span {
+  grid-column: 1 / -1;
+}
+
+.chromeos-qs-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.chromeos-qs-tile-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+html[data-theme] .chromeos-qs-tile:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+.chromeos-qs-tile:hover .chromeos-qs-tile-icon {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.chromeos-qs-tile i {
+  font-size: 15px;
+  color: var(--text-secondary);
+  transition: color 0.12s;
+}
+
+.chromeos-qs-tile img,
+.chromeos-qs-tray-glyph {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.chromeos-qs-tile span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chromeos-qs-tile.on .chromeos-qs-tile-icon {
+  border-color: var(--brand);
+  background: var(--brand-dim);
+}
+
+.chromeos-qs-tile.on .chromeos-qs-tile-icon:hover {
+  background: var(--brand-dim);
+}
+
+.chromeos-qs-tile.on i {
+  color: var(--brand);
+}
+
+.chromeos-qs-actions {
+  display: flex;
+}
+
+.chromeos-qs-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.12s;
+}
+
+.chromeos-qs-action:hover {
+  background: rgba(255, 255, 255, 0.12);
 }

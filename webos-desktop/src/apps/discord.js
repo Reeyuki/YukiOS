@@ -1,4 +1,4 @@
-import { setStyle, os, StorageKeys, MODES } from "../framework.js";
+import { setStyle, os, StorageKeys, MODES, $, createElement } from "../framework.js";
 import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
@@ -69,7 +69,7 @@ export class DiscordApp extends ScramjetBaseApp {
 
     const cleanup = () => this.removeSplash();
     const closeObserver = new MutationObserver(() => {
-      if (!document.getElementById(winId)) {
+      if (!$("#" + winId)) {
         cleanup();
         closeObserver.disconnect();
       }
@@ -86,10 +86,10 @@ export class DiscordApp extends ScramjetBaseApp {
   }
 
   createSplash() {
-    const existing = document.getElementById("discord-splash");
+    const existing = $("#discord-splash");
     if (existing) existing.remove();
 
-    const splash = document.createElement("div");
+    const splash = createElement("div");
     splash.id = "discord-splash";
     setStyle(splash, {
       position: "fixed",
@@ -119,8 +119,8 @@ export class DiscordApp extends ScramjetBaseApp {
 
     document.body.appendChild(splash);
 
-    if (!document.getElementById("discord-splash-style")) {
-      const style = document.createElement("style");
+    if (!$("#discord-splash-style")) {
+      const style = createElement("style");
       style.id = "discord-splash-style";
       style.textContent = `
         @keyframes discordLoader {
@@ -143,9 +143,9 @@ export class DiscordApp extends ScramjetBaseApp {
   }
 
   removeSplash() {
-    const splash = document.getElementById("discord-splash");
+    const splash = $("#discord-splash");
     if (splash) splash.remove();
-    const style = document.getElementById("discord-splash-style");
+    const style = $("#discord-splash-style");
     if (style) style.remove();
   }
 

@@ -1273,22 +1273,6 @@ export const APP_MANIFESTS = [
     description: "Connect to Tor via WebTor WASM with Snowflake WebRTC for anonymous browsing."
   },
   {
-    serviceKey: "vncApp",
-    enhanced: true,
-    type: "system",
-    title: "VNC Client",
-    icon: "fas fa-display",
-    launchType: "instance",
-    windowIdPatterns: ["vnc-client"],
-    category: "internet",
-    clippy: {
-      message: "Connect to remote desktops via VNC with saved profiles and clipboard sync.",
-      animation: ClippyAnimation.Show
-    },
-    description:
-      "Remote desktop client supporting VNC protocol with saved connection profiles, fullscreen mode, and clipboard integration."
-  },
-  {
     serviceKey: "robloxStudioApp",
     enhanced: true,
     type: "system",
@@ -1383,7 +1367,7 @@ export const APP_MANIFESTS = [
     enhanced: true,
     type: "system",
     title: "Cmatrix",
-    icon: "fa-solid fa-binary",
+    icon: "fas fa-terminal",
     launchType: "instance",
     windowIdPatterns: ["cmatrix"],
     category: "games",

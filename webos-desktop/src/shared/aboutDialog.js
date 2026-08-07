@@ -1,10 +1,11 @@
 import { makeDraggable } from "./dragUtils.js";
 import { resolveIconUrl } from "./assetResolver.js";
+import { createElement } from "./domUtils.js";
 
 export function showAboutDialog(options) {
   const { title, version = "1.0.0", description, icon = null, iconType = "image" } = options;
 
-  const dialog = document.createElement("div");
+  const dialog = createElement("div");
   dialog.className = "about-dialog-overlay";
 
   let iconHtml = "";

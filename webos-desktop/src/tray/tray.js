@@ -3,7 +3,7 @@ import { showDynamicContextMenu } from "../shared/contextMenu.js";
 import { parseBool } from "../utils/utils.js";
 
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os, MODES } from "../framework.js";
+import { StorageKeys, os, MODES, createElement } from "../framework.js";
 import { isTaskbarTop } from "../utils/utils.js";
 class TrayManager {
   constructor() {
@@ -21,7 +21,7 @@ class TrayManager {
     this.wm = wm;
     const sysTray = $("#system-tray");
     if (!sysTray) return;
-    this.el = document.createElement("div");
+    this.el = createElement("div");
     this.el.id = "app-tray";
     sysTray.insertBefore(this.el, sysTray.firstChild);
 
@@ -52,7 +52,8 @@ class TrayManager {
       onWheel: options.onWheel || null,
       onQuit: options.onQuit || null,
       contextMenuItems: options.contextMenuItems || null,
-      priority: options.priority || 0
+      priority: options.priority || 0,
+      alwaysVisible: options.alwaysVisible || false
     });
     this.render();
   }
@@ -193,7 +194,7 @@ class TrayManager {
   }
 
   buildIcon(winId, icon, label) {
-    const btn = document.createElement("button");
+    const btn = createElement("button");
     btn.className = "tray-icon-btn";
     btn.title = label;
     btn.dataset.winId = winId;
@@ -260,13 +261,15 @@ class TrayManager {
     }
     this.el.style.display = "flex";
     const sortedItems = [...trayItems].sort((a, b) => (b.priority || 0) - (a.priority || 0));
-    const visible = sortedItems.slice(0, this.MAX_VISIBLE);
-    const overflow = sortedItems.slice(this.MAX_VISIBLE);
+    const pinned = sortedItems.filter((item) => item.alwaysVisible);
+    const rest = sortedItems.filter((item) => !item.alwaysVisible);
+    const visible = [...pinned, ...rest.slice(0, Math.max(0, this.MAX_VISIBLE - pinned.length))];
+    const overflow = rest.slice(Math.max(0, this.MAX_VISIBLE - pinned.length));
     visible.forEach(({ winId, icon, label }) => {
       this.el.appendChild(this.buildIcon(winId, icon, label));
     });
     if (overflow.length > 0) {
-      const btn = document.createElement("button");
+      const btn = createElement("button");
       btn.className = "tray-overflow-btn";
       btn.title = `${overflow.length} more`;
       btn.innerHTML = `<i class="fas fa-chevron-up"></i><span class="tray-overflow-count">${overflow.length}</span>`;
@@ -297,7 +300,7 @@ class TrayManager {
     if (!this.popupEl) return;
     this.popupEl.innerHTML = "";
     items.forEach(({ winId, icon, label }) => {
-      const row = document.createElement("div");
+      const row = createElement("div");
       row.className = "tray-popup-item";
       row.title = label;
       row.innerHTML = this.buildIconContentHtml(icon, label) || `<span style="font-size:12px;">${icon}</span>`;
@@ -317,7 +320,7 @@ class TrayManager {
 
   showPopup(items, sourceEl) {
     if (!this.popupEl) {
-      this.popupEl = document.createElement("div");
+      this.popupEl = createElement("div");
       this.popupEl.id = "tray-overflow-popup";
       document.body.appendChild(this.popupEl);
     }
@@ -370,7 +373,7 @@ class TrayManager {
   showContextMenu(e, winId, label) {
     const trayItem = this.items.get(winId);
     showDynamicContextMenu(e, (menu, item, hr) => {
-      const header = document.createElement("div");
+      const header = createElement("div");
       header.style.padding = "6px 12px";
       header.style.fontSize = "11px";
       header.style.fontWeight = "bold";
@@ -448,13 +451,15 @@ class TrayManager {
     }
     containerEl.style.display = "flex";
     const sortedItems = [...allItems].sort((a, b) => (b.priority || 0) - (a.priority || 0));
-    const visible = sortedItems.slice(0, this.MAX_VISIBLE);
-    const overflow = sortedItems.slice(this.MAX_VISIBLE);
+    const pinned = sortedItems.filter((item) => item.alwaysVisible);
+    const rest = sortedItems.filter((item) => !item.alwaysVisible);
+    const visible = [...pinned, ...rest.slice(0, Math.max(0, this.MAX_VISIBLE - pinned.length))];
+    const overflow = rest.slice(Math.max(0, this.MAX_VISIBLE - pinned.length));
     visible.forEach(({ winId, icon, label }) => {
       containerEl.appendChild(this.buildIcon(winId, icon, label));
     });
     if (overflow.length > 0) {
-      const btn = document.createElement("button");
+      const btn = createElement("button");
       btn.className = "tray-overflow-btn";
       btn.title = `${overflow.length} more`;
       btn.innerHTML = `<i class="fas fa-chevron-up"></i><span class="tray-overflow-count">${overflow.length}</span>`;

@@ -251,13 +251,7 @@
 #about-yukios .abx-sponsor-btn-monero:hover {
   background: var(--brand-hover);
 }
-#about-yukios .abx-sponsor-btn-ko-fi {
-  background: #df6f3c;
-}
 
-#about-yukios .abx-sponsor-btn-ko-fi:hover {
-  background: #c04913;
-}
 #about-yukios .abx-sponsor-btn-patreon {
   background: #ff424d;
 }

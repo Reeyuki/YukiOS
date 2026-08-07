@@ -2,6 +2,7 @@ import { BusEvents } from "./core/EventBusConstants.js";
 import { parseBool } from "./utils/utils.js";
 
 import { StorageKeys, os } from "./framework.js";
+import { createElement } from "./shared/domUtils.js";
 let container = null;
 let active = false;
 let mouseX = 0;
@@ -58,7 +59,7 @@ function applySettings() {
 
 function createContainer() {
   if (container) return;
-  container = document.createElement("div");
+  container = createElement("div");
   container.id = "cursor-effect";
   document.body.appendChild(container);
   applySettings();
@@ -99,10 +100,10 @@ export function trigger(icon) {
   const iconClass = icon || DEFAULT_ICON;
   let el;
   if (isFontAwesome(iconClass)) {
-    el = document.createElement("i");
+    el = createElement("i");
     el.className = "effect-icon " + iconClass;
   } else {
-    el = document.createElement("img");
+    el = createElement("img");
     el.className = "effect-icon";
     el.src = iconClass;
     el.draggable = false;

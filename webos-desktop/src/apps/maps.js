@@ -121,9 +121,9 @@ export class MapsApp extends BaseApp {
       if (source === "osm") {
         const layerText = $("#maps-layer-trigger .maps-custom-select-text");
         this.state.osmLayer = layerText ? this.getValueForLabel(layerText.textContent, LAYER_OPTIONS) : "mapnik";
-        this.state.osmLat = parseFloat(document.getElementById("maps-lat-input").value) || 20;
-        this.state.osmLng = parseFloat(document.getElementById("maps-lng-input").value) || 0;
-        this.state.osmZoom = parseInt(document.getElementById("maps-zoom-input").value, 10) || 5;
+        this.state.osmLat = parseFloat($("#maps-lat-input").value) || 20;
+        this.state.osmLng = parseFloat($("#maps-lng-input").value) || 0;
+        this.state.osmZoom = parseInt($("#maps-zoom-input").value, 10) || 5;
       }
       this.state.settingsOpen = false;
       this.syncSettingsPanel(this.state);
@@ -194,9 +194,9 @@ export class MapsApp extends BaseApp {
   initMaps(payload, event, element, state) {
     this.initCustomSelect("maps-source-trigger", "maps-source-options", SOURCE_OPTIONS, state.source, (val) => {
       const label = this.getLabelForValue(val, SOURCE_OPTIONS);
-      const sourceLabel = document.getElementById("maps-source-label");
+      const sourceLabel = $("#maps-source-label");
       if (sourceLabel) sourceLabel.textContent = label;
-      const osmSettings = document.getElementById("maps-osm-settings");
+      const osmSettings = $("#maps-osm-settings");
       if (osmSettings) osmSettings.classList.toggle("hidden", val !== "osm");
     });
 
@@ -211,13 +211,13 @@ export class MapsApp extends BaseApp {
   }
 
   syncSettingsPanel(state) {
-    const panel = document.getElementById("maps-settings-panel");
-    const overlay = document.getElementById("maps-settings-overlay");
-    const sourceLabel = document.getElementById("maps-source-label");
-    const latInput = document.getElementById("maps-lat-input");
-    const lngInput = document.getElementById("maps-lng-input");
-    const zoomInput = document.getElementById("maps-zoom-input");
-    const osmSettings = document.getElementById("maps-osm-settings");
+    const panel = $("#maps-settings-panel");
+    const overlay = $("#maps-settings-overlay");
+    const sourceLabel = $("#maps-source-label");
+    const latInput = $("#maps-lat-input");
+    const lngInput = $("#maps-lng-input");
+    const zoomInput = $("#maps-zoom-input");
+    const osmSettings = $("#maps-osm-settings");
 
     if (panel) panel.classList.toggle("open", state.settingsOpen);
     if (overlay) overlay.classList.toggle("open", state.settingsOpen);
@@ -243,7 +243,7 @@ export class MapsApp extends BaseApp {
   }
 
   updateMap(state) {
-    const iframe = document.getElementById("maps-iframe");
+    const iframe = $("#maps-iframe");
     if (!iframe) return;
 
     if (state.source === "osm") {

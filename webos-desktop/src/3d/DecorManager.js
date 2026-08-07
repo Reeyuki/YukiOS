@@ -1,3 +1,5 @@
+import { createElement } from "../shared/domUtils.js";
+
 export class DecorManager {
   constructor(THREE, scene, renderer) {
     this.THREE = THREE;
@@ -136,7 +138,7 @@ export class DecorManager {
       (T) => {
         const group = new T.Group();
 
-        const canvas = document.createElement("canvas");
+        const canvas = createElement("canvas");
         canvas.width = 256;
         canvas.height = 192;
         const ctx = canvas.getContext("2d");

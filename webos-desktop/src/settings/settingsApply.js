@@ -1,12 +1,12 @@
 import { audioMixer } from "../audioMixer.js";
-import { turboManager } from "../shared/turboManager.js";
+import { performanceManager } from "../shared/performanceManager.js";
 import { getThemeColors } from "../shared/themeEngine.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
-import { $, $$ } from "../shared/domUtils.js";
+import { $, $$, createElement } from "../shared/domUtils.js";
 import { applyResolution as applyResolutionTransform } from "../resolution/resolutionManager.js";
 import { animateThemeChange } from "./themeTransition.js";
 import { initThemeEffects } from "../shared/themeEffects.js";
-const desktop = document.getElementById("desktop");
+const desktop = $("#desktop");
 
 const LIGHT_THEMES = new Set([
   "light",
@@ -38,9 +38,9 @@ export function applyTheme(theme, getCustomColors) {
   });
 
   requestAnimationFrame(() => {
-    let styleEl = document.getElementById("yukios-theme-override");
+    let styleEl = $("#yukios-theme-override");
     if (!styleEl) {
-      styleEl = document.createElement("style");
+      styleEl = createElement("style");
       styleEl.id = "yukios-theme-override";
       document.head.appendChild(styleEl);
     }
@@ -70,9 +70,9 @@ export function applyTheme(theme, getCustomColors) {
 
 export function applyWindowTransparency(value) {
   const opacity = Math.max(0.2, Math.min(1, Number(value)));
-  let styleEl = document.getElementById("yukios-transparency-override");
+  let styleEl = $("#yukios-transparency-override");
   if (!styleEl) {
-    styleEl = document.createElement("style");
+    styleEl = createElement("style");
     styleEl.id = "yukios-transparency-override";
     document.head.appendChild(styleEl);
   }
@@ -102,7 +102,7 @@ export function applyFontSize(size) {
 
 export function applyCursor(dataUrl) {
   const styleId = "yukios-custom-cursor";
-  const existing = document.getElementById(styleId);
+  const existing = $("#" + styleId);
   if (!dataUrl) {
     existing?.remove();
     return;
@@ -114,7 +114,7 @@ export function applyCursor(dataUrl) {
     input, textarea { cursor: text !important; }
   `;
 
-  const el = existing || document.createElement("style");
+  const el = existing || createElement("style");
   el.id = styleId;
   el.textContent = css;
   if (!existing) document.head.appendChild(el);
@@ -123,13 +123,13 @@ export function applyCursor(dataUrl) {
 
 export function applyMikuCursor(enabled) {
   const styleId = "yukios-miku-cursor";
-  const existing = document.getElementById(styleId);
+  const existing = $("#" + styleId);
   if (!enabled) {
     existing?.remove();
     return;
   }
   if (existing) return;
-  const el = document.createElement("style");
+  const el = createElement("style");
   el.id = styleId;
   el.textContent = `html, body, body * { cursor: url("${resolveIconUrl("static/icons/cursor.webp")}"), auto; }`;
   document.head.appendChild(el);
@@ -165,7 +165,7 @@ export function applyDesktopStretchScrollDisabled(disabled) {
 }
 
 export function applyStartMenuSize(width, height) {
-  const el = document.getElementById("start-menu") || $(".start-menu");
+  const el = $("#start-menu") || $(".start-menu");
   if (el) {
     el.style.width = `${width}px`;
     el.style.height = `${height}px`;
@@ -173,7 +173,7 @@ export function applyStartMenuSize(width, height) {
 }
 
 export function applyStartMenuCats(cats) {
-  const el = document.getElementById("start-menu") || $(".start-menu");
+  const el = $("#start-menu") || $(".start-menu");
   if (!el) return;
   const catNames = ["menu", "games", "system", "favorites", "settingsApp"];
   catNames.forEach((catName) => {
@@ -186,7 +186,7 @@ export function applyStartMenuCats(cats) {
 }
 
 export function applyTrayEnabled(enabled) {
-  const trayEl = document.getElementById("app-tray");
+  const trayEl = $("#app-tray");
   if (trayEl) trayEl.style.display = enabled ? "flex" : "none";
 }
 
@@ -234,7 +234,7 @@ export function applyFontFamily(fontFamily, customFontData = null) {
 
   const fontConfig = customFontData || fontMap[fontFamily] || fontMap.opensans;
 
-  const style = document.createElement("style");
+  const style = createElement("style");
   style.textContent = `
 @font-face {
     font-family: '${fontConfig.family}';

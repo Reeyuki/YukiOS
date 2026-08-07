@@ -14,11 +14,24 @@ function closeWindow(win, wm) {
   wm.animateAndRemove(win);
 }
 
+export function updateMaximizeControls(win) {
+  const maxBtn = win.querySelector(".maximize-btn");
+  if (!maxBtn) return;
+  const isMaximized = win.dataset.snapZone === "maximize";
+  const maximizeGlyph = maxBtn.querySelector(".maximize-glyph");
+  const restoreGlyph = maxBtn.querySelector(".restore-glyph");
+  if (maximizeGlyph) maximizeGlyph.style.display = isMaximized ? "none" : "";
+  if (restoreGlyph) restoreGlyph.style.display = isMaximized ? "" : "none";
+  maxBtn.title = isMaximized ? "Restore" : "Maximize";
+}
+
 export function setupWindowControls(win, wm) {
   const closeBtn = win.querySelector(".close-btn");
   const maxBtn = win.querySelector(".maximize-btn");
   const minBtn = win.querySelector(".minimize-btn");
   const downloadBtn = win.querySelector(".download-btn");
+
+  updateMaximizeControls(win);
 
   win.addEventListener("transitionend", (e) => {
     if (
@@ -56,7 +69,8 @@ export function setupWindowControls(win, wm) {
   if (maxBtn) {
     maxBtn.onclick = () => {
       if (win.dataset.snapZone === "maximize") {
-        wm.toggleFullscreen(win);
+        win.classList.add("snapping");
+        wm.unsnap(win);
       } else {
         win.classList.add("snapping");
         wm.applySnap(win, "maximize");

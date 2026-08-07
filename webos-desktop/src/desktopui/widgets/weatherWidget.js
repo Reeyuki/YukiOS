@@ -1,6 +1,7 @@
 import { WidgetBase } from "../widgetManager.js";
 import { getWeatherInfo } from "../../shared/weatherCodes.js";
 import { detectUserLocation, getCached, setCache } from "../../apps/weather.js";
+import { $ } from "../../shared/domUtils.js";
 
 export class WeatherWidget extends WidgetBase {
   constructor(manager, id) {
@@ -57,21 +58,21 @@ export class WeatherWidget extends WidgetBase {
       const info = getWeatherInfo(code);
       const city = loc.city;
 
-      const iconEl = document.getElementById(`w-weather-icon-${this.id}`);
-      const tempEl = document.getElementById(`w-weather-temp-${this.id}`);
-      const descEl = document.getElementById(`w-weather-desc-${this.id}`);
-      const detailsEl = document.getElementById(`w-weather-details-${this.id}`);
+      const iconEl = $(`#w-weather-icon-${this.id}`);
+      const tempEl = $(`#w-weather-temp-${this.id}`);
+      const descEl = $(`#w-weather-desc-${this.id}`);
+      const detailsEl = $(`#w-weather-details-${this.id}`);
 
-      if (iconEl) iconEl.textContent = info.icon;
+      if (iconEl) iconEl.innerHTML = `<i class="${info.icon}"></i>`;
       if (tempEl) tempEl.textContent = `${temp}°C`;
       if (descEl) descEl.textContent = `${info.label} - ${city}`;
       if (detailsEl && cur.relative_humidity_2m != null && cur.wind_speed_10m != null) {
         detailsEl.textContent = `Humidity: ${cur.relative_humidity_2m}%  Wind: ${cur.wind_speed_10m} km/h`;
       }
     } catch {
-      const el = document.getElementById(`w-weather-temp-${this.id}`);
+      const el = $(`#w-weather-temp-${this.id}`);
       if (el) el.textContent = "N/A";
-      const desc = document.getElementById(`w-weather-desc-${this.id}`);
+      const desc = $(`#w-weather-desc-${this.id}`);
       if (desc) desc.textContent = "Could not load weather";
     }
   }

@@ -2,7 +2,7 @@ import "../styles/emulator.css";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 
 import { audioMixer } from "../audioMixer.js";
-import { BaseApp, os, brand } from "../framework.js";
+import { BaseApp, os, brand, $, createElement } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import {
   normalizePath,
@@ -176,7 +176,7 @@ export class EmulatorApp extends BaseApp {
     allExts.add(".zip");
 
     renderEmulatorFileList({
-      container: document.getElementById("emulator-user-roms"),
+      container: $("#emulator-user-roms"),
       dir: ROMS_DIR,
       filter: (f) => Array.from(allExts).some((ext) => f.toLowerCase().endsWith(ext)),
       emptyHTML: `<div class="emu-empty ruf-empty">No ROMs uploaded yet.</div>`,
@@ -404,7 +404,7 @@ window.EJS_color = "var(--brand)";
 <script src=${JSON.stringify(CDN_CONFIG.libraries.emulatorjs.loader)}><\/script>
 </body></html>`;
 
-      const iframe = document.createElement("iframe");
+      const iframe = createElement("iframe");
       iframe.style.cssText = "width:100%;height:100%;border:none;display:block;";
       iframe.setAttribute("allow", "autoplay; fullscreen");
       iframe.srcdoc = iframeDoc;

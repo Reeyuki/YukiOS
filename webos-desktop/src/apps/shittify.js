@@ -1,6 +1,6 @@
 import { resolveGhUrl, resolveIconUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
-import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES, $, createElement } from "../framework.js";
 const SHITTIFY_ICON = resolveIconUrl("/static/icons/shittify.webp");
 
 const SHITTIFY_CDN_URL = "https://cdn.jsdelivr.net/gh/Reeyuki/shittifylol@master/shittify21.html";
@@ -169,8 +169,8 @@ export class ShittifyApp extends BaseApp {
   async open(extra = {}) {
     const winId = extra.forceId || this.winId;
 
-    if (document.getElementById(winId)) {
-      const win = document.getElementById(winId);
+    if ($("#" + winId)) {
+      const win = $("#" + winId);
       if (win.style.display === "none") {
         os.tray.restoreFromTray(winId);
       } else {
@@ -191,7 +191,7 @@ export class ShittifyApp extends BaseApp {
       icon: SHITTIFY_ICON
     });
 
-    const contentDiv = document.createElement("div");
+    const contentDiv = createElement("div");
     contentDiv.className = "window-content";
     contentDiv.style.cssText =
       "width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center;";

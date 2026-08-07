@@ -1,4 +1,4 @@
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, $ } from "../framework.js";
 
 export class ErudaApp extends BaseApp {
   constructor(services) {
@@ -28,7 +28,7 @@ export class ErudaApp extends BaseApp {
   }
 
   async initEruda() {
-    const container = document.getElementById("eruda-container");
+    const container = $("#eruda-container");
     if (container) {
       const eruda = await import("eruda");
       eruda.default.init({

@@ -1,5 +1,6 @@
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getGameList } from "./GameCaseManager.js";
+import { createElement } from "../shared/domUtils.js";
 
 const COLS = 4;
 const ROWS = 5;
@@ -132,7 +133,7 @@ export class WallDisplay {
     this.group.add(right);
 
     const titleMat = new T.MeshBasicMaterial({ transparent: true, opacity: 0.9, side: T.DoubleSide });
-    const titleCanvas = document.createElement("canvas");
+    const titleCanvas = createElement("canvas");
     titleCanvas.width = 256;
     titleCanvas.height = 40;
     const tctx = titleCanvas.getContext("2d");
@@ -179,7 +180,7 @@ export class WallDisplay {
     const startX = -(tabW * 2 + 0.04);
 
     for (let i = 0; i < TAB_IDS.length; i++) {
-      const canvas = document.createElement("canvas");
+      const canvas = createElement("canvas");
       canvas.width = 128;
       canvas.height = 32;
       const ctx = canvas.getContext("2d");
@@ -373,7 +374,7 @@ export class WallDisplay {
       }
     }
 
-    const pageLabelCanvas = document.createElement("canvas");
+    const pageLabelCanvas = createElement("canvas");
     pageLabelCanvas.width = 128;
     pageLabelCanvas.height = 24;
     const plc = pageLabelCanvas.getContext("2d");
@@ -385,7 +386,7 @@ export class WallDisplay {
     plc.fillText(`Page ${this.page + 1}/${totalPages}`, 64, 13);
 
     for (const btn of this.pageButtons) {
-      const bc = document.createElement("canvas");
+      const bc = createElement("canvas");
       bc.width = 32;
       bc.height = 32;
       const bctx = bc.getContext("2d");
@@ -405,7 +406,7 @@ export class WallDisplay {
   }
 
   createCardTexture(game) {
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = CANVAS_W;
     canvas.height = CANVAS_H;
     const ctx = canvas.getContext("2d");
@@ -464,7 +465,7 @@ export class WallDisplay {
     const img = this.images.get(cardItem.game.id);
     if (!img) return;
 
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = CANVAS_W;
     canvas.height = CANVAS_H;
     const ctx = canvas.getContext("2d");

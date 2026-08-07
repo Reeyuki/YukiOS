@@ -253,7 +253,10 @@ var $scramjetController;
           this.injectScramjet());
       }
       injectScramjet() {
-        let e = this.global.frameElement;
+        let e = null;
+        try {
+          e = this.global.frameElement;
+        } catch {}
         e &&
           !e.name &&
           (window.name = e.name =
@@ -266,18 +269,33 @@ var $scramjetController;
         if (!o) {
           r = !1;
           let e = this.global.window;
-          for (; e.parent !== e; ) {
-            let r = e[i.pX];
+          for (;;) {
+            let p = null;
+            try {
+              if (e.parent === e) break;
+              p = e.parent;
+            } catch {
+              break;
+            }
+            let r = null;
+            try {
+              r = e[i.pX];
+            } catch {
+              break;
+            }
             if (!r) {
-              e = e.parent.window;
+              e = p;
               continue;
             }
-            let s = r.descriptors.get("window.frameElement", e);
+            let s = null;
+            try {
+              s = r.descriptors.get("window.frameElement", e);
+            } catch {}
             if (s && s[t.I]) {
               o = s[t.I];
               break;
             }
-            e = e.parent.window;
+            e = p;
           }
         }
         let s = {
@@ -297,6 +315,30 @@ var $scramjetController;
             codecDecode: this.init.codecDecode
           }
         };
+        if (this.global.navigator && this.global.navigator.storage) {
+          try {
+            this.global.navigator.storage.persist = () => Promise.resolve(true);
+          } catch {}
+          try {
+            this.global.navigator.storage.persisted = () => Promise.resolve(true);
+          } catch {}
+        }
+        if (this.global.StorageManager && this.global.StorageManager.prototype) {
+          try {
+            Object.defineProperty(this.global.StorageManager.prototype, "persist", {
+              value: () => Promise.resolve(true),
+              writable: true,
+              configurable: true
+            });
+          } catch {}
+          try {
+            Object.defineProperty(this.global.StorageManager.prototype, "persisted", {
+              value: () => Promise.resolve(true),
+              writable: true,
+              configurable: true
+            });
+          } catch {}
+        }
         this.client = new i.bw(this.global, {
           context: s,
           transport: this.transport,

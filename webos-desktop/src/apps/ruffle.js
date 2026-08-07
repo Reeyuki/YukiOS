@@ -1,7 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
-import { BusEvents, BaseApp, os } from "../framework.js";
+import { BusEvents, BaseApp, os, $, createElement } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import {
   normalizePath,
@@ -81,7 +81,7 @@ export class RuffleApp extends BaseApp {
 
   async loadUserFiles() {
     renderEmulatorFileList({
-      container: document.getElementById("ruffle-user-files"),
+      container: $("#ruffle-user-files"),
       dir: FLASH_DIR,
       filter: (f) => f.toLowerCase().endsWith(".swf"),
       emptyHTML: `<div class="emu-empty ruf-empty">No Flash files uploaded yet.</div>`,
@@ -258,7 +258,7 @@ export class RuffleApp extends BaseApp {
           return;
         }
 
-        const script = document.createElement("script");
+        const script = createElement("script");
         script.src =
           getLibraryUrl("ruffle") ||
           `${CDN_CONFIG.repos.npm.base}/@ruffle-rs/ruffle@${CDN_CONFIG.libraries.ruffle.version}/ruffle.min.js`;

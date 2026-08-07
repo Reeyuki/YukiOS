@@ -4,6 +4,8 @@ import { StorageAPI } from "./storage.js";
 import { DialogAPI } from "./dialog.js";
 import { ModeAPI } from "./modes.js";
 import { TorManager } from "../tor/TorManager.js";
+import { AccountAPI } from "../account/accountApi.js";
+import { $ } from "../shared/domUtils.js";
 
 export class NotificationAPI {
   constructor(nc) {
@@ -75,7 +77,7 @@ export class AppAPI {
   }
 
   close(winId) {
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (win) this.launcher?.wm?.closeWindow?.(win);
   }
 
@@ -487,6 +489,7 @@ export class OSBridge {
     this.tor = new TorAPI();
     this.tiling = new TilingAPI(services.windowManager);
     this.modes = new ModeAPI();
+    this.account = new AccountAPI();
     this.clipboardManager = null;
 
     window.os = this;

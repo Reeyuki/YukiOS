@@ -120,9 +120,9 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
   ];
   systemSettings.forEach((id) => bindEvent($(id, win), "change", save));
 
-  $$(".settings-btn[data-turbo-val]", win).forEach((btn) => {
+  $$(".settings-btn[data-performance-val]", win).forEach((btn) => {
     bindEvent(btn, "click", () => {
-      $$(".settings-btn[data-turbo-val]", win).forEach((b) => toggleClass(b, "active", b === btn));
+      $$(".settings-btn[data-performance-val]", win).forEach((b) => toggleClass(b, "active", b === btn));
       save();
     });
   });
@@ -530,7 +530,7 @@ export function bindAppearanceCategory(
           if (customThemesGrid) {
             const emptyMessage = customThemesGrid.querySelector("span");
             if (emptyMessage) emptyMessage.remove();
-            const newThemeBtn = document.createElement("button");
+            const newThemeBtn = createElement("button");
             newThemeBtn.className = "settings-btn";
             newThemeBtn.dataset.themeVal = themeValue;
             newThemeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeName}`;
@@ -652,6 +652,14 @@ export function bindAppearanceCategory(
   if (minimizeAnimSelect) {
     bindEvent(minimizeAnimSelect, "change", () => {
       os.storage.set(StorageKeys.windowMinimizeAnimation, getSelectMenuValue("settingsMinimizeAnimation", win));
+      showSaved();
+    });
+  }
+
+  const restoreAnimSelect = $("#settingsRestoreAnimation", win);
+  if (restoreAnimSelect) {
+    bindEvent(restoreAnimSelect, "change", () => {
+      os.storage.set(StorageKeys.windowRestoreAnimation, getSelectMenuValue("settingsRestoreAnimation", win));
       showSaved();
     });
   }
@@ -985,8 +993,8 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
     if (workspaceToggle) workspaceToggle.checked = !!settings.showWorkspace;
     const bootToggle = $("#settingsDisableBootScreen", win);
     if (bootToggle) bootToggle.checked = !!settings.disableBootScreen;
-    $$(".settings-btn[data-turbo-val]", win).forEach((btn) => {
-      toggleClass(btn, "active", btn.dataset.perfVal === settings.turboMode);
+    $$(".settings-btn[data-performance-val]", win).forEach((btn) => {
+      toggleClass(btn, "active", btn.dataset.perfVal === settings.performanceMode);
     });
     showStatus("Reset to saved values");
   });
@@ -1007,7 +1015,7 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
     if (workspaceToggle) workspaceToggle.checked = true;
     const bootToggle = $("#settingsDisableBootScreen", win);
     if (bootToggle) bootToggle.checked = false;
-    $$(".settings-btn[data-turbo-val]", win).forEach((btn) => {
+    $$(".settings-btn[data-performance-val]", win).forEach((btn) => {
       toggleClass(btn, "active", btn.dataset.perfVal === "high");
     });
     save();

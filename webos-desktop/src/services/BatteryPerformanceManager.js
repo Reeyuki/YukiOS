@@ -1,5 +1,5 @@
 import { $ } from "../shared/domUtils.js";
-import { turboManager } from "../shared/turboManager.js";
+import { performanceManager } from "../shared/performanceManager.js";
 import { parseBool } from "../utils/utils.js";
 import { StorageKeys, os } from "../framework.js";
 import { SystemUtilities } from "../system.js";
@@ -44,11 +44,11 @@ class BatteryPerformanceManager {
   }
 
   applyMobileDefaults() {
-    this.previousMode = turboManager.getMode();
+    this.previousMode = performanceManager.getMode();
     document.documentElement.classList.add("battery-saver");
 
-    if (turboManager.getMode() === "high") {
-      turboManager.setMode("balanced");
+    if (performanceManager.getMode() === "high") {
+      performanceManager.setMode("balanced");
     }
   }
 
@@ -77,7 +77,7 @@ class BatteryPerformanceManager {
   mobileLowBattery(level) {
     this.saverActive = true;
     document.documentElement.classList.add("battery-saver");
-    turboManager.setMode("turbo");
+    performanceManager.setMode("performance");
 
     const vc = $("#vanta-container");
     if (vc) SystemUtilities.disableVantaWallpaper();
@@ -92,7 +92,7 @@ class BatteryPerformanceManager {
   mobileBatteryRecovered() {
     this.saverActive = false;
     document.documentElement.classList.remove("battery-saver");
-    turboManager.setMode("balanced");
+    performanceManager.setMode("balanced");
 
     SystemUtilities.loadWallpaper();
 
@@ -105,9 +105,9 @@ class BatteryPerformanceManager {
 
   desktopLowBattery(level) {
     this.saverActive = true;
-    this.previousMode = turboManager.getMode();
+    this.previousMode = performanceManager.getMode();
 
-    turboManager.setMode("turbo");
+    performanceManager.setMode("performance");
     document.documentElement.classList.add("battery-saver");
 
     const vc = $("#vanta-container");
@@ -144,7 +144,7 @@ class BatteryPerformanceManager {
     }
 
     if (this.previousMode) {
-      turboManager.setMode(this.previousMode);
+      performanceManager.setMode(this.previousMode);
     }
 
     this.saverActive = false;

@@ -201,7 +201,7 @@ html.transparent-ui[data-theme="macos-fluent"] .start-menu {
   transform: translateX(-50%);
   width: 5px;
   height: 5px;
-  border-radius: 50%;
+  border-radius: 25px;
   background: var(--text-primary);
   opacity: 0;
   transition: opacity 0.15s ease;

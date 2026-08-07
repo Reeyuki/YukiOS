@@ -1,0 +1,508 @@
+@keyframes steam-rainbow-shift {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes steam-foil-drift {
+  to {
+    background-position: 200% 200%;
+  }
+}
+
+@keyframes steam-sheen-pass {
+  0% {
+    background-position: -75% -25%, 0 0, 0 0;
+  }
+  50% {
+    background-position: 175% 125%, 0 0, 0 0;
+  }
+  100% {
+    background-position: -75% -25%, 0 0, 0 0;
+  }
+}
+
+@keyframes steam-holo-hue {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes steam-glow-pulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.28);
+  }
+}
+
+.steam-profile-banner--banner_amberdusk {
+  background: linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #581c87 100%);
+  opacity: 0.9;
+}
+
+.steam-profile-banner--banner_harbormist {
+  background: linear-gradient(135deg, #5eead4 0%, #0891b2 55%, #1e3a5f 100%);
+  opacity: 0.9;
+}
+
+.steam-profile-banner--banner_clayroute {
+  background: linear-gradient(135deg, #fb923c 0%, #c2410c 55%, #451a03 100%);
+  opacity: 0.9;
+}
+
+.steam-profile-banner--banner_velvetstatic {
+  background:
+    radial-gradient(ellipse at 25% 20%, rgba(255, 255, 255, 0.18) 0%, transparent 45%),
+    linear-gradient(135deg, #a78bfa 0%, #6d28d9 55%, #1e1b4b 100%);
+  opacity: 0.92;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.steam-profile-banner--banner_coralreef {
+  background:
+    radial-gradient(ellipse at 25% 20%, rgba(255, 255, 255, 0.18) 0%, transparent 45%),
+    linear-gradient(135deg, #fca5a5 0%, #22d3ee 55%, #075985 100%);
+  opacity: 0.92;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.steam-profile-banner--banner_ironbloom {
+  background:
+    radial-gradient(ellipse at 75% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 45%),
+    linear-gradient(135deg, #cbd5e1 0%, #64748b 55%, #be123c 100%);
+  opacity: 0.92;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.steam-profile-banner--banner_solarflare {
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.28) 45%, transparent 55%),
+    radial-gradient(ellipse at 20% 25%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #fde047 0%, #f97316 45%, #7f1d1d 100%);
+  background-size: 250% 250%, 100% 100%, 100% 100%;
+  animation: steam-sheen-pass 3.4s ease-in-out infinite;
+  opacity: 0.94;
+}
+
+.steam-profile-banner--banner_tidalsurge {
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.28) 45%, transparent 55%),
+    radial-gradient(ellipse at 20% 25%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #38bdf8 0%, #0369a1 50%, #082f49 100%);
+  background-size: 250% 250%, 100% 100%, 100% 100%;
+  animation: steam-sheen-pass 3.8s ease-in-out infinite;
+  opacity: 0.94;
+}
+
+.steam-profile-banner--banner_ashenbloom {
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.25) 45%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #f472b6 0%, #4c1d95 55%, #0f0a1e 100%);
+  background-size: 250% 250%, 100% 100%, 100% 100%;
+  animation: steam-sheen-pass 4.2s ease-in-out infinite;
+  opacity: 0.94;
+}
+
+.steam-profile-banner--banner_wyrmglass {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.07) 0px, rgba(255, 255, 255, 0.07) 2px, transparent 2px, transparent 7px),
+    radial-gradient(ellipse at 75% 15%, rgba(255, 255, 255, 0.2) 0%, transparent 45%),
+    linear-gradient(135deg, #34d399 0%, #047857 45%, #022c22 100%);
+  background-size: 200% 200%, 100% 100%, 100% 100%;
+  animation: steam-foil-drift 6s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 30px rgba(16, 185, 129, 0.4);
+  opacity: 0.95;
+}
+
+.steam-profile-banner--banner_cindermourn {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.07) 0px, rgba(255, 255, 255, 0.07) 2px, transparent 2px, transparent 7px),
+    radial-gradient(ellipse at 25% 15%, rgba(255, 255, 255, 0.18) 0%, transparent 45%),
+    linear-gradient(135deg, #f97316 0%, #7f1d1d 55%, #0a0a0a 100%);
+  background-size: 200% 200%, 100% 100%, 100% 100%;
+  animation: steam-foil-drift 6.5s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 30px rgba(249, 115, 22, 0.4);
+  opacity: 0.95;
+}
+
+.steam-profile-banner--banner_starfallveil {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0px, rgba(255, 255, 255, 0.08) 2px, transparent 2px, transparent 7px),
+    radial-gradient(ellipse at 70% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 45%),
+    linear-gradient(135deg, #818cf8 0%, #4338ca 55%, #020617 100%);
+  background-size: 200% 200%, 100% 100%, 100% 100%;
+  animation: steam-foil-drift 5.6s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 32px rgba(99, 102, 241, 0.45);
+  opacity: 0.95;
+}
+
+.steam-profile-banner--banner_prismnova {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.09) 0px, rgba(255, 255, 255, 0.09) 2px, transparent 2px, transparent 6px),
+    conic-gradient(from 180deg at 50% 50%, #f87171, #fbbf24, #a3e635, #22d3ee, #a855f7, #ec4899, #f87171);
+  background-size: 200% 200%, 100% 100%;
+  animation: steam-foil-drift 5s linear infinite, steam-holo-hue 8s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 40px rgba(168, 85, 247, 0.5);
+  opacity: 0.96;
+}
+
+.steam-profile-banner--banner_voidglasseclipse {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.06) 0px, rgba(255, 255, 255, 0.06) 2px, transparent 2px, transparent 6px),
+    conic-gradient(from 180deg at 50% 50%, #020617, #4c1d95, #7c3aed, #22d3ee, #020617);
+  background-size: 200% 200%, 100% 100%;
+  animation: steam-foil-drift 6.2s linear infinite, steam-holo-hue 9s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 40px rgba(124, 58, 237, 0.55);
+  opacity: 0.97;
+}
+
+.steam-profile-banner--banner_aurumsovereign {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 2px, transparent 2px, transparent 6px),
+    conic-gradient(from 180deg at 50% 50%, #fef3c7, #f59e0b, #b45309, #fbbf24, #fef3c7);
+  background-size: 200% 200%, 100% 100%;
+  animation: steam-foil-drift 4.6s linear infinite, steam-holo-hue 10s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 42px rgba(245, 158, 11, 0.55);
+  opacity: 0.96;
+}
+
+.steam-profile-frame--frame_ash .steam-profile-frame-img {
+  border: 3px solid #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.3), 0 0 18px rgba(148, 163, 184, 0.35);
+}
+
+.steam-profile-frame--frame_cobalt .steam-profile-frame-img {
+  border: 3px solid #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 0 18px rgba(59, 130, 246, 0.4);
+}
+
+.steam-profile-frame--frame_sable .steam-profile-frame-img {
+  border: 3px solid #78350f;
+  box-shadow: 0 0 0 2px rgba(120, 53, 15, 0.3), 0 0 18px rgba(120, 53, 15, 0.4);
+}
+
+.steam-profile-frame--frame_pearl .steam-profile-frame-img {
+  border: 3px solid #f8fafc;
+  box-shadow: 0 0 0 2px rgba(248, 250, 252, 0.4), 0 0 20px rgba(248, 250, 252, 0.35), 0 0 34px rgba(203, 213, 225, 0.25);
+}
+
+.steam-profile-frame--frame_ember .steam-profile-frame-img {
+  border: 3px solid #fb923c;
+  box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.4), 0 0 20px rgba(251, 146, 60, 0.4), 0 0 34px rgba(194, 65, 12, 0.25);
+}
+
+.steam-profile-frame--frame_glacier .steam-profile-frame-img {
+  border: 3px solid #7dd3fc;
+  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.4), 0 0 20px rgba(125, 211, 252, 0.4), 0 0 34px rgba(14, 165, 233, 0.25);
+}
+
+.steam-profile-frame--frame_wraith .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #a78bfa, #4c1d95, #a78bfa) border-box;
+  background-size: 100% 100%, 220% 100%;
+  animation: steam-rainbow-shift 5s linear infinite, steam-glow-pulse 2.6s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35), 0 0 24px rgba(124, 58, 237, 0.5);
+}
+
+.steam-profile-frame--frame_solstice .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #fbbf24, #c2410c, #fbbf24) border-box;
+  background-size: 100% 100%, 220% 100%;
+  animation: steam-rainbow-shift 4.6s linear infinite, steam-glow-pulse 2.6s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35), 0 0 24px rgba(245, 158, 11, 0.5);
+}
+
+.steam-profile-frame--frame_tempest .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #22d3ee, #0e7490, #22d3ee) border-box;
+  background-size: 100% 100%, 220% 100%;
+  animation: steam-rainbow-shift 5.4s linear infinite, steam-glow-pulse 2.6s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.35), 0 0 24px rgba(34, 211, 238, 0.5);
+}
+
+.steam-profile-frame--frame_royal .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #f59e0b, #b91c1c, #f59e0b) border-box;
+  background-size: 100% 100%, 240% 100%;
+  animation: steam-rainbow-shift 4.2s linear infinite, steam-glow-pulse 2.3s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45), 0 0 28px rgba(245, 158, 11, 0.55);
+}
+
+.steam-profile-frame--frame_oracle .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #c084fc, #22d3ee, #c084fc) border-box;
+  background-size: 100% 100%, 240% 100%;
+  animation: steam-rainbow-shift 4.8s linear infinite, steam-glow-pulse 2.3s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.45), 0 0 30px rgba(168, 85, 247, 0.55);
+}
+
+.steam-profile-frame--frame_cosmic .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #22d3ee, #818cf8, #22d3ee) border-box;
+  background-size: 100% 100%, 240% 100%;
+  animation: steam-rainbow-shift 4.4s linear infinite, steam-glow-pulse 2.3s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.4), 0 0 28px rgba(34, 211, 238, 0.6), inset 0 0 18px rgba(34, 211, 238, 0.2);
+}
+
+.steam-profile-frame--frame_prismatic .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(120deg, #f87171, #fbbf24, #22d3ee, #a855f7, #ec4899, #f87171) border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: steam-rainbow-shift 3.6s linear infinite, steam-glow-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), 0 0 30px rgba(168, 85, 247, 0.55);
+}
+
+.steam-profile-frame--frame_voidwalker .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#020617, #020617) padding-box, linear-gradient(120deg, #020617, #7c3aed, #22d3ee, #020617) border-box;
+  background-size: 100% 100%, 280% 100%;
+  animation: steam-rainbow-shift 4s linear infinite, steam-glow-pulse 2.1s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.4), 0 0 32px rgba(34, 211, 238, 0.5), inset 0 0 20px rgba(124, 58, 237, 0.3);
+}
+
+.steam-profile-frame--frame_solaris .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#1c1917, #1c1917) padding-box, linear-gradient(120deg, #fef3c7, #f59e0b, #ea580c, #fef3c7) border-box;
+  background-size: 100% 100%, 280% 100%;
+  animation: steam-rainbow-shift 3.8s linear infinite, steam-glow-pulse 2.1s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45), 0 0 32px rgba(234, 88, 12, 0.55), inset 0 0 20px rgba(245, 158, 11, 0.25);
+}
+
+.steam-profile-frame--frame_gold .steam-profile-frame-img {
+  border: 3px solid transparent;
+  background: linear-gradient(#1c1917, #1c1917) padding-box, linear-gradient(120deg, #fde68a, #f59e0b, #b45309, #fde68a) border-box;
+  background-size: 100% 100%, 260% 100%;
+  animation: steam-rainbow-shift 4s linear infinite, steam-glow-pulse 2.4s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 26px rgba(251, 191, 36, 0.55);
+}
+
+.steam-profile-name--name_slate > span {
+  background: linear-gradient(90deg, #94a3b8, #475569, #cbd5e1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.steam-profile-name--name_blossom > span {
+  background: linear-gradient(90deg, #fbcfe8, #f472b6, #fbcfe8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.steam-profile-name--name_verdant > span {
+  background: linear-gradient(90deg, #86efac, #16a34a, #86efac);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.steam-profile-name--name_gold > span {
+  background: linear-gradient(90deg, #b45309, #fbbf24, #fde68a, #fbbf24, #b45309);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+  animation: steam-rainbow-shift 5s linear infinite;
+}
+
+.steam-profile-name--name_ice > span {
+  background: linear-gradient(135deg, #bae6fd, #7dd3fc, #e0f2fe, #38bdf8, #bae6fd);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.steam-profile-name--name_amethyst > span {
+  background: linear-gradient(90deg, #d8b4fe, #7c3aed, #d8b4fe);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(124, 58, 237, 0.45);
+}
+
+.steam-profile-name--name_rainbow > span {
+  background: linear-gradient(90deg, #f87171, #fbbf24, #a3e635, #22d3ee, #a855f7, #ec4899, #f87171);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: steam-rainbow-shift 6s linear infinite;
+}
+
+.steam-profile-name--name_fire > span {
+  background: linear-gradient(90deg, #7f1d1d, #ea580c, #facc15, #ef4444, #7f1d1d);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: steam-rainbow-shift 1.6s linear infinite;
+}
+
+.steam-profile-name--name_toxic > span {
+  background: linear-gradient(90deg, #bef264, #4d7c0f, #a3e635, #4d7c0f, #bef264);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: steam-rainbow-shift 2.2s linear infinite;
+}
+
+.steam-profile-name--name_chrome > span {
+  background: linear-gradient(180deg, #f8fafc, #94a3b8 45%, #e2e8f0 55%, #475569);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.08);
+  animation: steam-glow-pulse 2.5s ease-in-out infinite;
+}
+
+.steam-profile-name--name_bloodmoon > span {
+  background: linear-gradient(90deg, #7f1d1d, #dc2626, #450a0a, #dc2626, #7f1d1d);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 14px rgba(220, 38, 38, 0.5);
+  animation: steam-rainbow-shift 4.4s linear infinite, steam-glow-pulse 2.8s ease-in-out infinite;
+}
+
+.steam-profile-name--name_starlight > span {
+  background: linear-gradient(90deg, #bfdbfe, #3b82f6, #eff6ff, #3b82f6, #bfdbfe);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 14px rgba(59, 130, 246, 0.5);
+  animation: steam-rainbow-shift 4.4s linear infinite, steam-glow-pulse 2.8s ease-in-out infinite;
+}
+
+.steam-profile-name--name_supreme > span {
+  display: inline-block;
+  background: linear-gradient(90deg, #a855f7, #ec4899, #fbbf24, #a855f7);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: -1px 0 8px rgba(239, 68, 68, 0.35), 1px 0 8px rgba(34, 211, 238, 0.35);
+  animation: steam-rainbow-shift 3s linear infinite;
+}
+
+.steam-profile-name--name_prismera > span {
+  display: inline-block;
+  background: linear-gradient(90deg, #f87171, #fbbf24, #a3e635, #22d3ee, #a855f7, #ec4899, #f87171);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: -1px 0 9px rgba(239, 68, 68, 0.4), 1px 0 9px rgba(34, 211, 238, 0.4);
+  animation: steam-rainbow-shift 2.4s linear infinite, steam-holo-hue 7s linear infinite;
+}
+
+.steam-profile-name--name_eclipse > span {
+  display: inline-block;
+  background: linear-gradient(90deg, #020617, #7c3aed, #b45309, #fbbf24, #7c3aed, #020617);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: -1px 0 9px rgba(124, 58, 237, 0.45), 1px 0 9px rgba(245, 158, 11, 0.4);
+  animation: steam-rainbow-shift 3.4s linear infinite, steam-holo-hue 8s linear infinite;
+}
+
+.steam-profile-badges--badge_glow .steam-profile-badge {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+}
+
+.steam-profile-badges--badge_slate .steam-profile-badge {
+  border-color: rgba(148, 163, 184, 0.5);
+  box-shadow: 0 0 14px rgba(148, 163, 184, 0.3);
+}
+
+.steam-profile-badges--badge_coral .steam-profile-badge {
+  border-color: rgba(253, 186, 116, 0.5);
+  box-shadow: 0 0 14px rgba(253, 186, 116, 0.3);
+}
+
+.steam-profile-badges--badge_cyan .steam-profile-badge {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.35), 0 0 26px rgba(34, 211, 238, 0.15);
+}
+
+.steam-profile-badges--badge_mint .steam-profile-badge {
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.35), 0 0 26px rgba(52, 211, 153, 0.15);
+}
+
+.steam-profile-badges--badge_rose .steam-profile-badge {
+  border-color: rgba(251, 113, 133, 0.5);
+  box-shadow: 0 0 14px rgba(251, 113, 133, 0.35), 0 0 26px rgba(251, 113, 133, 0.15);
+}
+
+.steam-profile-badges--badge_ember .steam-profile-badge {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(124, 45, 18, 0.2));
+  border-color: rgba(249, 115, 22, 0.55);
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.4);
+}
+
+.steam-profile-badges--badge_frost .steam-profile-badge {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(12, 74, 110, 0.2));
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+
+.steam-profile-badges--badge_venom .steam-profile-badge {
+  background: linear-gradient(135deg, rgba(163, 230, 53, 0.25), rgba(54, 83, 20, 0.2));
+  border-color: rgba(163, 230, 53, 0.55);
+  box-shadow: 0 0 16px rgba(163, 230, 53, 0.4);
+}
+
+.steam-profile-badges--badge_legend .steam-profile-badge {
+  border-color: rgba(245, 158, 11, 0.55);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(139, 92, 246, 0.12));
+  animation: steam-glow-pulse 2.6s ease-in-out infinite;
+}
+
+.steam-profile-badges--badge_infinite .steam-profile-badge {
+  border-color: rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.16), rgba(34, 211, 238, 0.12));
+  animation: steam-glow-pulse 2.5s ease-in-out infinite;
+}
+
+.steam-profile-badges--badge_sovereign .steam-profile-badge {
+  border-color: rgba(251, 191, 36, 0.55);
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.4);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(124, 58, 237, 0.16));
+  animation: steam-glow-pulse 2.5s ease-in-out infinite;
+}
+
+.steam-profile-badges--badge_celestial .steam-profile-badge {
+  background: conic-gradient(from 0deg, #f87171, #fbbf24, #a3e635, #22d3ee, #a855f7, #ec4899, #f87171);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  animation: steam-holo-hue 6s linear infinite, steam-glow-pulse 2.2s ease-in-out infinite;
+}
+
+.steam-profile-badges--badge_voidheart .steam-profile-badge {
+  background: conic-gradient(from 0deg, #020617, #4c1d95, #7c3aed, #22d3ee, #020617);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 22px rgba(124, 58, 237, 0.55);
+  animation: steam-holo-hue 6.6s linear infinite, steam-glow-pulse 2.2s ease-in-out infinite;
+}
+
+.steam-profile-badges--badge_radiant .steam-profile-badge {
+  background: conic-gradient(from 0deg, #fef3c7, #f59e0b, #b45309, #fbbf24, #fef3c7);
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.55);
+  animation: steam-holo-hue 7.2s linear infinite, steam-glow-pulse 2.2s ease-in-out infinite;
+}

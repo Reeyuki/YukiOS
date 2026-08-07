@@ -1,5 +1,5 @@
 import { StorageKeys, os } from "../framework.js";
-import { $$ } from "../shared/domUtils.js";
+import { $, $$ } from "../shared/domUtils.js";
 export class LayoutManager {
   constructor(manager) {
     this.manager = manager;
@@ -38,7 +38,7 @@ export class LayoutManager {
   getScreenBounds() {
     const padding = 20;
     const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
-    const taskbar = document.getElementById("taskbar");
+    const taskbar = $("#taskbar");
     let taskbarSize = 0;
     if (taskbar) {
       const rect = taskbar.getBoundingClientRect();
@@ -59,7 +59,7 @@ export class LayoutManager {
   }
 
   getTaskbarOffset() {
-    const taskbar = document.getElementById("taskbar");
+    const taskbar = $("#taskbar");
     if (!taskbar) return { top: 0, left: 0, width: 0, height: 0 };
     const rect = taskbar.getBoundingClientRect();
     const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";
@@ -70,7 +70,7 @@ export class LayoutManager {
   }
 
   getTaskbarHeight() {
-    const taskbar = document.getElementById("taskbar");
+    const taskbar = $("#taskbar");
     if (!taskbar) return 0;
     const rect = taskbar.getBoundingClientRect();
     const taskbarPosition = os.storage.get(StorageKeys.taskbarPosition) || "bottom";

@@ -1,10 +1,10 @@
 import { audioMixer } from "../../audioMixer.js";
-import { turboManager } from "../../shared/turboManager.js";
+import { performanceManager } from "../../shared/performanceManager.js";
 import { isTaskbarTop } from "../../utils/utils.js";
 import { getTrayPosition } from "../../tray/tray.js";
 import { BusEvents } from "../../framework.js";
 import { parseBool } from "../../utils/utils.js";
-import { StorageKeys, os, MODES, $ } from "../../framework.js";
+import { StorageKeys, os, MODES, $, createElement } from "../../framework.js";
 import { SystemUtilities } from "../../system.js";
 import { MAC_WALLPAPER_NAME_URL_PAIRS } from "../../wallpaperConfig.js";
 
@@ -119,7 +119,7 @@ class MacControlCenter {
     const existing = $("#" + this.popupId);
     if (existing) existing.remove();
 
-    const popup = document.createElement("div");
+    const popup = createElement("div");
     popup.id = this.popupId;
     popup.className = "mac-control-center-popup";
 
@@ -127,7 +127,7 @@ class MacControlCenter {
     const volume = Math.round((mixer.masterVolume || 1) * 100);
     const batteryLevel = this.batteryPercent;
     const batteryColor = this.getBatteryFillColor(batteryLevel);
-    const powerMode = turboManager.getMode();
+    const powerMode = performanceManager.getMode();
     const isDark = document.documentElement.getAttribute("data-theme") !== "light";
     const dnd = os.notify.getDoNotDisturb();
     const dockEnabled = true;
@@ -166,8 +166,8 @@ class MacControlCenter {
         <div class="mcc-section">
           <div class="mcc-section-title">Power Mode</div>
           <div class="mcc-power-options">
-            <button class="mcc-power-btn ${powerMode === "turbo" ? "active" : ""}" data-mode="turbo">
-              <i class="fas fa-bolt"></i> Turbo
+            <button class="mcc-power-btn ${powerMode === "performance" ? "active" : ""}" data-mode="performance">
+              <i class="fas fa-bolt"></i> Performance
             </button>
             <button class="mcc-power-btn ${powerMode === "balanced" ? "active" : ""}" data-mode="balanced">
               <i class="fas fa-balance-scale"></i> Balanced
@@ -282,7 +282,7 @@ class MacControlCenter {
     powerBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const mode = btn.dataset.mode;
-        turboManager.setMode(mode);
+        performanceManager.setMode(mode);
         powerBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
       });

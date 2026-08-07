@@ -1359,7 +1359,7 @@ export class Model3DApp extends BaseApp {
   }
 
   gradientBg(top, mid, bot) {
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = 2;
     canvas.height = 512;
     const ctx = canvas.getContext("2d");
@@ -1430,7 +1430,7 @@ export class Model3DApp extends BaseApp {
     }
     setHTML(outliner, "");
     this.sceneObjects.forEach((so) => {
-      const row = document.createElement("div");
+      const row = createElement("div");
       row.className = "yb-outliner-row" + (so.selected ? " selected" : "") + (so.visible ? "" : " hidden");
       row.dataset.id = so.id;
       setHTML(
@@ -2596,7 +2596,7 @@ export class Model3DApp extends BaseApp {
       os.notify.send("Pick an object first", "Error");
       return;
     }
-    const input = document.createElement("input");
+    const input = createElement("input");
     input.type = "file";
     input.accept = "image/*";
     input.onchange = async (e) => {
@@ -2633,7 +2633,7 @@ export class Model3DApp extends BaseApp {
   }
 
   openFromBrowser() {
-    const input = document.createElement("input");
+    const input = createElement("input");
     input.type = "file";
     input.accept = ".obj,.gltf,.glb,.fbx,.dae,.3ds,.stl,.ply,.zip";
     input.onchange = async (e) => {
@@ -2675,10 +2675,10 @@ export class Model3DApp extends BaseApp {
     const existing = $(".yb-samples-backdrop");
     if (existing) existing.remove();
 
-    const backdrop = document.createElement("div");
+    const backdrop = createElement("div");
     backdrop.className = "yb-samples-backdrop";
 
-    const modal = document.createElement("div");
+    const modal = createElement("div");
     modal.className = "yb-samples-modal";
     modal.innerHTML = `
       <div class="yb-samples-header">

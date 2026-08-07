@@ -6,6 +6,7 @@ import { pickAnimation } from "./bootAnimations.js";
 import { KeybindManager } from "./keybindManager.js";
 import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
+import { isFunction } from "./shared/functionUtils.js";
 
 const BRAND = osName();
 const MIN_DURATION = 2500;
@@ -61,7 +62,7 @@ export function showBootScreen() {
   let hidden = false;
   let showTl = null;
 
-  if (gsap && typeof gsap.to === "function") {
+  if (gsap && isFunction(gsap.to)) {
     animation.setup(els);
 
     showTl = gsap.timeline();
@@ -114,7 +115,7 @@ export function showBootScreen() {
             return;
           }
           hidden = true;
-          if (gsap && typeof gsap.to === "function") {
+          if (gsap && isFunction(gsap.to)) {
             const hideTl = gsap.timeline({
               onComplete: () => {
                 div.remove();
@@ -167,7 +168,7 @@ export function runBootPreview(anim, onDone) {
   const els = { overlay: div, container, logo, letters, version, extEls };
 
   const gsap = typeof window !== "undefined" && window.gsap;
-  if (gsap && typeof gsap.to === "function") {
+  if (gsap && isFunction(gsap.to)) {
     anim.setup(els);
     const showTl = gsap.timeline();
     anim.show(showTl, els);

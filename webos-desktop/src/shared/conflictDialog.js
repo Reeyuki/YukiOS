@@ -1,62 +1,64 @@
+import { createElement } from "./domUtils.js";
+
 export function showConflictDialog(fileName) {
   return new Promise((resolve) => {
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "explorer-confirmation-overlay";
 
-    const dialog = document.createElement("div");
+    const dialog = createElement("div");
     dialog.className = "overlay-dialog";
 
-    const header = document.createElement("div");
+    const header = createElement("div");
     header.className = "conflict-header";
 
-    const icon = document.createElement("i");
+    const icon = createElement("i");
     icon.className = "fas fa-exclamation-triangle conflict-icon";
 
-    const title = document.createElement("span");
+    const title = createElement("span");
     title.className = "conflict-title";
     title.textContent = "File already exists";
 
     header.appendChild(icon);
     header.appendChild(title);
 
-    const message = document.createElement("div");
+    const message = createElement("div");
     message.className = "conflict-message";
 
-    const fileSpan = document.createElement("span");
+    const fileSpan = createElement("span");
     fileSpan.className = "conflict-file";
     fileSpan.textContent = `"${fileName}"`;
 
     message.appendChild(fileSpan);
     message.appendChild(document.createTextNode(" already exists in this location.\nWhat would you like to do?"));
 
-    const actions = document.createElement("div");
+    const actions = createElement("div");
     actions.className = "conflict-actions";
 
-    const replaceBtn = document.createElement("button");
+    const replaceBtn = createElement("button");
     replaceBtn.className = "conflict-btn conflict-btn-replace";
     replaceBtn.dataset.action = "replace";
 
-    const replaceIcon = document.createElement("i");
+    const replaceIcon = createElement("i");
     replaceIcon.className = "fas fa-redo conflict-btn-icon";
 
     replaceBtn.appendChild(replaceIcon);
     replaceBtn.appendChild(document.createTextNode("Replace existing file"));
 
-    const keepBtn = document.createElement("button");
+    const keepBtn = createElement("button");
     keepBtn.className = "conflict-btn conflict-btn-keep";
     keepBtn.dataset.action = "keep";
 
-    const keepIcon = document.createElement("i");
+    const keepIcon = createElement("i");
     keepIcon.className = "fas fa-copy conflict-btn-icon";
 
     keepBtn.appendChild(keepIcon);
     keepBtn.appendChild(document.createTextNode("Keep both files"));
 
-    const skipBtn = document.createElement("button");
+    const skipBtn = createElement("button");
     skipBtn.className = "conflict-btn conflict-btn-skip";
     skipBtn.dataset.action = "skip";
 
-    const skipIcon = document.createElement("i");
+    const skipIcon = createElement("i");
     skipIcon.className = "fas fa-ban conflict-btn-icon";
 
     skipBtn.appendChild(skipIcon);
@@ -66,14 +68,14 @@ export function showConflictDialog(fileName) {
     actions.appendChild(keepBtn);
     actions.appendChild(skipBtn);
 
-    const footer = document.createElement("label");
+    const footer = createElement("label");
     footer.className = "conflict-footer";
 
-    const checkbox = document.createElement("input");
+    const checkbox = createElement("input");
     checkbox.type = "checkbox";
     checkbox.id = "conflict-apply-all";
 
-    const footerText = document.createElement("span");
+    const footerText = createElement("span");
     footerText.textContent = "Apply this choice to all remaining conflicts";
 
     footer.appendChild(checkbox);

@@ -1,7 +1,7 @@
 import { modeManager, MODES } from "../../modeManager.js";
 import { BusEvents } from "../../core/EventBus.js";
 import { StorageKeys, os } from "../../framework.js";
-import { $ } from "../../shared/domUtils.js";
+import { $, createElement } from "../../shared/domUtils.js";
 import { applyTheme } from "../../settings/settingsApply.js";
 import { taskbarPositionManager } from "../../desktopui/taskbarPositionManager.js";
 
@@ -44,9 +44,9 @@ export function disableMacSettings() {
 }
 
 function loadSfProFonts() {
-  const existingLink = document.querySelector('link[href*="SF-Pro"]');
+  const existingLink = $('link[href*="SF-Pro"]');
   if (!existingLink) {
-    const link = document.createElement("link");
+    const link = createElement("link");
     link.rel = "stylesheet";
     link.href = "https://fonts.cdnfonts.com/css/sf-pro-display";
     document.head.appendChild(link);

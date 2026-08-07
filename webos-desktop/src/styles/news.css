@@ -19,7 +19,7 @@
 
 .news-root::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
+  border-radius: 25px;
 }
 
 .news-root::-webkit-scrollbar-thumb:hover {
@@ -101,7 +101,7 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.35rem 0.6rem;
-  border-radius: 999px;
+  border-radius: 25px;
   font-size: 0.78rem;
   color: var(--text-primary);
   border: 1px solid color-mix(in oklch, var(--border) 45%, transparent);

@@ -1,6 +1,6 @@
 import "../styles/widgets.css";
 import { makeDraggable } from "../shared/dragUtils.js";
-import { BusEvents, os, StorageKeys } from "../framework.js";
+import { BusEvents, os, StorageKeys, $, createElement } from "../framework.js";
 import { Achievements } from "../achievements.js";
 
 const WIDGET_Z_BASE = 100;
@@ -27,7 +27,7 @@ export class WidgetBase {
   }
 
   buildElement() {
-    const el = document.createElement("div");
+    const el = createElement("div");
     el.className = "desktop-widget";
     el.dataset.widgetId = this.id;
     el.style.left = `${this.x}px`;
@@ -37,19 +37,19 @@ export class WidgetBase {
     el.style.zIndex = this.zIndex;
     el.style.position = "absolute";
 
-    const header = document.createElement("div");
+    const header = createElement("div");
     header.className = "widget-header";
     this.headerEl = header;
 
-    const titleSpan = document.createElement("span");
+    const titleSpan = createElement("span");
     titleSpan.className = "widget-title";
     titleSpan.textContent = this.title;
     header.appendChild(titleSpan);
 
-    const actions = document.createElement("div");
+    const actions = createElement("div");
     actions.className = "widget-actions";
 
-    const cfgBtn = document.createElement("button");
+    const cfgBtn = createElement("button");
     cfgBtn.className = "widget-btn widget-btn-cfg";
     cfgBtn.innerHTML = '<i class="fas fa-cog"></i>';
     cfgBtn.title = "Configure";
@@ -59,7 +59,7 @@ export class WidgetBase {
     });
     actions.appendChild(cfgBtn);
 
-    const closeBtn = document.createElement("button");
+    const closeBtn = createElement("button");
     closeBtn.className = "widget-btn widget-btn-close";
     closeBtn.innerHTML = '<i class="fas fa-times"></i>';
     closeBtn.title = "Close";
@@ -72,12 +72,12 @@ export class WidgetBase {
     header.appendChild(actions);
     el.appendChild(header);
 
-    const content = document.createElement("div");
+    const content = createElement("div");
     content.className = "widget-content";
     this.contentEl = content;
     el.appendChild(content);
 
-    const resizeHandle = document.createElement("div");
+    const resizeHandle = createElement("div");
     resizeHandle.className = "widget-resize-handle";
     el.appendChild(resizeHandle);
 
@@ -169,7 +169,7 @@ export class WidgetBase {
       return;
     }
     const winId = `widget-config-${this.id}`;
-    const existing = document.getElementById(winId);
+    const existing = $("#" + winId);
     if (existing) {
       existing.remove();
       return;
@@ -200,7 +200,7 @@ export class WidgetBase {
       </div>
     </div>`;
     win.innerHTML = `<div class="window-content" style="height:auto;">${html}</div>`;
-    document.getElementById("desktop").appendChild(win);
+    $("#desktop").appendChild(win);
 
     win.querySelector(".widget-cfg-save").addEventListener("click", () => {
       const data = {};
@@ -266,11 +266,11 @@ export class WidgetManager {
   }
 
   init() {
-    let container = document.getElementById("desktop-widgets");
+    let container = $("#desktop-widgets");
     if (!container) {
-      container = document.createElement("div");
+      container = createElement("div");
       container.id = "desktop-widgets";
-      const desktop = document.getElementById("desktop");
+      const desktop = $("#desktop");
       if (desktop) desktop.appendChild(container);
     }
     this.container = container;

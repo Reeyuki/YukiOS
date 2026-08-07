@@ -19,6 +19,7 @@ import {
 import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
 import { escapeHtml } from "../utils/utils.js";
 import { getWispUrl } from "../shared/wispConfig.js";
+import { isFunction } from "../shared/functionUtils.js";
 
 const THEME_VARS = [
   "--brand",
@@ -267,11 +268,9 @@ export class BrowserApp extends BaseApp {
       maxBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (element.dataset.snapZone === "maximize") os.window.maximize(element);
-        else {
-          element.classList.add("snapping");
-          os.window.applySnap(element, "maximize");
-        }
+        element.classList.add("snapping");
+        if (element.dataset.snapZone === "maximize") os.window.unsnap?.(element);
+        else os.window.applySnap(element, "maximize");
       });
     if (minBtn)
       minBtn.addEventListener("click", (e) => {
@@ -488,7 +487,7 @@ export class BrowserApp extends BaseApp {
     const status = response?.status ?? 200;
     let contentType = "application/octet-stream";
     const headers = response?.headers;
-    if (headers && typeof headers.get === "function") {
+    if (headers && isFunction(headers.get)) {
       const ct = headers.get("content-type");
       if (ct) contentType = ct;
     } else if (headers && typeof headers === "object") {
@@ -497,18 +496,18 @@ export class BrowserApp extends BaseApp {
     const base = contentType.split(";")[0].trim();
     const title = "localhost:" + target.port;
     if (base.includes("html")) {
-      const text = typeof response.text === "function" ? await response.text() : String(response?.body ?? "");
+      const text = isFunction(response.text) ? await response.text() : String(response?.body ?? "");
       const fsBase = [...(entry?.root || []), ...splitPath(target.path).slice(0, -1)];
       const html = await this.processHtmlContent(text, fsBase);
       return { status, contentType: base, html, title };
     }
     if (isTextContentType(base) && !base.startsWith("image/")) {
-      const text = typeof response.text === "function" ? await response.text() : String(response?.body ?? "");
+      const text = isFunction(response.text) ? await response.text() : String(response?.body ?? "");
       return { status, contentType: base, text, title };
     }
     try {
-      const clone = typeof response.clone === "function" ? response.clone() : null;
-      if (clone && typeof clone.text === "function") {
+      const clone = isFunction(response.clone) ? response.clone() : null;
+      if (clone && isFunction(clone.text)) {
         const probe = await clone.text();
         if (/^\s*<!DOCTYPE\s+html|^\s*<html[\s>]/i.test(probe)) {
           const fsBase = [...(entry?.root || []), ...splitPath(target.path).slice(0, -1)];
@@ -519,7 +518,7 @@ export class BrowserApp extends BaseApp {
     } catch {}
     let blob = null;
     try {
-      blob = typeof response.blob === "function" ? await response.blob() : null;
+      blob = isFunction(response.blob) ? await response.blob() : null;
     } catch {}
     if (!blob && response?.body != null) {
       blob = new Blob([response.body], { type: base });

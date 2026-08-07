@@ -4,8 +4,8 @@ import { popularityMap } from "./games.js";
 import { SteamSettings } from "./steam.js";
 import { lazyImg, observeLazyImages, getCdnBase } from "./games.js";
 import { fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
-import { $, $$ } from "../shared/domUtils.js";
-import { injectAdsterraAd, injectNativeAd } from "../ads.js";
+import { $, $$, createElement } from "../shared/domUtils.js";
+import { injectAdsterraAd, injectNativeAd, suppressAdBlocks } from "../ads.js";
 
 const AD_KEYS = {
   leaderboard: "28c33f91ee21bcf1063e489aae3024f8",
@@ -196,6 +196,7 @@ export class GameRenderer {
 
     injectAdsterraAd("overview-ad-slot", AD_KEYS.rectangle, 300, 250, 200);
     injectNativeAd("container-5f797791a9771b6940fb9385a69ce168");
+    suppressAdBlocks(target);
 
     target.querySelector(".steam-play-btn").onclick = () => onLaunch(appId);
     this.renderer.setActiveSidebarItem(container, appId);
@@ -261,6 +262,7 @@ export class GameRenderer {
 
     injectAdsterraAd("archive-overview-ad-slot", AD_KEYS.rectangle, 300, 250, 200);
     injectNativeAd("container-5f797791a9771b6940fb9385a69ce168");
+    suppressAdBlocks(target);
 
     target.querySelector(".steam-play-btn").onclick = () =>
       this.renderer.showGameOverlay(archiveGame.title, archiveGame.url);
@@ -368,7 +370,7 @@ export class GameRenderer {
     sections.forEach(({ title, games }) => {
       const sectionId = `steam-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
       const isExpanded = collapsed.includes(title);
-      const wrapper = document.createElement("div");
+      const wrapper = createElement("div");
       wrapper.dataset.sectionWrapper = title;
       wrapper.innerHTML = `
         <div class="steam-section-header" id="${sectionId}" data-title="${title}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
@@ -391,6 +393,7 @@ export class GameRenderer {
 
     injectAdsterraAd("ad-library-top", AD_KEYS.leaderboard, 728, 90, 0);
     injectAdsterraAd("ad-library-bottom", AD_KEYS.rectangle, 300, 250, 500);
+    suppressAdBlocks(target);
 
     const sidebar = container.querySelector(".steam-library-sidebar");
     const mainContent = container.querySelector(".steam-main-content");
@@ -443,7 +446,7 @@ export class GameRenderer {
   }
 
   injectReeyukiStyle(target) {
-    const style = document.createElement("style");
+    const style = createElement("style");
     style.textContent = `
       .reeyuki-runtime-header {
         display: inline-flex;
@@ -469,10 +472,11 @@ export class GameRenderer {
     const CHUNK = 30;
     let index = 0;
     const renderChunk = (deadline) => {
-      while (index < games.length && (deadline ? deadline.timeRemaining() > 1 : index === 0)) {
+      let hasBudget = !deadline || index === 0 || deadline.timeRemaining() > 1;
+      while (index < games.length && hasBudget) {
         const end = Math.min(index + CHUNK, games.length);
         const frag = document.createDocumentFragment();
-        const tmp = document.createElement("div");
+        const tmp = createElement("div");
         tmp.innerHTML = games
           .slice(index, end)
           .map((g) => this.createCard(g))
@@ -482,11 +486,12 @@ export class GameRenderer {
         observeLazyImages(grid);
         index = end;
         if (!deadline) break;
+        hasBudget = deadline.timeRemaining() > 1;
       }
       if (index < games.length) {
         requestIdleCallback(renderChunk, { timeout: 500 });
       }
     };
-    requestIdleCallback(renderChunk, { timeout: 200 });
+    renderChunk();
   }
 }

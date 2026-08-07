@@ -1,6 +1,7 @@
 import { AppSource } from "../AppSource.js";
 import { os as osBridge } from "../os/index.js";
 import { brand } from "../easterYuri.js";
+import { $ } from "../shared/domUtils.js";
 
 const PROXIED_MARKER = Symbol("proxied");
 
@@ -73,11 +74,11 @@ export class BaseApp {
   restoreSnapshot(winId, data) {}
 
   async isSingletonOpen(winId) {
-    const existing = document.getElementById(winId);
+    const existing = $("#" + winId);
     if (existing) {
       if (existing.style.display === "none") {
         existing.style.display = "flex";
-        const taskbarItem = document.getElementById(`taskbar-${winId}`);
+        const taskbarItem = $(`#taskbar-${winId}`);
         if (taskbarItem) {
           taskbarItem.style.display = "";
           taskbarItem.classList.remove("minimized");

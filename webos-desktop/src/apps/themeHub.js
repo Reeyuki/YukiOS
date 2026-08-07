@@ -30,7 +30,13 @@ import {
   reportTheme,
   unpublishTheme
 } from "../shared/themeHubApi.js";
-import { getCustomThemes, addCustomTheme, getThemeByValue, getThemeColors, getFeaturedThemes } from "../shared/themeEngine.js";
+import {
+  getCustomThemes,
+  addCustomTheme,
+  getThemeByValue,
+  getThemeColors,
+  getFeaturedThemes
+} from "../shared/themeEngine.js";
 import { applyTheme } from "../settings/settingsApply.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
 
@@ -58,7 +64,9 @@ function formatCount(n) {
 }
 
 function humanizeEffectValue(v) {
-  const spaced = String(v).replace(/([A-Z])/g, " $1").trim();
+  const spaced = String(v)
+    .replace(/([A-Z])/g, " $1")
+    .trim();
   return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
@@ -68,7 +76,7 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    .replace(/'/g, "&#39;");
 }
 
 const EDITABLE_COLOR_KEYS = [
@@ -388,11 +396,7 @@ export class ThemeHubApp extends BaseApp {
       return;
     }
 
-    const themes = Array.isArray(result.themes)
-      ? result.themes
-      : Array.isArray(result.data)
-        ? result.data
-        : [];
+    const themes = Array.isArray(result.themes) ? result.themes : Array.isArray(result.data) ? result.data : [];
     this.state.themes = themes;
     this.state.total = result.total != null ? result.total : themes.length;
     this.state.pages = Math.max(1, Math.ceil(this.state.total / this.state.perPage));
@@ -621,6 +625,7 @@ export class ThemeHubApp extends BaseApp {
     if (effects.windowAnimation) chips.push("Open: " + humanizeEffectValue(effects.windowAnimation));
     if (effects.closeAnimation) chips.push("Close: " + humanizeEffectValue(effects.closeAnimation));
     if (effects.minimizeAnimation) chips.push("Minimize: " + humanizeEffectValue(effects.minimizeAnimation));
+    if (effects.restoreAnimation) chips.push("Restore: " + humanizeEffectValue(effects.restoreAnimation));
     if (effects.cursorOff) chips.push("Cursor effect off");
     if (effects.background) chips.push("Custom background");
     return chips;
@@ -776,6 +781,10 @@ export class ThemeHubApp extends BaseApp {
                 <label class="theme-hub-field-label">Minimize animation</label>
                 <div class="theme-hub-select-wrap"><select class="theme-hub-share-minimize"></select></div>
               </div>
+              <div class="theme-hub-field">
+                <label class="theme-hub-field-label">Restore animation</label>
+                <div class="theme-hub-select-wrap"><select class="theme-hub-share-restore"></select></div>
+              </div>
             </div>
             <label class="theme-hub-share-cursor-label">
               <input type="checkbox" class="theme-hub-share-cursor" />
@@ -796,30 +805,43 @@ export class ThemeHubApp extends BaseApp {
     const colorGrid = $(".theme-hub-color-grid", share);
     setHTML(
       colorGrid,
-      EDITABLE_COLOR_KEYS.filter((k) => !k.advanced).map(
-        ({ key, label }) => `
+      EDITABLE_COLOR_KEYS.filter((k) => !k.advanced)
+        .map(
+          ({ key, label }) => `
         <div class="theme-hub-color-item">
           <input type="color" class="theme-hub-color-input" data-color-key="${key}" value="${colorInputValue(this.shareForm.colors[key], WINDOW_PREVIEW_FALLBACKS[key])}" title="${label}" />
           <span class="theme-hub-color-label">${label}</span>
         </div>
       `
-      ).join("")
+        )
+        .join("")
     );
     const advancedColorGrid = $(".theme-hub-advanced .theme-hub-color-grid", share);
     setHTML(
       advancedColorGrid,
-      EDITABLE_COLOR_KEYS.filter((k) => k.advanced).map(
-        ({ key, label }) => `
+      EDITABLE_COLOR_KEYS.filter((k) => k.advanced)
+        .map(
+          ({ key, label }) => `
         <div class="theme-hub-color-item">
           <input type="color" class="theme-hub-color-input" data-color-key="${key}" value="${colorInputValue(this.shareForm.colors[key], WINDOW_PREVIEW_FALLBACKS[key])}" title="${label}" />
           <span class="theme-hub-color-label">${label}</span>
         </div>
       `
-      ).join("")
+        )
+        .join("")
     );
     this.populateSelect($(".theme-hub-share-open", share), THEME_EFFECT_OPTIONS.open, effectsData.windowAnimation);
     this.populateSelect($(".theme-hub-share-close", share), THEME_EFFECT_OPTIONS.close, effectsData.closeAnimation);
-    this.populateSelect($(".theme-hub-share-minimize", share), THEME_EFFECT_OPTIONS.minimize, effectsData.minimizeAnimation);
+    this.populateSelect(
+      $(".theme-hub-share-minimize", share),
+      THEME_EFFECT_OPTIONS.minimize,
+      effectsData.minimizeAnimation
+    );
+    this.populateSelect(
+      $(".theme-hub-share-restore", share),
+      THEME_EFFECT_OPTIONS.restore,
+      effectsData.restoreAnimation
+    );
     const cursor = $(".theme-hub-share-cursor", share);
     cursor.checked = !!effectsData.cursorOff;
     const bgInput = $(".theme-hub-share-bg", share);
@@ -854,6 +876,10 @@ export class ThemeHubApp extends BaseApp {
     bindEvent($(".theme-hub-share-minimize", share), "change", (e) => {
       if (e.target.value) this.shareForm.effects.minimizeAnimation = e.target.value;
       else delete this.shareForm.effects.minimizeAnimation;
+    });
+    bindEvent($(".theme-hub-share-restore", share), "change", (e) => {
+      if (e.target.value) this.shareForm.effects.restoreAnimation = e.target.value;
+      else delete this.shareForm.effects.restoreAnimation;
     });
     bindEvent(cursor, "change", (e) => {
       if (e.target.checked) this.shareForm.effects.cursorOff = true;
@@ -902,9 +928,11 @@ export class ThemeHubApp extends BaseApp {
     const openVal = $(".theme-hub-share-open", share).value;
     const closeVal = $(".theme-hub-share-close", share).value;
     const minimizeVal = $(".theme-hub-share-minimize", share).value;
+    const restoreVal = $(".theme-hub-share-restore", share).value;
     if (openVal) effects.windowAnimation = openVal;
     if (closeVal) effects.closeAnimation = closeVal;
     if (minimizeVal) effects.minimizeAnimation = minimizeVal;
+    if (restoreVal) effects.restoreAnimation = restoreVal;
     if ($(".theme-hub-share-cursor", share).checked) effects.cursorOff = true;
     const bg = $(".theme-hub-share-bg", share).value.trim();
     if (bg) effects.background = bg;
@@ -950,7 +978,7 @@ export class ThemeHubApp extends BaseApp {
     }
     const ok = await os.dialog.confirm(
       "Publish Theme",
-      "\"" + theme.label + "\" will be publicly visible on the YukiOS Theme Hub for other users. Publish it?"
+      '"' + theme.label + '" will be publicly visible on the YukiOS Theme Hub for other users. Publish it?'
     );
     if (!ok) return;
     let contract;

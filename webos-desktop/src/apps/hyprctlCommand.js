@@ -1,4 +1,4 @@
-import { os } from "../framework.js";
+import { os, $ } from "../framework.js";
 
 export function hyprctlHelpText() {
   return [
@@ -119,7 +119,7 @@ export async function cmdHyprctl(terminal, args) {
         break;
       }
       const wins = Array.from(wm.openWindows.keys())
-        .map((id) => document.getElementById(id))
+        .map((id) => $("#" + id))
         .filter(Boolean)
         .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex));
       const focused = wins[0];
@@ -146,7 +146,7 @@ export async function cmdHyprctl(terminal, args) {
       }
       const list = [];
       wm.openWindows.forEach((entry, winId) => {
-        const win = document.getElementById(winId);
+        const win = $("#" + winId);
         if (!win) return;
         list.push({
           winId,

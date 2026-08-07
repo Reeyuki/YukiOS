@@ -1,5 +1,5 @@
 import { getRawSetting } from "../utils/utils.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, $, createElement } from "../framework.js";
 export const OPEN_ANIMATIONS = {
   fade: "fade",
   scaleCenter: "scaleCenter",
@@ -37,6 +37,14 @@ export const MINIMIZE_ANIMATIONS = {
   spiralDown: "spiralDown"
 };
 
+export const RESTORE_ANIMATIONS = {
+  fromTaskbar: "fromTaskbar",
+  scaleCenter: "scaleCenter",
+  fade: "fade",
+  slideUp: "slideUp",
+  instant: "instant"
+};
+
 function getOpenAnim() {
   return getRawSetting(StorageKeys.windowOpenAnimation, OPEN_ANIMATIONS.scaleFromSource);
 }
@@ -47,6 +55,10 @@ function getCloseAnim() {
 
 function getMinimizeAnim() {
   return getRawSetting(StorageKeys.windowMinimizeAnimation, MINIMIZE_ANIMATIONS.taskbarShrink);
+}
+
+function getRestoreAnim() {
+  return getRawSetting(StorageKeys.windowRestoreAnimation, RESTORE_ANIMATIONS.fromTaskbar);
 }
 
 function getAnimationSpeed() {
@@ -68,13 +80,13 @@ function isClickBubbleEnabled() {
   return getRawSetting(StorageKeys.clickBubbleFeedback, "false") === "true";
 }
 
-function isTurboMode() {
-  const mode = getRawSetting(StorageKeys.turboMode, "high");
-  return mode === "turbo";
+function isPerformanceMode() {
+  const mode = getRawSetting(StorageKeys.performanceMode, "high");
+  return mode === "performance";
 }
 
 function getTaskbarPosition() {
-  const taskbar = document.getElementById("taskbar");
+  const taskbar = $("#taskbar");
   if (!taskbar) return "bottom";
 
   if (taskbar.classList.contains("position-top")) return "top";
@@ -120,20 +132,22 @@ function getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition) {
 }
 
 export function animateWindowOpen(win, isRestoring = false) {
-  if (isTurboMode()) return;
+  if (isPerformanceMode()) return;
 
   if (win.id && win.id.startsWith("browser-app-")) return;
 
-  const anim = getOpenAnim();
-  if (anim === OPEN_ANIMATIONS.instant) return;
+  const wm = os.windowManager;
+  const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
+  const restoring = isRestoring || isSessionRestoring;
+
+  const anim = restoring ? getRestoreAnim() : getOpenAnim();
+  if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
 
   const duration = 300 * getAnimationSpeed();
 
-  win.getAnimations().forEach((anim) => anim.cancel());
-  const wm = os.windowManager;
-  const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
+  win.getAnimations().forEach((a) => a.cancel());
 
-  const keyframes = getOpenKeyframes(anim, win, isRestoring || isSessionRestoring);
+  const keyframes = restoring ? getRestoreKeyframes(anim, win) : getOpenKeyframes(anim, win, false);
 
   const animation = win.animate(keyframes, {
     duration: duration,
@@ -164,7 +178,7 @@ function getOpenKeyframes(animType, win, isRestoring = false) {
           { opacity: 1, transform: "scale(1)" }
         ];
       }
-      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
         const taskbarPosition = getTaskbarPosition();
@@ -232,8 +246,43 @@ function getOpenKeyframes(animType, win, isRestoring = false) {
   }
 }
 
+function getRestoreKeyframes(animType, win) {
+  switch (animType) {
+    case RESTORE_ANIMATIONS.fromTaskbar: {
+      const taskbarItem = $(`#taskbar-${win.id}`);
+      if (taskbarItem) {
+        const winRect = win.getBoundingClientRect();
+        const taskbarPosition = getTaskbarPosition();
+        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
+        return [
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` },
+          { opacity: 1, transform: "translate(0, 0) scale(1)" }
+        ];
+      }
+      return [
+        { opacity: 0, transform: "scale(0.9)" },
+        { opacity: 1, transform: "scale(1)" }
+      ];
+    }
+    case RESTORE_ANIMATIONS.scaleCenter:
+      return [
+        { opacity: 0, transform: "scale(0.85)" },
+        { opacity: 1, transform: "scale(1)" }
+      ];
+    case RESTORE_ANIMATIONS.fade:
+      return [{ opacity: 0 }, { opacity: 1 }];
+    case RESTORE_ANIMATIONS.slideUp:
+      return [
+        { opacity: 0, transform: "translateY(20px)" },
+        { opacity: 1, transform: "translateY(0)" }
+      ];
+    default:
+      return [{ opacity: 0 }, { opacity: 1 }];
+  }
+}
+
 export function animateWindowClose(win, onDone) {
-  if (isTurboMode()) {
+  if (isPerformanceMode()) {
     onDone?.();
     return;
   }
@@ -265,7 +314,7 @@ function getCloseKeyframes(animType, win) {
         { opacity: 0, transform: "scale(0.85)" }
       ];
     case CLOSE_ANIMATIONS.scaleToOrigin:
-      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
         const taskbarPosition = getTaskbarPosition();
@@ -308,7 +357,7 @@ function getCloseKeyframes(animType, win) {
 }
 
 export function animateWindowMinimize(win, onDone) {
-  if (isTurboMode()) {
+  if (isPerformanceMode()) {
     onDone?.();
     return;
   }
@@ -338,7 +387,7 @@ function getMinimizeKeyframes(animType, win) {
 
   switch (animType) {
     case MINIMIZE_ANIMATIONS.taskbarShrink:
-      const taskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
         const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
@@ -354,7 +403,7 @@ function getMinimizeKeyframes(animType, win) {
         { opacity: 0, transform: "scale(0)" }
       ];
     case MINIMIZE_ANIMATIONS.magicLamp:
-      const tbItem = document.getElementById(`taskbar-${win.id}`);
+      const tbItem = $(`#taskbar-${win.id}`);
       if (tbItem) {
         const tbRect = tbItem.getBoundingClientRect();
         const winRect = win.getBoundingClientRect();
@@ -368,7 +417,7 @@ function getMinimizeKeyframes(animType, win) {
     case MINIMIZE_ANIMATIONS.fadeToTaskbar:
       return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.elasticStretch:
-      const elasticTaskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const elasticTaskbarItem = $(`#taskbar-${win.id}`);
       if (elasticTaskbarItem) {
         const winRect = win.getBoundingClientRect();
         const { dx, dy } = getSmartShrinkTarget(elasticTaskbarItem, winRect, taskbarPosition);
@@ -381,7 +430,7 @@ function getMinimizeKeyframes(animType, win) {
       }
       return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.spiralDown:
-      const spiralTaskbarItem = document.getElementById(`taskbar-${win.id}`);
+      const spiralTaskbarItem = $(`#taskbar-${win.id}`);
       if (spiralTaskbarItem) {
         const winRect = win.getBoundingClientRect();
         const { dx, dy } = getSmartShrinkTarget(spiralTaskbarItem, winRect, taskbarPosition);
@@ -408,7 +457,7 @@ function getMinimizeKeyframes(animType, win) {
 }
 
 export function applyFocusGlow(win) {
-  if (isTurboMode()) return;
+  if (isPerformanceMode()) return;
   win.classList.add("wa-focus-glow");
   const tid = setTimeout(() => win.classList.remove("wa-focus-glow"), 600);
   win.focusTid = tid;
@@ -435,7 +484,7 @@ export function destroyClickBubble() {
 
 function handleClickBubble(e) {
   if (!isClickBubbleEnabled()) return;
-  const ripple = document.createElement("div");
+  const ripple = createElement("div");
   ripple.className = "wa-ripple";
   ripple.style.left = `${e.clientX}px`;
   ripple.style.top = `${e.clientY}px`;
@@ -447,6 +496,7 @@ export function applyAnimationSettings(settings) {
   if (settings.openAnimation) os.storage.set(StorageKeys.windowOpenAnimation, settings.openAnimation);
   if (settings.closeAnimation) os.storage.set(StorageKeys.windowCloseAnimation, settings.closeAnimation);
   if (settings.minimizeAnimation) os.storage.set(StorageKeys.windowMinimizeAnimation, settings.minimizeAnimation);
+  if (settings.restoreAnimation) os.storage.set(StorageKeys.windowRestoreAnimation, settings.restoreAnimation);
   if (settings.animationSpeed) os.storage.set(StorageKeys.windowAnimationSpeed, settings.animationSpeed);
   if (typeof settings.clickBubble === "boolean") {
     os.storage.set(StorageKeys.clickBubbleFeedback, String(settings.clickBubble));
@@ -544,7 +594,7 @@ function buildClipPath(pts) {
   return `path('${smoothClosedPath(pts)}')`;
 }
 export function wobbleStart(win) {
-  if (isTurboMode()) return;
+  if (isPerformanceMode()) return;
   if (getRawSetting(StorageKeys.wobblyWindows, "false") !== "true") return;
 
   wobbleCancel(win);

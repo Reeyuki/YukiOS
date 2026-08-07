@@ -1,19 +1,19 @@
 import "../styles/tilingBar.css";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, createElement } from "../framework.js";
 import { parseBool } from "../utils/utils.js";
 import { TilingRofi } from "./TilingRofi.js";
 import { TilingKeybindOverlay } from "./TilingKeybindOverlay.js";
 import { trayManager } from "../tray/tray.js";
 import { BusEvents } from "../core/EventBus.js";
 import { audioMixer } from "../audioMixer.js";
-import { turboManager } from "../shared/turboManager.js";
+import { performanceManager } from "../shared/performanceManager.js";
 import { subscribeTimeTick } from "../services/timeWorker.js";
 
 const CLOCK_INTERVAL = 10000;
 const VOLUME_POLL = 500;
 const NOW_PLAYING_POLL = 1000;
 const SYS_MONITOR_POLL = 3000;
-const TURBO_MODES = ["turbo", "balanced", "high"];
+const TURBO_MODES = ["performance", "balanced", "high"];
 
 export class TilingBar {
   constructor(tilingManager) {
@@ -53,7 +53,7 @@ export class TilingBar {
   }
 
   createDOM() {
-    this.el = document.createElement("div");
+    this.el = createElement("div");
     this.el.id = "tiling-bar";
     this.el.innerHTML = `
       <div class="tiling-bar-section tiling-bar-left">
@@ -139,10 +139,10 @@ export class TilingBar {
         "wheel",
         (e) => {
           e.preventDefault();
-          const cur = turboManager.getMode();
+          const cur = performanceManager.getMode();
           const idx = TURBO_MODES.indexOf(cur);
           const next = TURBO_MODES[(idx + 1) % TURBO_MODES.length];
-          turboManager.setMode(next);
+          performanceManager.setMode(next);
         },
         { passive: false }
       );
@@ -214,7 +214,7 @@ export class TilingBar {
       this.stripDuplicatesFromTray();
     });
     os.events.on(BusEvents.SETTINGS_CHANGED, ({ key }) => {
-      if (key === "turboMode") this.updateBattery();
+      if (key === "performanceMode") this.updateBattery();
     });
   }
 
@@ -316,7 +316,7 @@ export class TilingBar {
       return;
     }
 
-    this.calendarPopup = document.createElement("div");
+    this.calendarPopup = createElement("div");
     this.calendarPopup.className = "tiling-calendar-popup";
     const pos = os.storage.get(StorageKeys.tilingBarPosition) || "top";
     if (pos === "bottom") this.calendarPopup.classList.add("position-bottom");
@@ -607,7 +607,7 @@ export class TilingBar {
 
     this.pillsContainer.innerHTML = "";
     workspaces.forEach((ws, idx) => {
-      const pill = document.createElement("button");
+      const pill = createElement("button");
       pill.className = "tiling-ws-pill" + (ws.id === activeId ? " active" : "");
       pill.textContent = String(idx + 1);
       pill.title = ws.name || `Workspace ${idx + 1}`;

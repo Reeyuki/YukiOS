@@ -1,7 +1,7 @@
 import { os, StorageKeys } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { formatSize } from "../utils/utils.js";
-import { turboManager } from "../shared/turboManager.js";
+import { performanceManager } from "../shared/performanceManager.js";
 import { animateThemeChange } from "../settings/themeTransition.js";
 
 export function yukiHelpText() {
@@ -9,7 +9,7 @@ export function yukiHelpText() {
     "",
     "  yuki help                      Show this help",
     "",
-    "  yuki power <mode>              Set power mode (turbo, balanced, high)",
+    "  yuki power <mode>              Set power mode (performance, balanced, high)",
     "  yuki brightness s|set <0-100>  Set brightness level",
     "  yuki brightness get            Show current brightness",
     "  yuki theme <name>              Switch theme",
@@ -33,7 +33,7 @@ export function yukiHelpText() {
 }
 
 function powerModes() {
-  return { turbo: "turbo", balanced: "balanced", high: "high" };
+  return { performance: "performance", balanced: "balanced", high: "high" };
 }
 
 export async function cmdYuki(terminal, args) {
@@ -53,11 +53,11 @@ export async function cmdYuki(terminal, args) {
     case "power": {
       const mode = args[1];
       if (!mode || !powerModes()[mode]) {
-        await terminal.enqueuePrint("Usage: yuki power <turbo|balanced|high>");
+        await terminal.enqueuePrint("Usage: yuki power <performance|balanced|high>");
         break;
       }
-      turboManager.setMode(mode);
-      os.events.emit("SETTINGS_CHANGED", { turboMode: mode });
+      performanceManager.setMode(mode);
+      os.events.emit("SETTINGS_CHANGED", { performanceMode: mode });
       await terminal.enqueuePrint(`  Power mode set to: ${mode}`);
       break;
     }

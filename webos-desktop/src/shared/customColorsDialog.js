@@ -1,4 +1,4 @@
-import { os, StorageKeys } from "../framework.js";
+import { os, StorageKeys, createElement } from "../framework.js";
 import { applyTheme } from "../settings/settingsApply.js";
 import { buildWindowHeader } from "./windowHeader.js";
 import "../styles/customColorsDialog.css";
@@ -36,11 +36,11 @@ export function pickCustomColors(colors) {
 
 export function openCustomColorsDialog(initialColors = null) {
   const seed = initialColors || getStoredCustomColors() || {};
-  const overlay = document.createElement("div");
+  const overlay = createElement("div");
   overlay.className = "explorer-confirmation-overlay";
   overlay.style.zIndex = "999999";
 
-  const dialog = document.createElement("div");
+  const dialog = createElement("div");
   dialog.className = "overlay-dialog";
 
   const fieldInputs = CUSTOM_COLOR_FIELDS.map(

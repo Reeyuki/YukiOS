@@ -1,4 +1,5 @@
 import { windowMakeDraggable, getSnapZone, showSnapGhost, hideSnapGhost, applySnap, unsnap } from "./makeDraggable.js";
+import { $, createElement } from "../shared/domUtils.js";
 
 export class SnapSystem {
   constructor(manager) {
@@ -10,9 +11,9 @@ export class SnapSystem {
   }
 
   initSnapGhost() {
-    const ghost = document.createElement("div");
+    const ghost = createElement("div");
     ghost.id = "snap-ghost";
-    document.getElementById("desktop").appendChild(ghost);
+    $("#desktop").appendChild(ghost);
     this.manager.snapGhost = ghost;
   }
 

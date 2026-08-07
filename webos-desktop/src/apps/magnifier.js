@@ -129,7 +129,7 @@ export class MagnifierApp extends BaseApp {
   }
 
   startMagnifier() {
-    this.desktop = document.getElementById("desktop");
+    this.desktop = $("#desktop");
     if (!this.desktop) return;
 
     this.savedTransform = this.desktop.style.transform;

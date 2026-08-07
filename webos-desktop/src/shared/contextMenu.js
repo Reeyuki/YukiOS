@@ -1,8 +1,10 @@
+import { $, createElement } from "./domUtils.js";
+
 const MENU_ID = "context-menu";
 const bodySubmenus = [];
 
 function getMenu() {
-  return document.getElementById(MENU_ID);
+  return $("#" + MENU_ID);
 }
 
 function cleanupBodySubmenus() {
@@ -123,7 +125,7 @@ export function showContextMenu(e, items, handlers) {
 
   items.forEach((item) => {
     if (typeof item === "string" || (item.condition && !item.condition())) return;
-    const el = document.getElementById(item.id);
+    const el = $("#" + item.id);
     if (el && handlers[item.action]) {
       el.onclick = (event) => {
         if (event) event.stopPropagation();
@@ -246,18 +248,18 @@ function setupKeyboardNav(menuEl) {
 }
 
 function createItemElement(text, onclick, icon) {
-  const el = document.createElement("div");
+  const el = createElement("div");
   if (icon) {
     const iconVal = icon.trim();
     if (iconVal.startsWith("http")) {
-      const iconImg = document.createElement("img");
+      const iconImg = createElement("img");
       iconImg.className = "context-menu-item-icon-img";
       iconImg.src = iconVal;
       iconImg.alt = "";
       el.appendChild(iconImg);
     } else {
       const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
-      const iconEl = document.createElement("i");
+      const iconEl = createElement("i");
       iconEl.className = iconCls;
       iconEl.style.width = "16px";
       iconEl.style.textAlign = "center";
@@ -265,7 +267,7 @@ function createItemElement(text, onclick, icon) {
       el.appendChild(iconEl);
     }
   }
-  const label = document.createElement("span");
+  const label = createElement("span");
   label.textContent = text;
   el.appendChild(label);
   el.onclick = (event) => {
@@ -291,33 +293,47 @@ export function showDynamicContextMenu(e, buildFn) {
 
   const item = (text, onclick, icon = null) => createItemElement(text, onclick, icon);
 
-  const hr = () => document.createElement("hr");
+  const hr = () => createElement("hr");
 
-  const positionSubmenu = (subEl, wrapperRect) => {
-    subEl.style.top = wrapperRect.top + "px";
-    subEl.style.left = wrapperRect.right + "px";
-    const subRect = subEl.getBoundingClientRect();
+  const positionSubmenu = (subEl, wrapper) => {
+    subEl.style.maxHeight = "";
+    subEl.style.overflowY = "";
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const gap = 2;
+    let left = wrapperRect.right + gap;
+    let top = wrapperRect.top;
+    subEl.style.left = `${left}px`;
+    subEl.style.top = `${top}px`;
+    let subRect = subEl.getBoundingClientRect();
     if (subRect.right > window.innerWidth) {
-      subEl.style.left = wrapperRect.left - subRect.width + "px";
+      left = wrapperRect.left - subRect.width - gap;
+      if (left < 10 || left + subRect.width > window.innerWidth) {
+        left = Math.max(10, window.innerWidth - subRect.width - 10);
+      }
     }
-    if (subRect.bottom > window.innerHeight) {
-      subEl.style.top = Math.max(4, window.innerHeight - subRect.height - 4) + "px";
+    if (subRect.height > window.innerHeight - 20) {
+      subEl.style.maxHeight = `${window.innerHeight - 20}px`;
+      subEl.style.overflowY = "auto";
+      subRect = subEl.getBoundingClientRect();
     }
+    top = Math.min(top, window.innerHeight - subRect.height - 10);
+    top = Math.max(10, top);
+    Object.assign(subEl.style, { left: `${left}px`, top: `${top}px` });
   };
 
   const submenu = (label, buildSubFn, icon = null) => {
-    const wrapper = document.createElement("div");
+    const wrapper = createElement("div");
     wrapper.className = "context-menu-item has-submenu";
     wrapper.style.cssText = "display:block;padding:0;background:none;border-radius:0;cursor:default;";
 
     const trigger = createItemElement(label, null, icon);
-    const arrow = document.createElement("span");
+    const arrow = createElement("span");
     arrow.className = "submenu-arrow";
     arrow.textContent = "\u25b6";
     trigger.appendChild(arrow);
     wrapper.appendChild(trigger);
 
-    const subMenuEl = document.createElement("div");
+    const subMenuEl = createElement("div");
     subMenuEl.className = "context-menu context-menu-glass";
     subMenuEl.style.display = "none";
     subMenuEl.style.position = "fixed";
@@ -326,53 +342,74 @@ export function showDynamicContextMenu(e, buildFn) {
     bodySubmenus.push(subMenuEl);
 
     const subItem = (text, onclick, subIcon = null) => createItemElement(text, onclick, subIcon);
-    const subHr = () => document.createElement("hr");
+    const subHr = () => createElement("hr");
     buildSubFn(subMenuEl, subItem, subHr, submenu);
     setupKeyboardNav(subMenuEl);
 
     let hideTimeout = null;
     let showTimeout = null;
+    let positioned = false;
+
+    const open = () => {
+      clearTimeout(hideTimeout);
+      clearTimeout(showTimeout);
+      subMenuEl.style.display = "block";
+      if (!positioned) {
+        positionSubmenu(subMenuEl, wrapper);
+        positioned = true;
+        refreshIcons(subMenuEl);
+      }
+    };
+
+    const close = () => {
+      clearTimeout(showTimeout);
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        subMenuEl.style.display = "none";
+        positioned = false;
+      }, 300);
+    };
+
+    const onPointerMove = (e) => {
+      if (subMenuEl.style.display !== "block") return;
+      const t = trigger.getBoundingClientRect();
+      const s = subMenuEl.getBoundingClientRect();
+      const x1 = Math.min(t.left, s.left) - 4;
+      const x2 = Math.max(t.right, s.right) + 4;
+      const y1 = Math.min(t.top, s.top) - 4;
+      const y2 = Math.max(t.bottom, s.bottom) + 4;
+      if (e.clientX >= x1 && e.clientX <= x2 && e.clientY >= y1 && e.clientY <= y2) {
+        clearTimeout(hideTimeout);
+      } else {
+        close();
+      }
+    };
 
     wrapper.addEventListener("mouseenter", () => {
       clearTimeout(hideTimeout);
       clearTimeout(showTimeout);
-      showTimeout = setTimeout(() => {
-        subMenuEl.style.display = "block";
-        const wrapperRect = wrapper.getBoundingClientRect();
-        positionSubmenu(subMenuEl, wrapperRect);
-        refreshIcons(subMenuEl);
-      }, 150);
+      showTimeout = setTimeout(open, 150);
     });
 
-    wrapper.addEventListener("mouseleave", () => {
-      clearTimeout(showTimeout);
-      hideTimeout = setTimeout(() => {
-        subMenuEl.style.display = "none";
-      }, 300);
-    });
-
-    wrapper.addEventListener("mousemove", () => {
-      clearTimeout(hideTimeout);
-    });
+    wrapper.addEventListener("mouseleave", close);
 
     subMenuEl.addEventListener("mouseenter", () => {
       clearTimeout(hideTimeout);
     });
 
-    subMenuEl.addEventListener("mouseleave", () => {
-      hideTimeout = setTimeout(() => {
-        subMenuEl.style.display = "none";
-      }, 300);
-    });
+    subMenuEl.addEventListener("mouseleave", close);
+
+    window.addEventListener("pointermove", onPointerMove);
 
     trigger.addEventListener("click", (event) => {
       event.stopPropagation();
       clearTimeout(hideTimeout);
       const isVisible = subMenuEl.style.display === "block";
-      subMenuEl.style.display = isVisible ? "none" : "block";
-      if (!isVisible) {
-        const wrapperRect = wrapper.getBoundingClientRect();
-        positionSubmenu(subMenuEl, wrapperRect);
+      if (isVisible) {
+        subMenuEl.style.display = "none";
+        positioned = false;
+      } else {
+        open();
         refreshIcons(subMenuEl);
       }
     });
@@ -389,26 +426,26 @@ export function showDynamicContextMenu(e, buildFn) {
   bindDismissal();
 }
 export function showStartStyleMenu(e, buildFn) {
-  const existing = document.getElementById("taskbar-context-menu");
+  const existing = $("#taskbar-context-menu");
   if (existing) existing.remove();
 
-  const menu = document.createElement("div");
+  const menu = createElement("div");
   menu.id = "taskbar-context-menu";
   menu.classList.add("context-menu-glass");
 
   const addMenuItem = (text, action, icon = null) => {
-    const menuItem = document.createElement("div");
+    const menuItem = createElement("div");
     menuItem.className = "menu-item";
 
     const iconVal = (icon || "fa-chevron-right").trim();
     const iconCls = iconVal.includes(" ") ? iconVal : `fas ${iconVal}`;
-    const iconEl = document.createElement("i");
+    const iconEl = createElement("i");
     iconEl.className = iconCls;
     iconEl.style.width = "16px";
     iconEl.style.textAlign = "center";
     menuItem.appendChild(iconEl);
 
-    const label = document.createElement("span");
+    const label = createElement("span");
     label.textContent = text;
     menuItem.appendChild(label);
 
@@ -421,7 +458,7 @@ export function showStartStyleMenu(e, buildFn) {
   };
 
   const addSeparator = () => {
-    const hr = document.createElement("hr");
+    const hr = createElement("hr");
     menu.appendChild(hr);
   };
 

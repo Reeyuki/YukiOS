@@ -1,6 +1,6 @@
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 import { parseBool } from "../utils/utils.js";
-import { os } from "../framework.js";
+import { os, $, createElement } from "../framework.js";
 
 export class ContextMenuManager {
   constructor(manager) {
@@ -8,7 +8,7 @@ export class ContextMenuManager {
   }
 
   buildPropertiesWindow(winId) {
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
 
     const appInfo = this.manager.openWindows.get(winId);
@@ -81,7 +81,7 @@ export class ContextMenuManager {
     </div>
   `;
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "window-props-overlay";
     overlay.innerHTML = overlayHtml;
 
@@ -115,13 +115,25 @@ export class ContextMenuManager {
       isMinimized ? "fa-window-restore" : "fa-window-minimize"
     );
 
+    const isMaximized = win.dataset.snapZone === "maximize";
+
     addMenuItem(
-      isFullscreen ? "Restore Size" : "Maximize",
+      isMaximized ? "Restore" : "Maximize",
+      () => {
+        if (isMaximized) this.manager.unsnap(win);
+        else this.manager.applySnap(win, "maximize");
+        this.manager.bringToFront(win);
+      },
+      isMaximized ? "fa-window-restore" : "fa-window-maximize"
+    );
+
+    addMenuItem(
+      isFullscreen ? "Exit Fullscreen" : "Fullscreen",
       () => {
         this.manager.toggleFullscreen(win);
         this.manager.bringToFront(win);
       },
-      isFullscreen ? "fa-compress" : "fa-window-maximize"
+      isFullscreen ? "fa-compress" : "fa-expand"
     );
 
     addMenuItem("Bring to Front", () => this.manager.bringToFront(win), "fa-layer-group");
@@ -173,7 +185,7 @@ export class ContextMenuManager {
     addMenuItem(
       "Close Window",
       () => {
-        const winToClose = document.getElementById(winId);
+        const winToClose = $("#" + winId);
         if (winToClose) {
           this.manager.silenceWindow(winToClose);
           this.manager.removeFromTaskbar(winId);
@@ -182,6 +194,42 @@ export class ContextMenuManager {
       },
       "fa-times-circle"
     );
+
+    const groupKey = this.getAppGroupKey(win);
+    const sameAppIds = [winId, ...this.getSiblingWindowIds(groupKey, winId)];
+    if (sameAppIds.length > 1) {
+      addSeparator();
+      addMenuItem(
+        "Close All Windows",
+        () => {
+          for (const id of sameAppIds) {
+            const winToClose = $("#" + id);
+            if (winToClose) this.manager.closeWindow(winToClose);
+          }
+        },
+        "fa-window-close"
+      );
+    }
+  }
+
+  getAppGroupKey(win) {
+    if (win.dataset.appId) return win.dataset.appId;
+    if (win.dataset.dupId) return win.dataset.dupId;
+    if (this.manager.appRestorationService) {
+      const appId = this.manager.appRestorationService.findAppId({ id: win.id });
+      if (appId) return appId;
+    }
+    return win.id.replace(/-\d+$/, "");
+  }
+
+  getSiblingWindowIds(groupKey, excludeWinId) {
+    const ids = [];
+    this.manager.openWindows.forEach((_, winId) => {
+      if (winId === excludeWinId) return;
+      const win = $("#" + winId);
+      if (win && this.getAppGroupKey(win) === groupKey) ids.push(winId);
+    });
+    return ids;
   }
 
   showWindowContextMenu(e, win) {

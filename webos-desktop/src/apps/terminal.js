@@ -3,7 +3,7 @@ import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showContextMenu, hideMenu } from "../shared/contextMenu.js";
 import { GitManager } from "../services/GitManager.js";
-import { BusEvents, $, $$, BaseApp, StorageKeys, os, MODES } from "../framework.js";
+import { BusEvents, $, $$, BaseApp, StorageKeys, os, MODES, createElement } from "../framework.js";
 import { formatSize } from "../utils/utils.js";
 import { getExt } from "../shared/fileKindDetector.js";
 import { getPyodide, runPython } from "../services/PyodideManager.js";
@@ -178,9 +178,9 @@ export class TerminalApp extends BaseApp {
       printInline: (text, colors) => {
         const state = self.activeState;
         if (!state) return;
-        const line = document.createElement("div");
+        const line = createElement("div");
         for (let i = 0; i < text.length; i++) {
-          const span = document.createElement("span");
+          const span = createElement("span");
           const [r, g, b] = colors[i % colors.length];
           span.style.color = `rgb(${r},${g},${b})`;
           span.textContent = text[i];
@@ -242,7 +242,7 @@ export class TerminalApp extends BaseApp {
     if (!container) return;
     let btn = container.querySelector(".terminal-stop-btn");
     if (btn) return;
-    btn = document.createElement("button");
+    btn = createElement("button");
     btn.className = "terminal-stop-btn";
     btn.textContent = "Stop";
     btn.title = "Interrupt running command (SIGINT)";
@@ -314,7 +314,7 @@ export class TerminalApp extends BaseApp {
     if (renderer && text.includes("\x1b[")) {
       return renderer.renderLine(text);
     }
-    const line = document.createElement("div");
+    const line = createElement("div");
     line.appendChild(document.createTextNode(text));
     this.terminalOutput.appendChild(line);
     return line;
@@ -526,12 +526,12 @@ export class TerminalApp extends BaseApp {
 
     let line;
     if (isCommand) {
-      line = document.createElement("div");
-      const prompt = document.createElement("span");
+      line = createElement("div");
+      const prompt = createElement("span");
       prompt.innerHTML = promptText || this.promptHtml();
       line.className = "cmd-line";
       line.appendChild(prompt);
-      const span = document.createElement("span");
+      const span = createElement("span");
       span.className = "cmd-text";
       span.textContent = text;
       line.appendChild(span);
@@ -543,22 +543,22 @@ export class TerminalApp extends BaseApp {
         if (color) line.style.color = color;
         state.terminalOutput.appendChild(line);
       } else {
-        line = document.createElement("div");
-        const span = document.createElement("span");
+        line = createElement("div");
+        const span = createElement("span");
         if (color) span.style.color = color;
         span.textContent = text;
         line.appendChild(span);
         state.terminalOutput.appendChild(line);
       }
     } else if (color || text?.includes("\x1b")) {
-      line = document.createElement("div");
-      const span = document.createElement("span");
+      line = createElement("div");
+      const span = createElement("span");
       if (color) span.style.color = color;
       span.textContent = text;
       line.appendChild(span);
       state.terminalOutput.appendChild(line);
     } else if (text !== null && text !== undefined) {
-      line = document.createElement("div");
+      line = createElement("div");
       const textNode = document.createTextNode(text);
       line.appendChild(textNode);
       state.terminalOutput.appendChild(line);
@@ -929,14 +929,14 @@ export class TerminalApp extends BaseApp {
     state.terminalTabsEl.innerHTML = "";
 
     state.tabs.forEach((tab, i) => {
-      const el = document.createElement("div");
+      const el = createElement("div");
       el.className = "terminal-tab" + (tab.id === state.activeTabId ? " active" : "");
 
-      const label = document.createElement("span");
+      const label = createElement("span");
       label.textContent = `Tab ${i + 1}`;
       el.appendChild(label);
 
-      const closeBtn = document.createElement("span");
+      const closeBtn = createElement("span");
       closeBtn.className = "terminal-tab-close";
       closeBtn.textContent = "\u00d7";
       closeBtn.addEventListener("click", (event) => {
@@ -954,7 +954,7 @@ export class TerminalApp extends BaseApp {
       state.terminalTabsEl.appendChild(el);
     });
 
-    const newTabBtn = document.createElement("div");
+    const newTabBtn = createElement("div");
     newTabBtn.className = "terminal-tab-add";
     newTabBtn.textContent = "+";
     newTabBtn.addEventListener("click", () => {
@@ -1483,7 +1483,7 @@ export class TerminalApp extends BaseApp {
     await this.print("rm: descending into '/'...", "var(--error)");
     await this.print("rm: removing all files...", "var(--error)");
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.id = "yukios-nuke-overlay";
     overlay.style.position = "fixed";
     overlay.style.top = "0";
@@ -1962,12 +1962,12 @@ export class TerminalApp extends BaseApp {
     this.terminalOutput.style.display = "none";
     this.terminalInputLine.style.display = "none";
 
-    const lavatContainer = document.createElement("div");
+    const lavatContainer = createElement("div");
     lavatContainer.id = "lavat-container";
     lavatContainer.style.cssText =
       "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;";
 
-    const iframe = document.createElement("iframe");
+    const iframe = createElement("iframe");
     iframe.id = "lavat-iframe";
     iframe.style.cssText = "width:100%;height:100%;border:none;background:#000;";
     iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
@@ -2029,7 +2029,7 @@ export class TerminalApp extends BaseApp {
     if (state.lavatWinHandler && state.win) {
       state.win.removeEventListener("keydown", state.lavatWinHandler);
     }
-    const container = document.getElementById("lavat-container");
+    const container = $("#lavat-container");
     if (container) container.remove();
     state.terminalOutput.style.display = "";
     state.terminalInputLine.style.display = "";
@@ -2070,12 +2070,12 @@ export class TerminalApp extends BaseApp {
     this.terminalOutput.style.display = "none";
     this.terminalInputLine.style.display = "none";
 
-    const cmatrixContainer = document.createElement("div");
+    const cmatrixContainer = createElement("div");
     cmatrixContainer.id = "cmatrix-container";
     cmatrixContainer.style.cssText =
       "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;";
 
-    const iframe = document.createElement("iframe");
+    const iframe = createElement("iframe");
     iframe.id = "cmatrix-iframe";
     iframe.style.cssText = "width:100%;height:100%;border:none;background:#000;";
     iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
@@ -2136,7 +2136,7 @@ export class TerminalApp extends BaseApp {
     if (state.cmatrixWinHandler && state.win) {
       state.win.removeEventListener("keydown", state.cmatrixWinHandler);
     }
-    const container = document.getElementById("cmatrix-container");
+    const container = $("#cmatrix-container");
     if (container) container.remove();
     state.terminalOutput.style.display = "";
     state.terminalInputLine.style.display = "";
@@ -2154,12 +2154,12 @@ export class TerminalApp extends BaseApp {
     this.terminalOutput.style.display = "none";
     this.terminalInputLine.style.display = "none";
 
-    const btopContainer = document.createElement("div");
+    const btopContainer = createElement("div");
     btopContainer.id = "btop-container";
     btopContainer.style.cssText =
       "width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a1a2e;overflow:hidden;";
 
-    const iframe = document.createElement("iframe");
+    const iframe = createElement("iframe");
     iframe.id = "btop-iframe";
     iframe.style.cssText = "width:100%;height:100%;border:none;background:#1a1a2e;";
     iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
@@ -2321,7 +2321,7 @@ export class TerminalApp extends BaseApp {
     if (state.btopWinHandler && state.win) {
       state.win.removeEventListener("keydown", state.btopWinHandler);
     }
-    const container = document.getElementById("btop-container");
+    const container = $("#btop-container");
     if (container) container.remove();
     state.terminalOutput.style.display = "";
     state.terminalInputLine.style.display = "";
@@ -3563,7 +3563,7 @@ export class TerminalApp extends BaseApp {
     let gpu = "Unknown";
     let renderScore = 0;
     try {
-      const canvas = document.createElement("canvas");
+      const canvas = createElement("canvas");
       const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
       if (gl) {
         gpu = gl.getParameter(gl.RENDERER);
@@ -3586,7 +3586,7 @@ export class TerminalApp extends BaseApp {
     const uptime = `${Math.floor(elapsed / 3600000)}h, ${Math.floor((elapsed % 3600000) / 60000)}m`;
 
     const theme = os.storage.get(StorageKeys.theme) || "dark";
-    const power = os.storage.get(StorageKeys.turboMode) || "balanced";
+    const power = os.storage.get(StorageKeys.performanceMode) || "balanced";
     const dnd = os.storage.get(StorageKeys.dndKey) === "true" ? "on" : "off";
     const winCount = $$(".window").length;
     const appCount = Object.keys(os.app.getAllApps()).length;
@@ -3956,7 +3956,7 @@ export class TerminalApp extends BaseApp {
     }
 
     await this.print(`Cloning into '${dir}' ...`);
-    const statusEl = document.createElement("div");
+    const statusEl = createElement("div");
     statusEl.style.color = "var(--text-secondary)";
     statusEl.style.fontSize = "12px";
     this.terminalOutput.appendChild(statusEl);

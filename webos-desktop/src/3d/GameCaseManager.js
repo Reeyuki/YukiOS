@@ -3,6 +3,7 @@ import { resolveIconUrl } from "../shared/assetResolver.js";
 import { GameCasePhysics } from "./GameCasePhysics.js";
 import { GAME_GENRES, GENRES } from "./GameState.js";
 import * as CANNON from "cannon-es";
+import { createElement } from "../shared/domUtils.js";
 
 const BOOK_WIDTH = 0.3;
 const BOOK_HEIGHT = 0.42;
@@ -99,7 +100,7 @@ export class GameCaseManager {
     this.savedPositions = savedPositions || {};
     this.savedShelves = savedShelves || {};
     const games = getGameList();
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = TEXTURE_W;
     canvas.height = TEXTURE_H;
     const ctx = canvas.getContext("2d");
@@ -202,7 +203,7 @@ export class GameCaseManager {
     const game = this.gamePool[idx];
     this.gamePool.splice(idx, 1);
 
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = TEXTURE_W;
     canvas.height = TEXTURE_H;
     const ctx = canvas.getContext("2d");
@@ -404,7 +405,7 @@ export class GameCaseManager {
     const url = resolveIconUrl(gameCase.iconUrl);
     if (!url) return;
     const img = await this.loadImage(url);
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = TEXTURE_W;
     canvas.height = TEXTURE_H;
     const ctx = canvas.getContext("2d");
@@ -635,7 +636,7 @@ export class GameCaseManager {
     }
 
     const totalToSpawn = selected.length;
-    const canvas = document.createElement("canvas");
+    const canvas = createElement("canvas");
     canvas.width = TEXTURE_W;
     canvas.height = TEXTURE_H;
     const ctx = canvas.getContext("2d");

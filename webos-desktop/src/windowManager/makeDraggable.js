@@ -1,9 +1,11 @@
 import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os, MODES } from "../framework.js";
+import { $, $$, createElement } from "../shared/domUtils.js";
 import { parseBool } from "../utils/utils.js";
 import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
+import { updateMaximizeControls } from "./windowControls.js";
 import { BusEvents } from "../core/EventBus.js";
-const desktop = document.getElementById("desktop");
+const desktop = $("#desktop");
 
 function getClientXY(e) {
   if (e.touches) {
@@ -96,12 +98,10 @@ export function windowMakeDraggable(win, wm) {
 
           if (win.dataset.tilingDrag) {
             wm.hideSnapGhost();
-            document
-              .querySelectorAll(".window.tile-drop-hover")
-              .forEach((el) => el.classList.remove("tile-drop-hover"));
+            $(".window.tile-drop-hover").forEach((el) => el.classList.remove("tile-drop-hover"));
             const targetWinId = tilingDragTouched?.getWindowAtCursor();
             if (targetWinId && targetWinId !== win.id) {
-              const targetWin = document.getElementById(targetWinId);
+              const targetWin = $("#" + targetWinId);
               if (targetWin) targetWin.classList.add("tile-drop-hover");
             }
           } else {
@@ -120,9 +120,7 @@ export function windowMakeDraggable(win, wm) {
 
           if (win.dataset.tilingDrag) {
             delete win.dataset.tilingDrag;
-            document
-              .querySelectorAll(".window.tile-drop-hover")
-              .forEach((el) => el.classList.remove("tile-drop-hover"));
+            $(".window.tile-drop-hover").forEach((el) => el.classList.remove("tile-drop-hover"));
             if (tilingDragTouched && tilingDragTouched.enabled) {
               const targetWinId = tilingDragTouched.getWindowAtCursor();
               if (targetWinId && targetWinId !== win.id) {
@@ -339,7 +337,7 @@ export function getSnapZone(wm, x, y) {
   const w = window.innerWidth;
   const h = window.innerHeight;
 
-  const taskbar = document.getElementById("taskbar");
+  const taskbar = $("#taskbar");
   let taskbarPosition = "bottom";
   let taskbarWidth = 0;
   let taskbarHeight = 0;
@@ -391,18 +389,18 @@ export function getSnapZone(wm, x, y) {
 }
 
 export function showSnapGhost(wm, zone) {
-  let ghost = document.getElementById("snap-ghost");
+  let ghost = $("#snap-ghost");
   if (!ghost) {
-    ghost = document.createElement("div");
+    ghost = createElement("div");
     ghost.id = "snap-ghost";
-    document.getElementById("desktop")?.appendChild(ghost) || document.body.appendChild(ghost);
+    $("#desktop")?.appendChild(ghost) || document.body.appendChild(ghost);
   }
   ghost.style.display = "";
   ghost.className = `snap-ghost-${zone} snap-ghost-active`;
 }
 
 export function hideSnapGhost(wm) {
-  const ghost = document.getElementById("snap-ghost");
+  const ghost = $("#snap-ghost");
   if (ghost) {
     ghost.classList.remove("snap-ghost-active");
   }
@@ -418,8 +416,9 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
   }
   win.dataset.snapZone = zone;
   win.dataset.oldStyle = win.getAttribute("style");
+  updateMaximizeControls(win);
 
-  const taskbar = document.getElementById("taskbar");
+  const taskbar = $("#taskbar");
   let taskbarPosition = "bottom";
 
   if (taskbar) {
@@ -437,7 +436,7 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
 
   let tilingBarH = "0px";
   let tilingBarTop = "0px";
-  const tilingBar = document.getElementById("tiling-bar");
+  const tilingBar = $("#tiling-bar");
   if (tilingBar && tilingBar.style.display !== "none" && os.modes.isActive(MODES.TILING)) {
     tilingBarH = getComputedStyle(tilingBar).height || "38px";
     tilingBarTop = tilingBar.classList.contains("position-bottom") ? "0px" : tilingBarH;
@@ -520,4 +519,5 @@ export function unsnap(wm, win) {
     delete win.dataset.oldStyle;
   }
   delete win.dataset.snapZone;
+  updateMaximizeControls(win);
 }

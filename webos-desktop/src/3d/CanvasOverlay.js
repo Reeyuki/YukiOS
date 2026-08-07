@@ -1,3 +1,5 @@
+import { createElement } from "../shared/domUtils.js";
+
 export class CanvasOverlay {
   constructor(canvas, opts = {}) {
     this.canvas = canvas;
@@ -419,7 +421,7 @@ export class CanvasOverlay {
     this.toastActive = true;
     const { title, desc, rarity } = this.toastQueue.shift();
 
-    const el = document.createElement("div");
+    const el = createElement("div");
     el.style.cssText =
       "position:fixed;top:20px;right:20px;z-index:1000000;background:rgba(12,12,16,0.96);border-left:4px solid var(--ach-color,#44ff88);border-radius:10px;padding:14px 18px;min-width:260px;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.6);opacity:0;transform:translateX(40px);transition:opacity 0.35s ease,transform 0.35s ease;pointer-events:auto;font-family:sans-serif";
     const rarityColors = {

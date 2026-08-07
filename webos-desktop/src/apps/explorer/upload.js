@@ -1,7 +1,7 @@
 import { BusEvents } from "../../core/EventBus.js";
 import { os } from "../../framework.js";
 import { FileKind } from "../../shared/fileKindDetector.js";
-import { $, setStyle } from "../../shared/domUtils.js";
+import { $, setStyle, createElement } from "../../shared/domUtils.js";
 import { resolveIconUrl } from "../../shared/assetResolver.js";
 import {
   fileKindFromName,
@@ -203,13 +203,13 @@ export async function saveToWallpapers(explorer, name, content, kind, icon) {
 }
 
 export function triggerFileUpload(explorer, inst) {
-  const input = document.createElement("input");
+  const input = createElement("input");
   input.type = "file";
   input.multiple = true;
   input.addEventListener("change", async () => {
     const files = Array.from(input.files);
     if (!files.length) return;
-    const win = document.getElementById(inst.winId);
+    const win = $("#" + inst.winId);
     await handleFileUpload(explorer, files, false, win, inst);
   });
   input.click();

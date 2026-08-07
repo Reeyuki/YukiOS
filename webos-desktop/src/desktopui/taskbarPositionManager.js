@@ -1,4 +1,4 @@
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, $ } from "../framework.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 export class TaskbarPositionManager {
   constructor() {
@@ -30,7 +30,7 @@ export class TaskbarPositionManager {
   }
 
   setupEventListeners() {
-    const taskbar = document.getElementById("taskbar");
+    const taskbar = $("#taskbar");
 
     taskbar.addEventListener("contextmenu", (e) => {
       const target = e.target;
@@ -64,8 +64,8 @@ export class TaskbarPositionManager {
   }
 
   applyPosition(position) {
-    const taskbar = document.getElementById("taskbar");
-    const desktop = document.getElementById("desktop");
+    const taskbar = $("#taskbar");
+    const desktop = $("#desktop");
 
     if (!taskbar || !desktop) {
       console.warn("TaskbarPositionManager: Taskbar or desktop element not found, deferring position application");

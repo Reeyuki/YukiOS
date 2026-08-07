@@ -1,18 +1,21 @@
-import { BusEvents } from "./core/EventBus.js";
-import { StorageKeys, os } from "./framework.js";
-import { resolveAppName, resolveAppIcon, escapeHtml } from "./utils/utils.js";
-import { PREDEFINED_AVATARS } from "./utils/avatarData.js";
-import { SteamSettings } from "./games/steam.js";
+import { BusEvents } from "../core/EventBus.js";
+import { StorageKeys, os, createElement } from "../framework.js";
+import { resolveAppName, resolveAppIcon, escapeHtml } from "../utils/utils.js";
+import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
+import { SteamSettings } from "../games/steam.js";
+import { isSocialDisabled } from "./socialSettings.js";
+import { getLiveUserId, ensureLiveUserId } from "./userIdentity.js";
+import { SOCIAL_ACTIVITY_ENDPOINT, SOCIAL_NOW_PLAYING_ENDPOINT } from "./endpoints.js";
+import { isBroadcastAllowed, isPopupAllowed } from "./presence.js";
+import { areFriends } from "./friendsApi.js";
 
 function isUrlPrefixed(value) {
   const v = String(value).trim().toLowerCase();
   return v.startsWith("http") || v.startsWith("://");
 }
 
-const ACTIVITY_ENDPOINT = "https://analytics.liventcord-a60.workers.dev/live/activity";
-const NOW_PLAYING_ENDPOINT = "https://analytics.liventcord-a60.workers.dev/live/now-playing";
 const ACTIVITY_FLUSH_INTERVAL = 15000;
-const POLL_INTERVAL = 60000;
+const POLL_INTERVAL = 120000;
 const ACTIVITY_TTL_MINUTES = 5;
 
 export class LiveActivityManager {
@@ -22,6 +25,17 @@ export class LiveActivityManager {
     this.knownUsers = new Map();
     this.flushTimer = null;
     this.pollTimer = null;
+    this.onVisibilityChange = () => {
+      if (!this.isEnabled()) return;
+      if (document.hidden) {
+        if (this.pollTimer) {
+          clearInterval(this.pollTimer);
+          this.pollTimer = null;
+        }
+      } else {
+        this.startTimers();
+      }
+    };
     this.isShowingPopup = false;
     this.popupQueue = [];
   }
@@ -37,6 +51,30 @@ export class LiveActivityManager {
           this.popupQueue = [];
         }
       }
+      if (e.detail?.setting === "dnd" && e.detail.value) {
+        this.popupQueue = [];
+      }
+      if (e.detail?.setting === "socialDisabled") {
+        if (e.detail.value) {
+          this.stopTimers();
+          this.queue = [];
+          this.popupQueue = [];
+        } else {
+          this.startTimers();
+        }
+      }
+    });
+    os.events.on(BusEvents.SOCIAL_PRESENCE_CHANGED, ({ presence }) => {
+      if (presence === "online") {
+        this.startTimers();
+      } else {
+        this.stopTimers();
+        this.queue = [];
+        this.popupQueue = [];
+      }
+    });
+    os.events.on(BusEvents.SOCIAL_DND_CHANGED, ({ enabled }) => {
+      if (enabled) this.popupQueue = [];
     });
     if (!this.isEnabled()) return;
     os.events.on(BusEvents.APP_LAUNCHED, ({ appId }) => this.onAppLaunched(appId));
@@ -50,11 +88,15 @@ export class LiveActivityManager {
       }
     });
     this.startTimers();
+    ensureLiveUserId().catch(() => {});
   }
 
   isEnabled() {
     return (
-      os.storage.get(StorageKeys.friendsLiveActivity) !== "false" && SteamSettings.get("shareLiveActivity") !== false
+      !isSocialDisabled() &&
+      os.storage.get(StorageKeys.friendsLiveActivity) !== "false" &&
+      SteamSettings.get("shareLiveActivity") !== false &&
+      isBroadcastAllowed()
     );
   }
 
@@ -64,6 +106,7 @@ export class LiveActivityManager {
     this.flushTimer = setInterval(() => this.flush(), ACTIVITY_FLUSH_INTERVAL);
     this.pollTimer = setInterval(() => this.poll(), POLL_INTERVAL);
     this.poll();
+    document.addEventListener("visibilitychange", this.onVisibilityChange);
   }
 
   stopTimers() {
@@ -75,6 +118,7 @@ export class LiveActivityManager {
       clearInterval(this.pollTimer);
       this.pollTimer = null;
     }
+    document.removeEventListener("visibilitychange", this.onVisibilityChange);
   }
 
   onAppLaunched(appId) {
@@ -93,6 +137,7 @@ export class LiveActivityManager {
 
     const item = {
       username: String(username).slice(0, 32),
+      userId: getLiveUserId() || undefined,
       appId: String(appId).slice(0, 64),
       gameTitle: String(name).slice(0, 128),
       gameIcon: String(icon || "").slice(0, 512),
@@ -114,9 +159,9 @@ export class LiveActivityManager {
     const batch = this.queue.splice(0);
     const payload = JSON.stringify(batch);
     if (navigator.sendBeacon) {
-      navigator.sendBeacon(ACTIVITY_ENDPOINT, payload);
+      navigator.sendBeacon(SOCIAL_ACTIVITY_ENDPOINT, payload);
     } else {
-      fetch(ACTIVITY_ENDPOINT, {
+      fetch(SOCIAL_ACTIVITY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: payload
@@ -127,22 +172,23 @@ export class LiveActivityManager {
   async poll() {
     if (!this.isEnabled()) return;
     try {
-      const res = await fetch(NOW_PLAYING_ENDPOINT);
+      const res = await fetch(SOCIAL_NOW_PLAYING_ENDPOINT);
       if (!res.ok) return;
       const data = await res.json();
       if (!data || !Array.isArray(data.users)) return;
 
       const current = new Map();
       for (const user of data.users) {
+        if (user.userId && user.userId === getLiveUserId()) continue;
         if (!user.username) continue;
         current.set(user.username, user);
         if (!this.knownUsers.has(user.username)) {
           this.knownUsers.set(user.username, user);
-          this.queuePopup(user);
+          this.maybeQueueFriendPopup(user);
         }
         const known = this.knownUsers.get(user.username);
         if (known && known.appId !== user.appId) {
-          this.queuePopup(user);
+          this.maybeQueueFriendPopup(user);
         }
         this.knownUsers.set(user.username, user);
       }
@@ -160,8 +206,17 @@ export class LiveActivityManager {
   }
 
   queuePopup(user) {
-    if (!SteamSettings.get("currentlyPlayingPopups")) return;
+    if (!isPopupAllowed()) return;
     this.popupQueue.push(user);
+  }
+
+  async maybeQueueFriendPopup(user) {
+    if (!isPopupAllowed()) return;
+    if (!user.userId) return;
+    const isFriend = await areFriends(user.userId).catch(() => false);
+    if (!isFriend) return;
+    this.queuePopup(user);
+    this.processPopupQueue();
   }
 
   processPopupQueue() {
@@ -172,6 +227,11 @@ export class LiveActivityManager {
   }
 
   showActivityPopup(user) {
+    if (user.userId && user.userId === getLiveUserId()) {
+      this.isShowingPopup = false;
+      this.processPopupQueue();
+      return;
+    }
     const gameName = resolveAppName(user.appId);
     const gameIcon = resolveAppIcon(user.appId);
 
@@ -181,7 +241,7 @@ export class LiveActivityManager {
         ? PREDEFINED_AVATARS[avatarIndex]
         : null;
 
-    const popup = document.createElement("div");
+    const popup = createElement("div");
     popup.className = "activity-popup";
 
     const avatarHtml = avatarUrl

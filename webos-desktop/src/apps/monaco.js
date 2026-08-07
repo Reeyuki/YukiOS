@@ -59,7 +59,7 @@ export class MonacoApp extends BaseApp {
     if (this.monacoLoaded) return;
 
     return new Promise((resolve, reject) => {
-      const loaderScript = document.createElement("script");
+      const loaderScript = createElement("script");
       loaderScript.src = getLibraryUrl("monaco", "loader");
 
       loaderScript.onload = () => {
@@ -392,7 +392,7 @@ export class MonacoApp extends BaseApp {
   }
 
   createTab(tabId, title, isDirty = false) {
-    const tab = document.createElement("div");
+    const tab = createElement("div");
     tab.className = "monaco-tab";
     tab.dataset.tabId = tabId;
 
@@ -594,7 +594,7 @@ export class MonacoApp extends BaseApp {
 
   async printToTerminal(text, color = "var(--text-primary)") {
     if (!this.terminalOutput) return;
-    const line = document.createElement("div");
+    const line = createElement("div");
     line.style.color = color;
     this.terminalOutput.appendChild(line);
 
@@ -607,7 +607,7 @@ export class MonacoApp extends BaseApp {
 
   printToTerminalSync(text, color = "var(--text-primary)") {
     if (!this.terminalOutput) return;
-    const line = document.createElement("div");
+    const line = createElement("div");
     line.style.color = color;
     line.textContent = text;
     this.terminalOutput.appendChild(line);

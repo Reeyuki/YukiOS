@@ -1,5 +1,5 @@
 import { FileKind } from "./shared/fileKindDetector.js";
-import { os, StorageKeys, $, brand } from "./framework.js";
+import { os, StorageKeys, $, brand, createElement } from "./framework.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { getDefaultApp, isUnassociated } from "./fileAssociations.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
@@ -672,7 +672,7 @@ async function openFontFile(name, path) {
     const fontFamily = name.replace(/\.[^.]+$/, "");
     const fontUrl = URL.createObjectURL(blob);
 
-    const style = document.createElement("style");
+    const style = createElement("style");
     style.id = "font-preview-" + Date.now();
     style.textContent = `@font-face { font-family: 'FontPreview'; src: url('${fontUrl}') format('${format}'); }`;
     document.head.appendChild(style);
@@ -841,7 +841,7 @@ export async function openFileWithApp(appId, { name, path }) {
 
 function resolveDesktopIconFromDOM(name) {
   const label = name.replace(/\.desktop$/i, "");
-  const desktop = document.getElementById("desktop");
+  const desktop = $("#desktop");
   if (!desktop) return null;
   const iconEl = desktop.querySelector(
     `.icon.selectable[data-file-name="${CSS.escape(name)}"], .icon.selectable[data-folder-name="${CSS.escape(name)}"]`
@@ -1069,7 +1069,7 @@ export function generateThumbnail(src, maxDimension = 128) {
       }
       try {
         const scale = Math.min(maxDimension / width, maxDimension / height);
-        const canvas = document.createElement("canvas");
+        const canvas = createElement("canvas");
         canvas.width = Math.round(width * scale);
         canvas.height = Math.round(height * scale);
         const ctx = canvas.getContext("2d");

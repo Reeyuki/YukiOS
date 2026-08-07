@@ -1,5 +1,17 @@
 import "../styles/taskManager.css";
-import { $, $$, bindEvent, setText, setHTML, toggleClass, BusEvents, BaseApp, os, StorageKeys } from "../framework.js";
+import {
+  $,
+  $$,
+  bindEvent,
+  setText,
+  setHTML,
+  toggleClass,
+  BusEvents,
+  BaseApp,
+  os,
+  StorageKeys,
+  createElement
+} from "../framework.js";
 import { processManager } from "../services/ProcessManager.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
@@ -54,9 +66,9 @@ export class TaskManagerApp extends BaseApp {
   }
 
   startLongTaskMonitor() {
-    if (!window.TurboObserver) return;
+    if (!window.PerformanceObserver) return;
     try {
-      const obs = new TurboObserver((list) => {
+      const obs = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           this.longTaskBudget += entry.duration;
         }
@@ -600,7 +612,7 @@ export class TaskManagerApp extends BaseApp {
   resolveCSSVar(name) {
     if (!this.resolvedCache) this.resolvedCache = {};
     if (this.resolvedCache[name]) return this.resolvedCache[name];
-    const el = document.createElement("div");
+    const el = createElement("div");
     el.style.color = `var(${name})`;
     document.body.appendChild(el);
     const color = getComputedStyle(el).color;
@@ -694,7 +706,7 @@ export class TaskManagerApp extends BaseApp {
 
   renderSysInfo(win) {
     const hasRealMem = !!performance.memory;
-    const hasLongTask = !!window.TurboObserver;
+    const hasLongTask = !!window.PerformanceObserver;
 
     const heapUsed = hasRealMem ? `${(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} MB` : "N/A";
     const heapTotal = hasRealMem ? `${(performance.memory.jsHeapSizeLimit / 1048576).toFixed(0)} MB` : "N/A";

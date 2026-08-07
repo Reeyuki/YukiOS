@@ -1,4 +1,4 @@
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const CATEGORY_ORDER = ["navigation", "resize", "swap", "windows", "workspaces", "system"];
@@ -20,7 +20,7 @@ const CATEGORY_ICONS = {
 };
 
 function esc(str) {
-  const d = document.createElement("div");
+  const d = createElement("div");
   d.textContent = str;
   return d.innerHTML;
 }
@@ -81,7 +81,7 @@ export class TilingKeybindOverlay {
       this.isOpen = true;
       return;
     }
-    this.el = document.createElement("div");
+    this.el = createElement("div");
     this.el.id = "tiling-keybind-overlay";
     const pos = os.storage.get(StorageKeys.tilingBarPosition) || "top";
     if (pos === "bottom") this.el.classList.add("position-bottom");

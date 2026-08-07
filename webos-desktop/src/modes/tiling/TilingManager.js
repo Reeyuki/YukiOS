@@ -2,7 +2,7 @@ import "./style.css";
 import { TilingLayoutEngine as Engine } from "../../windowManager/TilingLayoutEngine.js";
 import { MasterStackEngine } from "../../windowManager/MasterStackEngine.js";
 import { bus, BusEvents } from "../../core/EventBus.js";
-import { StorageKeys, os } from "../../framework.js";
+import { StorageKeys, os, $ } from "../../framework.js";
 import { TilingBar } from "../../tiling/TilingBar.js";
 import { modeManager, MODES } from "../../modeManager.js";
 
@@ -233,7 +233,7 @@ export class TilingManager {
 
     console.log(`[Tiling] Rebuilding tree for workspace ${wsId} with ${wins.length} windows`);
     for (const winId of wins) {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (!win) continue;
       const entry = this.wm.openWindows.get(winId);
       if (entry && entry.record && entry.record.floating) continue;
@@ -259,7 +259,7 @@ export class TilingManager {
   }
 
   getLayoutRect() {
-    const taskbar = document.getElementById("taskbar");
+    const taskbar = $("#taskbar");
     let left = 0,
       top = 0,
       right = 0,
@@ -325,7 +325,7 @@ export class TilingManager {
     const rects = engine.calculateLayout(tree, x, y, w, h, gaps);
 
     for (const rect of rects) {
-      const win = document.getElementById(rect.winId);
+      const win = $("#" + rect.winId);
       if (!win) continue;
       const entry = this.wm.openWindows.get(rect.winId);
       if (entry && entry.record && entry.record.floating) continue;
@@ -375,7 +375,7 @@ export class TilingManager {
     const rect = rects.find((r) => r.winId === winId);
     if (!rect) return;
 
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
 
     Object.assign(win.style, {
@@ -411,7 +411,7 @@ export class TilingManager {
 
   restoreAllWindows() {
     this.wm.openWindows.forEach((entry, winId) => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (!win) return;
       if (!entry.record || !entry.record.tiled) return;
 
@@ -454,7 +454,7 @@ export class TilingManager {
       };
       entry.record.tiled = true;
     }
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (win) {
       entry.record.tilePosition = win.style.position || getComputedStyle(win).position;
     }
@@ -542,7 +542,7 @@ export class TilingManager {
 
     const focusedWin = this.wm.openWindows.get(
       Array.from(this.wm.openWindows.keys())
-        .map((id) => document.getElementById(id))
+        .map((id) => $("#" + id))
         .filter(Boolean)
         .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex))[0]?.id
     );
@@ -554,7 +554,7 @@ export class TilingManager {
     const neighbor = engine.getDirectionalNeighbor(tree, focusedWinId, direction);
     if (!neighbor || !neighbor.winId) return;
 
-    const win = document.getElementById(neighbor.winId);
+    const win = $("#" + neighbor.winId);
     if (win) {
       this.wm.bringToFront(win);
       win.focus();
@@ -594,7 +594,7 @@ export class TilingManager {
 
   getFocusedTiledWinId() {
     const wins = Array.from(this.wm.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean)
       .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex));
 
@@ -611,7 +611,7 @@ export class TilingManager {
     const wsId = this.getActiveWorkspaceId();
     const wins = this.getOpenWindowsForWorkspace(wsId);
     for (const winId of wins) {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (!win) continue;
       const rect = win.getBoundingClientRect();
       if (
@@ -641,7 +641,7 @@ export class TilingManager {
     const entry = this.wm.openWindows.get(focusedWinId);
     if (!entry || !entry.record) return;
 
-    const win = document.getElementById(focusedWinId);
+    const win = $("#" + focusedWinId);
     if (!win) return;
 
     const engine = this.getLayoutEngine();
@@ -687,7 +687,7 @@ export class TilingManager {
     const focusedWinId = this.getFocusedTiledWinId();
     if (!focusedWinId) return;
 
-    const win = document.getElementById(focusedWinId);
+    const win = $("#" + focusedWinId);
     if (!win) return;
 
     this.wm.toggleFullscreen(win);
@@ -699,7 +699,7 @@ export class TilingManager {
 
   closeFocusedWindow() {
     const wins = Array.from(this.wm.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean)
       .sort((a, b) => parseInt(b.style.zIndex) - parseInt(a.style.zIndex));
 
@@ -729,7 +729,7 @@ export class TilingManager {
       idx = (idx - 1 + windows.length) % windows.length;
     }
 
-    const target = document.getElementById(windows[idx]);
+    const target = $("#" + windows[idx]);
     if (target) {
       this.wm.bringToFront(target);
       target.focus();

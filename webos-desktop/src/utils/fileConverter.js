@@ -1,7 +1,7 @@
 import "../styles/converter.css";
 import { Achievements } from "../achievements.js";
 import { BusEvents } from "../core/EventBus.js";
-import { os } from "../framework.js";
+import { os, createElement } from "../framework.js";
 import { openFileWith } from "../fileDisplay.js";
 import { parseBool } from "./utils.js";
 
@@ -201,7 +201,7 @@ function htmlToMd(html) {
     .replace(/<p[^>]*>/gim, "")
     .replace(/<\/p>/gim, "\n\n");
 
-  const temp = document.createElement("div");
+  const temp = createElement("div");
   temp.innerHTML = md;
   return temp.textContent || temp.innerText || "";
 }
@@ -999,7 +999,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
     icon: "fa-exchange-alt"
   });
 
-  const contentDiv = document.createElement("div");
+  const contentDiv = createElement("div");
   contentDiv.className = "window-content";
   contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
   contentDiv.innerHTML = content;
@@ -1261,7 +1261,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
         fileContentBlob = blob;
         dom.sizeInfo.textContent = `${(blob.size / 1024).toFixed(1)} KB`;
 
-        const video = document.createElement("video");
+        const video = createElement("video");
         video.preload = "metadata";
         video.src = URL.createObjectURL(blob);
         video.onloadedmetadata = () => {
@@ -1380,7 +1380,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
         if (category === "image") {
           if (!originalImage) throw new Error("Image not fully loaded.");
 
-          const canvas = document.createElement("canvas");
+          const canvas = createElement("canvas");
           const ctx = canvas.getContext("2d");
 
           let w = parseInt(dom.width.value) || originalImage.naturalWidth;
@@ -1437,7 +1437,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
             else if (target === "json") outputText = JSON.stringify({ markdown: text, html: mdToHtml(text) }, null, 2);
           } else if (ext === "html") {
             if (target === "txt") {
-              const div = document.createElement("div");
+              const div = createElement("div");
               div.innerHTML = text;
               outputText = div.textContent || div.innerText || "";
             } else if (target === "md") {

@@ -2,13 +2,11 @@
   from {
     opacity: 0;
     transform: translateY(50px);
-    backdrop-filter: blur(0px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
-    backdrop-filter: blur(50px);
   }
 }
 
@@ -16,13 +14,11 @@
   from {
     opacity: 1;
     transform: translateY(0);
-    backdrop-filter: blur(50px);
   }
 
   to {
     opacity: 0;
     transform: translateY(20px);
-    backdrop-filter: blur(0px);
   }
 }
 
@@ -30,6 +26,7 @@
   position: absolute;
   z-index: 10001;
   animation: startMenuIn 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
   bottom: 0px;
   left: 0;
   width: 650px;
@@ -90,7 +87,7 @@
 .start-user img {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 25px;
   border: 2px solid color-mix(in srgb, var(--brand) 40%, transparent);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -409,7 +406,7 @@
 
 .app-grid::-webkit-scrollbar-thumb {
   background: linear-gradient(to bottom, color-mix(in oklch, var(--brand) 28%, transparent), rgba(255, 255, 255, 0.14));
-  border-radius: 999px;
+  border-radius: 25px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }

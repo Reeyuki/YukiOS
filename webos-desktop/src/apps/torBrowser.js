@@ -1,5 +1,5 @@
 import "../styles/torBrowser.css";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, $, createElement } from "../framework.js";
 
 export class TorBrowserApp extends BaseApp {
   constructor(services) {
@@ -90,11 +90,11 @@ export class TorBrowserApp extends BaseApp {
   }
 
   bindEvents() {
-    document.getElementById("tor-start-btn")?.addEventListener("click", () => this.startTor());
-    document.getElementById("tor-stop-btn")?.addEventListener("click", () => this.stopTor());
-    document.getElementById("tor-reconnect-btn")?.addEventListener("click", () => this.reconnectTor());
-    document.getElementById("tor-log-clear")?.addEventListener("click", () => {
-      const log = document.getElementById("tor-log");
+    $("#tor-start-btn")?.addEventListener("click", () => this.startTor());
+    $("#tor-stop-btn")?.addEventListener("click", () => this.stopTor());
+    $("#tor-reconnect-btn")?.addEventListener("click", () => this.reconnectTor());
+    $("#tor-log-clear")?.addEventListener("click", () => {
+      const log = $("#tor-log");
       if (log) log.innerHTML = "";
     });
   }
@@ -102,8 +102,8 @@ export class TorBrowserApp extends BaseApp {
   async startTor() {
     if (os.tor.running) return;
 
-    const startBtn = document.getElementById("tor-start-btn");
-    const stopBtn = document.getElementById("tor-stop-btn");
+    const startBtn = $("#tor-start-btn");
+    const stopBtn = $("#tor-stop-btn");
     if (startBtn) startBtn.disabled = true;
 
     try {
@@ -121,9 +121,9 @@ export class TorBrowserApp extends BaseApp {
   }
 
   async reconnectTor() {
-    const reconnectBtn = document.getElementById("tor-reconnect-btn");
-    const startBtn = document.getElementById("tor-start-btn");
-    const stopBtn = document.getElementById("tor-stop-btn");
+    const reconnectBtn = $("#tor-reconnect-btn");
+    const startBtn = $("#tor-start-btn");
+    const stopBtn = $("#tor-stop-btn");
     if (reconnectBtn) reconnectBtn.disabled = true;
     if (startBtn) startBtn.disabled = true;
     if (stopBtn) stopBtn.disabled = true;
@@ -139,7 +139,7 @@ export class TorBrowserApp extends BaseApp {
   }
 
   renderStatus(status) {
-    const el = document.getElementById("tor-status-value");
+    const el = $("#tor-status-value");
     if (!el) return;
     const phase = status?.phase || "stopped";
     if (phase === "ready") {
@@ -172,17 +172,17 @@ export class TorBrowserApp extends BaseApp {
   }
 
   syncButtons(running) {
-    const startBtn = document.getElementById("tor-start-btn");
-    const stopBtn = document.getElementById("tor-stop-btn");
-    const reconnectBtn = document.getElementById("tor-reconnect-btn");
+    const startBtn = $("#tor-start-btn");
+    const stopBtn = $("#tor-stop-btn");
+    const reconnectBtn = $("#tor-reconnect-btn");
     if (startBtn) startBtn.disabled = running;
     if (stopBtn) stopBtn.disabled = !running;
     if (reconnectBtn) reconnectBtn.disabled = !running;
   }
 
   updateFetchCount() {
-    const row = document.getElementById("tor-fetch-row");
-    const count = document.getElementById("tor-fetch-count");
+    const row = $("#tor-fetch-row");
+    const count = $("#tor-fetch-count");
     if (!count) return;
     const fc = os.tor.getFetchCount();
     count.textContent = fc;
@@ -190,10 +190,10 @@ export class TorBrowserApp extends BaseApp {
   }
 
   logEntry(type, msg) {
-    const log = document.getElementById("tor-log");
+    const log = $("#tor-log");
     if (!log) return;
     const time = new Date().toLocaleTimeString();
-    const entry = document.createElement("div");
+    const entry = createElement("div");
     entry.className = "tor-log-entry tor-log-" + type;
     entry.innerHTML = `<span class="tor-log-time">${time}</span><span class="tor-log-msg">${this.escape(msg)}</span>`;
     log.appendChild(entry);
@@ -201,7 +201,7 @@ export class TorBrowserApp extends BaseApp {
   }
 
   escape(s) {
-    const div = document.createElement("div");
+    const div = createElement("div");
     div.textContent = s;
     return div.innerHTML;
   }

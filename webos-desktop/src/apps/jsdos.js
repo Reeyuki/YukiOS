@@ -1,7 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { zipSync } from "fflate";
 
-import { setStyle, BusEvents, BaseApp, os } from "../framework.js";
+import { setStyle, BusEvents, BaseApp, os, createElement } from "../framework.js";
 import {
   normalizePath,
   fileNameToDisplayName,
@@ -228,7 +228,7 @@ export class JsDosApp extends BaseApp {
       inner.innerHTML = "";
       inner.classList.remove("jsdos-loading", "emu-load-wrap");
 
-      iframeEl = document.createElement("iframe");
+      iframeEl = createElement("iframe");
       iframeEl.src = iframeBlobUrl;
       setStyle(iframeEl, { width: "100%", height: "100%", border: "none", display: "block" });
       iframeEl.setAttribute("allowfullscreen", "");
@@ -375,7 +375,7 @@ export class JsDosApp extends BaseApp {
       setStyle(inner, { width: "100%", height: "100%" });
       inner.classList.remove("jsdos-loading");
 
-      iframeEl = document.createElement("iframe");
+      iframeEl = createElement("iframe");
       iframeEl.src = iframeBlobUrl;
       setStyle(iframeEl, { width: "100%", height: "100%", border: "none", display: "block" });
       iframeEl.setAttribute("allowfullscreen", "");

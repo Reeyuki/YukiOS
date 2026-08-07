@@ -113,16 +113,6 @@
   justify-content: center;
 }
 
-.donation-btn-kofi {
-  background: #df6f3c;
-  color: #fff;
-}
-
-.donation-btn-kofi:hover {
-  background: #c85e2e;
-  transform: translateY(-1px);
-}
-
 .donation-btn-patreon {
   background: #ff424d;
   color: #fff;

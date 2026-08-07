@@ -1,5 +1,5 @@
 import "../styles/chooseAppDialog.css";
-import { os } from "../framework.js";
+import { os, createElement } from "../framework.js";
 import { getAllPickableApps, getAppsForExtension, getDefaultAppForExt, setDefaultApp } from "../fileAssociations.js";
 import { openFileWithApp } from "../fileDisplay.js";
 import { animateWindowClose } from "../windowManager/AnimationSystem.js";
@@ -16,36 +16,36 @@ export function showChooseAppDialog({ ext, name, path, setOnly = false }) {
       (defaultApp && knownApps.has(defaultApp.appId) ? defaultApp.appId : recommended[0]?.appId) || null;
     let closing = false;
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
     overlay.className = "open-with-root";
 
-    const dialog = document.createElement("div");
+    const dialog = createElement("div");
     dialog.className = "open-with-dialog";
 
-    const header = document.createElement("header");
+    const header = createElement("header");
     header.className = "open-with-header";
 
-    const title = document.createElement("h2");
+    const title = createElement("h2");
     title.className = "open-with-title";
     title.textContent = "How do you want to open this file?";
 
-    const subtitle = document.createElement("p");
+    const subtitle = createElement("p");
     subtitle.className = "open-with-subtitle";
     subtitle.textContent = name || `.${ext} files`;
 
     header.appendChild(title);
     header.appendChild(subtitle);
 
-    const content = document.createElement("div");
+    const content = createElement("div");
     content.className = "open-with-body";
 
     function buildSection(label) {
-      const section = document.createElement("section");
+      const section = createElement("section");
       section.className = "open-with-section";
-      const heading = document.createElement("h3");
+      const heading = createElement("h3");
       heading.className = "open-with-section-title";
       heading.textContent = label;
-      const grid = document.createElement("div");
+      const grid = createElement("div");
       grid.className = "open-with-grid";
       section.appendChild(heading);
       section.appendChild(grid);
@@ -53,23 +53,23 @@ export function showChooseAppDialog({ ext, name, path, setOnly = false }) {
     }
 
     function buildTile(app) {
-      const tile = document.createElement("button");
+      const tile = createElement("button");
       tile.type = "button";
       tile.className = "open-with-tile";
       tile.dataset.appId = app.appId;
 
       let iconEl;
       if (typeof app.icon === "string" && app.icon.startsWith("http")) {
-        iconEl = document.createElement("img");
+        iconEl = createElement("img");
         iconEl.src = app.icon;
         iconEl.alt = app.title;
         iconEl.className = "open-with-tile-icon";
       } else {
-        iconEl = document.createElement("span");
+        iconEl = createElement("span");
         iconEl.className = `open-with-tile-icon ${app.icon}`;
       }
 
-      const caption = document.createElement("span");
+      const caption = createElement("span");
       caption.className = "open-with-tile-caption";
       caption.textContent = app.title;
 
@@ -129,31 +129,31 @@ export function showChooseAppDialog({ ext, name, path, setOnly = false }) {
     allApps.forEach((app) => otherGrid.appendChild(buildTile(app)));
     content.appendChild(otherSection);
 
-    const footer = document.createElement("footer");
+    const footer = createElement("footer");
     footer.className = "open-with-footer";
 
-    const always = document.createElement("label");
+    const always = createElement("label");
     always.className = "open-with-always";
 
-    const toggle = document.createElement("span");
+    const toggle = createElement("span");
     toggle.className = "open-with-toggle";
-    const alwaysCheckbox = document.createElement("input");
+    const alwaysCheckbox = createElement("input");
     alwaysCheckbox.type = "checkbox";
     alwaysCheckbox.checked = true;
-    const track = document.createElement("span");
+    const track = createElement("span");
     track.className = "open-with-track";
-    const thumb = document.createElement("span");
+    const thumb = createElement("span");
     thumb.className = "open-with-thumb";
     track.appendChild(thumb);
     toggle.appendChild(alwaysCheckbox);
     toggle.appendChild(track);
 
-    const alwaysText = document.createElement("span");
+    const alwaysText = createElement("span");
     alwaysText.textContent = `Always use this app to open .${ext} files`;
     always.appendChild(toggle);
     always.appendChild(alwaysText);
 
-    const okBtn = document.createElement("button");
+    const okBtn = createElement("button");
     okBtn.className = "open-with-ok";
     okBtn.textContent = "OK";
     okBtn.addEventListener("click", confirm);

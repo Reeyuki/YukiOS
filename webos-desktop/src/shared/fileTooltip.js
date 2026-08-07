@@ -1,7 +1,7 @@
 import { fileKindFromName, getExt } from "../fileDisplay.js";
 import { formatSize } from "../utils/utils.js";
 import { FileKind } from "../shared/fileKindDetector.js";
-import { os } from "../framework.js";
+import { os, createElement } from "../framework.js";
 
 const TYPE_LABELS = {
   [FileKind.TEXT]: "TEXT",
@@ -54,9 +54,9 @@ function cancelPending() {
 }
 
 function buildRow(label, value) {
-  const row = document.createElement("div");
+  const row = createElement("div");
   row.className = "ft-row";
-  const l = document.createElement("span");
+  const l = createElement("span");
   l.className = "ft-label";
   l.textContent = label + ":";
   row.appendChild(l);
@@ -66,7 +66,7 @@ function buildRow(label, value) {
 
 function showAppTooltip(cx, cy, title) {
   hideFileTooltip();
-  tooltipEl = document.createElement("div");
+  tooltipEl = createElement("div");
   tooltipEl.className = "file-tooltip";
   tooltipEl.appendChild(buildRow("TYPE", "APPLICATION"));
   tooltipEl.appendChild(buildRow("NAME", title));
@@ -76,7 +76,7 @@ function showAppTooltip(cx, cy, title) {
 
 function showTooltip(cx, cy, dirPath, name) {
   hideFileTooltip();
-  tooltipEl = document.createElement("div");
+  tooltipEl = createElement("div");
   tooltipEl.className = "file-tooltip";
 
   tooltipEl.appendChild(buildRow("TYPE", getTypeLabel(name)));

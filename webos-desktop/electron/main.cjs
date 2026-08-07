@@ -702,12 +702,12 @@ function setupTray() {
         label: "Power Mode",
         submenu: [
           {
-            label: "Turbo",
+            label: "Performance",
             type: "radio",
-            checked: trayState.powerMode === "turbo",
+            checked: trayState.powerMode === "performance",
             click: () => {
-              trayState.powerMode = "turbo";
-              mainWindow.webContents.send("tray:action", { action: "set-power-mode", value: "turbo" });
+              trayState.powerMode = "performance";
+              mainWindow.webContents.send("tray:action", { action: "set-power-mode", value: "performance" });
               rebuildTrayMenu();
             }
           },

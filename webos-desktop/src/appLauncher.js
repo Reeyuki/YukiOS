@@ -7,7 +7,7 @@ import { initializeAppGrid, tryGetIcon, trackRecentlyUsed } from "./desktopui/st
 const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 import { getLibraryUrl } from "./shared/cdnConfig.js";
-import { StorageKeys, os, brand, yuriPageTitle } from "./framework.js";
+import { StorageKeys, os, brand, yuriPageTitle, $ } from "./framework.js";
 import { getWispUrl } from "./shared/wispConfig.js";
 import { parseBool } from "./utils/utils.js";
 import {
@@ -26,7 +26,7 @@ import { ClippyAnimation, initClippy, speak } from "./ai/clippy.js";
 const clippySpeak = speak;
 import { GameOverlayController } from "./gameOverlay.js";
 import "./styles/gameOverlay.css";
-import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage } from "./analytics.js";
+import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage, recordUsageDuration } from "./analytics.js";
 import { maybeTriggerSmartlink } from "./ads.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steam.js";
@@ -74,7 +74,7 @@ export class AppLauncher {
         this.launch("steamApp");
         if (settings.startMinimized) {
           setTimeout(() => {
-            const steamWin = document.getElementById("games-app-win");
+            const steamWin = $("#games-app-win");
             if (steamWin) {
               const wm = this.wm;
               wm.minimize(steamWin);
@@ -180,7 +180,7 @@ export class AppLauncher {
       if (!data || data.__yukios !== "navigate" || typeof data.url !== "string") return;
 
       let sourceIframe = null;
-      for (const iframe of document.getElementById("desktop").querySelectorAll("iframe")) {
+      for (const iframe of $("#desktop").querySelectorAll("iframe")) {
         if (iframe.contentWindow === event.source) {
           sourceIframe = iframe;
           break;
@@ -271,7 +271,7 @@ export class AppLauncher {
         await info.action.call(this, appExtra);
       } else if (info.launchType === "instance") {
         const appInstance = this.appRegistry.get(app);
-        if (appInstance && typeof appInstance.open === "function") {
+        if (appInstance) {
           await appInstance.open(appExtra);
         } else {
           console.warn(`No open() method found for app: ${app}`);
@@ -336,8 +336,10 @@ export class AppLauncher {
     this.wm.removeFromTaskbar = (winId) => {
       const session = this.appSessions.get(winId);
       if (session) {
-        const durationMin = Math.round((Date.now() - session.startTime) / 60000);
+        const durationMs = Date.now() - session.startTime;
+        const durationMin = Math.round(durationMs / 60000);
         this.updateSteamStats(session.appId, durationMin);
+        recordUsageDuration(session.appId, durationMs);
         this.appSessions.delete(winId);
         this.adsManager?.onGameClosed();
       }
@@ -444,7 +446,7 @@ const player=ruffle.createPlayer();
 player.style.width="100%";
 player.style.height="100%";
 player.style.display="block";
-document.getElementById("player").appendChild(player);
+$("#player").appendChild(player);
 player.load("${swfPath}");
 </script>
 </body>
@@ -686,7 +688,7 @@ player.load("${swfPath}");
   }
 
   bringToFrontIfExists(id) {
-    const el = document.getElementById(`${id}-win`);
+    const el = $(`#${id}-win`);
     if (el) os.window.bringToFront(el);
     return !!el;
   }

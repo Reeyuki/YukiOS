@@ -1,17 +1,18 @@
 import { resolveIconUrl } from "../../shared/assetResolver.js";
 import { speak, ClippyAnimation } from "../../ai/clippy.js";
+import { $, createElement } from "../../shared/domUtils.js";
 
 export function createInlineInput(value) {
-  const wrap = document.createElement("div");
+  const wrap = createElement("div");
   wrap.className = "inline-rename-wrap";
 
-  const input = document.createElement("input");
+  const input = createElement("input");
   input.className = "inline-rename-input";
   input.type = "text";
   input.value = value;
   input.spellcheck = false;
 
-  const errorTip = document.createElement("div");
+  const errorTip = createElement("div");
   errorTip.className = "inline-rename-error";
   errorTip.style.display = "none";
 
@@ -95,14 +96,14 @@ export async function startInlineRename(explorer, itemEl, currentName, inst) {
 }
 
 export async function spawnInlineItem(explorer, inst, isFile) {
-  const win = document.getElementById(inst.winId);
+  const win = $("#" + inst.winId);
   const view = win?.querySelector(`#${inst.winId}-view`);
   if (!view) return;
 
   const defaultName = isFile ? "New File.txt" : "New Folder";
   const iconSrc = isFile ? resolveIconUrl("static/icons/notepad.webp") : resolveIconUrl("static/icons/file.webp");
 
-  const item = document.createElement("div");
+  const item = createElement("div");
   item.className = "file-item is-renaming";
   item.innerHTML = `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
 

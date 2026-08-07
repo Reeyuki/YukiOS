@@ -1,7 +1,7 @@
 import "../styles/appCreator.css";
 import { isImageFile } from "../fileDisplay.js";
 import { refreshIcons } from "../shared/contextMenu.js";
-import { $, $$, bindEvent, setText, setHTML, toggleClass, BaseApp, os } from "../framework.js";
+import { $, createElement, bindEvent, setText, setHTML, toggleClass, BaseApp, os } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getWispUrl } from "../shared/wispConfig.js";
 import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
@@ -144,7 +144,7 @@ export class AppCreatorApp extends BaseApp {
   }
 
   open(editAppId = null) {
-    const existing = document.getElementById(AC.WIN_ID);
+    const existing = $("#" + AC.WIN_ID);
     if (existing) {
       os.window.focus(existing);
       if (editAppId) this.enterEditMode(existing, editAppId);
@@ -294,7 +294,7 @@ export class AppCreatorApp extends BaseApp {
 
     const setPreviewImg = (src) => {
       if (isImageIcon(src)) {
-        const img = document.createElement("img");
+        const img = createElement("img");
         img.src = src;
         img.onerror = () => {
           iconPreview.innerHTML = `<i class="fas fa-window-maximize"></i>`;
@@ -429,48 +429,48 @@ export class AppCreatorApp extends BaseApp {
   }
 
   buildAppRow(win, app) {
-    const row = document.createElement("div");
+    const row = createElement("div");
     row.className = "ac-app-row";
     row.dataset.appId = app.appId;
 
     let iconEl;
     if (isImageIcon(app.icon)) {
-      iconEl = document.createElement("img");
+      iconEl = createElement("img");
       iconEl.className = "ac-app-row-icon";
       iconEl.src = app.icon;
       iconEl.onerror = () => {
-        const i = document.createElement("i");
+        const i = createElement("i");
         i.className = AC.FALLBACK_ICON;
         i.style.fontSize = "28px";
         iconEl.replaceWith(i);
       };
     } else {
-      iconEl = document.createElement("i");
+      iconEl = createElement("i");
       iconEl.className = `ac-app-row-icon ${app.icon || AC.FALLBACK_ICON}`;
     }
 
-    const info = document.createElement("div");
+    const info = createElement("div");
     info.className = "ac-app-row-info";
 
-    const nameEl = document.createElement("div");
+    const nameEl = createElement("div");
     nameEl.className = "ac-app-row-name";
     nameEl.textContent = app.name;
 
-    const urlEl = document.createElement("div");
+    const urlEl = createElement("div");
     urlEl.className = "ac-app-row-url";
     urlEl.textContent = app.url;
 
     info.append(nameEl, urlEl);
 
-    const actions = document.createElement("div");
+    const actions = createElement("div");
     actions.className = "ac-app-row-actions";
 
-    const editBtn = document.createElement("button");
+    const editBtn = createElement("button");
     editBtn.className = "ac-row-btn ac-row-btn-edit";
     editBtn.textContent = "Edit";
     editBtn.addEventListener("click", () => this.enterEditMode(win, app.appId));
 
-    const delBtn = document.createElement("button");
+    const delBtn = createElement("button");
     delBtn.className = "ac-row-btn ac-row-btn-delete";
     delBtn.textContent = "Delete";
     delBtn.addEventListener("click", () => this.deleteApp(app.appId, win));
@@ -683,15 +683,15 @@ export class AppCreatorApp extends BaseApp {
       if (existingImg) {
         existingImg.src = resolvedIconUrl;
         existingImg.onerror = () => {
-          const i = document.createElement("i");
+          const i = createElement("i");
           i.className = `${AC.FALLBACK_ICON} desktop-icon__fallback`;
           existingImg.replaceWith(i);
         };
       } else if (existingI) {
-        const img = document.createElement("img");
+        const img = createElement("img");
         img.src = resolvedIconUrl;
         img.onerror = () => {
-          const i = document.createElement("i");
+          const i = createElement("i");
           i.className = `${AC.FALLBACK_ICON} desktop-icon__fallback`;
           img.replaceWith(i);
         };
@@ -703,7 +703,7 @@ export class AppCreatorApp extends BaseApp {
         existingI.className = cls;
         existingI.classList.add("desktop-icon__fallback");
       } else if (existingImg) {
-        const i = document.createElement("i");
+        const i = createElement("i");
         i.className = `${cls} desktop-icon__fallback`;
         existingImg.replaceWith(i);
       }
@@ -872,7 +872,7 @@ export class AppCreatorApp extends BaseApp {
     };
     menu.querySelector("#ctx-ca-delete").onclick = () => {
       hide();
-      this.deleteApp(appId, document.getElementById(AC.WIN_ID));
+      this.deleteApp(appId, $("#" + AC.WIN_ID));
     };
     menu.querySelector("#ctx-ca-props").onclick = () => {
       hide();
@@ -882,7 +882,7 @@ export class AppCreatorApp extends BaseApp {
 
   openAvatarPickerWindow(parentWin, setPreviewImg) {
     const winId = "avatar-picker-win";
-    const existing = document.getElementById(winId);
+    const existing = $("#" + winId);
     if (existing) {
       os.window.focus(existing);
       return;

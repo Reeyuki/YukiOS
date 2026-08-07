@@ -1,3 +1,5 @@
+import { createElement } from "../shared/domUtils.js";
+
 const TRANSITION_DURATION = 400;
 let styleEl = null;
 let timer = null;
@@ -12,7 +14,7 @@ export function animateThemeChange(changeFn) {
     styleEl = null;
   }
 
-  styleEl = document.createElement("style");
+  styleEl = createElement("style");
   styleEl.id = "yukios-theme-transition";
   styleEl.textContent = `:root, .window, .window-header, .taskbar, .start-menu, .desktop,
 .desktop-context-menu, .taskbar-preview, .dialog-box,

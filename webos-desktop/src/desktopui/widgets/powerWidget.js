@@ -1,4 +1,5 @@
 import { WidgetBase } from "../widgetManager.js";
+import { $ } from "../../shared/domUtils.js";
 
 export class PowerWidget extends WidgetBase {
   constructor(manager, id) {
@@ -23,8 +24,8 @@ export class PowerWidget extends WidgetBase {
   }
 
   async update() {
-    const fill = document.getElementById(`battery-fill-${this.id}`);
-    const percent = document.getElementById(`battery-percent-${this.id}`);
+    const fill = $(`#battery-fill-${this.id}`);
+    const percent = $(`#battery-percent-${this.id}`);
 
     if (!fill || !percent) return;
 

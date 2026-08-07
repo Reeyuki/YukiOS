@@ -2,10 +2,12 @@ import confetti from "canvas-confetti";
 import { BusEvents } from "./core/EventBus.js";
 import { resolveGhUrl } from "./shared/assetResolver.js";
 import { audioMixer } from "./audioMixer.js";
-import { $$ } from "./shared/domUtils.js";
+import { $, $$, createElement } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
 
 import { BaseApp, StorageKeys, os } from "./framework.js";
+import { getLiveUserId, ensureLiveUserId } from "./social/userIdentity.js";
+import { reportAchievements } from "./social/socialApi.js";
 export const Achievements = {
   MultiTasker: "window_manager",
   ArchiveHandler: "archive_handler",
@@ -43,6 +45,12 @@ export const Achievements = {
   BootStyler: "boot_styler"
 };
 
+let sharedCatalog = null;
+
+export function getAchievementCatalog() {
+  return sharedCatalog || [];
+}
+
 export class AchievementsApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -74,11 +82,19 @@ export class AchievementsApp extends BaseApp {
     this.counters = {};
     this.achievementQueue = [];
     this.isShowingAchievement = false;
+    this.syncTimer = null;
+    this.syncOnPageHide = () => {
+      this.flushSync();
+    };
+    window.addEventListener("pagehide", this.syncOnPageHide);
     this.loadFromStorage();
+    ensureLiveUserId()
+      .then(() => this.syncAchievements())
+      .catch(() => {});
   }
 
   open(opts = {}) {
-    const existing = document.getElementById("achievements-yukios");
+    const existing = $("#achievements-yukios");
     if (existing) {
       os.window.focus(existing);
       return;
@@ -174,246 +190,248 @@ export class AchievementsApp extends BaseApp {
   }
 
   createAchievements() {
-    return [
-      {
-        id: Achievements.MultiTasker,
-        title: "Juggler",
-        desc: "Run 5 apps simultaneously",
-        icon: "fa-window-maximize",
-        rarity: "common"
-      },
-      {
-        id: Achievements.ChaosMode,
-        title: "Chaos Mode",
-        desc: "Open 10 apps at once",
-        icon: "fa-fire",
-        rarity: "epic"
-      },
-      {
-        id: Achievements.ArchiveHandler,
-        title: "Unzipped",
-        desc: "Extract a compressed archive",
-        icon: "fa-file-zipper",
-        rarity: "common"
-      },
-      {
-        id: Achievements.PersonalSpace,
-        title: "Personal Space",
-        desc: "Upload a custom wallpaper",
-        icon: "fa-image",
-        rarity: "common"
-      },
-      {
-        id: Achievements.DesktopStylist,
-        title: "Curator",
-        desc: "Change wallpaper 5 times",
-        icon: "fa-paintbrush",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.AppCollector,
-        title: "App Collector",
-        desc: "Launch 15 different apps",
-        icon: "fa-th-large",
-        rarity: "epic"
-      },
-      {
-        id: Achievements.Skid,
-        title: "SKID",
-        desc: "Write neofetch on terminal",
-        icon: "fa-laptop-code",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.TerminalUser,
-        title: "First Command",
-        desc: "Execute 5 commands in terminal",
-        icon: "fa-terminal",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.ModelViewer,
-        title: "Depth Perception",
-        desc: "View a 3D model",
-        icon: "fa-cube",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.FirstGame,
-        title: "Insert Coin",
-        desc: "Launch any game",
-        icon: "fa-gamepad",
-        rarity: "common"
-      },
-      {
-        id: Achievements.GameHopper,
-        title: "Game Hopper",
-        desc: "Play 10 games",
-        icon: "fa-dice",
-        rarity: "epic"
-      },
-      {
-        id: Achievements.GameHopperMega,
-        title: "Grand Game Hopper",
-        desc: "Play 100 games",
-        icon: "fa-crown",
-        rarity: "legendary"
-      },
-      {
-        id: Achievements.RetroPlayer,
-        title: "Retro Player",
-        desc: "Play a DOS game",
-        icon: "fa-ghost",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.RegularUser,
-        title: "Regular User",
-        desc: "Use the OS across 5 sessions",
-        icon: "fa-user-clock",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.Completionist,
-        title: "Completionist",
-        desc: "Unlock all achievements",
-        icon: "fa-trophy",
-        rarity: "legendary"
-      },
-      {
-        id: Achievements.SetupComplete,
-        title: "Welcome Home",
-        desc: "Finish YukiOS setup wizard",
-        icon: "fa-flag-checkered",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.IntroTourComplete,
-        title: "Tour Guide",
-        desc: "Finish the YukiOS intro tour",
-        icon: "fa-route",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.FontCustomizer,
-        title: "Font Customizer",
-        desc: "Set a custom TTF font as system font",
-        icon: "fa-font",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.WorkspaceWanderer,
-        title: "Workspace Wanderer",
-        desc: "Switch workspaces 25 times",
-        icon: "fa-layer-group",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.WorkspaceArchitect,
-        title: "Workspace Architect",
-        desc: "Create 3 different workspaces",
-        icon: "fa-plus",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.ScreenshotSavant,
-        title: "Snip & Clip",
-        desc: "Take 10 screenshots",
-        icon: "fa-camera",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.MathWhiz,
-        title: "Crunch Time",
-        desc: "Perform 50 calculations in the calculator",
-        icon: "fa-calculator",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.NightPerson,
-        title: "Night Person",
-        desc: "Enable night mode",
-        icon: "fa-moon",
-        rarity: "common"
-      },
-      {
-        id: Achievements.PowerUser,
-        title: "Power Cycle",
-        desc: "Switch power profiles 5 times",
-        icon: "fa-bolt",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.Customizer,
-        title: "Hotkeyed",
-        desc: "Customize a keyboard shortcut",
-        icon: "fa-keyboard",
-        rarity: "uncommon"
-      },
-      {
-        id: Achievements.Flashback,
-        title: "Flashback",
-        desc: "Play a Flash game",
-        icon: "fa-film",
-        rarity: "common"
-      },
-      {
-        id: Achievements.Converter,
-        title: "Converted",
-        desc: "Convert a file",
-        icon: "fa-exchange-alt",
-        rarity: "common"
-      },
-      {
-        id: Achievements.WidgetAdded,
-        title: "Widget Wizard",
-        desc: "Place your first desktop widget",
-        icon: "fa-puzzle-piece",
-        rarity: "common"
-      },
-      {
-        id: Achievements.ThemeSmith,
-        title: "Theme Smith",
-        desc: "Save a custom theme",
-        icon: "fa-swatchbook",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.MacroMaker,
-        title: "Macro Maker",
-        desc: "Create a custom shortcut action",
-        icon: "fa-wand-magic-sparkles",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.GhostMode,
-        title: "Ghost Mode",
-        desc: "Open an incognito browser window",
-        icon: "fa-mask",
-        rarity: "rare"
-      },
-      {
-        id: Achievements.PinCushion,
-        title: "Pin Cushion",
-        desc: "Pin an app to the taskbar",
-        icon: "fa-thumbtack",
-        rarity: "common"
-      },
-      {
-        id: Achievements.Sampler,
-        title: "Sampler",
-        desc: "Sample a color with the color picker",
-        icon: "fa-eye-dropper",
-        rarity: "common"
-      },
-      {
-        id: Achievements.BootStyler,
-        title: "Boot Styler",
-        desc: "Choose a boot animation",
-        icon: "fa-play",
-        rarity: "common"
-      }
-    ];
+    if (!sharedCatalog)
+      sharedCatalog = [
+        {
+          id: Achievements.MultiTasker,
+          title: "Juggler",
+          desc: "Run 5 apps simultaneously",
+          icon: "fa-window-maximize",
+          rarity: "common"
+        },
+        {
+          id: Achievements.ChaosMode,
+          title: "Chaos Mode",
+          desc: "Open 10 apps at once",
+          icon: "fa-fire",
+          rarity: "epic"
+        },
+        {
+          id: Achievements.ArchiveHandler,
+          title: "Unzipped",
+          desc: "Extract a compressed archive",
+          icon: "fa-file-zipper",
+          rarity: "common"
+        },
+        {
+          id: Achievements.PersonalSpace,
+          title: "Personal Space",
+          desc: "Upload a custom wallpaper",
+          icon: "fa-image",
+          rarity: "common"
+        },
+        {
+          id: Achievements.DesktopStylist,
+          title: "Curator",
+          desc: "Change wallpaper 5 times",
+          icon: "fa-paintbrush",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.AppCollector,
+          title: "App Collector",
+          desc: "Launch 15 different apps",
+          icon: "fa-th-large",
+          rarity: "epic"
+        },
+        {
+          id: Achievements.Skid,
+          title: "SKID",
+          desc: "Write neofetch on terminal",
+          icon: "fa-laptop-code",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.TerminalUser,
+          title: "First Command",
+          desc: "Execute 5 commands in terminal",
+          icon: "fa-terminal",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.ModelViewer,
+          title: "Depth Perception",
+          desc: "View a 3D model",
+          icon: "fa-cube",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.FirstGame,
+          title: "Insert Coin",
+          desc: "Launch any game",
+          icon: "fa-gamepad",
+          rarity: "common"
+        },
+        {
+          id: Achievements.GameHopper,
+          title: "Game Hopper",
+          desc: "Play 10 games",
+          icon: "fa-dice",
+          rarity: "epic"
+        },
+        {
+          id: Achievements.GameHopperMega,
+          title: "Grand Game Hopper",
+          desc: "Play 100 games",
+          icon: "fa-crown",
+          rarity: "legendary"
+        },
+        {
+          id: Achievements.RetroPlayer,
+          title: "Retro Player",
+          desc: "Play a DOS game",
+          icon: "fa-ghost",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.RegularUser,
+          title: "Regular User",
+          desc: "Use the OS across 5 sessions",
+          icon: "fa-user-clock",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.Completionist,
+          title: "Completionist",
+          desc: "Unlock all achievements",
+          icon: "fa-trophy",
+          rarity: "legendary"
+        },
+        {
+          id: Achievements.SetupComplete,
+          title: "Welcome Home",
+          desc: "Finish YukiOS setup wizard",
+          icon: "fa-flag-checkered",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.IntroTourComplete,
+          title: "Tour Guide",
+          desc: "Finish the YukiOS intro tour",
+          icon: "fa-route",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.FontCustomizer,
+          title: "Font Customizer",
+          desc: "Set a custom TTF font as system font",
+          icon: "fa-font",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.WorkspaceWanderer,
+          title: "Workspace Wanderer",
+          desc: "Switch workspaces 25 times",
+          icon: "fa-layer-group",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.WorkspaceArchitect,
+          title: "Workspace Architect",
+          desc: "Create 3 different workspaces",
+          icon: "fa-plus",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.ScreenshotSavant,
+          title: "Snip & Clip",
+          desc: "Take 10 screenshots",
+          icon: "fa-camera",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.MathWhiz,
+          title: "Crunch Time",
+          desc: "Perform 50 calculations in the calculator",
+          icon: "fa-calculator",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.NightPerson,
+          title: "Night Person",
+          desc: "Enable night mode",
+          icon: "fa-moon",
+          rarity: "common"
+        },
+        {
+          id: Achievements.PowerUser,
+          title: "Power Cycle",
+          desc: "Switch power profiles 5 times",
+          icon: "fa-bolt",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.Customizer,
+          title: "Hotkeyed",
+          desc: "Customize a keyboard shortcut",
+          icon: "fa-keyboard",
+          rarity: "uncommon"
+        },
+        {
+          id: Achievements.Flashback,
+          title: "Flashback",
+          desc: "Play a Flash game",
+          icon: "fa-film",
+          rarity: "common"
+        },
+        {
+          id: Achievements.Converter,
+          title: "Converted",
+          desc: "Convert a file",
+          icon: "fa-exchange-alt",
+          rarity: "common"
+        },
+        {
+          id: Achievements.WidgetAdded,
+          title: "Widget Wizard",
+          desc: "Place your first desktop widget",
+          icon: "fa-puzzle-piece",
+          rarity: "common"
+        },
+        {
+          id: Achievements.ThemeSmith,
+          title: "Theme Smith",
+          desc: "Save a custom theme",
+          icon: "fa-swatchbook",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.MacroMaker,
+          title: "Macro Maker",
+          desc: "Create a custom shortcut action",
+          icon: "fa-wand-magic-sparkles",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.GhostMode,
+          title: "Ghost Mode",
+          desc: "Open an incognito browser window",
+          icon: "fa-mask",
+          rarity: "rare"
+        },
+        {
+          id: Achievements.PinCushion,
+          title: "Pin Cushion",
+          desc: "Pin an app to the taskbar",
+          icon: "fa-thumbtack",
+          rarity: "common"
+        },
+        {
+          id: Achievements.Sampler,
+          title: "Sampler",
+          desc: "Sample a color with the color picker",
+          icon: "fa-eye-dropper",
+          rarity: "common"
+        },
+        {
+          id: Achievements.BootStyler,
+          title: "Boot Styler",
+          desc: "Choose a boot animation",
+          icon: "fa-play",
+          rarity: "common"
+        }
+      ];
+    return sharedCatalog;
   }
 
   loadFromStorage() {
@@ -570,6 +588,30 @@ export class AchievementsApp extends BaseApp {
     this.refresh();
   }
 
+  syncAchievements() {
+    const userId = getLiveUserId();
+    if (!userId || this.unlocked.size === 0) return;
+    if (this.syncTimer) clearTimeout(this.syncTimer);
+    this.syncTimer = setTimeout(() => {
+      this.syncTimer = null;
+      this.flushSync();
+    }, 2000);
+  }
+
+  flushSync() {
+    if (this.syncTimer) {
+      clearTimeout(this.syncTimer);
+      this.syncTimer = null;
+    }
+    const userId = getLiveUserId();
+    if (!userId || this.unlocked.size === 0) return;
+    const entries = Array.from(this.unlocked.entries());
+    reportAchievements(
+      userId,
+      entries.map(([id, unlockedAt]) => ({ id, unlockedAt }))
+    );
+  }
+
   trigger(achievementKey, skipSound = false) {
     if (parseBool(os.storage.get(StorageKeys.achievementsDisabled))) return;
 
@@ -578,6 +620,7 @@ export class AchievementsApp extends BaseApp {
 
     this.unlocked.set(achievementKey, Date.now());
     this.saveToStorage();
+    this.syncAchievements();
     this.queueAchievement(achievementKey, skipSound);
     this.refresh();
 
@@ -632,7 +675,7 @@ export class AchievementsApp extends BaseApp {
       }
     }
 
-    const popup = document.createElement("div");
+    const popup = createElement("div");
     popup.className = "achievement-popup";
     popup.setAttribute("data-rarity", achievement.rarity);
 
@@ -694,7 +737,7 @@ export class AchievementsApp extends BaseApp {
   }
 
   refresh() {
-    const win = document.getElementById("achievements-yukios");
+    const win = $("#achievements-yukios");
     if (!win) return;
     const scroll = win.querySelector(".achievements-scroll");
     if (!scroll) return;
@@ -789,6 +832,7 @@ export class AchievementsApp extends BaseApp {
     this.saveToStorage();
     this.refresh();
     this.playFinalConfetti();
+    this.syncAchievements();
   }
 
   playFinalConfetti() {

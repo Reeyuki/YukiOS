@@ -5,18 +5,9 @@ import { modeManager, MODES } from "../modeManager.js";
 import { BusEvents } from "../core/EventBus.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
-import { trayManager } from "../tray/tray.js";
 import { getLauncher, initLauncher, destroyLauncher } from "./Launcher.js";
-import { createCalendarPopup, closeCalendarPopup } from "../apps/calendar.js";
 import { getAppRegistry } from "../appRegistry.js";
-
-const CLOCK_INTERVAL = 10000;
-
-const DEDICATED_TRAY_ITEMS = [
-  { winId: "audio-mixer", className: "shelf-volume" },
-  { winId: "network-tray-window", className: "shelf-network" },
-  { winId: "display-performance-window", className: "shelf-battery" }
-];
+import { ChromeOsQuickSettings } from "./quickSettings.js";
 
 const DEFAULT_SHELF_APPS = [
   { appId: "explorerApp", title: "Files", icon: "static/icons/file.webp" },
@@ -31,17 +22,12 @@ export class Shelf {
     this.el = null;
     this.runningItems = new Map();
     this.pinnedItems = [];
-    this.clockEl = null;
-    this.trayContainer = null;
-    this.clockInterval = null;
-    this.clock24h = false;
-    this.shelfAutoHide = false;
+    this.quickSettings = null;
 
     this.boundFocus = this.handleFocus.bind(this);
     this.boundClosed = this.handleClosed.bind(this);
     this.boundSettings = this.onSettingsChanged.bind(this);
     this.boundMode = this.onModeChanged.bind(this);
-    this.boundCalendarClose = this.onCalendarClose.bind(this);
   }
 
   init() {
@@ -50,6 +36,8 @@ export class Shelf {
     this.createDOM();
     initLauncher();
     getLauncher().setShelf(this);
+    this.quickSettings = new ChromeOsQuickSettings(this);
+    this.quickSettings.init();
     os.events.on(BusEvents.WINDOW_FOCUSED, this.boundFocus);
     os.events.on(BusEvents.WINDOW_CLOSED, this.boundClosed);
     os.events.on(BusEvents.SETTINGS_CHANGED, this.boundSettings);
@@ -60,18 +48,14 @@ export class Shelf {
 
   destroy() {
     if (!this.el) return;
-    this.stopClock();
+    this.quickSettings?.destroy();
+    this.quickSettings = null;
     destroyLauncher();
     os.events.off(BusEvents.WINDOW_FOCUSED, this.boundFocus);
     os.events.off(BusEvents.WINDOW_CLOSED, this.boundClosed);
     os.events.off(BusEvents.SETTINGS_CHANGED, this.boundSettings);
     os.events.off(BusEvents.MODE_ENTERED, this.boundMode);
     os.events.off(BusEvents.MODE_EXITED, this.boundMode);
-    this.cleanupCalendarListeners();
-    DEDICATED_TRAY_ITEMS.forEach(({ winId }) => {
-      trayManager.removeDedicatedContainer(winId);
-    });
-    trayManager.removeSecondaryContainer(this.trayContainer);
     this.el.remove();
     this.el = null;
     this.runningItems.clear();
@@ -93,7 +77,7 @@ export class Shelf {
 
   hide() {
     if (this.el) this.el.style.display = "none";
-    closeCalendarPopup();
+    this.quickSettings?.closeCalendarPopup();
   }
 
   createDOM() {
@@ -112,19 +96,6 @@ export class Shelf {
     this.appsContainer = createElement("div", { className: "shelf-apps" });
     this.renderPinnedItems();
 
-    DEDICATED_TRAY_ITEMS.forEach(({ className }) => {
-      const el = createElement("div", { className });
-      rightSection.appendChild(el);
-    });
-
-    this.trayContainer = createElement("div", { className: "shelf-tray-items", id: "shelf-tray-items" });
-    rightSection.appendChild(this.trayContainer);
-
-    this.clockEl = createElement("div", { className: "shelf-clock" });
-    this.clockEl.style.cursor = "pointer";
-    this.clockEl.addEventListener("click", () => this.toggleCalendar());
-    rightSection.appendChild(this.clockEl);
-
     this.el.appendChild(leftSection);
     this.el.appendChild(this.appsContainer);
     this.el.appendChild(rightSection);
@@ -136,85 +107,6 @@ export class Shelf {
         this.toggleLauncher();
       }
     });
-
-    DEDICATED_TRAY_ITEMS.forEach(({ winId, className }) => {
-      const el = this.el.querySelector(`.${className}`);
-      if (el) {
-        trayManager.addDedicatedContainer(winId, el);
-      }
-    });
-
-    trayManager.addSecondaryContainer(this.trayContainer);
-    trayManager.render();
-    this.stripDuplicatesFromTray();
-
-    this.updateClock();
-    this.startClock();
-  }
-
-  stripDuplicatesFromTray() {
-    const dedicatedIds = DEDICATED_TRAY_ITEMS.map((t) => t.winId);
-    if (!this.trayContainer) return;
-    const btns = this.trayContainer.querySelectorAll("[data-win-id]");
-    btns.forEach((btn) => {
-      if (dedicatedIds.includes(btn.dataset.winId)) {
-        btn.remove();
-      }
-    });
-    if (this.trayContainer.children.length === 0) {
-      this.trayContainer.style.display = "none";
-    }
-  }
-
-  startClock() {
-    this.updateClock();
-    this.stopClock();
-    this.clockInterval = setInterval(() => this.updateClock(), CLOCK_INTERVAL);
-  }
-
-  stopClock() {
-    if (this.clockInterval) {
-      clearInterval(this.clockInterval);
-      this.clockInterval = null;
-    }
-  }
-
-  updateClock() {
-    if (!this.clockEl) return;
-    const now = new Date();
-    const opts = this.clock24h
-      ? { hour: "2-digit", minute: "2-digit", hour12: false }
-      : { hour: "numeric", minute: "2-digit" };
-    this.clockEl.innerHTML = `
-      <span class="shelf-clock-time">${now.toLocaleTimeString([], opts)}</span>
-      <span class="shelf-clock-date">${now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}</span>
-    `;
-    this.clockEl.title = now.toLocaleString([], {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  }
-
-  toggleCalendar() {
-    createCalendarPopup();
-    document.addEventListener("click", this.boundCalendarClose);
-  }
-
-  onCalendarClose(e) {
-    const popup = $("#calendar-popup");
-    if (popup && !popup.contains(e.target) && !e.target.closest(".shelf-clock")) {
-      closeCalendarPopup();
-      document.removeEventListener("click", this.boundCalendarClose);
-    }
-  }
-
-  cleanupCalendarListeners() {
-    document.removeEventListener("click", this.boundCalendarClose);
-    closeCalendarPopup();
   }
 
   toggleLauncher() {
@@ -401,16 +293,12 @@ export class Shelf {
   }
 
   onSettingsChanged() {
-    trayManager.render();
     this.applySettings();
   }
 
   applySettings() {
     const pos = os.storage.get(StorageKeys.chromeOsShelfPosition) || "bottom";
     const autoHide = os.storage.get(StorageKeys.chromeOsShelfAutoHide) === "true";
-    const clock24h = os.storage.get(StorageKeys.chromeOsClock24h) === "true";
-
-    this.clock24h = clock24h;
 
     if (this.el) {
       this.el.dataset.shelfPos = pos;
@@ -423,7 +311,5 @@ export class Shelf {
         .join(" ");
       this.el.classList.toggle("shelf-autohide", autoHide);
     }
-
-    this.updateClock();
   }
 }

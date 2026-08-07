@@ -4,6 +4,10 @@ import { openSteamWindow } from "./games/games.js";
 export function createAppActions(appLauncher) {
   const actions = {};
 
+  const LAUNCH_METHOD_DISPATCH = {
+    openYukiDevToolsApp: (extra) => appLauncher.openYukiDevToolsApp(extra)
+  };
+
   for (const [appId, metadata] of Object.entries(SYSTEM_APPS)) {
     const { launchType, source, title, launchMethod } = metadata;
 
@@ -26,8 +30,9 @@ export function createAppActions(appLauncher) {
 
       case "method":
         actions[appId] = (extra) => {
-          if (launchMethod && typeof appLauncher[launchMethod] === "function") {
-            return appLauncher[launchMethod](extra);
+          const dispatch = LAUNCH_METHOD_DISPATCH[launchMethod];
+          if (launchMethod && dispatch) {
+            return dispatch(extra);
           }
           console.error(`No launch method found for ${appId}`);
         };
@@ -50,7 +55,9 @@ export function createAppActions(appLauncher) {
 
       case "steam":
         actions[appId] = (extra) => {
-          return openSteamWindow(appLauncher, appLauncher.explorerApp.wm, null, extra?.steamGameId, extra?.steamPage);
+          return openSteamWindow(appLauncher, appLauncher.explorerApp.wm, null, extra?.steamGameId, extra?.steamPage, {
+            userId: extra?.steamUserId
+          });
         };
         break;
 

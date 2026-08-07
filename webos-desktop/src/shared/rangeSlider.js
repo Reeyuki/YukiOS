@@ -86,7 +86,7 @@ export function bindRangeSlider(root = document) {
   bindEvent(document, "mousemove", (e) => {
     if (!activeSlider) return;
     const value = sliderValueFromEvent(activeSlider, e.clientX);
-    updateSliderValue(activeSlider, value, false);
+    updateSliderValue(activeSlider, value, true);
   });
 
   bindEvent(document, "mouseup", () => {

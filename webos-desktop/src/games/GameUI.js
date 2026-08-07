@@ -1,12 +1,35 @@
-import { refreshIcons } from "../shared/contextMenu.js";
-import { SteamDataManager, desktopUI, steamAudio } from "./games.js";
+import { refreshIcons, showContextMenu } from "../shared/contextMenu.js";
+import { SteamDataManager, desktopUI, steamAudio, refreshSteamUI, updateSteamProfileCoins } from "./games.js";
 import { observeLazyImages } from "./games.js";
 import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
 import { KeybindManager } from "../keybindManager.js";
-import { fetchLiveStats, sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
-import { renderLiveStats } from "../shared/liveStats.js";
+import { sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
+import {
+  renderFriendsListPanel,
+  renderFriendsPage,
+  renderCommunityPage,
+  renderSelfProfilePage,
+  renderProfilePage,
+  renderGamesPage,
+  renderAchievementsPage,
+  renderEditProfilePage,
+  renderLoginPage,
+  renderQuestsPage,
+  renderStorePage,
+  renderRequestsPanel,
+  renderSocialDisabledPage,
+  openStatusPicker
+} from "./steamSocial.js";
+import { fetchFriends, fetchMessages, removeFriend, sendMessage } from "../social/friendsApi.js";
+import { $, $$, bindEvent, setText, setHTML, createElement } from "../shared/domUtils.js";
+import { isSocialDisabled } from "../social/socialSettings.js";
 import { getCurrentUser } from "../desktopui/startMenu.js";
 import { resolveAppId } from "../utils/utils.js";
+import { resolveAvatarUrl } from "../social/avatarResolver.js";
+import { registerLiveIdentity, getLiveUserId } from "../social/userIdentity.js";
+import { fetchDiscover, SOCIAL_BASE } from "../social/socialApi.js";
+import { getPresence } from "../social/presence.js";
+import { BusEvents } from "../core/EventBus.js";
 
 import { StorageKeys, os } from "../framework.js";
 import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
@@ -23,10 +46,7 @@ export class GameUI {
 
     const visibleGames = allGames.filter((g) => !hidden.includes(g.app));
     this.renderSidebarChunked(container, visibleGames, onLaunch);
-
-    this.renderer.archiveGamesCache.forEach((archiveGame) => {
-      this.renderer.appendArchiveGameToSidebar(container, archiveGame, onLaunch);
-    });
+    this.appendArchiveSidebarGames(container, onLaunch);
 
     if (sidebarHiddenSection) {
       const hiddenGames = allGames.filter((g) => hidden.includes(g.app));
@@ -41,6 +61,12 @@ export class GameUI {
     }
   }
 
+  appendArchiveSidebarGames(container, onLaunch) {
+    (this.renderer.archiveGamesCache || []).forEach((archiveGame) => {
+      this.renderer.appendArchiveGameToSidebar(container, archiveGame, onLaunch);
+    });
+  }
+
   setActiveSidebarItem(container, appId) {
     container.querySelectorAll(".sidebar-game-item").forEach((item) => {
       item.classList.toggle("active", item.dataset.app === appId);
@@ -51,7 +77,7 @@ export class GameUI {
     const appId = isArchive ? game.appId : game.app;
     const title = game.title;
     const icon = isArchive ? game.thumb : game.icon;
-    const item = document.createElement("div");
+    const item = createElement("div");
     item.className = "sidebar-game-item";
     item.dataset.app = appId;
     item.innerHTML = icon
@@ -120,7 +146,8 @@ export class GameUI {
     let index = 0;
 
     const renderChunk = (deadline) => {
-      while (index < games.length && (deadline ? deadline.timeRemaining() > 2 : true)) {
+      let hasBudget = !deadline || index === 0 || deadline.timeRemaining() > 2;
+      while (index < games.length && hasBudget) {
         const end = Math.min(index + CHUNK, games.length);
         const fragment = document.createDocumentFragment();
         for (let i = index; i < end; i++) {
@@ -130,6 +157,7 @@ export class GameUI {
         observeLazyImages(sidebarList);
         index = end;
         if (!deadline) break;
+        hasBudget = deadline.timeRemaining() > 2;
       }
       if (index < games.length) {
         requestIdleCallback(renderChunk, { timeout: 200 });
@@ -140,7 +168,7 @@ export class GameUI {
       }
     };
 
-    requestIdleCallback(renderChunk, { timeout: 100 });
+    renderChunk();
   }
 
   renderHiddenSidebar(container, hiddenGames, onLaunch) {
@@ -342,7 +370,7 @@ export class GameUI {
       if (reason === null) return;
 
       try {
-        const res = await fetch("https://analytics.liventcord-a60.workers.dev/api/report-broken", {
+        const res = await fetch(`${SOCIAL_BASE}/api/report-broken`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ appId, title, reason })
@@ -491,6 +519,13 @@ export class GameUI {
 
     container.innerHTML = buildSteamShell(container, username, profilePic, hiddenGames.length, getCdnBase());
 
+    resolveAvatarUrl(profilePic, "static/icons/guest.webp").then((url) => {
+      const headerImg = container.querySelector(".steam-user-profile img");
+      if (headerImg instanceof HTMLImageElement) headerImg.src = url;
+    });
+
+    updateSteamProfileCoins();
+
     const winRoot = container.closest(".window");
     if (winRoot) {
       const slot = container.querySelector(".steam-window-controls-slot");
@@ -547,15 +582,40 @@ export class GameUI {
     const libraryPage = container.querySelector(".steam-library-page");
     const storePage = container.querySelector(".steam-store-page");
     const communityPage = container.querySelector(".steam-community-page");
+    const userPage = container.querySelector(".steam-user-page");
+    const profilePage = container.querySelector(".steam-profile-page");
+    const editPage = container.querySelector(".steam-edit-page");
+    const loginPage = container.querySelector(".steam-login-page");
+    const gamesPage = container.querySelector(".steam-games-page");
+    const achievementsPage = container.querySelector(".steam-achievements-page");
+    const questsPage = container.querySelector(".steam-quests-page");
+    const shopPage = container.querySelector(".steam-shop-page");
+    const friendsPage = container.querySelector(".steam-friends-page");
+    const addressBar = container.querySelector(".steam-address-bar");
+    let currentPage = null;
     const downloadsPage = container.querySelector(".steam-downloads-page");
     const settingsPage = container.querySelector(".steam-settings-page");
     const scrollTop = container.querySelector(".steam-scroll-top");
     const tabs = container.querySelectorAll(".steam-tab");
 
     const updatePageUI = (page) => {
-      [libraryPage, storePage, communityPage, downloadsPage, settingsPage].forEach(
-        (p) => p && p.classList.add("hidden")
-      );
+      currentPage = page;
+      [
+        libraryPage,
+        storePage,
+        communityPage,
+        userPage,
+        profilePage,
+        editPage,
+        loginPage,
+        gamesPage,
+        achievementsPage,
+        questsPage,
+        shopPage,
+        friendsPage,
+        downloadsPage,
+        settingsPage
+      ].forEach((p) => p && p.classList.add("hidden"));
       tabs.forEach((t) => t.classList.remove("active"));
       sidebar.classList.add("hidden");
       scrollTop.classList.remove("visible");
@@ -571,11 +631,132 @@ export class GameUI {
       } else if (page === "community") {
         communityPage.classList.remove("hidden");
         container.querySelector(".steam-tab[data-page='community']").classList.add("active");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(communityPage);
+        } else {
+          renderCommunityPage(communityPage, { onLaunch });
+        }
+      } else if (page === "user") {
+        userPage.classList.remove("hidden");
+        container.querySelector(".steam-tab[data-page='user']").classList.add("active");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(userPage);
+        } else {
+          renderSelfProfilePage(userPage, {
+            onLaunch,
+            onShowGames: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("games");
+            },
+            onShowAchievements: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("achievements");
+            },
+            onShowQuests: () => navigateTo("quests"),
+            onShowStore: () => navigateTo("shop")
+          });
+        }
+      } else if (page === "profile") {
+        profilePage.classList.remove("hidden");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(profilePage);
+        } else {
+          renderProfilePage(profilePage, {
+            userId: this.renderer.profileUserId,
+            onLaunch,
+            onShowGames: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("games");
+            },
+            onShowAchievements: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("achievements");
+            }
+          });
+        }
+      } else if (page === "games") {
+        gamesPage.classList.remove("hidden");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(gamesPage);
+        } else {
+          renderGamesPage(gamesPage, {
+            userId: this.renderer.profileUserId,
+            onLaunch
+          });
+        }
+      } else if (page === "achievements") {
+        achievementsPage.classList.remove("hidden");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(achievementsPage);
+        } else {
+          renderAchievementsPage(achievementsPage, {
+            userId: this.renderer.profileUserId,
+            onLaunch
+          });
+        }
       } else if (page === "downloads") {
         downloadsPage.classList.remove("hidden");
       } else if (page === "settings") {
         settingsPage.classList.remove("hidden");
         initSettingsPage(container);
+      } else if (page === "edit") {
+        editPage.classList.remove("hidden");
+        renderEditProfilePage(editPage);
+      } else if (page === "login") {
+        loginPage.classList.remove("hidden");
+        renderLoginPage(loginPage);
+      } else if (page === "quests") {
+        questsPage.classList.remove("hidden");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(questsPage);
+        } else {
+          renderQuestsPage(questsPage, {
+            onShowLogin: () => navigateTo("login")
+          });
+        }
+      } else if (page === "shop") {
+        shopPage.classList.remove("hidden");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(shopPage);
+        } else {
+          renderStorePage(shopPage, {
+            onShowLogin: () => navigateTo("login")
+          });
+        }
+      } else if (page === "friends" || page === "friends-add") {
+        friendsPage.classList.remove("hidden");
+        if (isSocialDisabled()) {
+          renderSocialDisabledPage(friendsPage);
+        } else {
+          renderFriendsPage(friendsPage, {
+            view: page === "friends-add" ? "add" : "list",
+            userId: getLiveUserId(),
+            onNavigate: (next) => navigateTo(next),
+            onLaunch
+          });
+        }
+      }
+      let addressUrl = "";
+      if (page === "community") addressUrl = "yukisteam://community";
+      else if (page === "user") addressUrl = `yukisteam://profiles/${getLiveUserId() || "me"}`;
+      else if (page === "edit") addressUrl = `yukisteam://profiles/${getLiveUserId() || "me"}/edit`;
+      else if (page === "login") addressUrl = "yukisteam://login";
+      else if (page === "profile") addressUrl = `yukisteam://profiles/${this.renderer.profileUserId || "unknown"}`;
+      else if (page === "games") addressUrl = `yukisteam://profiles/${this.renderer.profileUserId || "unknown"}/games`;
+      else if (page === "achievements")
+        addressUrl = `yukisteam://profiles/${this.renderer.profileUserId || "unknown"}/achievements`;
+      else if (page === "quests") addressUrl = "yukisteam://quests";
+      else if (page === "shop") addressUrl = "yukisteam://shop";
+      else if (page === "friends") addressUrl = `yukisteam://profiles/${getLiveUserId() || "me"}/friends`;
+      else if (page === "friends-add") addressUrl = `yukisteam://profiles/${getLiveUserId() || "me"}/friends/add`;
+      if (addressBar) {
+        const addressText = addressBar.querySelector(".steam-address-text");
+        if (addressUrl) {
+          addressBar.classList.remove("hidden");
+          if (addressText) addressText.textContent = addressUrl;
+        } else {
+          addressBar.classList.add("hidden");
+        }
       }
     };
 
@@ -593,8 +774,112 @@ export class GameUI {
       container.dataset.steamNavBound = "1";
       container.addEventListener("steam-navigate", (e) => {
         const page = e?.detail?.page;
-        if (page) navigateTo(page);
+        if (page) {
+          if (e.detail.userId) this.renderer.profileUserId = e.detail.userId;
+          navigateTo(page);
+        }
       });
+      const reloadBtn = addressBar && addressBar.querySelector(".steam-address-reload");
+      if (reloadBtn) {
+        reloadBtn.addEventListener("click", async () => {
+          const socialPages = ["community", "user", "profile", "games", "achievements"];
+          if (!currentPage || !socialPages.includes(currentPage)) return;
+          updatePageUI(currentPage);
+          reloadBtn.classList.add("is-refreshing");
+          try {
+            await fetchDiscover({ refresh: true });
+            if (currentPage && socialPages.includes(currentPage)) updatePageUI(currentPage);
+          } finally {
+            reloadBtn.classList.remove("is-refreshing");
+          }
+        });
+      }
+    }
+
+    if (!container.dataset.steamSocialEventsBound) {
+      container.dataset.steamSocialEventsBound = "1";
+      const steamWinEl = container.closest(".window");
+      const refreshSteamProfile = () => {
+        if (!steamWinEl || !steamWinEl.isConnected) return;
+        refreshSteamUI();
+        registerLiveIdentity().catch(() => {});
+        const userPageEl = container.querySelector(".steam-user-page");
+        if (userPageEl && !userPageEl.classList.contains("hidden")) {
+          renderSelfProfilePage(userPageEl, {
+            onLaunch,
+            onShowGames: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("games");
+            },
+            onShowAchievements: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("achievements");
+            },
+            onShowQuests: () => navigateTo("quests"),
+            onShowStore: () => navigateTo("shop")
+          });
+        }
+      };
+      const refreshSocialPages = () => {
+        if (isSocialDisabled()) return;
+        if (!steamWinEl || !steamWinEl.isConnected) return;
+        const communityEl = container.querySelector(".steam-community-page");
+        const userPageEl = container.querySelector(".steam-user-page");
+        const profileEl = container.querySelector(".steam-profile-page");
+        if (communityEl && !communityEl.classList.contains("hidden")) {
+          delete communityEl.dataset.steamCommunityRendered;
+          renderCommunityPage(communityEl, { onLaunch });
+        }
+        if (userPageEl && !userPageEl.classList.contains("hidden")) {
+          renderSelfProfilePage(userPageEl, {
+            onLaunch,
+            onShowGames: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("games");
+            },
+            onShowAchievements: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("achievements");
+            },
+            onShowQuests: () => navigateTo("quests"),
+            onShowStore: () => navigateTo("shop")
+          });
+        }
+        if (profileEl && !profileEl.classList.contains("hidden")) {
+          renderProfilePage(profileEl, {
+            userId: this.renderer.profileUserId,
+            onLaunch,
+            onShowGames: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("games");
+            },
+            onShowAchievements: (uid) => {
+              this.renderer.profileUserId = uid;
+              navigateTo("achievements");
+            }
+          });
+        }
+        const questsEl = container.querySelector(".steam-quests-page");
+        if (questsEl && !questsEl.classList.contains("hidden")) {
+          renderQuestsPage(questsEl, { onShowLogin: () => navigateTo("login") });
+        }
+        const shopEl = container.querySelector(".steam-shop-page");
+        if (shopEl && !shopEl.classList.contains("hidden")) {
+          renderStorePage(shopEl, { onShowLogin: () => navigateTo("login") });
+        }
+      };
+      os.events.on(BusEvents.PROFILE_UPDATED, refreshSteamProfile);
+      os.events.on(BusEvents.SESSION_INITIALIZED, refreshSteamProfile);
+      os.events.on(BusEvents.SOCIAL_PRESENCE_CHANGED, refreshSocialPages);
+      os.events.on(BusEvents.SOCIAL_DND_CHANGED, refreshSocialPages);
+      if (steamWinEl) {
+        steamWinEl.addEventListener("remove", () => {
+          os.events.off(BusEvents.PROFILE_UPDATED, refreshSteamProfile);
+          os.events.off(BusEvents.SESSION_INITIALIZED, refreshSteamProfile);
+          os.events.off(BusEvents.SOCIAL_PRESENCE_CHANGED, refreshSocialPages);
+          os.events.off(BusEvents.SOCIAL_DND_CHANGED, refreshSocialPages);
+        });
+      }
     }
 
     initDropdowns(container, navigateTo, this.openFriendsWindow.bind(this), wm);
@@ -646,6 +931,7 @@ export class GameUI {
 
       if (!query) {
         this.renderSidebarChunked(container, visibleGames, onLaunch);
+        this.appendArchiveSidebarGames(container, onLaunch);
         const gridCards = container.querySelectorAll(".steam-game-card");
         gridCards.forEach((card) => {
           card.style.display = "";
@@ -662,7 +948,7 @@ export class GameUI {
         const appId = g.app || g.appId;
         const title = g.title;
         const icon = g.icon || g.thumb;
-        const item = document.createElement("div");
+        const item = createElement("div");
         item.className = "sidebar-game-item";
         item.dataset.app = appId;
         item.innerHTML = icon
@@ -811,9 +1097,16 @@ export class GameUI {
   }
 
   async openFriendsWindow(wm) {
+    if (isSocialDisabled()) {
+      os.notify.send("Social features are disabled", "Enable them in Steam Settings to use Friends & Chat.", {
+        type: "info"
+      });
+      return;
+    }
     if (!wm) return;
+    this.wm = wm;
     const winId = "steam-friends-win";
-    const existing = document.getElementById(winId);
+    const existing = $("#" + winId);
     if (existing) {
       wm.bringToFront(existing);
       return;
@@ -823,27 +1116,63 @@ export class GameUI {
     const username = user.name;
     const profilePic = user.avatar;
 
+    const resolvedProfilePic = await resolveAvatarUrl(profilePic, "static/icons/guest.webp");
+
+    const presence = getPresence();
+    const statusText = presence === "invisible" ? "Invisible" : presence === "offline" ? "Offline" : "Online";
+    const statusCls =
+      presence === "invisible"
+        ? "friends-status-text--invisible"
+        : presence === "offline"
+          ? "friends-status-text--offline"
+          : "friends-status-text--online";
+
+    const bannerDismissed = !!os.storage.get(StorageKeys.steamFriendsBannerDismissed);
+
     const content = `
-      <div class="window-content" style="display:flex; flex-direction:column; height:100%; color:var(--text-primary);">
-        <div class="friends-header" style="padding: 15px; background: var(--surface-1); display: flex; align-items: center; gap: 12px;">
-          <div class="friends-profile-img" style="width: 48px; height: 48px; border: 2px solid var(--brand); padding: 2px; background: var(--bg-base);">
-            <img src="${profilePic}" loading="lazy" style="width:100%; height:100%;" />
+      <div class="window-content steam-friends-window" style="display:flex; flex-direction:column; height:100%; color:var(--text-primary);">
+        <div class="friends-profile-header">
+          <div class="friends-profile-img">
+            <img src="${resolvedProfilePic}" loading="lazy" />
           </div>
           <div class="friends-profile-info">
-            <div class="friends-name" style="font-size: 14px; font-weight: 700; color: var(--brand);">${username}</div>
-            <div class="friends-status" style="font-size: 12px; color: var(--brand);">Online</div>
+            <div class="friends-name-line">
+              <span class="friends-name">${username}</span>
+              <button type="button" class="steam-status-picker-btn steam-status-picker-btn--presence"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            <div class="friends-status"><span class="friends-status-text ${statusCls}">${statusText}</span></div>
           </div>
         </div>
-        <div style="padding: 8px 15px; background: var(--surface-2);">
-          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Online Now</span>
+        ${
+          bannerDismissed
+            ? ""
+            : `
+        <div class="steam-friends-banner">
+          <span>Drag friends &amp; favorites here for quick access</span>
+          <button type="button" class="steam-friends-banner-gotit" data-friends-banner-close>GOT IT!</button>
+        </div>`
+        }
+        <div class="steam-friends-head">
+          <div class="steam-friends-head-row">
+            <span class="steam-friends-title">FRIENDS</span>
+            <div class="steam-friends-actions">
+              <button type="button" class="steam-friends-icon-btn" data-friends-search-toggle title="Search friends"><i class="fas fa-search"></i></button>
+              <button type="button" class="steam-friends-add-btn" data-friends-requests title="Friend Requests"><i class="fas fa-user-plus"></i><span class="friends-requests-bubble"></span></button>
+            </div>
+          </div>
+          <div class="steam-friends-search" data-friends-search>
+            <i class="fas fa-search"></i>
+            <input type="text" data-friends-search-input placeholder="Search friends..." />
+          </div>
         </div>
-        <div class="friends-live-panel" style="flex: 1; overflow-y: auto; padding: 12px 15px;">
+        <div class="friends-requests-inline" data-friends-requests-panel hidden></div>
+        <div class="friends-live-panel">
           <div style="color: var(--text-secondary); font-size: 12px; text-align: center; padding-top: 24px;">Loading...</div>
         </div>
       </div>
     `;
 
-    const win = os.window.create(winId, "Friends List", "301px", "401px", {
+    const win = os.window.create(winId, "Friends List", "380px", "520px", {
       className: "window-root",
       style: { background: "var(--bg-secondary)" },
       icon: "fas fa-user-friends",
@@ -854,9 +1183,9 @@ export class GameUI {
     const headerHtml = wm.utils.generateWindowHeader("Friends List", "fas fa-user-friends");
     win.insertAdjacentHTML("afterbegin", headerHtml);
 
-    const contentDiv = document.createElement("div");
+    const contentDiv = createElement("div");
     contentDiv.className = "window-content";
-    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden;";
+    contentDiv.style.cssText = "width:100%; height:100%; overflow:hidden; position:relative;";
     contentDiv.innerHTML = content;
     win.appendChild(contentDiv);
 
@@ -870,21 +1199,285 @@ export class GameUI {
     windowMakeDraggable(win, wm);
     wm.makeResizable(win);
     wm.setupWindowControls(win);
-    this.loadFriendsLiveStats(win);
-  }
-
-  async loadFriendsLiveStats(win) {
-    const panel = win.querySelector(".friends-live-panel");
-    if (!panel) return;
-
-    const stats = await fetchLiveStats();
-    if (!win.isConnected) return;
-
-    renderLiveStats(stats, panel, {
-      onAppClick: (appId) => {
-        const resolvedId = resolveAppId(appId);
-        if (resolvedId) os.app.launch(resolvedId).catch(() => {});
+    const addBtn = win.querySelector(".steam-friends-add-btn");
+    if (addBtn) {
+      const navigateToFriends = () => {
+        const container = $("#games-app-container");
+        if (container) {
+          container.dispatchEvent(
+            new CustomEvent("steam-navigate", { detail: { page: "friends-add", userId: getLiveUserId() } })
+          );
+        }
+        const steamWin = $("#games-app-win");
+        if (steamWin && this.wm) this.wm.bringToFront(steamWin);
+        if (win) wm.close(win);
+      };
+      const toggleRequestsInline = () => {
+        const panel = win.querySelector("[data-friends-requests-panel]");
+        if (!panel) return;
+        const opening = panel.hidden;
+        panel.hidden = false;
+        panel.classList.toggle("friends-requests-inline--open", opening);
+        if (opening) {
+          const reloadRequests = () =>
+            renderRequestsPanel(panel, {
+              onChange: reloadRequests,
+              onOpenContextMenu: (event, request) => this.showFriendContextMenu(event, request)
+            }).catch(() => {});
+          reloadRequests();
+        }
+      };
+      bindEvent(addBtn, "dblclick", (e) => {
+        if (e.preventDefault) e.preventDefault();
+        navigateToFriends();
+      });
+      let clickTimer = null;
+      bindEvent(addBtn, "click", () => {
+        if (clickTimer) {
+          clearTimeout(clickTimer);
+          clickTimer = null;
+          return;
+        }
+        clickTimer = setTimeout(() => {
+          clickTimer = null;
+          toggleRequestsInline();
+        }, 220);
+      });
+    }
+    const bannerClose = win.querySelector("[data-friends-banner-close]");
+    if (bannerClose) {
+      bindEvent(bannerClose, "click", () => {
+        os.storage.set(StorageKeys.steamFriendsBannerDismissed, "true");
+        const banner = win.querySelector(".steam-friends-banner");
+        if (banner) banner.remove();
+      });
+    }
+    const searchToggle = win.querySelector("[data-friends-search-toggle]");
+    const searchWrap = win.querySelector("[data-friends-search]");
+    const searchInput = win.querySelector("[data-friends-search-input]");
+    if (searchToggle && searchWrap) {
+      bindEvent(searchToggle, "click", () => {
+        const open = searchWrap.classList.toggle("steam-friends-search--open");
+        searchToggle.classList.toggle("steam-friends-icon-btn--active", open);
+        if (open && searchInput) searchInput.focus();
+      });
+    }
+    if (searchInput) {
+      let searchDebounce = null;
+      bindEvent(searchInput, "input", () => {
+        clearTimeout(searchDebounce);
+        const query = searchInput.value;
+        searchDebounce = setTimeout(() => this.loadFriendsPanel(win, query), 250);
+      });
+    }
+    const pickerBtn = win.querySelector(".steam-status-picker-btn--presence");
+    if (pickerBtn) {
+      pickerBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openStatusPicker(e);
+      });
+    }
+    const statusTextEl = win.querySelector(".friends-status-text");
+    const onPresenceChanged = () => {
+      if (!statusTextEl || !statusTextEl.isConnected) return;
+      const current = getPresence();
+      statusTextEl.textContent = current === "invisible" ? "Invisible" : current === "offline" ? "Offline" : "Online";
+      statusTextEl.className = `friends-status-text ${
+        current === "invisible"
+          ? "friends-status-text--invisible"
+          : current === "offline"
+            ? "friends-status-text--offline"
+            : "friends-status-text--online"
+      }`;
+    };
+    os.events.on(BusEvents.SOCIAL_PRESENCE_CHANGED, onPresenceChanged);
+    const refreshFriends = async () => {
+      if (!win.isConnected) return;
+      const queryInput = win.querySelector("[data-friends-search-input]");
+      const searchWrap = win.querySelector("[data-friends-search]");
+      const query =
+        searchWrap && searchWrap.classList.contains("steam-friends-search--open") && queryInput ? queryInput.value : "";
+      await this.loadFriendsPanel(win, query);
+    };
+    this.friendsPollTimer = setInterval(refreshFriends, 8000);
+    win.addEventListener("remove", () => {
+      os.events.off(BusEvents.SOCIAL_PRESENCE_CHANGED, onPresenceChanged);
+      if (this.friendsPollTimer) {
+        clearInterval(this.friendsPollTimer);
+        this.friendsPollTimer = null;
       }
     });
+    this.loadFriendsPanel(win);
+  }
+
+  async loadFriendsPanel(win, query) {
+    const panel = $(".friends-live-panel", win);
+    if (!panel) return;
+    await renderFriendsListPanel(panel, {
+      query,
+      onLaunch: (appId) => {
+        const resolvedId = resolveAppId(appId);
+        if (resolvedId) os.app.launch(resolvedId).catch(() => {});
+      },
+      onOpenChat: (friend) => {
+        if (this.wm) {
+          this.openDmWindow(this.wm, {
+            friendId: friend.userId,
+            username: friend.username,
+            presence: friend.presence
+          });
+        }
+      },
+      onOpenContextMenu: (event, friend) => this.showFriendContextMenu(event, friend)
+    });
+    this.updateFriendRequestsBadge(win);
+  }
+
+  showFriendContextMenu(event, friend) {
+    const items = [
+      { id: "friend-chat", label: "Send Message", icon: "fa-comment-dots", action: "chat" },
+      { id: "friend-profile", label: "View Profile", icon: "fa-id-badge", action: "profile" },
+      "hr",
+      { id: "friend-remove", label: "Remove Friend", icon: "fa-user-slash", action: "remove" }
+    ];
+    const handlers = {
+      chat: () => {
+        if (!this.wm) return;
+        this.openDmWindow(this.wm, {
+          friendId: friend.userId,
+          username: friend.username,
+          presence: friend.presence
+        });
+      },
+      profile: () => {
+        os.app.launch("steamApp", { steamPage: "profile", steamUserId: friend.userId });
+      },
+      remove: async () => {
+        const confirmed = await os.dialog.confirm(
+          "Remove Friend",
+          `Remove ${friend.username || "this friend"} from your friends list?`
+        );
+        if (!confirmed) return;
+        const res = await removeFriend(friend.userId);
+        if (res && (res.success || res.status)) {
+          const win = $("#steam-friends-win");
+          this.loadFriendsPanel(win);
+        }
+      }
+    };
+    showContextMenu(event, items, handlers);
+  }
+
+  openDmWindow(wm, conversation) {
+    if (!conversation) return;
+    const winId = `steam-dm-${conversation.friendId}`;
+    const existing = $("#" + winId);
+    if (existing) {
+      wm.bringToFront(existing);
+      return;
+    }
+    const title = `Chat with ${conversation.username || "Friend"}`;
+    const host = createElement("div", {
+      className: "window-content dm-window",
+      html: `
+        <div class="dm-header">
+          <div class="dm-header-info">
+            <span class="dm-header-name"></span>
+            <span class="dm-header-status"></span>
+          </div>
+        </div>
+        <div class="dm-messages" data-dm-messages></div>
+        <div class="dm-composer">
+          <input type="text" class="dm-input" data-dm-input placeholder="Message" maxlength="1000" />
+          <button type="button" class="steam-friend-btn steam-friend-btn--accept dm-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      `
+    });
+
+    const win = os.window.create(winId, title, "320px", "420px", {
+      className: "window-root",
+      style: { background: "var(--bg-secondary)" },
+      icon: "fas fa-comment-dots",
+      skipHeader: true,
+      skipAutoSetup: true
+    });
+    win.appendChild(host);
+    this.dmPollTimers = this.dmPollTimers || {};
+    win.addEventListener("remove", () => {
+      if (this.dmPollTimers[conversation.friendId]) {
+        clearInterval(this.dmPollTimers[conversation.friendId]);
+        delete this.dmPollTimers[conversation.friendId];
+      }
+    });
+
+    wm.mountWindow(win, winId, title, "fas fa-comment-dots");
+    const headerHtml = wm.utils.generateWindowHeader(title, "fas fa-comment-dots");
+    win.insertAdjacentHTML("afterbegin", headerHtml);
+    wm.bringToFront(win);
+    windowMakeDraggable(win, wm);
+    if (wm.makeResizable) wm.makeResizable(win);
+    if (wm.setupWindowControls) wm.setupWindowControls(win);
+
+    const input = win.querySelector("[data-dm-input]");
+    const sendBtn = win.querySelector(".dm-send");
+    const messagesEl = win.querySelector("[data-dm-messages]");
+    const nameEl = win.querySelector(".dm-header-name");
+    if (nameEl) nameEl.textContent = conversation.username || "Friend";
+    const statusEl = win.querySelector(".dm-header-status");
+    if (statusEl) {
+      statusEl.textContent = conversation.presence === "online" ? "Online" : "Offline";
+    }
+
+    const poll = async () => {
+      if (!messagesEl || !messagesEl.isConnected) return;
+      const messages = await fetchMessages(conversation.friendId);
+      if (!messagesEl.isConnected) return;
+      if (!messages || messages.length === 0) {
+        setHTML(messagesEl, '<div class="dm-empty">Say hello!</div>');
+        return;
+      }
+      const myUserId = getLiveUserId();
+      setHTML(messagesEl, "");
+      messages.forEach((message) => {
+        const isMe = message.fromId === myUserId;
+        const bubble = createElement("div", {
+          className: `dm-bubble ${isMe ? "dm-bubble--me" : ""}`,
+          text: message.body
+        });
+        const time = createElement("div", {
+          className: "dm-bubble-time",
+          text: new Date(message.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        });
+        bubble.appendChild(time);
+        messagesEl.appendChild(bubble);
+      });
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    };
+    const doSend = async () => {
+      const text = (input && input.value.trim()) || "";
+      if (!text) return;
+      const res = await sendMessage(conversation.friendId, text);
+      if (res && res.error) {
+        os.notify.send("Message failed", res.error, { type: "error" });
+        return;
+      }
+      if (input) input.value = "";
+      await poll();
+    };
+    if (sendBtn) bindEvent(sendBtn, "click", doSend);
+    if (input) {
+      bindEvent(input, "keydown", (e) => {
+        if (e.key === "Enter") doSend();
+      });
+    }
+    poll();
+    this.dmPollTimers[conversation.friendId] = setInterval(poll, 6000);
+  }
+
+  async updateFriendRequestsBadge(win) {
+    const data = await fetchFriends();
+    const count = Array.isArray(data?.requests) ? data.requests.length : 0;
+    const bubble = win.querySelector(".friends-requests-bubble");
+    if (bubble) setText(bubble, count ? String(count) : "");
   }
 }

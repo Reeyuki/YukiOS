@@ -1,4 +1,5 @@
 import { audioMixer } from "./audioMixer.js";
+import { mediaTray } from "./mediaTray.js";
 import { WorkspaceManager } from "./windowManager/WorkspaceManager.js";
 import { windowMakeResizable } from "./windowManager/makeResizable.js";
 import { setupWindowControls } from "./windowManager/windowControls.js";
@@ -19,7 +20,7 @@ import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 import { TilingManager } from "./modes/tiling/TilingManager.js";
 
 import { StorageKeys, os, MODES, brand, yuriPageTitle } from "./framework.js";
-import { $ } from "./shared/domUtils.js";
+import { $, createElement } from "./shared/domUtils.js";
 import { isMobile } from "./shared/platformUtils.js";
 
 export class WindowManager {
@@ -78,7 +79,7 @@ export class WindowManager {
     bus.on(BusEvents.SETTINGS_CHANGED, () => {
       this.updateTransparency();
       this.updateTaskbarAlignment();
-      const wasActive = !!document.getElementById("mac-dock");
+      const wasActive = !!$("#mac-dock");
       const nowActive = this.macDock.isActive();
       if (nowActive && !wasActive) {
         this.macDock.init();
@@ -95,14 +96,14 @@ export class WindowManager {
     bus.on(BusEvents.MODE_ENTERED, ({ id }) => {
       if (id === MODES.CHROME_OS) {
         this.chromeShelf.init();
-        document.getElementById("taskbar")?.classList.add("chromeos-active");
+        $("#taskbar")?.classList.add("chromeos-active");
       }
     });
 
     bus.on(BusEvents.MODE_EXITED, ({ id }) => {
       if (id === MODES.CHROME_OS) {
         this.chromeShelf.destroy();
-        document.getElementById("taskbar")?.classList.remove("chromeos-active");
+        $("#taskbar")?.classList.remove("chromeos-active");
       }
     });
 
@@ -116,6 +117,7 @@ export class WindowManager {
 
     setTimeout(() => {
       audioMixer().init();
+      mediaTray().init();
     }, 0);
   }
 
@@ -223,14 +225,14 @@ export class WindowManager {
     const options = { ...pendingOpts, ...initialOptions };
     this.pendingLaunchOptions = null;
 
-    const win = document.createElement("div");
+    const win = createElement("div");
     win.className = "window";
     win.dataset.fullscreen = "false";
 
     let winId = options.forceId || id;
-    if (document.getElementById(winId)) {
+    if ($("#" + winId)) {
       let counter = 1;
-      while (document.getElementById(`${winId}-${counter}`)) {
+      while ($(`#${winId}-${counter}`)) {
         counter++;
       }
       winId = `${winId}-${counter}`;
@@ -380,7 +382,7 @@ export class WindowManager {
 
   normalizeWindowZIndexes() {
     const wins = Array.from(this.openWindows.keys())
-      .map((id) => document.getElementById(id))
+      .map((id) => $("#" + id))
       .filter(Boolean)
       .sort((a, b) => (parseInt(a.style.zIndex, 10) || 0) - (parseInt(b.style.zIndex, 10) || 0));
     let z = 1000;
@@ -456,7 +458,7 @@ export class WindowManager {
   updateWindowHeaderStyles() {
     const isMac = os.storage.get(StorageKeys.macOsControls) === "true";
     this.openWindows.forEach((entry, winId) => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (!win) return;
       const header = win.querySelector(".window-header");
       if (!header) return;
@@ -468,7 +470,7 @@ export class WindowManager {
       controls.outerHTML = this.utils.getWindowControls(hasExternal ? "external" : null, showDownload);
     });
     this.openWindows.forEach((entry, winId) => {
-      const win = document.getElementById(winId);
+      const win = $("#" + winId);
       if (win) this.setupWindowControls(win);
     });
   }
@@ -559,7 +561,7 @@ export class WindowManager {
 
   closeWindow(win) {
     if (typeof win === "string") {
-      win = document.getElementById(win);
+      win = $("#" + win);
     }
     if (!win) return;
     this.silenceWindow(win);
@@ -580,7 +582,7 @@ export class WindowManager {
   }
 
   setWindowTitle(winId, title) {
-    const win = document.getElementById(winId);
+    const win = $("#" + winId);
     if (!win) return;
 
     const headerSpan = win.querySelector(".window-header > span");

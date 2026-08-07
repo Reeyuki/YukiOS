@@ -16,6 +16,7 @@ import { $, $$, bindEvent, setText, setHTML, createElement } from "../shared/dom
 import { renderRangeSlider, bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { showContextMenu, hideMenu } from "../shared/contextMenu.js";
+import { isBlobLike } from "../utils/utils.js";
 
 const WE_KEYS = {
   favorites: StorageKeys.wallpaperEngineFavorites,
@@ -43,20 +44,9 @@ const VANTA_DEFAULTS = {
   CELLS: { color: 0x1e1e1e, color2: 0x4a00e0, size: 1.5, speed: 1 }
 };
 
-function isBlob(obj) {
-  if (!obj) return false;
-  return (
-    obj instanceof Blob ||
-    (typeof obj === "object" &&
-      typeof obj.size === "number" &&
-      typeof obj.type === "string" &&
-      typeof obj.slice === "function")
-  );
-}
-
 function toBlobUrl(content) {
   if (!content) return null;
-  if (isBlob(content)) return URL.createObjectURL(content);
+  if (isBlobLike(content)) return URL.createObjectURL(content);
   if (typeof content !== "string") return null;
   if (content.startsWith("http") || content.startsWith("/") || content.startsWith("blob:")) return content;
   if (content.startsWith("data:")) {
@@ -223,10 +213,10 @@ export class WallpaperEngineApp extends BaseApp {
 
   applyColorFilter() {
     const f = this.colorFilter;
-    const style = document.createElement("style");
+    const style = createElement("style");
     style.id = "we-color-filter-style";
     style.textContent = `#wallpaper-img, #wallpaper-video, #vanta-container { filter: brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) blur(${f.blur}px) !important; }`;
-    document.getElementById("we-color-filter-style")?.remove();
+    $("#we-color-filter-style")?.remove();
     document.head.appendChild(style);
   }
 
@@ -702,7 +692,7 @@ export class WallpaperEngineApp extends BaseApp {
       `
       );
       this.hidePreview();
-      const emptyEl = document.getElementById("we-empty-create-preset");
+      const emptyEl = $("#we-empty-create-preset");
       if (emptyEl) {
         bindEvent(emptyEl, "click", () => {
           this.showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
@@ -1040,7 +1030,7 @@ export class WallpaperEngineApp extends BaseApp {
     const getControls = () => this.getVantaControls({ effect: currentEffect, options: currentOptions });
 
     const rebuildControls = () => {
-      const container = document.getElementById("v-customize-content");
+      const container = $("#v-customize-content");
       if (!container) return;
       const controls = getControls();
       setHTML(container, this.renderVantaControlsHtml(controls));
@@ -1108,7 +1098,7 @@ export class WallpaperEngineApp extends BaseApp {
 
     if (isNew) {
       bindSelectMenu(overlay);
-      const select = document.getElementById("v-effect-select");
+      const select = $("#v-effect-select");
       if (select) {
         bindEvent(select, "change", () => {
           const newEffect = getSelectMenuValue("v-effect-select", overlay);
@@ -1149,7 +1139,7 @@ export class WallpaperEngineApp extends BaseApp {
       overlay.remove();
     };
 
-    const savePresetBtn = document.getElementById("we-customize-save-preset");
+    const savePresetBtn = $("#we-customize-save-preset");
     if (savePresetBtn) {
       bindEvent(savePresetBtn, "click", async () => {
         const customOptions = readOptions();
@@ -1330,7 +1320,7 @@ export class WallpaperEngineApp extends BaseApp {
 
     bindEvent(card, "mouseleave", () => {
       clearTimeout(this.tooltipTimer);
-      document.querySelectorAll(`[data-we-tooltip-for="${card.dataset.id}"]`).forEach((el) => el.remove());
+      $$(`[data-we-tooltip-for="${card.dataset.id}"]`).forEach((el) => el.remove());
     });
   }
 
@@ -1924,7 +1914,7 @@ export class WallpaperEngineApp extends BaseApp {
   notify(msg, type) {
     type = type || "info";
     const icons = { info: "fa-info-circle", success: "fa-check-circle", error: "fa-exclamation-triangle" };
-    const els = document.querySelectorAll(".we-notification");
+    const els = $$(".we-notification");
     const offset = 60 + els.length * 48;
     const el = createElement("div", { className: `we-notification we-notification--${type}` });
     el.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${msg}</span>`;

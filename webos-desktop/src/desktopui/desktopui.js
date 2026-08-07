@@ -2,7 +2,7 @@ import { updateFavoritesUI, setupStartMenu as setupStartMenuFn } from "./startMe
 import { isIntroTourKeepingStartMenuOpen } from "../apps/introTour.js";
 import { desktop } from "./desktop.js";
 import { makeDraggable } from "../shared/dragUtils.js";
-import { StorageKeys, os, $, $$, setStyle } from "../framework.js";
+import { StorageKeys, os, $, $$, createElement, setStyle } from "../framework.js";
 import { hideMenu } from "../shared/contextMenu.js";
 import { isWindowFocused, rectsIntersect } from "../utils/utils.js";
 import { DesktopContextMenuManager } from "./ContextMenuManager.js";
@@ -480,10 +480,10 @@ class SelectionManager {
 export class DesktopUI {
   constructor(explorerApp) {
     this.explorerApp = explorerApp;
-    this.desktop = document.getElementById("desktop");
-    this.startButton = document.getElementById("start-button");
-    this.startMenu = document.getElementById("start-menu");
-    this.selectionBox = document.getElementById("selection-box");
+    this.desktop = $("#desktop");
+    this.startButton = $("#start-button");
+    this.startMenu = $("#start-menu");
+    this.selectionBox = $("#selection-box");
     this.lastFocusedContext = "desktop";
 
     this.positionHelper = new PositionHelper(this.desktop, GRID_CONFIG);
@@ -557,7 +557,9 @@ export class DesktopUI {
     this.startButton.addEventListener("click", (e) => {
       e.stopPropagation();
       this.toggleStartMenu();
-      $('.start-cat[data-cat="all"]')?.click();
+      const favCat = $('.start-cat[data-cat="favorites"]');
+      const targetCat = favCat && favCat.style.display !== "none" ? favCat : $('.start-cat[data-cat="all"]');
+      targetCat?.click();
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("click", (e) => {
@@ -624,7 +626,7 @@ export class DesktopUI {
               } else {
                 for (const iconData of iconsData) {
                   const appId = iconData.data.app;
-                  const tmp = document.createElement("div");
+                  const tmp = createElement("div");
                   tmp.innerHTML = iconData.data.innerHTML;
                   const nameEl = tmp.querySelector("div, span");
                   const iconName = (nameEl ? nameEl.textContent.trim() : "") || iconData.data.name || appId;
@@ -747,12 +749,12 @@ export class DesktopUI {
   setupBrowserDrop() {
     const OVERLAY_ID = "browser-drop-overlay";
 
-    const getOverlay = () => document.getElementById(OVERLAY_ID);
+    const getOverlay = () => $("#" + OVERLAY_ID);
 
     const createOverlay = (label) => {
       let el = getOverlay();
       if (!el) {
-        el = document.createElement("div");
+        el = createElement("div");
         el.id = OVERLAY_ID;
         el.className = "overlay";
         document.body.appendChild(el);
@@ -771,7 +773,7 @@ export class DesktopUI {
       if (!this.explorerApp) return null;
       for (const [winId, inst] of this.explorerApp.instances) {
         if (inst.mode !== "browse") continue;
-        const win = document.getElementById(winId);
+        const win = $("#" + winId);
         if (!win) continue;
         const view = win.querySelector(`#${winId}-view`);
         if (!view) continue;
@@ -838,7 +840,7 @@ export class DesktopUI {
       const inst = getExplorerInstanceAtPoint(e.clientX, e.clientY);
 
       if (inst && this.explorerApp) {
-        const win = document.getElementById(inst.winId);
+        const win = $("#" + inst.winId);
         await this.explorerApp.handleFileUpload(files, false, win, inst);
         return;
       }

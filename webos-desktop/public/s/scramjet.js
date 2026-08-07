@@ -2590,6 +2590,12 @@ return { apply, construct };
               },
               writable: !1,
               configurable: !1
+            }),
+            (0, o.pS)(t, e.config.globals.pushsourcemapfn, {
+              value: function () {},
+              writable: !0,
+              configurable: !0,
+              enumerable: !1
             }));
         }
       },
@@ -7754,7 +7760,7 @@ ${c}`;
           captureErrors: !1,
           cleanErrors: !1,
           scramitize: !1,
-          sourcemaps: !0,
+          sourcemaps: !1,
           destructureRewrites: !0,
           allowInvalidJs: !1,
           debugTrampolines: !1,
