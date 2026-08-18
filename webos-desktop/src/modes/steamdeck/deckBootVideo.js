@@ -5,6 +5,11 @@ import { KeybindManager } from "../../keybindManager.js";
 
 const BOOT_VIDEO_ID = "steamdeck-boot-video";
 let deckBootPlayed = false;
+let deckBootSkip = false;
+
+export function setDeckBootVideoSkip(skip) {
+  deckBootSkip = skip;
+}
 
 export function isDeckBootVideoVisible() {
   return !!document.getElementById(BOOT_VIDEO_ID);
@@ -17,7 +22,7 @@ function getBootVideoUrl() {
 }
 
 export function playDeckBootVideo() {
-  if (deckBootPlayed) return;
+  if (deckBootPlayed || deckBootSkip) return;
   deckBootPlayed = true;
   const settings = SteamSettings.load();
   if (settings.deckBootAnimation === false) return;

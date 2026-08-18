@@ -1,7 +1,15 @@
 import { os, $, $$, createElement, setText, setHTML, StorageKeys } from "../../framework.js";
 import { resolveAvatarUrl } from "../../social/avatarResolver.js";
 import { fetchFriends, getCachedFriends } from "../../social/friendsApi.js";
-import { avatarSrcForIndex, fetchCommunityOverview, fetchActivityOverview, buildPlayerRows, buildFriendCards, buildAvatarStrip, achievementsPercent } from "../../games/steamOverviewData.js";
+import {
+  avatarSrcForIndex,
+  fetchCommunityOverview,
+  fetchActivityOverview,
+  buildPlayerRows,
+  buildFriendCards,
+  buildAvatarStrip,
+  achievementsPercent
+} from "../../games/steamOverviewData.js";
 import { STEAM_NEWS_ITEMS } from "../../games/steamNewsData.js";
 import { resolveIconHtml } from "../../shared/iconUtils.js";
 import { renderFriendsListPanel, renderRequestsPanel } from "../../games/steamSocial.js";
@@ -90,17 +98,19 @@ const buildRecentGamesHtml = (games) => {
     <div class="deck-section deck-recent-games" id="deck-recent-games">
       <h1 class="deck-recent-title">Recent Games</h1>
       <div class="deck-row deck-recent-list">
-        ${games.map((game, index) => {
-          const artHtml = isUrlIcon(game.icon)
-            ? `<img src="${game.icon}" alt="${esc(game.title)}" loading="lazy" decoding="async">`
-            : `<i class="deck-tile-icon ${game.icon}"></i>`;
-          const glowVar = isUrlIcon(game.icon) ? ` style="--tile-art:url('${game.icon}')"` : "";
-          return `
+        ${games
+          .map((game, index) => {
+            const artHtml = isUrlIcon(game.icon)
+              ? `<img src="${game.icon}" alt="${esc(game.title)}" loading="lazy" decoding="async">`
+              : `<i class="deck-tile-icon ${game.icon}"></i>`;
+            const glowVar = isUrlIcon(game.icon) ? ` style="--tile-art:url('${game.icon}')"` : "";
+            return `
           <button class="deck-tile${index === 0 ? " recent-hero" : ""}" data-app-id="${game.appId}"${glowVar}>
             <div class="deck-tile-art">${artHtml}<span class="deck-tile-play"><i class="fas fa-check"></i></span></div>
             <span class="deck-tile-label">${esc(game.title)}</span>
           </button>`;
-        }).join("")}
+          })
+          .join("")}
       </div>
     </div>
   `;
@@ -118,14 +128,18 @@ const buildNewsFeedHtml = () => {
     <div class="deck-section deck-news-feed deck-home-panel" id="deck-news-feed">
       <h1 class="deck-recent-title">What's New</h1>
       <div class="deck-row deck-news-list">
-        ${newsItems.map((item) => `
+        ${newsItems
+          .map(
+            (item) => `
           <a class="deck-news-card" href="${buildNewsHref(item)}" target="_blank" rel="noopener noreferrer">
             <div class="deck-news-art">${resolveIconHtml(item.image, { alt: esc(item.title) })}</div>
             <div class="deck-news-posted">POSTED ${esc(item.date)}</div>
             <div class="deck-news-title">${esc(item.title)}</div>
             <div class="deck-news-desc">${esc(item.description || "")}</div>
           </a>
-        `).join("")}
+        `
+          )
+          .join("")}
       </div>
     </div>
   `;
@@ -133,11 +147,13 @@ const buildNewsFeedHtml = () => {
 const buildHomeHtml = (games) => `
   <div class="deck-rail-dimmer" id="deck-rail-dimmer"></div>
   <nav class="deck-rail">
-    ${RAIL_ITEMS.map((item) => `
+    ${RAIL_ITEMS.map(
+      (item) => `
       <button class="deck-rail-btn" data-rail="${item.id}" title="${item.label}">
         <i class="fas ${item.icon}"></i><span class="deck-rail-label">${item.label}</span>
       </button>
-    `).join("")}
+    `
+    ).join("")}
   </nav>
   <div class="deck-shell">
     <div class="deck-recent-bg" id="deck-recent-bg"><div class="deck-bg-layer deck-bg-front"></div><div class="deck-bg-layer deck-bg-back"></div></div>
@@ -152,11 +168,13 @@ const buildHomeHtml = (games) => `
     <div class="deck-main">
     ${buildRecentGamesHtml(games)}
        <div class="deck-nav">
-        ${NAV_ITEMS_HOME.map((item) => `
+        ${NAV_ITEMS_HOME.map(
+          (item) => `
           <button class="deck-nav-btn" data-action="${item.id}">
             <span>${item.label}</span>${item.friendsPill ? `<span class="deck-nav-friend-pill"><i class="fas fa-user-group"></i><span class="deck-friend-count">0</span></span>` : ""}
           </button>
-        `).join("")}
+        `
+        ).join("")}
     </div>
       <div id="steamdeck-recents"></div>
       <div class="deck-steam-panel" id="deck-steam-panel"></div>
@@ -186,6 +204,7 @@ const buildHomeHtml = (games) => `
         <button class="deck-menu-btn deck-power-btn" data-action="shutdown"><span>Shutdown</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="restart"><span>Restart</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="changeAccount"><span>Change Account</span></button>
+        <button class="deck-menu-btn deck-power-btn" data-action="signOut"><span>Sign Out</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="switchToDesktop"><span>Switch to Desktop</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="cancel"><span>Cancel</span></button>
       </div>
@@ -195,11 +214,13 @@ const buildHomeHtml = (games) => `
 const buildShellHtml = () => `
   <div class="deck-rail-dimmer" id="deck-rail-dimmer"></div>
   <nav class="deck-rail">
-    ${RAIL_ITEMS.map((item) => `
+    ${RAIL_ITEMS.map(
+      (item) => `
       <button class="deck-rail-btn" data-rail="${item.id}" title="${item.label}">
         <i class="fas ${item.icon}"></i><span class="deck-rail-label">${item.label}</span>
       </button>
-    `).join("")}
+    `
+    ).join("")}
   </nav>
   <div class="deck-shell">
     <div class="deck-topbar">
@@ -213,11 +234,13 @@ const buildShellHtml = () => `
     <div class="deck-header">
       <button class="deck-brand" title="Menu"><div class="deck-brand-icon">L1</div></button>
       <div class="deck-nav">
-        ${NAV_ITEMS.map((item) => `
+        ${NAV_ITEMS.map(
+          (item) => `
           <button class="deck-nav-btn" data-action="${item.id}">
             <span>${item.label}</span><span class="deck-nav-count" data-nav-count="${item.id}"></span>
           </button>
-        `).join("")}
+        `
+        ).join("")}
       </div>
       <div class="deck-total-count"><span id="deck-total-games">0</span> Games</div>
       <button class="deck-brand" title="R1"><div class="deck-brand-icon r1">R1</div></button>
@@ -249,14 +272,13 @@ const buildShellHtml = () => `
         <button class="deck-menu-btn deck-power-btn" data-action="shutdown"><span>Shutdown</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="restart"><span>Restart</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="changeAccount"><span>Change Account</span></button>
+        <button class="deck-menu-btn deck-power-btn" data-action="signOut"><span>Sign Out</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="switchToDesktop"><span>Switch to Desktop</span></button>
         <button class="deck-menu-btn deck-power-btn" data-action="cancel"><span>Cancel</span></button>
       </div>
     </div>
   </div>
 `;
-
-
 
 export class SteamDeckLayout {
   constructor(manager) {
@@ -281,8 +303,7 @@ export class SteamDeckLayout {
   buildRoot(isLibraryStart = false) {
     const root = createElement("div", { id: "steamdeck-root" });
     root.classList.toggle("home", !isLibraryStart);
-    if (isLibraryStart)
-      setHTML(root, buildShellHtml());
+    if (isLibraryStart) setHTML(root, buildShellHtml());
     else setHTML(root, buildHomeHtml(this.manager.getContinuePlaying()));
     this.syncRefs(root);
     this.railDimmer.addEventListener("click", () => this.manager.closeRail({ hideSound: true }));
@@ -334,7 +355,7 @@ export class SteamDeckLayout {
       }
     });
 
-    if(this.view)this.view.addEventListener("click", (e) => this.handleViewClick(e));
+    if (this.view) this.view.addEventListener("click", (e) => this.handleViewClick(e));
 
     $$(".deck-power-btn", this.root).forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -349,15 +370,18 @@ export class SteamDeckLayout {
       });
     });
 
-    this.root.addEventListener("contextmenu", (e) => {
-      if (!e.target.closest(".deck-carousel-item")) {
-        e.preventDefault();
-      }
-    }, true);
+    this.root.addEventListener(
+      "contextmenu",
+      (e) => {
+        if (!e.target.closest(".deck-carousel-item")) {
+          e.preventDefault();
+        }
+      },
+      true
+    );
     this.root.addEventListener("contextmenu", (e) => this.handleTileContextMenu(e));
     this.recentsEl.addEventListener("click", (e) => this.handleRecentsClick(e));
     this.detailEl.addEventListener("click", (e) => this.handleDetailClick(e));
-
 
     $$(".deck-foot-left [data-action], .deck-foot-hint[data-action]", this.root).forEach((el) =>
       el.addEventListener("click", () => this.manager.runAction(el.dataset.action))
@@ -365,11 +389,7 @@ export class SteamDeckLayout {
     $('.deck-foot-hint[data-hint="Y"]', this.root).addEventListener("click", () => this.manager.cycleSortByName());
     $('.deck-foot-hint[data-hint="A"]', this.root).addEventListener("click", () => this.manager.confirmFocus());
 
-    this.root.addEventListener(
-      "wheel",
-      (e) => this.handleRowWheel(e),
-      { passive: false }
-    );
+    this.root.addEventListener("wheel", (e) => this.handleRowWheel(e), { passive: false });
 
     this.updateTopbarAvatar();
     this.updateFriendCount();
@@ -395,7 +415,9 @@ export class SteamDeckLayout {
 
   handleRowWheel(e) {
     const target = e.target.closest(".deck-main *");
-    const scroller = target?.closest(".deck-row, .deck-recent-list, .deck-news-list, .deck-recents-list, .deck-sections-col");
+    const scroller = target?.closest(
+      ".deck-row, .deck-recent-list, .deck-news-list, .deck-recents-list, .deck-sections-col"
+    );
     if (!scroller || scroller.scrollWidth <= scroller.clientWidth) return;
     e.preventDefault();
     const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
@@ -431,7 +453,7 @@ export class SteamDeckLayout {
     const tile = e.target.closest(".deck-tile[data-app-id]");
     if (tile) {
       const appId = tile.dataset.appId;
-      const archiveGame = this.manager.archiveGamesCache?.find(g => g.appId === appId);
+      const archiveGame = this.manager.archiveGamesCache?.find((g) => g.appId === appId);
       if (archiveGame) return manager.launchArchiveGame(archiveGame);
       if (tile.classList.contains("deck-focused")) return manager.openDetail(tile.dataset.appId);
       return manager.focusElement(tile);
@@ -636,7 +658,7 @@ export class SteamDeckLayout {
       const end = Math.min(index + CHUNK_SIZE, list.length);
       const frag = document.createDocumentFragment();
       for (let i = index; i < end; i++) {
-        frag.appendChild(this.htmlToElement(this.buildTileHtml(list[i], { eager: (eagerBase + i) < EAGER_TILE_COUNT })));
+        frag.appendChild(this.htmlToElement(this.buildTileHtml(list[i], { eager: eagerBase + i < EAGER_TILE_COUNT })));
       }
       if (anchor && anchor.isConnected) grid.insertBefore(frag, anchor);
       else grid.appendChild(frag);
@@ -686,9 +708,12 @@ export class SteamDeckLayout {
 
     sentinel = createElement("div", { className: "deck-load-sentinel" });
     grid.appendChild(sentinel);
-    io = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) renderPage();
-    }, { root: this.mainEl || null, rootMargin: "1000px 0px" });
+    io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) renderPage();
+      },
+      { root: this.mainEl || null, rootMargin: "1000px 0px" }
+    );
     renderPage();
     io.observe(sentinel);
     return () => {
@@ -702,13 +727,16 @@ export class SteamDeckLayout {
     const manager = this.manager;
     this.syncRendered = false;
     this.view?.classList.add("deck-library-view");
-    this.view?.insertAdjacentHTML("beforeend", `
+    this.view?.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="deck-library">
         <div class="deck-search"><i class="fas fa-magnifying-glass"></i><input placeholder="Search games..."></div>
         <div class="deck-grid"></div>
         <div class="deck-ad-block"><div class="deck-ad-label">Advertisement</div><div id="deck-library-ad"></div></div>
       </div>
-    `);
+    `
+    );
     const wrap = this.view?.lastElementChild;
     const input = $(".deck-search input", wrap);
     const grid = $(".deck-grid", wrap);
@@ -733,7 +761,7 @@ export class SteamDeckLayout {
     };
     input?.addEventListener("input", () => {
       const q = input.value.trim().toLowerCase();
-      const preserveScroll = q ? 0 : (this.mainEl ? this.mainEl.scrollTop : 0);
+      const preserveScroll = q ? 0 : this.mainEl ? this.mainEl.scrollTop : 0;
       fillGrid(q ? filterSource.filter((g) => g.title.toLowerCase().includes(q)) : filterSource, false, preserveScroll);
     });
     fillGrid(initialList, true);
@@ -749,12 +777,15 @@ export class SteamDeckLayout {
 
   renderTileSection(icon, titleText, entries, emptyText, headerHtml) {
     this.syncRendered = false;
-    this.view?.insertAdjacentHTML("beforeend", `
+    this.view?.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="deck-section">
         <div class="deck-section-title">${headerHtml ?? `<i class="fas ${icon}"></i><span>${esc(titleText)}</span>`}</div>
         <div class="deck-grid"></div>
       </div>
-    `);
+    `
+    );
     const grid = $(".deck-grid", this.view);
     if (!grid) return;
     if (!entries.length) {
@@ -769,7 +800,12 @@ export class SteamDeckLayout {
   }
 
   renderFavorites() {
-    this.renderTileSection("fa-star", "Favorites", this.manager.getFavoriteEntries(), "No favorites yet. Star something from a detail page.");
+    this.renderTileSection(
+      "fa-star",
+      "Favorites",
+      this.manager.getFavoriteEntries(),
+      "No favorites yet. Star something from a detail page."
+    );
   }
 
   async renderArchive() {
@@ -780,7 +816,9 @@ export class SteamDeckLayout {
 
   renderLumin() {
     if (!this.view) return;
-    this.view.insertAdjacentHTML("beforeend", `
+    this.view.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="deck-section">
         <div class="deck-section-title"><i class="fas fa-gamepad"></i><span>LuminSdk Games</span></div>
         <div class="deck-lumin-container">
@@ -793,7 +831,8 @@ export class SteamDeckLayout {
           <iframe id="deck-luminsdk-iframe" allowfullscreen class="deck-lumin-iframe"></iframe>
         </div>
       </div>
-    `);
+    `
+    );
     if (!this.luminFsBound) {
       this.luminFsBound = true;
       document.addEventListener("fullscreenchange", () => this.syncLuminFullscreenButton());
@@ -850,36 +889,53 @@ export class SteamDeckLayout {
     const btn = $('[data-action="luminFullscreen"]', this.view);
     if (!btn) return;
     const container = $(".deck-lumin-container", this.view);
-    const active = !!container && (document.fullscreenElement === container || document.webkitFullscreenElement === container);
+    const active =
+      !!container && (document.fullscreenElement === container || document.webkitFullscreenElement === container);
     const icon = $(".deck-lumin-fullscreen-icon", btn);
     const label = $(".deck-lumin-fullscreen-label", btn);
-    if (icon) icon.className = active ? "fas fa-compress deck-lumin-fullscreen-icon" : "fas fa-expand deck-lumin-fullscreen-icon";
+    if (icon)
+      icon.className = active
+        ? "fas fa-compress deck-lumin-fullscreen-icon"
+        : "fas fa-expand deck-lumin-fullscreen-icon";
     if (label) setText(label, active ? "Exit Fullscreen" : "Fullscreen");
   }
 
   renderCollections() {
     const collections = this.manager.getCollections();
     const tilesHtml = collections.length
-      ? collections.map((col) => `
+      ? collections
+          .map(
+            (col) => `
           <button class="deck-tile deck-collection-tile" data-collection-id="${col.id}">
             <div class="deck-tile-art"><i class="deck-tile-icon fas fa-folder"></i><span class="deck-tile-count">${col.gameIds.length}</span></div>
             <span class="deck-tile-label">${esc(col.name)}</span>
           </button>
-        `).join("")
+        `
+          )
+          .join("")
       : `<div class="deck-note">Create collections to group your games.</div>`;
-    this.view.insertAdjacentHTML("beforeend", `
+    this.view.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="deck-section deck-collections">
         <div class="deck-section-title"><i class="fas fa-folder-open"></i><span>Collections</span></div>
         <button class="deck-btn" data-action="newCollection"><i class="fas fa-plus"></i><span>New Collection</span></button>
         <div class="deck-grid">${tilesHtml}</div>
       </div>
-    `);
+    `
+    );
   }
 
   renderCollectionDetail() {
     const entries = this.manager.getCollectionEntries(this.manager.activeCollectionId);
     const headerHtml = `<button class="deck-btn" data-action="closeCollection"><i class="fas fa-arrow-left"></i><span>All Collections</span></button>`;
-    this.renderTileSection(null, null, entries, "This collection is empty. Add a game from its detail page.", headerHtml);
+    this.renderTileSection(
+      null,
+      null,
+      entries,
+      "This collection is empty. Add a game from its detail page.",
+      headerHtml
+    );
   }
 
   buildTileHtml(entry, opts) {
@@ -996,15 +1052,20 @@ export class SteamDeckLayout {
       return;
     }
     this.recentsEl.style.display = "flex";
-    setHTML(this.recentsEl, `
+    setHTML(
+      this.recentsEl,
+      `
       <span class="deck-recents-title"><i class="fas fa-layer-group"></i><span>Running</span></span>
       <div class="deck-recents-list">
-        ${recents.map((r) => {
-          const icon = typeof r.icon === "string" && r.icon.includes("fa-") ? r.icon : "fa-window-restore";
-          return `<button class="deck-recent-item" data-win-id="${r.winId}"><i class="fas ${icon}"></i><span>${esc(r.title)}</span></button>`;
-        }).join("")}
+        ${recents
+          .map((r) => {
+            const icon = typeof r.icon === "string" && r.icon.includes("fa-") ? r.icon : "fa-window-restore";
+            return `<button class="deck-recent-item" data-win-id="${r.winId}"><i class="fas ${icon}"></i><span>${esc(r.title)}</span></button>`;
+          })
+          .join("")}
       </div>
-    `);
+    `
+    );
   }
 
   revealHomePanel() {
@@ -1027,11 +1088,13 @@ export class SteamDeckLayout {
       { id: "info", label: "Game Info", icon: "fa-circle-info" }
     ];
     return tabs
-      .map((t) => `
+      .map(
+        (t) => `
         <button class="deck-nav-btn${t.id === activeTab ? " active" : ""}" data-action="tab-${t.id}">
           ${t.icon ? `<i class="fas ${t.icon}"></i>` : ""}<span>${t.label}</span>
         </button>
-      `)
+      `
+      )
       .join("");
   }
 
@@ -1046,7 +1109,9 @@ export class SteamDeckLayout {
       ? `<img src="${entry.icon}" alt="${esc(entry.title)}" loading="lazy" decoding="async">`
       : `<i class="deck-detail-icon ${entry.icon}"></i>`;
     const tab = manager.detailTab || "activity";
-    setHTML(this.detailEl, `
+    setHTML(
+      this.detailEl,
+      `
       <div class="deck-overview">
         <div class="deck-overview-banner">
           <div class="deck-overview-banner-bg">${artHtml}</div>
@@ -1077,7 +1142,8 @@ export class SteamDeckLayout {
         </div>
         <div class="deck-overview-content" id="deck-overview-content"></div>
       </div>
-    `);
+    `
+    );
     this.detailEl.classList.add("open");
     this.renderDetailContent(tab, entry, isFavorite, gameStats);
   }
@@ -1088,7 +1154,9 @@ export class SteamDeckLayout {
     const manager = this.manager;
     if (tab === "stuff") {
       const pct = achievementsPercent(gameStats.totalMin);
-      setHTML(contentEl, `
+      setHTML(
+        contentEl,
+        `
         <div class="deck-overview-grid">
           <section class="deck-overview-panel">
             <h3 class="deck-overview-panel-title">Achievements</h3>
@@ -1107,14 +1175,17 @@ export class SteamDeckLayout {
             <p class="deck-overview-note">${esc(entry.title)} · ${entry.type === "game" ? "Game" : "Application"}</p>
           </section>
         </div>
-      `);
+      `
+      );
       const fill = $(".deck-overview-ach-fill", contentEl);
       if (fill) fill.style.width = `${pct}%`;
       this.appendDetailAd(contentEl);
       return;
     }
     if (tab === "community") {
-      setHTML(contentEl, `
+      setHTML(
+        contentEl,
+        `
         <div class="deck-overview-grid">
           <section class="deck-overview-panel deck-overview-desc">
             <h3 class="deck-overview-panel-title">Description</h3>
@@ -1125,12 +1196,15 @@ export class SteamDeckLayout {
             <p class="deck-overview-note">Loading community stats…</p>
           </section>
         </div>
-      `);
+      `
+      );
       this.renderCommunityContent(contentEl, entry);
       return;
     }
     if (tab === "info") {
-      setHTML(contentEl, `
+      setHTML(
+        contentEl,
+        `
         <div class="deck-overview-grid">
           <section class="deck-overview-panel deck-overview-desc">
             <h3 class="deck-overview-panel-title">About This Game</h3>
@@ -1143,7 +1217,8 @@ export class SteamDeckLayout {
             <div class="deck-overview-detail-row"><span>Play Time</span><b>${formatGameActivityTime(gameStats.totalMin)}</b></div>
           </section>
         </div>
-      `);
+      `
+      );
       this.appendDetailAd(contentEl);
       return;
     }
@@ -1167,7 +1242,9 @@ export class SteamDeckLayout {
       avatar: "deck-overview-friend-avatar",
       info: "deck-overview-friend-info"
     });
-    setHTML(contentEl, `
+    setHTML(
+      contentEl,
+      `
       <div class="deck-overview-grid">
         <section class="deck-overview-panel deck-overview-desc">
           <h3 class="deck-overview-panel-title">Description</h3>
@@ -1184,7 +1261,8 @@ export class SteamDeckLayout {
           ${playerRows || '<p class="deck-overview-note">No one has played this recently.</p>'}
         </section>
       </div>
-    `);
+    `
+    );
     this.appendDetailAd(contentEl);
   }
 
@@ -1196,7 +1274,9 @@ export class SteamDeckLayout {
       info: "deck-overview-friend-info"
     });
     const avatarStrip = buildAvatarStrip(friends, "deck-overview-avatar");
-    setHTML(contentEl, `
+    setHTML(
+      contentEl,
+      `
       <section class="deck-overview-panel deck-overview-friends">
         <div class="deck-overview-panel-head">
           <h3 class="deck-overview-panel-title">Friends</h3>
@@ -1214,7 +1294,8 @@ export class SteamDeckLayout {
           <div class="deck-overview-avatar-row">${avatarStrip || '<span class="deck-overview-note">No activity yet.</span>'}</div>
         </section>
       </div>
-    `);
+    `
+    );
   }
 
   switchDetailTab(tab) {

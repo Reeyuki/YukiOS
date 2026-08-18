@@ -1,6 +1,33 @@
 [
   {
     "date": "August 18, 2026",
+    "label": "Steam Deck Fixes",
+    "sections": [
+      {
+        "icon": "fa-gamepad",
+        "title": "Steam Deck Mode",
+        "items": [
+          [
+            "fa-right-from-bracket",
+            "Sign Out from Power Menu",
+            "Sign out directly from the Deck power menu to return to the login screen."
+          ],
+          [
+            "fa-play-circle",
+            "Boot Video Fix",
+            "Steam Deck boot video now plays reliably on every visit without freezing."
+          ],
+          [
+            "fa-keyboard",
+            "Power Menu Input Fix",
+            "Holding Enter for power actions no longer accidentally launches background games."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "date": "August 18, 2026",
     "label": "YukiOS v3.0.0",
     "sections": [
       {
@@ -25,7 +52,8 @@
         "items": [
           ["fa-infinity", "Unlimited Free AI", "Chat with every AI model, free and unlimited, right from your desktop."]
         ]
-      },      {
+      },
+      {
         "icon": "fa-pen-ruler",
         "title": "Theme Hub Creation Studio",
         "items": [
@@ -78,39 +106,28 @@
       {
         "icon": "fa-gear",
         "title": "Steam Settings",
-        "items": [
-          ["fa-gear", "Steam Settings Window", "A dedicated window with many new Steam setting categories."]
-        ]
+        "items": [["fa-gear", "Steam Settings Window", "A dedicated window with many new Steam setting categories."]]
       },
       {
         "icon": "fa-users",
         "title": "Steam Overviews",
         "items": [
-          [
-            "fa-users",
-            "Detailed Game Overviews",
-            "Game pages show richer detail UI with live player activity."
-          ]
+          ["fa-users", "Detailed Game Overviews", "Game pages show richer detail UI with live player activity."]
         ]
       },
       {
         "icon": "fa-window-restore",
         "title": "Window & UI",
         "items": [
-          [
-            "fa-expand",
-            "Resize Cursor Effect",
-            "Hover window corners to see a clear resize cursor guide."
-          ],
+          ["fa-expand", "Resize Cursor Effect", "Hover window corners to see a clear resize cursor guide."],
           [
             "fa-up-right-and-down-left-from-center",
             "LuminSDK Fullscreen",
             "Fullscreen button added for every LuminSDK game."
           ],
           ["fa-layer-group", "Mode Switcher App", "Preview and switch desktop modes from one handy app."],
-          ["fa-keyboard", "Command Palette", "The command palette is faster and easier to use."],
-          ["fa-image", "Wallpaper Engine", "Wallpaper Engine is simpler and more streamlined."],
-          ["fa-palette", "New Default Theme", "YukiOS now boots into a fresh default theme."]
+          ["fa-keyboard", "Command Palette", "The command palette ui is bigger."],
+          ["fa-image", "Wallpaper Engine", "Wallpaper Engine is simpler and more streamlined."]
         ]
       },
       {

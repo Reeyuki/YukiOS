@@ -18,6 +18,7 @@ import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/sessi
 import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
 import { applySteamDeckSettings, disableSteamDeckSettings } from "./modes/steamdeck/session.js";
 import { getRecentNews } from "./apps/news.js";
+import { setDeckBootVideoSkip } from "./modes/steamdeck/deckBootVideo.js";
 
 export class SessionManager {
   constructor(os) {
@@ -172,17 +173,25 @@ export class SessionManager {
       return;
     }
 
+    const autoLogin = os.storage.get(StorageKeys.autoLogin);
+
     if (this.selectedSession === "Yuki Deck Mode") {
-      this.currentSession = {
-        name: os.storage.get(StorageKeys.username) || "Guest",
-        key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
-        avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
-      };
-      await this.initializeSession();
-      return;
+      if (autoLogin && os.storage.get(StorageKeys.username)) {
+        this.currentSession = {
+          name: os.storage.get(StorageKeys.username) || "Guest",
+          key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
+          avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+        };
+        setDeckBootVideoSkip(true);
+        await this.initializeSession();
+        return;
+      }
+      return new Promise(async (resolve) => {
+        await this.createSessionUI("login", resolve);
+      });
     }
 
-    if (os.storage.get(StorageKeys.autoLogin)) {
+    if (autoLogin) {
       const savedName = os.storage.get(StorageKeys.username);
       if (savedName) {
         this.currentSession = {
@@ -642,6 +651,7 @@ export class SessionManager {
       key: this.selectedUser.key,
       avatar: this.selectedUser.avatar
     };
+    setDeckBootVideoSkip(false);
     await this.initializeSession();
     this.container.classList.add("exit");
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -1142,14 +1152,6 @@ export class SessionManager {
 
     this.keyboardHandler = (e) => this.handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);
-
-    if (
-      import.meta.env.VITE_DEV_BUILD === "true" &&
-      this.selectedSession === "Yuki Deck Mode" &&
-      this.sessionState === "login"
-    ) {
-      setTimeout(() => actionBtn.click(), 300);
-    }
   }
 
   async handleElectronDownload() {

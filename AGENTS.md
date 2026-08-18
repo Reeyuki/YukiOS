@@ -11,10 +11,11 @@ You are working under webos-desktop directory. when src is mentioned it means we
 - Before finalizing any code changes, run `pnpm build:dev` in `webos-desktop/`. A change that breaks the build is
   incomplete.
 - Always use CSS variables from `src/styles/style.css`. Never hardcode colors.
-- When making significant changes, new features, or new apps: add a news entry to the `EXISTING_NEWS_UPDATES` array in
-  `src/apps/news.js` with a date, label, and a punchy, active-voice description under 15 words. Bad: 'First-time setup
-  now includes a dedicated profile step...' Good: 'Choose your nickname and avatar during setup, with a quick final
-  preview!'. It should not have punchlines or separating sentences with "—" or "-"
+- When making significant changes, new features, or new apps: add a news entry to the top of `src/news.json` with a
+  `date`, optional `label`, and `sections` array. Each section has an `icon`, `title`, and `items` (array of
+  `[icon, title, description]` triples). Descriptions must be under 15 words, active-voice, and punchy. Bad:
+  'First-time setup now includes a dedicated profile step...' Good: 'Choose your nickname and avatar during setup,
+  with a quick final preview!'. No punchlines or separating sentences with "—" or "-"
 - When adding a new app, add a `description` field to its manifest entry in `src/registry/AppManifest.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
 - Always use `src/framework.js` barrel for app-level imports. When writing a new app, import

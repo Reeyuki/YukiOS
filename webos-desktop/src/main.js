@@ -37,8 +37,6 @@ import { versionChecker } from "./versionChecker.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { StorageKeys } from "./StorageKeys.js";
 import { showBootScreen } from "./bootScreen.js";
-import { playDeckBootVideo } from "./modes/steamdeck/deckBootVideo.js";
-import { SteamSettings } from "./games/steamSettings.js";
 import { deckCapture } from "./modes/steamdeck/deckCapture.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
 import { initPopunder } from "./ads.js";
@@ -81,9 +79,7 @@ init();
 window.os = os;
 deckCapture.install();
 
-const deckSessionSelected = os.storage.get(StorageKeys.selectedSession) === "Yuki Deck Mode";
-const deckBootEnabled = deckSessionSelected && SteamSettings.load().deckBootAnimation !== false;
-const boot = deckBootEnabled ? (playDeckBootVideo(), { hide: () => Promise.resolve() }) : showBootScreen();
+const boot = showBootScreen();
 
 const preloaded = {};
 

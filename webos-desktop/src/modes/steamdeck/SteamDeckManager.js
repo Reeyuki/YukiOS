@@ -139,7 +139,7 @@ export class SteamDeckManager {
     Object.values(this.modeRoots).forEach((root) => {
       if (root && root.parentNode) root.parentNode.removeChild(root);
     });
-this.modeRoots = {};
+    this.modeRoots = {};
     this.root = null;
     if (this.qta) {
       this.qta.destroy();
@@ -188,9 +188,10 @@ this.modeRoots = {};
   getContinuePlaying() {
     const hidden = new Set(this.recentHidden);
     const recent = SteamDataManager.getRecentGames();
-    const recentGames = recent && recent.length > 0
-      ? recent.map((g) => this.games.find((x) => x.appId === g.id)).filter((g) => g && !hidden.has(g.appId))
-      : [];
+    const recentGames =
+      recent && recent.length > 0
+        ? recent.map((g) => this.games.find((x) => x.appId === g.id)).filter((g) => g && !hidden.has(g.appId))
+        : [];
     const seen = new Set(recentGames.map((g) => g.appId));
     const filler = this.getFeatured().filter((g) => !seen.has(g.appId) && !hidden.has(g.appId));
     const result = recentGames.concat(filler).slice(0, 30);
@@ -263,7 +264,7 @@ this.modeRoots = {};
       const response = await fetch(`${base}games.json`);
       const data = await response.json();
       const allGames = Array.isArray(data) ? data : data?.games || [];
-      
+
       this.archiveGamesCache = allGames.map((game) => {
         const name = game.name;
         const fullUrl = game.url.startsWith("http") ? game.url : base + game.url;
@@ -375,7 +376,13 @@ this.modeRoots = {};
       .pop()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "");
-    launcher.openIframeApp({ appId: gameId, type: "game", source: archiveGame.url, originalName: archiveGame.title, isArchive: true });
+    launcher.openIframeApp({
+      appId: gameId,
+      type: "game",
+      source: archiveGame.url,
+      originalName: archiveGame.title,
+      isArchive: true
+    });
     if (this.detailAppId) this.closeDetail();
     setTimeout(() => launchSplash.reveal(), 2000);
   }
@@ -479,14 +486,18 @@ this.modeRoots = {};
     if (tab !== this.homeTab) {
       steamDeckAudio.playSwitchNav();
       const direction = getNavSlideDirection("home", this.homeTab, tab);
-      this.layout.slidePanelTransition(this.layout.homePanelEl, () => {
-        this.homeTab = tab;
-        this.displayMode = null;
-        this.layout.render();
-        this.collectFocus();
-        this.updateFocus();
-        this.layout.revealHomePanel();
-      }, direction);
+      this.layout.slidePanelTransition(
+        this.layout.homePanelEl,
+        () => {
+          this.homeTab = tab;
+          this.displayMode = null;
+          this.layout.render();
+          this.collectFocus();
+          this.updateFocus();
+          this.layout.revealHomePanel();
+        },
+        direction
+      );
     } else {
       this.homeTab = tab;
       this.displayMode = null;
@@ -552,8 +563,7 @@ this.modeRoots = {};
     if (this.layout) this.layout.setRailExpanded(this.railExpanded);
     this.collectFocus();
     this.updateFocus();
-    steamDeckAudio.playSlide()
-
+    steamDeckAudio.playSlide();
   }
 
   closeRail(opts = {}) {
@@ -596,7 +606,6 @@ this.modeRoots = {};
     this.collectFocus();
     this.updateFocus();
   }
-
 
   getRecents() {
     const wins = os.window.getOpenWindows();
@@ -770,7 +779,7 @@ this.modeRoots = {};
       this.updateFocus();
       os.notify.send("Recent Games", "Removed from recent games.", { type: "info", icon: "fa-clock-rotate-left" });
     };
-    const tile = $(".deck-tile[data-app-id=\"" + appId + "\"]", this.layout?.mainEl);
+    const tile = $('.deck-tile[data-app-id="' + appId + '"]', this.layout?.mainEl);
     if (tile) {
       tile.classList.add("deck-tile-removing");
       setTimeout(applyRemoval, 180);
@@ -807,24 +816,40 @@ this.modeRoots = {};
       menu.appendChild(launchItem);
       menu.appendChild(item("View Details", () => this.openDetail(appId), "fa-circle-info"));
       menu.appendChild(hr());
-      menu.appendChild(item(isFav ? "Remove from Favorites" : "Add to Favorites", () => this.toggleFavorite(appId), isFav ? "fa-star" : "far fa-star"));
+      menu.appendChild(
+        item(
+          isFav ? "Remove from Favorites" : "Add to Favorites",
+          () => this.toggleFavorite(appId),
+          isFav ? "fa-star" : "far fa-star"
+        )
+      );
       if (inContinuePlaying) {
-        menu.appendChild(item("Remove from Recent Games", () => this.removeFromRecentGames(appId), "fa-clock-rotate-left"));
+        menu.appendChild(
+          item("Remove from Recent Games", () => this.removeFromRecentGames(appId), "fa-clock-rotate-left")
+        );
       }
       menu.appendChild(
-        submenu("Add to Collection", (subMenuEl, subItem, subHr) => {
-          subMenuEl.appendChild(subItem("New Collection...", () => this.createNewCollection(appId), "fa-plus"));
-          if (collections.length > 0) subMenuEl.appendChild(subHr());
-          collections.forEach((col) => {
-            const hasGame = col.gameIds.includes(appId);
-            subMenuEl.appendChild(
-              subItem(hasGame ? `In "${col.name}"` : col.name, () => {
-                if (hasGame) this.removeFromCollection(col.id, appId);
-                else this.addToCollection(col.id, appId);
-              }, hasGame ? "fa-check" : "fa-folder")
-            );
-          });
-        }, "fa-folder-plus")
+        submenu(
+          "Add to Collection",
+          (subMenuEl, subItem, subHr) => {
+            subMenuEl.appendChild(subItem("New Collection...", () => this.createNewCollection(appId), "fa-plus"));
+            if (collections.length > 0) subMenuEl.appendChild(subHr());
+            collections.forEach((col) => {
+              const hasGame = col.gameIds.includes(appId);
+              subMenuEl.appendChild(
+                subItem(
+                  hasGame ? `In "${col.name}"` : col.name,
+                  () => {
+                    if (hasGame) this.removeFromCollection(col.id, appId);
+                    else this.addToCollection(col.id, appId);
+                  },
+                  hasGame ? "fa-check" : "fa-folder"
+                )
+              );
+            });
+          },
+          "fa-folder-plus"
+        )
       );
     });
   }
@@ -844,7 +869,6 @@ this.modeRoots = {};
     const win = $("#" + winId);
     if (win) os.window.focus(win);
   }
-
 
   enterMode(isLibrary) {
     this.closeSteamPanel();
@@ -921,7 +945,6 @@ this.modeRoots = {};
   }
 
   setupTray() {
-
     if (this.layout && this.layout.topbarTrayEl) {
       trayManager.addSecondaryContainer(this.layout.topbarTrayEl);
     }
@@ -929,13 +952,11 @@ this.modeRoots = {};
   }
 
   teardownTray() {
-
     if (this.layout && this.layout.topbarTrayEl) {
       trayManager.removeSecondaryContainer(this.layout.topbarTrayEl);
     }
     trayManager.render();
   }
-
 
   bindBus() {
     this.unsubscribers.push(os.events.on(BusEvents.WINDOW_CREATED, () => this.layout?.renderRecents()));
@@ -974,6 +995,7 @@ this.modeRoots = {};
     }
     if (this.quickAccessOpen) return;
     if (this.layout && this.layout.powerEl && this.layout.powerEl.classList.contains("open")) {
+      e.preventDefault();
       this.handlePowerMenuKey(e);
       return;
     }
@@ -1147,7 +1169,10 @@ this.modeRoots = {};
     }
 
     const games = this.games.filter((g) => g.title.toLowerCase().includes(q));
-    const gameResults = games.slice(0, 8).map((game) => `
+    const gameResults = games
+      .slice(0, 8)
+      .map(
+        (game) => `
       <div class="deck-search-result-item" data-app-id="${game.appId}">
         <div class="deck-search-result-icon">
           ${game.icon ? (game.icon.startsWith("http") ? `<img src="${game.icon}">` : `<i class="${game.icon}"></i>`) : `<i class="fas fa-gamepad"></i>`}
@@ -1157,7 +1182,9 @@ this.modeRoots = {};
           <div class="deck-search-result-subtitle">Game</div>
         </div>
       </div>
-    `).join("");
+    `
+      )
+      .join("");
 
     setHTML(resultsEl, gameResults || `<div class="deck-search-no-results">No results found</div>`);
 
@@ -1207,7 +1234,9 @@ this.modeRoots = {};
 
   restoreFocusIndex(lastKey) {
     if (lastKey != null) {
-      const idx = this.focusables.findIndex((f) => f.el === lastKey || f.el.dataset.appId === lastKey || f.el.dataset.action === lastKey);
+      const idx = this.focusables.findIndex(
+        (f) => f.el === lastKey || f.el.dataset.appId === lastKey || f.el.dataset.action === lastKey
+      );
       if (idx >= 0) return idx;
     }
     if (this.focusIndex >= this.focusables.length) return Math.max(0, this.focusables.length - 1);
@@ -1267,8 +1296,10 @@ this.modeRoots = {};
     else if (action === "closeCollection") this.closeCollection();
     else if (action === "saveToCollection" && this.detailAppId) this.addCurrentToCollection(this.detailAppId);
     else if (action === "back") this.goBack();
-    else if (action === "deckHome") { this.closeDetail(); this.setLibraryTab("all"); }
-    else if (action === "menu") this.toggleRail();
+    else if (action === "deckHome") {
+      this.closeDetail();
+      this.setLibraryTab("all");
+    } else if (action === "menu") this.toggleRail();
     else if (action === "play" && this.detailAppId) this.launchApp(this.detailAppId);
     else if (action.startsWith("tab-") && this.detailAppId) this.layout.switchDetailTab(action.slice(4));
     else if (action === "favorite" && this.detailAppId) this.toggleFavorite(this.detailAppId);
@@ -1278,6 +1309,7 @@ this.modeRoots = {};
     else if (action === "shutdown") this.handleShutdown();
     else if (action === "restart") this.handleRestart();
     else if (action === "changeAccount") this.handleChangeAccount();
+    else if (action === "signOut") this.handleSignOut();
     else if (action === "switchToDesktop") this.handleSwitchToDesktop();
   }
 
@@ -1496,6 +1528,15 @@ this.modeRoots = {};
     });
   }
 
+  async handleSignOut() {
+    this.hidePowerMenu();
+    const { showDeckConfirm } = await import("./deckDialog.js");
+    showDeckConfirm(this.layout.root, "Sign Out", "Are you sure you want to sign out?", () => {
+      os.account.signOut?.();
+      os.app.lockToLoginScreen();
+    });
+  }
+
   async handleSwitchToDesktop() {
     this.hidePowerMenu();
     this.layout.root.classList.add("deck-exit-animation");
@@ -1650,7 +1691,7 @@ this.modeRoots = {};
   }
 
   requestFullscreen() {
-    if(location.host.includes("localhost")) return;
+    if (location.host.includes("localhost")) return;
     try {
       if (document.fullscreenElement || document.webkitFullscreenElement) return;
       const el = document.documentElement;

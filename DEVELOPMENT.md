@@ -837,7 +837,7 @@ pnpm electron:build
 - Always use CSS variables defined at `:root` from `src/styles/style.css`. Never hardcode colors.
 - Always use `src/framework.js` barrel for app-level imports (`{ BaseApp, PersistenceTypes, os, StorageKeys, MODES, APP_MANIFESTS, BusEvents }`).
 - Whenever you define a new app in the manifest, define a `description` for it in the `APP_MANIFESTS` entry in `src/registry/AppManifest.js`.
-- When making significant changes, new features, or new apps: add a news entry to `EXISTING_NEWS_UPDATES` in `src/apps/news.js` with a punchy, active-voice description under 15 words.
+- When making significant changes, new features, or new apps: add a news entry to the top of `src/news.json` with a `date`, optional `label`, and `sections` array. Each section has an `icon`, `title`, and `items` (array of `[icon, title, description]` triples). Descriptions must be under 15 words, active-voice, and punchy.
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access.
 - Always use `os.storage` API instead of bare `localStorage`.
 - Never use browser native alerts, prompts, or confirms. Always use `os.dialog` API (`os.dialog.alert()`, `os.dialog.confirm()`, `os.dialog.prompt()`, `os.dialog.fileOpen()`, `os.dialog.fileSave()`, `os.dialog.openDirectory()`).
