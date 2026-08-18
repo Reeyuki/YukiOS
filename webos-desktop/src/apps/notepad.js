@@ -1,6 +1,6 @@
 import "../styles/notepad.css";
 import { ClippyAnimation, speak } from "../ai/clippy.js";
-import { $, $$, setStyle, BaseApp, os, createElement } from "../framework.js";
+import { $, $$, setStyle, BaseApp, os, createElement, ServiceKeys } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
@@ -125,7 +125,7 @@ export class NotepadApp extends BaseApp {
   }
 
   get explorerApp() {
-    return os.app.getInstance("explorerApp");
+    return os.app.getInstance(ServiceKeys.EXPLORER);
   }
 
   markModified(win, winId) {

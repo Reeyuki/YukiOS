@@ -1,5 +1,5 @@
 import "../styles/explorer.css";
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, ServiceKeys } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import {
   $,
@@ -69,11 +69,11 @@ export class ExplorerApp extends BaseApp {
   }
 
   get notepadApp() {
-    return os.app.getInstance("notepadApp");
+    return os.app.getInstance(ServiceKeys.NOTEPAD);
   }
 
   get markdownApp() {
-    return os.app.getInstance("markdownApp");
+    return os.app.getInstance(ServiceKeys.MARKDOWN);
   }
 
   constructor(os) {

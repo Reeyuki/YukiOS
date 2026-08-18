@@ -1,7 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { zipSync } from "fflate";
 
-import { setStyle, BusEvents, BaseApp, os, createElement } from "../framework.js";
+import { setStyle, BusEvents, BaseApp, os, createElement, ServiceKeys } from "../framework.js";
 import {
   normalizePath,
   fileNameToDisplayName,
@@ -16,7 +16,11 @@ const GAMES_DIR = ["Games"];
 export class JsDosApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.getInstance("explorerApp");
+  }
+
+  get explorerApp() {
+    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
+    return this._explorerApp;
   }
 
   async open() {

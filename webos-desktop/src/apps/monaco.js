@@ -9,13 +9,12 @@ import { showAboutDialog } from "../shared/aboutDialog.js";
 import { Shell } from "../shared/shell.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 import { $, setStyle, createElement } from "../shared/domUtils.js";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, ServiceKeys } from "../framework.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
 import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.getInstance("explorerApp");
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.monacoLoaded = false;
@@ -29,6 +28,11 @@ export class MonacoApp extends BaseApp {
 
     this.sessionKey = "guest";
     this.setupTerminalCore();
+  }
+
+  get explorerApp() {
+    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
+    return this._explorerApp;
   }
 
   async open(title = "Untitled", content = "", filePath = null) {
@@ -943,7 +947,7 @@ export class MonacoApp extends BaseApp {
   }
 
   spawnTerminalWindow() {
-    const terminalApp = this.os.app.getInstance("terminalApp");
+    const terminalApp = os.app.getInstance(ServiceKeys.TERMINAL);
     if (terminalApp) {
       terminalApp.open();
     } else {

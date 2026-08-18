@@ -1,4 +1,4 @@
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, ServiceKeys } from "../framework.js";
 
 export class LavatApp extends BaseApp {
   constructor(services) {
@@ -6,7 +6,7 @@ export class LavatApp extends BaseApp {
   }
 
   open(opts) {
-    const terminalApp = os.app.getInstance("terminalApp");
+    const terminalApp = os.app.getInstance(ServiceKeys.TERMINAL);
     if (!terminalApp) {
       os.dialog.alert("Lavat", "Terminal app is not available");
       return;

@@ -2,7 +2,7 @@ import "../styles/emulator.css";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 
 import { audioMixer } from "../audioMixer.js";
-import { BaseApp, os, $, createElement } from "../framework.js";
+import { BaseApp, os, $, createElement, ServiceKeys } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import {
   normalizePath,
@@ -97,7 +97,11 @@ const supportedExtensions = {
 export class EmulatorApp extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.getInstance("explorerApp");
+  }
+
+  get explorerApp() {
+    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
+    return this._explorerApp;
   }
 
   open(opts) {

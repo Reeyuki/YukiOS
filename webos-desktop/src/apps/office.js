@@ -5,7 +5,18 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { FileKind, getExt } from "../shared/fileKindDetector.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import { escapeHtml } from "../utils/utils.js";
-import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os } from "../framework.js";
+import {
+  $,
+  $$,
+  bindEvent,
+  toggleClass,
+  setStyle,
+  setHTML,
+  createElement,
+  BaseApp,
+  os,
+  ServiceKeys
+} from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -1028,7 +1039,6 @@ export class OfficeApp extends BaseApp {
   constructor(os) {
     super(os);
     this.fs = os.fs;
-    this.explorerApp = os.app.getInstance("explorerApp");
     this.idleTimer = null;
     this.idleDelay = 15000;
     this.editors = {};
@@ -1039,6 +1049,11 @@ export class OfficeApp extends BaseApp {
     this.registry.register(new PdfViewer());
     this.registry.register(new OdpViewer());
     this.registry.register(new PlainTextEditor());
+  }
+
+  get explorerApp() {
+    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
+    return this._explorerApp;
   }
 
   open(titleOrOptions = "Untitled", content = null, filePath = null) {

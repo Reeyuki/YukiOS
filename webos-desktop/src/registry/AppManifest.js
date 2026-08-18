@@ -1317,13 +1317,28 @@ export const APP_MANIFESTS = [
     type: "system",
     title: "Roblox Studio",
     icon: `${CDN_BASE}/static/icons/roblox-studio.webp`,
-    launchType: "iframe",
+    launchType: "remote",
     windowIdPatterns: ["roblox-studio"],
     category: "games",
     persistContentState: false,
     clippy: { message: "This is a webport lol", animation: ClippyAnimation.Show },
     description: "Roblox Studio compiled to web using roblox 2017 source",
     source: "https://studio.nodium.lol",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "robloxPlayerApp",
+    enhanced: true,
+    type: "system",
+    title: "Roblox Player",
+    icon: `${CDN_BASE}/static/icons/roblox.webp`,
+    launchType: "remote",
+    windowIdPatterns: ["roblox-player"],
+    category: "games",
+    persistContentState: false,
+    clippy: { message: "Play Roblox games in your browser with this webport.", animation: ClippyAnimation.Show },
+    description: "Roblox game player compiled to web using roblox 2017 source",
+    source: "https://player.nodium.lol",
     windowSize: ["90vw", "85vh"]
   },
   {
@@ -1456,15 +1471,5 @@ export const APP_MANIFESTS = [
     category: "system",
     clippy: { message: "Pick which app opens each file type.", animation: ClippyAnimation.Show },
     description: "Set the default app for every file type."
-  },
-  {
-    serviceKey: "portalApp",
-    type: "system",
-    title: "Portal",
-    icon: `${CDN_BASE}/static/icons/portal.webp`,
-    launchType: "instance",
-    windowIdPatterns: ["portal"],
-    category: "games",
-    description: "Solve spatial puzzles with a portal gun in Valve's iconic first-person puzzler."
   }
 ];

@@ -62,8 +62,28 @@ export class AppAPI {
     this.registry.set(key, instance);
   }
 
+  /**
+   * @template {keyof import("../ServiceKeys.js").ServiceTypeMap} K
+   * @param {K} key
+   * @returns {import("../ServiceKeys.js").ServiceTypeMap[K] | null}
+   */
   getInstance(key) {
     return this.registry.get(key) || null;
+  }
+
+  /**
+   * Like {@link getInstance} but throws when no service is registered for the
+   * key, surfacing typos and init-order bugs instead of silently returning null.
+   * @template {keyof import("../ServiceKeys.js").ServiceTypeMap} K
+   * @param {K} key
+   * @returns {import("../ServiceKeys.js").ServiceTypeMap[K]}
+   */
+  require(key) {
+    const instance = this.registry.get(key);
+    if (!instance) {
+      throw new Error(`[os.app] No service registered for key "${key}"`);
+    }
+    return instance;
   }
 
   launch(appId, options) {

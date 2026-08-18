@@ -3,7 +3,7 @@ import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 import { showContextMenu, hideMenu } from "../shared/contextMenu.js";
 import { GitManager } from "../services/GitManager.js";
-import { BusEvents, $, $$, BaseApp, StorageKeys, os, MODES, createElement } from "../framework.js";
+import { BusEvents, $, $$, BaseApp, StorageKeys, os, MODES, createElement, ServiceKeys } from "../framework.js";
 import { formatSize } from "../utils/utils.js";
 import { getExt } from "../shared/fileKindDetector.js";
 import { getPyodide, runPython } from "../services/PyodideManager.js";
@@ -2426,7 +2426,7 @@ export class TerminalApp extends BaseApp {
   }
 
   async cmdNotepad(args = []) {
-    const notepadApp = os.app.getInstance("notepadApp");
+    const notepadApp = os.app.getInstance(ServiceKeys.NOTEPAD);
     if (!notepadApp) {
       await this.print("notepad: Notepad app is not available");
       return;

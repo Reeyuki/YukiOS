@@ -26,7 +26,7 @@ import {
   setStyle
 } from "../shared/domUtils.js";
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os } from "../framework.js";
+import { StorageKeys, os, ServiceKeys } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { isIntroTourKeepingStartMenuOpen } from "../apps/introTour.js";
@@ -36,7 +36,7 @@ function getStartMenuEl() {
 
 export function isStartMenuBlocked() {
   if ($("#session-overlay")) return true;
-  const sessionManager = os.app.getInstance("sessionManager");
+  const sessionManager = os.app.getInstance(ServiceKeys.SESSION_MANAGER);
   if (sessionManager?.isLocked) return true;
   if (!sessionManager?.currentSession) return true;
   return false;
@@ -787,6 +787,11 @@ export function setupStartMenu(sessionManager) {
   $("#start-lock-btn")?.addEventListener("click", () => {
     closeStartMenu();
     sessionManager?.lockSession();
+  });
+
+  $("#start-sleep-btn")?.addEventListener("click", () => {
+    closeStartMenu();
+    sessionManager?.enterSleepMode();
   });
 
   $("#start-signout-btn")?.addEventListener("click", () => {

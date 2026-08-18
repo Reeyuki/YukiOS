@@ -1,5 +1,5 @@
 import "./style.css";
-import { os } from "../../framework.js";
+import { os, ServiceKeys } from "../../framework.js";
 import { modeManager, MODES } from "../../modeManager.js";
 import { createElement, $ } from "../../shared/domUtils.js";
 import { resolveIconUrl } from "../../shared/assetResolver.js";
@@ -270,11 +270,11 @@ export class MacDock {
       item.appendChild(label);
       item.addEventListener("click", () => {
         if (app.isFinder) {
-          os.app.getInstance("commandPalette")?.open();
+          os.app.getInstance(ServiceKeys.COMMAND_PALETTE)?.open();
         } else if (app.isAudioMixer) {
           import("../../audioMixer.js").then((m) => m.audioMixer().toggle());
         } else if (app.isTrash) {
-          os.app.getInstance("explorerApp")?.openTrash();
+          os.app.getInstance(ServiceKeys.EXPLORER)?.openTrash();
         } else {
           os.app.launch(app.appId).catch(() => {});
         }
@@ -297,9 +297,9 @@ export class MacDock {
           addMenuItem(
             "Launch App",
             () => {
-              if (app.isFinder) os.app.getInstance("commandPalette")?.open();
+              if (app.isFinder) os.app.getInstance(ServiceKeys.COMMAND_PALETTE)?.open();
               else if (app.isAudioMixer) import("../../audioMixer.js").then((m) => m.audioMixer().toggle());
-              else if (app.isTrash) os.app.getInstance("explorerApp")?.openTrash();
+              else if (app.isTrash) os.app.getInstance(ServiceKeys.EXPLORER)?.openTrash();
               else os.app.launch(app.appId);
             },
             "fa-play"

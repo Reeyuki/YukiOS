@@ -1,7 +1,7 @@
 import { Achievements } from "../achievements.js";
 import { CDN_BASES } from "../shared/assetResolver.js";
 
-import { BusEvents, BaseApp, os, $, $$, setStyle, createElement } from "../framework.js";
+import { BusEvents, BaseApp, os, $, $$, setStyle, createElement, ServiceKeys } from "../framework.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import {
   normalizePath,
@@ -17,8 +17,12 @@ const IMAGES_DIR = ["VMs"];
 export class V86App extends BaseApp {
   constructor(os) {
     super(os);
-    this.explorerApp = os.app.getInstance("explorerApp");
     this.v86LoadPromise = null;
+  }
+
+  get explorerApp() {
+    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
+    return this._explorerApp;
   }
 
   open(opts) {

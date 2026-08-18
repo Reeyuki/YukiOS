@@ -137,13 +137,16 @@ Planned features and improvements for YukiOS.
   panels consistently
 - [✅] Achievement popup redesign — Replicate Steam achievement style with bottom-right corner popup
 - [✅] **Chrome OS theming**
-- [✅] **Apps playing audio should show a speaker icon on their taskbar entry; muted apps should show a muted speaker icon**
-- [✅] **Currently active apps should show an indicator to show they are active (already implemented in mac dock, need to also add in regular taskbar)**
+- [✅] **Apps playing audio should show a speaker icon on their taskbar entry; muted apps should show a muted speaker
+  icon**
+- [✅] **Currently active apps should show an indicator to show they are active (already implemented in mac dock, need
+  to also add in regular taskbar)**
 - [✅] **Magnifier / zoom** — Lens-style screen magnification like windows 7 magnify app
 - [✅] **Between explorer instances drag support**
 - [📋] **Notification system depth** — Grouping by app, history view, scheduled DND, per-app notification sounds,
   persistent notifications, snooze
-- [📋] **Lock screen enrichment** — Show time with seconds, weather, media controls, notification badges, and quick actions (WiFi, brightness, volume)
+- [📋] **Lock screen enrichment** — Show time with seconds, weather, media controls, notification badges, and quick
+  actions (WiFi, brightness, volume)
 - [💡] **.bash_history system**
 - [💡] **.bashrc support**
 - [💡] **Windows xp, win7, win10, win11 theme support**

@@ -24,7 +24,8 @@ export const CLOSE_ANIMATIONS = {
   burn: "burn",
   instant: "instant",
   shrinkToPoint: "shrinkToPoint",
-  dissolveBlur: "dissolveBlur"
+  dissolveBlur: "dissolveBlur",
+  zoomToDock: "zoomToDock"
 };
 
 export const MINIMIZE_ANIMATIONS = {
@@ -42,7 +43,8 @@ export const RESTORE_ANIMATIONS = {
   scaleCenter: "scaleCenter",
   fade: "fade",
   slideUp: "slideUp",
-  instant: "instant"
+  instant: "instant",
+  genieFromDock: "genieFromDock"
 };
 
 function getOpenAnim() {
@@ -86,6 +88,14 @@ function isPerformanceMode() {
 }
 
 function getTaskbarPosition() {
+  const dock = $("#mac-dock");
+  if (dock && dock.dataset.position) {
+    const pos = dock.dataset.position;
+    if (pos === "left" || pos === "right" || pos === "bottom") {
+      return pos;
+    }
+  }
+
   const taskbar = $("#taskbar");
   if (!taskbar) return "bottom";
 
@@ -95,6 +105,62 @@ function getTaskbarPosition() {
   if (taskbar.classList.contains("position-right")) return "right";
 
   return "bottom";
+}
+
+function getDockItemRect(win) {
+  const dock = $("#mac-dock");
+  if (!dock) return null;
+  const byWin = dock.querySelector(`.dock-item[data-win-id="${win.id}"]`);
+  if (byWin) return byWin.getBoundingClientRect();
+  const appId = win.dataset?.appId;
+  if (appId) {
+    const byApp = dock.querySelector(`.dock-item[data-app-id="${appId}"]`);
+    if (byApp) return byApp.getBoundingClientRect();
+  }
+  return null;
+}
+
+function genieClipPath(winRect, targetRect, pos, t) {
+  const W = winRect.width || 1;
+  const H = winRect.height || 1;
+  const M = 9;
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const lerp = (a, b, f) => a + (b - a) * f;
+  const dockX = clamp01((targetRect.left + targetRect.width / 2 - winRect.left) / W);
+  const dockY = clamp01((targetRect.top + targetRect.height / 2 - winRect.top) / H);
+  const pts = [];
+  if (pos === "left" || pos === "right") {
+    const right = [],
+      left = [];
+    for (let i = 0; i < M; i++) {
+      const yf = i / (M - 1);
+      const d = Math.abs(yf - dockY);
+      const shape = 1 - 0.35 * d;
+      const y = lerp(yf * 100, 50, t);
+      const xRight = lerp(100, 50, Math.min(1, t * shape));
+      const xLeft = lerp(0, 50, t);
+      right.push([xRight, y]);
+      left.push([xLeft, y]);
+    }
+    for (let i = 0; i < M; i++) pts.push(right[i]);
+    for (let i = M - 1; i >= 0; i--) pts.push(left[i]);
+  } else {
+    const top = [],
+      bot = [];
+    for (let i = 0; i < M; i++) {
+      const xf = i / (M - 1);
+      const d = Math.abs(xf - dockX);
+      const shape = 1 - 0.35 * d;
+      const x = lerp(xf * 100, 50, t);
+      const yTop = lerp(0, 50, Math.min(1, t * shape));
+      const yBot = lerp(100, 50, t);
+      top.push([x, yTop]);
+      bot.push([x, yBot]);
+    }
+    for (let i = 0; i < M; i++) pts.push(top[i]);
+    for (let i = M - 1; i >= 0; i--) pts.push(bot[i]);
+  }
+  return `polygon(${pts.map(([x, y]) => `${x.toFixed(2)}% ${y.toFixed(2)}%`).join(", ")})`;
 }
 
 function getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition) {
@@ -145,7 +211,7 @@ export function animateWindowOpen(win, isRestoring = false) {
   const anim = restoring ? getRestoreAnim() : getOpenAnim();
   if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
 
-  const duration = 300 * getAnimationSpeed();
+  const duration = 420 * getAnimationSpeed();
 
   win.getAnimations().forEach((a) => a.cancel());
 
@@ -153,7 +219,7 @@ export function animateWindowOpen(win, isRestoring = false) {
 
   const animation = win.animate(keyframes, {
     duration: duration,
-    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
     fill: "forwards"
   });
 
@@ -161,6 +227,8 @@ export function animateWindowOpen(win, isRestoring = false) {
     win.style.opacity = "";
     win.style.transform = "";
     win.style.filter = "";
+    win.style.clipPath = "";
+    win.style.borderRadius = "";
   };
 }
 
@@ -249,12 +317,12 @@ function getOpenKeyframes(animType, win, isRestoring = false) {
 }
 
 function getRestoreKeyframes(animType, win) {
+  const taskbarPosition = getTaskbarPosition();
   switch (animType) {
     case RESTORE_ANIMATIONS.fromTaskbar: {
       const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const taskbarPosition = getTaskbarPosition();
         const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
         return [
           { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` },
@@ -278,6 +346,42 @@ function getRestoreKeyframes(animType, win) {
         { opacity: 0, transform: "translateY(20px)" },
         { opacity: 1, transform: "translateY(0)" }
       ];
+    case RESTORE_ANIMATIONS.genieFromDock: {
+      const dockRect = getDockItemRect(win);
+      const tbItem = dockRect ? null : $(`#taskbar-${win.id}`);
+      const targetRect = dockRect || (tbItem ? tbItem.getBoundingClientRect() : null);
+      if (targetRect) {
+        const winRect = win.getBoundingClientRect();
+        const pos = dockRect ? getTaskbarPosition() : taskbarPosition;
+        const isVertical = pos === "bottom" || pos === "top";
+        const startCX = winRect.left + winRect.width / 2;
+        const startCY = winRect.top + winRect.height / 2;
+        const targetCX = targetRect.left + targetRect.width / 2;
+        const targetCY = targetRect.top + targetRect.height / 2;
+        const startX = targetCX - startCX;
+        const startY = targetCY - startCY;
+        const skewAxis = isVertical ? "Y" : "X";
+        const phases = [
+          { p: 0.0, t: 1.0, sx: 0, sy: 0, sk: 0, op: 0 },
+          { p: 0.1, t: 0.985, sx: 0.15, sy: 0.08, sk: 0, op: 0.3 },
+          { p: 0.3, t: 0.9, sx: 0.4, sy: 0.3, sk: isVertical ? 0 : 9, op: 0.7 },
+          { p: 0.58, t: 0.68, sx: 0.72, sy: 0.6, sk: isVertical ? 0 : 5, op: 0.95 },
+          { p: 0.82, t: 0.35, sx: 0.92, sy: 0.86, sk: 0, op: 1 },
+          { p: 1.0, t: 0.0, sx: 1, sy: 1, sk: 0, op: 1 }
+        ];
+        return phases.map((ph) => ({
+          transform: `translate(${(startX * ph.p).toFixed(2)}px, ${(startY * ph.p).toFixed(2)}px) scaleX(${ph.sx}) scaleY(${ph.sy}) skew${skewAxis}(${ph.sk}deg)`,
+          borderRadius: ph.p === 1 ? "0px" : "10px",
+          opacity: ph.op,
+          clipPath: genieClipPath(winRect, targetRect, pos, ph.t),
+          offset: ph.p
+        }));
+      }
+      return [
+        { opacity: 0, transform: "scale(0.9)" },
+        { opacity: 1, transform: "scale(1)" }
+      ];
+    }
     default:
       return [{ opacity: 0 }, { opacity: 1 }];
   }
@@ -330,6 +434,31 @@ function getCloseKeyframes(animType, win) {
         { opacity: 1, transform: "scale(1)" },
         { opacity: 0, transform: "scale(0.1)" }
       ];
+    case CLOSE_ANIMATIONS.zoomToDock: {
+      const dockRect = getDockItemRect(win);
+      if (dockRect) {
+        const winRect = win.getBoundingClientRect();
+        const startCX = winRect.left + winRect.width / 2;
+        const startCY = winRect.top + winRect.height / 2;
+        const targetCX = dockRect.left + dockRect.width / 2;
+        const targetCY = dockRect.top + dockRect.height / 2;
+        const dx = targetCX - startCX;
+        const dy = targetCY - startCY;
+        return [
+          { opacity: 1, transform: "translate(0, 0) scale(1)" },
+          {
+            opacity: 0.6,
+            transform: `translate(${(dx * 0.6).toFixed(2)}px, ${(dy * 0.6).toFixed(2)}px) scale(0.4)`,
+            offset: 0.6
+          },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.05)` }
+        ];
+      }
+      return [
+        { opacity: 1, transform: "scale(1)" },
+        { opacity: 0, transform: "scale(0.85)" }
+      ];
+    }
     case CLOSE_ANIMATIONS.fadeOut:
       return [{ opacity: 1 }, { opacity: 0 }];
     case CLOSE_ANIMATIONS.slideDown:
@@ -366,7 +495,7 @@ export function animateWindowMinimize(win, onDone) {
   const anim = getMinimizeAnim();
   win.style.pointerEvents = "none";
 
-  const duration = 260 * getAnimationSpeed();
+  const duration = 520 * getAnimationSpeed();
 
   win.getAnimations().forEach((anim) => anim.cancel());
 
@@ -374,11 +503,13 @@ export function animateWindowMinimize(win, onDone) {
 
   const animation = win.animate(keyframes, {
     duration: duration,
-    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
     fill: "forwards"
   });
 
   animation.onfinish = () => {
+    win.style.clipPath = "";
+    win.style.borderRadius = "";
     onDone?.();
   };
 }
@@ -404,18 +535,39 @@ function getMinimizeKeyframes(animType, win) {
         { opacity: 1, transform: "scale(1)" },
         { opacity: 0, transform: "scale(0)" }
       ];
-    case MINIMIZE_ANIMATIONS.magicLamp:
-      const tbItem = $(`#taskbar-${win.id}`);
-      if (tbItem) {
-        const tbRect = tbItem.getBoundingClientRect();
+    case MINIMIZE_ANIMATIONS.magicLamp: {
+      const dockRect = getDockItemRect(win);
+      const tbItem = dockRect ? null : $(`#taskbar-${win.id}`);
+      const targetRect = dockRect || (tbItem ? tbItem.getBoundingClientRect() : null);
+      if (targetRect) {
         const winRect = win.getBoundingClientRect();
-        const dx = tbRect.left + tbRect.width / 2 - (winRect.left + winRect.width / 2);
-        return [
-          { opacity: 1, transform: "translateX(0)" },
-          { opacity: 0, transform: `translateX(${dx}px) scaleX(0.1)` }
+        const pos = dockRect ? getTaskbarPosition() : taskbarPosition;
+        const isVertical = pos === "bottom" || pos === "top";
+        const startCX = winRect.left + winRect.width / 2;
+        const startCY = winRect.top + winRect.height / 2;
+        const targetCX = targetRect.left + targetRect.width / 2;
+        const targetCY = targetRect.top + targetRect.height / 2;
+        const endX = targetCX - startCX;
+        const endY = targetCY - startCY;
+        const skewAxis = isVertical ? "Y" : "X";
+        const phases = [
+          { p: 0.0, t: 0.0, sx: 1, sy: 1, sk: 0, op: 1 },
+          { p: 0.18, t: 0.35, sx: 0.92, sy: 0.86, sk: 0, op: 1 },
+          { p: 0.42, t: 0.68, sx: 0.72, sy: 0.6, sk: isVertical ? 0 : 5, op: 0.95 },
+          { p: 0.7, t: 0.9, sx: 0.4, sy: 0.3, sk: isVertical ? 0 : 9, op: 0.7 },
+          { p: 0.9, t: 0.985, sx: 0.15, sy: 0.08, sk: 0, op: 0.3 },
+          { p: 1.0, t: 1.0, sx: 0, sy: 0, sk: 0, op: 0 }
         ];
+        return phases.map((ph) => ({
+          transform: `translate(${(endX * ph.p).toFixed(2)}px, ${(endY * ph.p).toFixed(2)}px) scaleX(${ph.sx}) scaleY(${ph.sy}) skew${skewAxis}(${ph.sk}deg)`,
+          borderRadius: ph.p === 0 ? "0px" : "10px",
+          opacity: ph.op,
+          clipPath: genieClipPath(winRect, targetRect, pos, ph.t),
+          offset: ph.p
+        }));
       }
       return [{ opacity: 1 }, { opacity: 0 }];
+    }
     case MINIMIZE_ANIMATIONS.fadeToTaskbar:
       return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.elasticStretch:

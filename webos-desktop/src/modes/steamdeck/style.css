@@ -148,7 +148,9 @@ html.steamdeck-mode,
   color: var(--text-primary);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .deck-topbar-search:hover {
@@ -168,7 +170,9 @@ html.steamdeck-mode,
   color: var(--text-primary);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .deck-topbar-quick:hover {
@@ -188,7 +192,9 @@ html.steamdeck-mode,
   color: var(--text-primary);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .deck-topbar-power:hover {
@@ -244,12 +250,12 @@ html.steamdeck-mode,
   height: 34px;
   background-color: white;
   font-size: 17px;
- color: #383e4c;
-  border-top-left-radius: 5px; 
+  color: #383e4c;
+  border-top-left-radius: 5px;
 }
 .r1 {
-  border-top-right-radius: 5px; 
-  border-top-left-radius: 0px; 
+  border-top-right-radius: 5px;
+  border-top-left-radius: 0px;
 }
 
 .deck-nav {
@@ -280,7 +286,10 @@ html.steamdeck-mode,
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.12s, color 0.12s, transform 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    transform 0.12s;
 }
 
 .deck-nav-btn * {
@@ -311,7 +320,7 @@ html.steamdeck-mode,
 }
 
 .deck-nav-count {
-  color:#9c9c9c;
+  color: #9c9c9c;
   font-size: 11px;
   font-weight: 800;
 }
@@ -413,7 +422,9 @@ html.steamdeck-mode,
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.7s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.7s ease;
   transform: scale(1.12);
 }
 
@@ -667,7 +678,9 @@ html.steamdeck-mode,
   padding: 12px;
   opacity: 0.3;
   transform: scale(0.85);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .deck-carousel-item.active {
@@ -704,9 +717,15 @@ html.steamdeck-mode,
   justify-content: center;
 }
 
-.deck-carousel-arrow:hover { background: rgba(0, 0, 0, 0.8); }
-.deck-carousel-prev { left: 14px; }
-.deck-carousel-next { right: 14px; }
+.deck-carousel-arrow:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+.deck-carousel-prev {
+  left: 14px;
+}
+.deck-carousel-next {
+  right: 14px;
+}
 
 .deck-carousel-bar {
   background: #000;
@@ -718,8 +737,14 @@ html.steamdeck-mode,
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.deck-carousel-source { font-size: 15px; font-weight: 600; }
-.deck-carousel-captured { font-size: 12px; opacity: 0.85; }
+.deck-carousel-source {
+  font-size: 15px;
+  font-weight: 600;
+}
+.deck-carousel-captured {
+  font-size: 12px;
+  opacity: 0.85;
+}
 
 .deck-carousel-actions {
   display: flex;
@@ -937,7 +962,9 @@ html.steamdeck-mode,
   filter: blur(28px) saturate(1.2);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
   z-index: -1;
 }
 
@@ -963,7 +990,9 @@ html.steamdeck-mode,
 
 .deck-tile.deck-focused .deck-tile-art::after {
   opacity: 1;
-  animation: deckFocusBorderIn 0.1s ease-out, deckFocusBreathe 2.6s ease-in-out infinite;
+  animation:
+    deckFocusBorderIn 0.1s ease-out,
+    deckFocusBreathe 2.6s ease-in-out infinite;
 }
 
 @keyframes deckFocusBorderIn {
@@ -1019,7 +1048,9 @@ html.steamdeck-mode,
   font-size: 12px;
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.14s, transform 0.14s;
+  transition:
+    opacity 0.14s,
+    transform 0.14s;
 }
 
 .deck-tile:hover .deck-tile-play {
@@ -1152,7 +1183,9 @@ html.steamdeck-mode,
   background: var(--glass);
   border: 1px solid var(--glass-border);
   overflow: hidden;
-  transition: transform 0.16s, background 0.16s;
+  transition:
+    transform 0.16s,
+    background 0.16s;
   cursor: pointer;
   color: inherit;
   text-decoration: none;
@@ -1164,7 +1197,9 @@ html.steamdeck-mode,
 }
 
 .deck-news-card.deck-focused {
-  box-shadow: 0 0 0 2px rgba(117, 123, 125, 0.85), 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 0 2px rgba(117, 123, 125, 0.85),
+    0 8px 24px rgba(0, 0, 0, 0.45);
   animation: deckFocusBreathe 2.6s ease-in-out infinite;
 }
 
@@ -1196,7 +1231,6 @@ html.steamdeck-mode,
   font-size: 64px;
   color: var(--text-secondary);
 }
-
 
 .deck-news-posted {
   padding: 10px 12px 0;
@@ -1333,7 +1367,9 @@ html.steamdeck-mode,
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.12s, background 0.12s;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
 }
 
 .deck-recent-item:hover {
@@ -1395,7 +1431,10 @@ html.steamdeck-mode,
   font-family: inherit;
   cursor: pointer;
   border-radius: 25px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .deck-foot-btn i {
@@ -1409,7 +1448,7 @@ html.steamdeck-mode,
 }
 .deck-foot-btn-menu {
   background-color: transparent;
-  border:none;
+  border: none;
   color: white !important;
 }
 
@@ -1431,7 +1470,7 @@ html.steamdeck-mode,
   height: 24px;
   padding: 0 6px;
   border-radius: 6px;
-  background:  white;
+  background: white;
   color: black;
   font-size: 12px;
   border-radius: 25px;
@@ -1495,13 +1534,13 @@ html.steamdeck-mode,
 
 .deck-status-pill.play {
   background: rgba(94, 217, 143, 1);
-  color:  black;
+  color: black;
   border: 1px solid rgba(94, 217, 143, 0.3);
 }
 
 .deck-status-pill.info {
   background: rgba(241, 196, 15, 1);
-  color:  black;
+  color: black;
   border: 1px solid rgba(241, 196, 15, 0.3);
 }
 
@@ -1511,8 +1550,8 @@ html.steamdeck-mode,
 }
 
 .deck-status-pill.block {
-  transform:scale(1.5);
-  margin-top:1px;  
+  transform: scale(1.5);
+  margin-top: 1px;
 }
 
 #steamdeck-qta {
@@ -2234,6 +2273,256 @@ body:has(#steamdeck-qta.open) #context-menu {
   color: #3a9ad9;
 }
 
+.deck-qta-friend-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #1b2026;
+}
+
+.deck-qta-friend-profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #2d353e;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.deck-qta-friend-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.deck-qta-friend-profile-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-qta-friend-profile-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: #8b9b9e;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.deck-qta-friend-profile-status:hover {
+  color: #fff;
+}
+
+.deck-qta-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.deck-qta-status-dot--online {
+  background: #5cbe41;
+}
+
+.deck-qta-status-dot--offline {
+  background: #8b9b9e;
+}
+
+.deck-qta-friends-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: rgba(58, 154, 217, 0.12);
+  color: #8b9b9e;
+  font-size: 11px;
+}
+
+.deck-qta-friends-banner > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.deck-qta-friends-banner-close {
+  border: none;
+  background: none;
+  color: #3a9ad9;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.deck-qta-friends-banner-close:hover {
+  color: #fff;
+}
+
+.deck-qta-friends-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.deck-qta-friends-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #1b2026;
+}
+
+.deck-qta-friends-search > i {
+  color: #8b9b9e;
+  font-size: 12px;
+}
+
+.deck-qta-friends-search > input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  min-width: 0;
+}
+
+.deck-qta-friends-search > input::placeholder {
+  color: #343c45;
+}
+
+.deck-qta-friends-requests-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #1b2026;
+  color: #8b9b9e;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.deck-qta-friends-requests-btn:hover {
+  background: #2d353e;
+  color: #fff;
+}
+
+.deck-qta-friends-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: #e05555;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.deck-qta-friends-badge--hidden {
+  display: none;
+}
+
+.deck-qta-friends-requests-panel {
+  margin-bottom: 10px;
+  padding: 6px;
+  border-radius: 10px;
+  background: #1b2026;
+}
+
+.deck-qta-friend-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deck-qta-friend-request-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.deck-qta-friend-request-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.deck-qta-friend-request-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.deck-qta-friend-req-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.deck-qta-friend-req-btn--accept {
+  background: rgba(92, 190, 65, 0.15);
+  color: #5cbe41;
+}
+
+.deck-qta-friend-req-btn--accept:hover {
+  background: rgba(92, 190, 65, 0.3);
+}
+
+.deck-qta-friend-req-btn--decline {
+  background: rgba(224, 85, 85, 0.15);
+  color: #e05555;
+}
+
+.deck-qta-friend-req-btn--decline:hover {
+  background: rgba(224, 85, 85, 0.3);
+}
+
+.deck-qta-friend-profile-status.deck-qta-focused,
+.deck-qta-friends-requests-btn.deck-qta-focused,
+.deck-qta-friends-search.deck-qta-focused {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
 .deck-qta-power-modes {
   display: flex;
   gap: 8px;
@@ -2427,8 +2716,6 @@ body:has(#steamdeck-qta.open) #context-menu {
   outline: 2px solid var(--brand);
   outline-offset: -2px;
 }
-
-
 
 .deck-detail {
   position: absolute;
@@ -3155,7 +3442,10 @@ body:has(#steamdeck-qta.open) #context-menu {
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.12s, border-color 0.12s, background 0.12s;
+  transition:
+    transform 0.12s,
+    border-color 0.12s,
+    background 0.12s;
 }
 
 .deck-btn:hover {
@@ -3309,7 +3599,9 @@ body:has(#steamdeck-qta.open) #context-menu {
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .deck-search-close:hover {
@@ -3332,7 +3624,9 @@ body:has(#steamdeck-qta.open) #context-menu {
   padding: 12px;
   margin-bottom: 8px;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 }
 
 .deck-search-result-item:hover {
@@ -3420,7 +3714,9 @@ body:has(#steamdeck-qta.open) #context-menu {
   width: 100%;
   z-index: 0;
   background: var(--bg-base);
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
@@ -3432,7 +3728,9 @@ body:has(#steamdeck-qta.open) #context-menu {
 .deck-grid-slide-new {
   position: relative;
   z-index: 1;
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .deck-sections-col {
@@ -3455,7 +3753,10 @@ body:has(#steamdeck-qta.open) #context-menu {
   font-family: inherit;
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
 }
 
 .deck-section-link i {
@@ -3591,7 +3892,10 @@ body:has(#steamdeck-qta.open) #context-menu {
   font-size: 18px;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, transform 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    transform 0.12s;
 }
 
 .deck-rail-btn i {
@@ -3609,7 +3913,7 @@ body:has(#steamdeck-qta.open) #context-menu {
   background: var(--glass);
   color: var(--text-primary);
   transform: scaleY(1.1);
-  border:none;
+  border: none;
 }
 
 .deck-rail-btn.deck-focused {
@@ -3983,7 +4287,9 @@ html.steamdeck-mode #audio-mixer-panel.closing {
   overflow: hidden;
   background: linear-gradient(160deg, rgba(27, 40, 56, 0.98) 0%, rgba(12, 17, 23, 0.98) 100%);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   opacity: 0;
   transform: scale(0.72) translateY(40px);
   animation: deckCardIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) 0.06s forwards;
@@ -4152,34 +4458,67 @@ html.steamdeck-mode #audio-mixer-panel.closing {
 }
 
 @keyframes deckLaunchBackdropIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes deckCardIn {
-  from { opacity: 0; transform: scale(0.72) translateY(40px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.72) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes deckLaunchBackdropOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes deckCardOut {
-  from { opacity: 1; transform: scale(1) translateY(0); }
-  to { opacity: 0; transform: scale(1.08) translateY(-18px); }
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.08) translateY(-18px);
+  }
 }
 
 @keyframes deckLaunchGlow {
-  0%, 100% { opacity: 0.55; transform: scale(0.92); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes deckLaunchProgress {
-  0% { transform: translateX(-120%); }
-  50% { transform: translateX(220%); }
-  100% { transform: translateX(420%); }
+  0% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(220%);
+  }
+  100% {
+    transform: translateX(420%);
+  }
 }
 
 #steamdeck-boot-video {
@@ -4283,7 +4622,9 @@ html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu
   width: 100%;
   position: relative;
   box-sizing: border-box;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 html.steamdeck-mode #context-menu.context-menu-glass > div:first-child,
@@ -4343,7 +4684,12 @@ html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu
 html.steamdeck-mode #context-menu.context-menu-glass > div.deck-ctx-play svg.svg-inline--fa,
 html.steamdeck-mode #context-menu.context-menu-glass .context-menu > div.deck-ctx-play svg.svg-inline--fa,
 html.steamdeck-mode #context-menu.context-menu-glass .context-menu-item > div.deck-ctx-play svg.svg-inline--fa,
-html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div.deck-ctx-play svg.svg-inline--fa {
+html.steamdeck-mode
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item
+  > div.deck-ctx-play
+  svg.svg-inline--fa {
   display: block;
   width: 20px;
   text-align: center;
@@ -4363,11 +4709,25 @@ html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu
 html.steamdeck-mode #context-menu.context-menu-glass > div.deck-ctx-play:hover svg.svg-inline--fa,
 html.steamdeck-mode #context-menu.context-menu-glass .context-menu > div.deck-ctx-play:hover svg.svg-inline--fa,
 html.steamdeck-mode #context-menu.context-menu-glass .context-menu-item > div.deck-ctx-play:hover svg.svg-inline--fa,
-html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div.deck-ctx-play:hover svg.svg-inline--fa,
+html.steamdeck-mode
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item
+  > div.deck-ctx-play:hover
+  svg.svg-inline--fa,
 html.steamdeck-mode #context-menu.context-menu-glass > div.deck-ctx-play.cm-focused svg.svg-inline--fa,
 html.steamdeck-mode #context-menu.context-menu-glass .context-menu > div.deck-ctx-play.cm-focused svg.svg-inline--fa,
-html.steamdeck-mode #context-menu.context-menu-glass .context-menu-item > div.deck-ctx-play.cm-focused svg.svg-inline--fa,
-html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu-item > div.deck-ctx-play.cm-focused svg.svg-inline--fa {
+html.steamdeck-mode
+  #context-menu.context-menu-glass
+  .context-menu-item
+  > div.deck-ctx-play.cm-focused
+  svg.svg-inline--fa,
+html.steamdeck-mode
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item
+  > div.deck-ctx-play.cm-focused
+  svg.svg-inline--fa {
   color: #fff;
 }
 
@@ -4389,7 +4749,12 @@ html.steamdeck-mode #context-menu.context-menu-glass .context-menu-item.has-subm
 }
 
 html.steamdeck-mode #context-menu.context-menu-glass .context-menu-item.has-submenu > div:hover .submenu-arrow,
-html.steamdeck-mode #context-menu.context-menu-glass .context-menu .context-menu-item.has-submenu > div:hover .submenu-arrow {
+html.steamdeck-mode
+  #context-menu.context-menu-glass
+  .context-menu
+  .context-menu-item.has-submenu
+  > div:hover
+  .submenu-arrow {
   color: var(--bg-primary);
 }
 
@@ -4445,7 +4810,9 @@ html.steamdeck-mode .context-menu.context-menu-glass > div {
   width: 100%;
   position: relative;
   box-sizing: border-box;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 html.steamdeck-mode .context-menu.context-menu-glass > div:first-child {

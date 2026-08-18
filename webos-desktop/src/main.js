@@ -36,6 +36,7 @@ import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { StorageKeys } from "./StorageKeys.js";
+import { ServiceKeys } from "./ServiceKeys.js";
 import { showBootScreen } from "./bootScreen.js";
 import { deckCapture } from "./modes/steamdeck/deckCapture.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
@@ -119,13 +120,14 @@ windowManager.setAppLauncher(appLauncher);
 setGameLauncher(appLauncher);
 initSteamDataManagerCache();
 
-appLauncher.setEmulatorApp(os.app.getInstance("emulatorApp"));
+appLauncher.setEmulatorApp(os.app.getInstance(ServiceKeys.EMULATOR));
 appLauncher.overlayController = null;
 
 appCreatorApp.restoreInstalledApps();
 
 const desktopUI = new DesktopUI(explorerApp);
 os.desktopUI = desktopUI;
+os.app.register("desktopUI", desktopUI);
 explorerApp.desktopUI = desktopUI;
 desktopUI.fs = fileSystemManager;
 fileSystemManager.setDesktopUI(desktopUI);
@@ -269,7 +271,7 @@ async function start() {
 
           const syncState = () => {
             const mixer = audioMixer();
-            const remoteApp = os.app.getInstance("remoteHostApp");
+            const remoteApp = os.app.getInstance(ServiceKeys.REMOTE_HOST);
             window.electronAPI.sendTrayState({
               dnd: os.notify.getDoNotDisturb(),
               muted: mixer ? mixer.muted : false,
@@ -330,7 +332,7 @@ async function start() {
 
           syncState();
           setInterval(() => {
-            const remoteApp = os.app.getInstance("remoteHostApp");
+            const remoteApp = os.app.getInstance(ServiceKeys.REMOTE_HOST);
             const active = !!(remoteApp && remoteApp.hostStreaming);
             const code = (remoteApp && remoteApp.hostRoomCode) || null;
             window.electronAPI.sendTrayState({

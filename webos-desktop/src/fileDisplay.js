@@ -1,5 +1,5 @@
 import { FileKind } from "./shared/fileKindDetector.js";
-import { os, StorageKeys, $, createElement } from "./framework.js";
+import { os, StorageKeys, $, createElement, ServiceKeys } from "./framework.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { getDefaultApp, isUnassociated } from "./fileAssociations.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
@@ -448,7 +448,7 @@ async function confirmLargeFile(name, size) {
 
 async function openExecutable(name, path) {
   try {
-    const jsDosApp = os.app.getInstance("jsDosApp");
+    const jsDosApp = os.app.getInstance(ServiceKeys.JSDOS);
     if (jsDosApp) jsDosApp.launchExe(name, path);
   } catch (err) {
     console.error("[FileDisplay] openExecutable error:", err);
@@ -457,7 +457,7 @@ async function openExecutable(name, path) {
 
 async function openSwfFile(name, path) {
   try {
-    const ruffleApp = os.app.getInstance("ruffleApp");
+    const ruffleApp = os.app.getInstance(ServiceKeys.RUFFLE);
     if (!ruffleApp) return;
     let arrayBuffer = null;
 
@@ -490,7 +490,7 @@ async function openSwfFile(name, path) {
 
 async function openRomFile(name, path) {
   try {
-    const emulatorApp = os.app.getInstance("emulatorApp");
+    const emulatorApp = os.app.getInstance(ServiceKeys.EMULATOR);
     if (emulatorApp) {
       emulatorApp.launchROM(name, path);
     } else {
@@ -545,8 +545,8 @@ async function openMediaFile(name, path) {
 
 async function openOfficeFile(name, path) {
   try {
-    const officeApp = os.app.getInstance("officeApp");
-    const notepadApp = os.app.getInstance("notepadApp");
+    const officeApp = os.app.getInstance(ServiceKeys.OFFICE);
+    const notepadApp = os.app.getInstance(ServiceKeys.NOTEPAD);
     if (!officeApp) {
       const content = await os.fs.getFileContent(path, name);
       notepadApp.open(name, content, path);
@@ -567,8 +567,8 @@ async function openOfficeFile(name, path) {
 
 async function openMarkdown(name, path, content) {
   try {
-    const markdownApp = os.app.getInstance("markdownApp");
-    const notepadApp = os.app.getInstance("notepadApp");
+    const markdownApp = os.app.getInstance(ServiceKeys.MARKDOWN);
+    const notepadApp = os.app.getInstance(ServiceKeys.NOTEPAD);
     if (markdownApp) {
       markdownApp.open(name, content, path);
     } else {
@@ -581,8 +581,8 @@ async function openMarkdown(name, path, content) {
 
 async function openHtmlFile(name, path, content) {
   try {
-    const browserApp = os.app.getInstance("browserApp");
-    const notepadApp = os.app.getInstance("notepadApp");
+    const browserApp = os.app.getInstance(ServiceKeys.BROWSER);
+    const notepadApp = os.app.getInstance(ServiceKeys.NOTEPAD);
     if (browserApp) {
       browserApp.openHtml(content, name, path);
     } else {
@@ -595,7 +595,7 @@ async function openHtmlFile(name, path, content) {
 
 async function openTextFile(name, path, content) {
   try {
-    const notepadApp = os.app.getInstance("notepadApp");
+    const notepadApp = os.app.getInstance(ServiceKeys.NOTEPAD);
     const size = getContentSize(content);
     if (size > LARGE_FILE_THRESHOLD) {
       const confirmed = await confirmLargeFile(name, size);
@@ -680,7 +680,7 @@ export async function openFileWith({ name, path }) {
   try {
     if (isZipFile(name)) return;
     if (name.toLowerCase().endsWith(".img")) {
-      const v86App = os.app.getInstance("v86app");
+      const v86App = os.app.getInstance(ServiceKeys.V86);
       if (v86App?.launchImage) {
         v86App.launchImage(name, path);
       } else {
@@ -757,7 +757,7 @@ export async function openFileWithApp(appId, { name, path }) {
         await openTextFile(name, path, await os.fs.getFileContent(path, name));
         return true;
       case "monacoApp": {
-        const monacoApp = os.app.getInstance("monacoApp");
+        const monacoApp = os.app.getInstance(ServiceKeys.MONACO);
         if (monacoApp?.open) {
           monacoApp.open(name, await os.fs.getFileContent(path, name), path);
           return true;
@@ -777,7 +777,7 @@ export async function openFileWithApp(appId, { name, path }) {
         await openSwfFile(name, path);
         return true;
       case "v86app": {
-        const v86App = os.app.getInstance("v86app");
+        const v86App = os.app.getInstance(ServiceKeys.V86);
         if (v86App?.launchImage) {
           v86App.launchImage(name, path);
           return true;

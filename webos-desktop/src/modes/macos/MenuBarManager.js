@@ -4,7 +4,7 @@ import { getSetting } from "../../utils/utils.js";
 import { $, $$, bindEvent, addClass, removeClass, toggleClass, setText, createElement } from "../../shared/domUtils.js";
 import { DEFAULT_SYSTEM_MENUS, APP_MENU_OVERRIDES } from "./appMenus.js";
 import { StorageKeys } from "../../StorageKeys.js";
-import { os, MODES } from "../../framework.js";
+import { os, MODES, ServiceKeys } from "../../framework.js";
 import { applyTransparentUI } from "../../settings/settingsApply.js";
 
 export class MenuBarManager {
@@ -50,7 +50,7 @@ export class MenuBarManager {
     if (!finder) return;
     bindEvent(finder, "click", (e) => {
       e.stopPropagation();
-      os.app.getInstance("commandPalette")?.toggle();
+      os.app.getInstance(ServiceKeys.COMMAND_PALETTE)?.toggle();
     });
   }
 
@@ -406,7 +406,7 @@ const focusedNotepadWindow = () => {
 const ACTION_MAP = {
   "about:open": (os) => os.app.launch("aboutApp").catch(() => {}),
   "settings:open": (os) => os.app.launch("settingsApp").catch(() => {}),
-  "palette:open": () => os.app.getInstance("commandPalette")?.open(),
+  "palette:open": () => os.app.getInstance(ServiceKeys.COMMAND_PALETTE)?.open(),
   "clippy:toggle": (os) => {
     const current = os.storage.get(StorageKeys.clippy);
     const next = current === "true" ? "false" : "true";
@@ -446,7 +446,7 @@ const ACTION_MAP = {
   "terminal:newWindow": (os) => os.app.launch("terminalApp").catch(() => {}),
   "browser:newWindow": (os) => os.app.launch("browserApp").catch(() => {}),
   "desktop:newFolder": () => {
-    const desktopUI = os.app.getInstance("desktopUI");
+    const desktopUI = os.app.getInstance(ServiceKeys.DESKTOP_UI);
     if (desktopUI) desktopUI.createNewFolder();
   },
   "notepad:new": (os) => os.app.launch("notepadApp").catch(() => {}),
@@ -466,32 +466,32 @@ const ACTION_MAP = {
   "notepad:open": () => {
     const target = focusedNotepadWindow();
     if (!target) return;
-    os.app.getInstance("notepadApp")?.openFileDialog?.(target.win, target.winId);
+    os.app.getInstance(ServiceKeys.NOTEPAD)?.openFileDialog?.(target.win, target.winId);
   },
   "notepad:save": () => {
     const target = focusedNotepadWindow();
     if (!target) return;
-    os.app.getInstance("notepadApp")?.saveFile?.(target.win, target.winId);
+    os.app.getInstance(ServiceKeys.NOTEPAD)?.saveFile?.(target.win, target.winId);
   },
   "notepad:saveAs": () => {
     const target = focusedNotepadWindow();
     if (!target) return;
-    os.app.getInstance("notepadApp")?.saveAsFile?.(target.win, target.winId);
+    os.app.getInstance(ServiceKeys.NOTEPAD)?.saveAsFile?.(target.win, target.winId);
   },
   "view:zoomIn": () => {
     const target = focusedNotepadWindow();
     if (!target) return;
-    os.app.getInstance("notepadApp")?.zoom?.(target.win, target.winId, 10);
+    os.app.getInstance(ServiceKeys.NOTEPAD)?.zoom?.(target.win, target.winId, 10);
   },
   "view:zoomOut": () => {
     const target = focusedNotepadWindow();
     if (!target) return;
-    os.app.getInstance("notepadApp")?.zoom?.(target.win, target.winId, -10);
+    os.app.getInstance(ServiceKeys.NOTEPAD)?.zoom?.(target.win, target.winId, -10);
   },
   "view:zoomReset": () => {
     const target = focusedNotepadWindow();
     if (!target) return;
-    os.app.getInstance("notepadApp")?.zoomReset?.(target.win, target.winId);
+    os.app.getInstance(ServiceKeys.NOTEPAD)?.zoomReset?.(target.win, target.winId);
   },
   "edit:undo": () => document.execCommand("undo"),
   "edit:redo": () => document.execCommand("redo"),

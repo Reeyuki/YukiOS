@@ -972,6 +972,7 @@ export function renderAppearanceSettings(s) {
               { value: "instant", label: "Instant (No Animation)" },
               { value: "scaleDownCenter", label: "Scale Down Center" },
               { value: "scaleToOrigin", label: "Scale to Taskbar Origin" },
+              { value: "zoomToDock", label: "Zoom to Dock (macOS)" },
               { value: "fadeOut", label: "Fade Out Only" },
               { value: "slideDown", label: "Slide Down Exit" },
               { value: "burn", label: "Window Burn Close" },
@@ -1012,6 +1013,7 @@ export function renderAppearanceSettings(s) {
               { value: "scaleCenter", label: "Scale Center" },
               { value: "fade", label: "Fade In" },
               { value: "slideUp", label: "Slide Up" },
+              { value: "genieFromDock", label: "Genie From Dock" },
               { value: "instant", label: "Instant (No Animation)" }
             ],
             os.storage.get(StorageKeys.windowRestoreAnimation) || "fromTaskbar"

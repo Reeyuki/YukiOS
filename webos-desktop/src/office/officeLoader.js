@@ -1,3 +1,5 @@
+import { ServiceKeys } from "../framework.js";
+
 let officeApp = null;
 let loading = null;
 
@@ -22,7 +24,7 @@ export class OfficeAppProxy {
   }
 
   get explorer() {
-    return os.app.getInstance("explorerApp");
+    return os.app.getInstance(ServiceKeys.EXPLORER);
   }
 
   async ensure() {

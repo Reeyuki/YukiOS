@@ -3,7 +3,7 @@ import { $, $$, bindEvent } from "../shared/domUtils.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import { formatSize, downloadBlob } from "../utils/utils.js";
 
-import { BaseApp, os, StorageKeys, MODES, createElement } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES, createElement, ServiceKeys } from "../framework.js";
 export class TorrentClientApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -1259,7 +1259,7 @@ export class TorrentClientApp extends BaseApp {
       os.dialog.alert("Not Ready", "Wait for the download to finish before saving.");
       return;
     }
-    const explorerApp = this.os.app.getInstance("explorerApp");
+    const explorerApp = this.os.app.getInstance(ServiceKeys.EXPLORER);
     if (!explorerApp) {
       os.dialog.alert("Error", "Explorer app not available.");
       return;

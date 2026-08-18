@@ -4,12 +4,27 @@ import { steamDeckAudio } from "./SteamDeckAudio.js";
 import { audioMixer } from "../../audioMixer.js";
 import { mediaTray } from "../../mediaTray.js";
 import { performanceManager } from "../../shared/performanceManager.js";
-import { renderRangeSlider, getRangeSliderValue, setRangeSliderValue, bindRangeSlider } from "../../shared/rangeSlider.js";
-import { fetchFriends, getCachedFriends } from "../../social/friendsApi.js";
+import {
+  renderRangeSlider,
+  getRangeSliderValue,
+  setRangeSliderValue,
+  bindRangeSlider
+} from "../../shared/rangeSlider.js";
+import {
+  fetchFriends,
+  getCachedFriends,
+  acceptFriendRequest,
+  removeFriend,
+  fetchConversations
+} from "../../social/friendsApi.js";
 import { avatarUrlForIndex } from "../../social/userIdentity.js";
 import { formatRelativeTime, isUserOnline } from "../../social/socialApi.js";
-import { openFriendDmWindow, openFriendRowContextMenu } from "../../games/steamSocial.js";
+import { openFriendDmWindow, openFriendRowContextMenu, openStatusPicker } from "../../games/steamSocial.js";
 import { escapeHtml, resolveAppName } from "../../utils/utils.js";
+import { getPresence } from "../../social/presence.js";
+import { getCurrentUser } from "../../desktopui/startMenu.js";
+import { resolveAvatarUrl } from "../../social/avatarResolver.js";
+import { BusEvents } from "../../core/EventBus.js";
 import { YUKIOS_VERSION } from "../../apps/about.js";
 
 const QTA_TABS = [
@@ -47,6 +62,11 @@ export class QuickAccessPanel {
     this.focusIndex = 0;
     this.focusMode = "panel";
     this.qtaKeyHandler = null;
+    this.friendQuery = "";
+    this.showingRequests = false;
+    this.friendsPollTimer = null;
+    this.friendsPresenceHandler = null;
+    this.friendRequestsData = [];
   }
 
   build() {
@@ -122,6 +142,8 @@ export class QuickAccessPanel {
     this.qtaKeyHandler = (e) => this.handleQtaKeydown(e);
     document.addEventListener("keydown", this.qtaKeyHandler, true);
     if (!this.mediaTimer) this.mediaTimer = setInterval(() => this.updateMediaPlayState(), 1000);
+    this.startFriendsPolling();
+    this.setupFriendsPresenceListener();
     if (this.manager) this.manager.quickAccessOpen = true;
   }
 
@@ -140,6 +162,8 @@ export class QuickAccessPanel {
       clearInterval(this.mediaTimer);
       this.mediaTimer = null;
     }
+    this.stopFriendsPolling();
+    this.teardownFriendsPresenceListener();
     if (this.el) {
       this.el.classList.remove("open");
       this.el.classList.add("closing");
@@ -219,9 +243,15 @@ export class QuickAccessPanel {
     setText(titleEl, tabDef ? tabDef.label : "Quick Settings");
     setHTML(actionEl, "");
     if (this.tab === "notifications") {
-      setHTML(actionEl, '<button class="deck-qta-btn" data-qta-action="clearNotifications"><i class="fas fa-trash"></i><span>Clear</span></button>');
+      setHTML(
+        actionEl,
+        '<button class="deck-qta-btn" data-qta-action="clearNotifications"><i class="fas fa-trash"></i><span>Clear</span></button>'
+      );
     } else if (this.tab === "friends") {
-      setHTML(actionEl, '<button class="deck-qta-btn" data-qta-action="addFriend"><i class="fas fa-plus"></i><span>Add Friend</span></button>');
+      setHTML(
+        actionEl,
+        '<button class="deck-qta-btn" data-qta-action="addFriend"><i class="fas fa-plus"></i><span>Add Friend</span></button>'
+      );
     }
     const actionBtn = $("[data-qta-action]", actionEl);
     if (actionBtn) {
@@ -240,7 +270,7 @@ export class QuickAccessPanel {
     if (!this.el) return [];
     if (this.focusMode === "rail") return $$(".deck-qta-rail-btn", this.el);
     return $$(
-      "[data-qta-action], [data-qta-friend-tab], [data-qta-friend-row], [data-qta-friend-group], [data-power-mode], [data-qta-media], [data-help-app], [data-qta-powermenu], .deck-qta-toggle, .range-slider",
+      "[data-qta-action], [data-qta-friend-tab], [data-qta-friend-row], [data-qta-friend-group], [data-power-mode], [data-qta-media], [data-help-app], [data-qta-powermenu], .deck-qta-toggle, .range-slider, [data-qta-status-picker], [data-qta-friend-requests], [data-friends-search-input], [data-friends-banner-close]",
       this.el
     );
   }
@@ -316,7 +346,11 @@ export class QuickAccessPanel {
     if (searchOverlay) return;
     const focused = this.getQtaFocusables()[this.focusIndex] || null;
     const onSlider = focused && focused.classList.contains("range-slider");
-    if (onSlider && (KeybindManager.matches(e, "steamdeck.moveLeft") || KeybindManager.matches(e, "steamdeck.moveRight"))) return;
+    if (
+      onSlider &&
+      (KeybindManager.matches(e, "steamdeck.moveLeft") || KeybindManager.matches(e, "steamdeck.moveRight"))
+    )
+      return;
     if (KeybindManager.matches(e, "steamdeck.moveUp")) {
       e.preventDefault();
       e.stopPropagation();
@@ -377,7 +411,10 @@ export class QuickAccessPanel {
   renderNotifications(bodyEl) {
     const items = os.notify.getAll() || [];
     if (!items.length) {
-      setHTML(bodyEl, '<div class="deck-qta-empty"><i class="fas fa-bell-slash"></i><span>No notifications</span></div>');
+      setHTML(
+        bodyEl,
+        '<div class="deck-qta-empty"><i class="fas fa-bell-slash"></i><span>No notifications</span></div>'
+      );
       return;
     }
     const list = items
@@ -391,19 +428,83 @@ export class QuickAccessPanel {
 
   setFriendsTab(tab) {
     this.friendsTab = tab;
+    this.showingRequests = false;
     const bodyEl = $(".deck-qta-panel-body", this.el);
-    if (bodyEl) this.renderFriends(bodyEl);
+    if (bodyEl) {
+      const rPanel = $("[data-friends-requests-panel]", bodyEl);
+      if (rPanel) rPanel.hidden = true;
+      this.renderFriends(bodyEl);
+    }
   }
 
   renderFriends(bodyEl) {
+    const user = getCurrentUser();
+    const bannerDismissed = !!os.storage.get(StorageKeys.steamFriendsBannerDismissed);
+    const presence = getPresence();
+    const statusText = presence === "invisible" ? "Invisible" : presence === "offline" ? "Offline" : "Online";
+    const statusCls = presence === "invisible" || presence === "offline" ? "offline" : "online";
+    const requestCount = this.friendRequestsData.length;
+    const badgeHtml = requestCount ? `<span class="deck-qta-friends-badge">${requestCount}</span>` : "";
+    const bannerHtml = bannerDismissed
+      ? ""
+      : `<div class="deck-qta-friends-banner"><span>Tap a friend for profile, double-tap to chat</span><button class="deck-qta-friends-banner-close" data-friends-banner-close>GOT IT</button></div>`;
     setHTML(
       bodyEl,
-      `<div class="deck-qta-friends-tabs">${FRIEND_TABS.map(
-        (t) => `<button class="deck-qta-friend-tab" data-qta-friend-tab="${t.id}" title="${t.label}"><i class="fas ${t.icon}"></i></button>`
-      ).join("")}</div><div class="deck-qta-friend-body"></div>`
+      `<div class="deck-qta-friend-profile"><div class="deck-qta-friend-profile-avatar" data-qta-status-picker></div><div class="deck-qta-friend-profile-info"><span class="deck-qta-friend-profile-name">${escapeHtml(user.name)}</span><button class="deck-qta-friend-profile-status" data-qta-status-picker><span class="deck-qta-status-dot deck-qta-status-dot--${statusCls}"></span>${statusText} <i class="fas fa-chevron-down"></i></button></div></div>${bannerHtml}<div class="deck-qta-friends-toolbar"><div class="deck-qta-friends-search"><i class="fas fa-search"></i><input type="text" data-friends-search-input placeholder="Search friends..." /></div><button class="deck-qta-friends-requests-btn" data-qta-friend-requests><i class="fas fa-user-plus"></i>${badgeHtml}</button></div><div class="deck-qta-friends-requests-panel" data-friends-requests-panel hidden></div><div class="deck-qta-friends-tabs">${FRIEND_TABS.map((t) => `<button class="deck-qta-friend-tab" data-qta-friend-tab="${t.id}" title="${t.label}"><i class="fas ${t.icon}"></i></button>`).join("")}</div><div class="deck-qta-friend-body"></div>`
     );
-    $$(".deck-qta-friend-tab", bodyEl).forEach((btn) => toggleClass(btn, "active", btn.dataset.qtaFriendTab === this.friendsTab));
-    $$(".deck-qta-friend-tab", bodyEl).forEach((btn) => bindEvent(btn, "click", () => this.setFriendsTab(btn.dataset.qtaFriendTab)));
+    const profileAvatar = $(".deck-qta-friend-profile-avatar", bodyEl);
+    if (profileAvatar) {
+      resolveAvatarUrl(user.avatar, "static/icons/guest.webp").then((url) => {
+        if (profileAvatar.isConnected) {
+          profileAvatar.style.backgroundImage = `url(${url})`;
+          profileAvatar.style.backgroundSize = "cover";
+          profileAvatar.style.backgroundPosition = "center";
+        }
+      });
+    }
+    $$(".deck-qta-friend-tab", bodyEl).forEach((btn) =>
+      toggleClass(btn, "active", btn.dataset.qtaFriendTab === this.friendsTab)
+    );
+    $$(".deck-qta-friend-tab", bodyEl).forEach((btn) =>
+      bindEvent(btn, "click", () => {
+        this.showingRequests = false;
+        const rPanel = $("[data-friends-requests-panel]", bodyEl);
+        if (rPanel) rPanel.hidden = true;
+        this.setFriendsTab(btn.dataset.qtaFriendTab);
+      })
+    );
+    $$("[data-qta-status-picker]", bodyEl).forEach((el) => {
+      bindEvent(el, "click", (e) => {
+        e.stopPropagation();
+        openStatusPicker(e);
+        setTimeout(() => {
+          this.refreshPresenceDisplay(bodyEl);
+        }, 150);
+      });
+    });
+    const bannerClose = $("[data-friends-banner-close]", bodyEl);
+    if (bannerClose) {
+      bindEvent(bannerClose, "click", () => {
+        os.storage.set(StorageKeys.steamFriendsBannerDismissed, "true");
+        const banner = $(".deck-qta-friends-banner", bodyEl);
+        if (banner) banner.remove();
+      });
+    }
+    const searchInput = $("[data-friends-search-input]", bodyEl);
+    if (searchInput) {
+      let debounce = null;
+      bindEvent(searchInput, "input", () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          this.friendQuery = searchInput.value;
+          this.renderFriendList($(".deck-qta-friend-body", bodyEl));
+        }, 200);
+      });
+    }
+    const requestsBtn = $("[data-qta-friend-requests]", bodyEl);
+    if (requestsBtn) {
+      bindEvent(requestsBtn, "click", () => this.toggleFriendRequests(bodyEl));
+    }
     this.renderFriendList($(".deck-qta-friend-body", bodyEl));
   }
 
@@ -414,12 +515,61 @@ export class QuickAccessPanel {
     if (!friendBody.isConnected) return;
     const friends = Array.isArray(data?.friends) ? data.friends : [];
     this.qtaFriends = friends;
+    const query = (this.friendQuery || "").toLowerCase().trim();
+    const searchFiltered = query
+      ? friends.filter((f) =>
+          String(f.username || "")
+            .toLowerCase()
+            .includes(query)
+        )
+      : friends;
     if (this.friendsTab === "groups") {
-      setHTML(friendBody, '<div class="deck-qta-empty"><i class="fas fa-users"></i><span>No group chats yet</span></div>');
+      setHTML(
+        friendBody,
+        '<div class="deck-qta-empty"><i class="fas fa-users"></i><span>No group chats yet</span></div>'
+      );
       return;
     }
-    if (this.friendsTab === "dms" || this.friendsTab === "favorites") {
-      const active = friends.filter((f) => f.nowPlaying || isUserOnline(f));
+    if (this.friendsTab === "dms") {
+      let conversations = [];
+      try {
+        const convData = await fetchConversations({ refresh: false });
+        conversations = Array.isArray(convData?.conversations) ? convData.conversations : [];
+      } catch (_) {}
+      if (!conversations.length) {
+        setHTML(
+          friendBody,
+          '<div class="deck-qta-empty"><i class="fas fa-comment"></i><span>No direct messages</span></div>'
+        );
+        return;
+      }
+      const convHtml = conversations
+        .map((c) => {
+          const name = c.username || c.name || "Unknown";
+          const lastMsg = c.lastMessage || "";
+          const avatarUrl = avatarUrlForIndex(c.avatarIndex);
+          const avatar = avatarUrl
+            ? `<img class="deck-qta-friend-avatar" src="${avatarUrl}" alt="" loading="lazy"/>`
+            : '<span class="deck-qta-friend-avatar deck-qta-friend-avatar--default"><i class="fas fa-user"></i></span>';
+          return `<button class="deck-qta-friend-row deck-qta-friend-row--dms" data-dm-user-id="${escapeHtml(String(c.userId || ""))}"><span class="deck-qta-friend-avatar-frame">${avatar}</span><span class="deck-qta-friend-meta"><span class="deck-qta-friend-name">${escapeHtml(name)}</span><span class="deck-qta-friend-sub">${escapeHtml(lastMsg.slice(0, 60))}</span></span></button>`;
+        })
+        .join("");
+      setHTML(friendBody, `<div class="deck-qta-friend-list">${convHtml}</div>`);
+      $$("[data-dm-user-id]", friendBody).forEach((row) => {
+        bindEvent(row, "click", () => {
+          const uid = row.dataset.dmUserId;
+          const friend = this.findFriendById(uid);
+          if (friend) {
+            this.close();
+            openFriendDmWindow(friend);
+          }
+        });
+      });
+      if (this.isOpen) this.refreshQtaFocus();
+      return;
+    }
+    if (this.friendsTab === "favorites") {
+      const active = searchFiltered.filter((f) => f.nowPlaying || isUserOnline(f));
       if (!active.length) {
         setHTML(friendBody, '<div class="deck-qta-empty">No active friends</div>');
         return;
@@ -430,18 +580,21 @@ export class QuickAccessPanel {
       if (this.isOpen) this.refreshQtaFocus();
       return;
     }
-    if (!friends.length) {
+    if (!searchFiltered.length) {
       setHTML(friendBody, '<div class="deck-qta-empty">No friends yet</div>');
       return;
     }
-    const ingame = friends.filter((f) => f.nowPlaying);
-    const online = friends.filter((f) => !f.nowPlaying && isUserOnline(f));
-    const offline = friends.filter((f) => !f.nowPlaying && !isUserOnline(f));
+    const ingame = searchFiltered.filter((f) => f.nowPlaying);
+    const online = searchFiltered.filter((f) => !f.nowPlaying && isUserOnline(f));
+    const offline = searchFiltered.filter((f) => !f.nowPlaying && !isUserOnline(f));
     const html =
       this.buildIngameGroups(ingame) +
       this.buildFriendGroupHtml("Online Friends", online, "online") +
       this.buildFriendGroupHtml("Offline", offline, "offline");
-    setHTML(friendBody, `<div class="deck-qta-friend-list">${html || '<div class="deck-qta-empty">No friends yet</div>'}</div>`);
+    setHTML(
+      friendBody,
+      `<div class="deck-qta-friend-list">${html || '<div class="deck-qta-empty">No friends yet</div>'}</div>`
+    );
     this.bindFriendRows(friendBody);
     this.bindFriendGroups(friendBody);
     if (this.isOpen) this.refreshQtaFocus();
@@ -528,6 +681,126 @@ export class QuickAccessPanel {
 
   findFriendById(id) {
     return (this.qtaFriends || []).find((friend) => String(friend.userId) === String(id)) || null;
+  }
+
+  refreshPresenceDisplay(bodyEl) {
+    if (!bodyEl || !bodyEl.isConnected) return;
+    const presence = getPresence();
+    const statusText = presence === "invisible" ? "Invisible" : presence === "offline" ? "Offline" : "Online";
+    const statusCls = presence === "invisible" || presence === "offline" ? "offline" : "online";
+    $$(".deck-qta-friend-profile-status", bodyEl).forEach((btn) => {
+      const dot = $(".deck-qta-status-dot", btn);
+      if (dot) dot.className = `deck-qta-status-dot deck-qta-status-dot--${statusCls}`;
+      btn.childNodes.forEach((node) => {
+        if (node.nodeType === 3) node.textContent = statusText + " ";
+      });
+    });
+  }
+
+  toggleFriendRequests(bodyEl) {
+    this.showingRequests = !this.showingRequests;
+    const panel = $("[data-friends-requests-panel]", bodyEl);
+    if (!panel) return;
+    panel.hidden = !this.showingRequests;
+    if (this.showingRequests) {
+      this.renderFriendRequestsPanel(panel);
+    }
+  }
+
+  async renderFriendRequestsPanel(panel) {
+    if (!panel) return;
+    setHTML(panel, '<div class="deck-qta-empty" style="padding:12px"><span>Loading requests...</span></div>');
+    const data = await fetchFriends({ refresh: true }).catch(() => getCachedFriends());
+    const requests = Array.isArray(data?.requests) ? data.requests : [];
+    this.friendRequestsData = requests;
+    this.updateFriendRequestsBadge();
+    if (!requests.length) {
+      setHTML(
+        panel,
+        '<div class="deck-qta-empty" style="padding:16px"><i class="fas fa-user-plus"></i><span>No pending requests</span></div>'
+      );
+      return;
+    }
+    const rows = requests
+      .map((r) => {
+        const avatarUrl = avatarUrlForIndex(r.avatarIndex);
+        const avatar = avatarUrl
+          ? `<img class="deck-qta-friend-avatar" src="${avatarUrl}" alt="" loading="lazy"/>`
+          : '<span class="deck-qta-friend-avatar deck-qta-friend-avatar--default"><i class="fas fa-user"></i></span>';
+        return `<div class="deck-qta-friend-request-row"><span class="deck-qta-friend-avatar-frame">${avatar}</span><span class="deck-qta-friend-meta"><span class="deck-qta-friend-name">${escapeHtml(r.username || "Unknown")}</span></span><div class="deck-qta-friend-request-actions"><button class="deck-qta-friend-req-btn deck-qta-friend-req-btn--accept" data-req-accept="${escapeHtml(String(r.userId))}"><i class="fas fa-check"></i></button><button class="deck-qta-friend-req-btn deck-qta-friend-req-btn--decline" data-req-decline="${escapeHtml(String(r.userId))}"><i class="fas fa-xmark"></i></button></div></div>`;
+      })
+      .join("");
+    setHTML(panel, `<div class="deck-qta-friend-request-list">${rows}</div>`);
+    $$("[data-req-accept]", panel).forEach((btn) =>
+      bindEvent(btn, "click", async (e) => {
+        e.stopPropagation();
+        btn.disabled = true;
+        await acceptFriendRequest(btn.dataset.reqAccept);
+        this.renderFriendRequestsPanel(panel);
+        const bodyEl = $(".deck-qta-panel-body", this.el);
+        if (bodyEl && this.isOpen) this.renderFriendList($(".deck-qta-friend-body", bodyEl));
+      })
+    );
+    $$("[data-req-decline]", panel).forEach((btn) =>
+      bindEvent(btn, "click", async (e) => {
+        e.stopPropagation();
+        btn.disabled = true;
+        await removeFriend(btn.dataset.reqDecline);
+        this.renderFriendRequestsPanel(panel);
+      })
+    );
+  }
+
+  updateFriendRequestsBadge() {
+    if (!this.el) return;
+    const badge = $("[data-friends-badge]", this.el);
+    if (!badge) return;
+    const count = this.friendRequestsData.length;
+    badge.textContent = count ? String(count) : "";
+    badge.classList.toggle("deck-qta-friends-badge--hidden", !count);
+  }
+
+  startFriendsPolling() {
+    this.stopFriendsPolling();
+    this.friendsPollTimer = setInterval(() => {
+      if (!this.isOpen || this.tab !== "friends" || this.showingRequests) return;
+      const bodyEl = $(".deck-qta-panel-body", this.el);
+      if (!bodyEl) return;
+      const friendBody = $(".deck-qta-friend-body", bodyEl);
+      if (friendBody) this.renderFriendList(friendBody);
+      fetchFriends({ refresh: true })
+        .then((data) => {
+          const requests = Array.isArray(data?.requests) ? data.requests : [];
+          this.friendRequestsData = requests;
+          this.updateFriendRequestsBadge();
+        })
+        .catch(() => {});
+    }, 10000);
+  }
+
+  stopFriendsPolling() {
+    if (this.friendsPollTimer) {
+      clearInterval(this.friendsPollTimer);
+      this.friendsPollTimer = null;
+    }
+  }
+
+  setupFriendsPresenceListener() {
+    this.teardownFriendsPresenceListener();
+    this.friendsPresenceHandler = () => {
+      const bodyEl = $(".deck-qta-panel-body", this.el);
+      if (bodyEl && this.isOpen && this.tab === "friends") {
+        this.refreshPresenceDisplay(bodyEl);
+      }
+    };
+    os.events.on(BusEvents.SOCIAL_PRESENCE_CHANGED, this.friendsPresenceHandler);
+  }
+
+  teardownFriendsPresenceListener() {
+    if (this.friendsPresenceHandler) {
+      os.events.off(BusEvents.SOCIAL_PRESENCE_CHANGED, this.friendsPresenceHandler);
+      this.friendsPresenceHandler = null;
+    }
   }
 
   renderSettings(bodyEl) {
@@ -622,7 +895,9 @@ export class QuickAccessPanel {
       });
     }
     $$(".deck-qta-toggle", bodyEl).forEach((toggle) => bindEvent(toggle, "click", () => this.handleToggle(toggle)));
-    $$("[data-qta-action]", bodyEl).forEach((btn) => bindEvent(btn, "click", () => this.handleAction(btn.dataset.qtaAction)));
+    $$("[data-qta-action]", bodyEl).forEach((btn) =>
+      bindEvent(btn, "click", () => this.handleAction(btn.dataset.qtaAction))
+    );
   }
 
   handleToggle(toggle) {
@@ -698,7 +973,12 @@ export class QuickAccessPanel {
         }
       });
     });
-    $$("[data-qta-powermenu]", bodyEl).forEach((btn) => bindEvent(btn, "click", () => { this.close(); this.manager?.showPowerMenu?.(); }));
+    $$("[data-qta-powermenu]", bodyEl).forEach((btn) =>
+      bindEvent(btn, "click", () => {
+        this.close();
+        this.manager?.showPowerMenu?.();
+      })
+    );
   }
 
   renderMedia(bodyEl) {
@@ -843,7 +1123,10 @@ export class QuickAccessPanel {
           .join("")}
       </div>
       <div class="deck-qta-help-list">${items
-        .map((it) => `<button class="deck-qta-help-row" data-help-app="${it.app}"><i class="fas ${it.icon}"></i><span>${it.label}</span><i class="fas fa-chevron-right"></i></button>`)
+        .map(
+          (it) =>
+            `<button class="deck-qta-help-row" data-help-app="${it.app}"><i class="fas ${it.icon}"></i><span>${it.label}</span><i class="fas fa-chevron-right"></i></button>`
+        )
         .join("")}</div>`
     );
     $$("[data-help-app]", bodyEl).forEach((btn) =>

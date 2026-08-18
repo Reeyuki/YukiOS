@@ -1,5 +1,5 @@
 import { KeybindManager } from "./keybindManager.js";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, ServiceKeys } from "./framework.js";
 import { BusEvents } from "./core/EventBus.js";
 import { SteamDataManager, SteamAppRenderer } from "./games/games.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
@@ -797,7 +797,7 @@ export class GameOverlayController {
     const pane = this.overlayEl.querySelector('[data-panel="achievements"] .overlay-panel-body');
     if (!pane) return;
 
-    const achApp = this.os.app.getInstance("achievementsApp");
+    const achApp = this.os.app.getInstance(ServiceKeys.ACHIEVEMENTS);
     if (!achApp) {
       pane.innerHTML = `<div class="overlay-no-data">Achievements system not available</div>`;
       return;

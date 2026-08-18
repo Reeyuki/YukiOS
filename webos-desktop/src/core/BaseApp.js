@@ -72,6 +72,17 @@ export class BaseApp {
 
   restoreSnapshot(winId, data) {}
 
+  /**
+   * Resolve a cross-app/service dependency lazily (at call-time) so resolution
+   * never depends on app construction order. Throws if the key is unregistered.
+   * @template {keyof import("../ServiceKeys.js").ServiceTypeMap} K
+   * @param {K} key
+   * @returns {import("../ServiceKeys.js").ServiceTypeMap[K]}
+   */
+  getService(key) {
+    return osBridge.app.require(key);
+  }
+
   async isSingletonOpen(winId) {
     const existing = $("#" + winId);
     if (existing) {

@@ -6,7 +6,7 @@ import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./social/avatarResolver.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { resolveAppId, generateUUID, timeAgo } from "./utils/utils.js";
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, ServiceKeys } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
@@ -1375,7 +1375,7 @@ export class SessionManager {
     setTimeout(() => os.window.restoreSession(), 500);
 
     if (!os.storage.get(StorageKeys.setupCompleted) && this.selectedSession === "Yuki Desktop(Default)") {
-      const setupApp = this.os.app.getInstance("setupApp");
+      const setupApp = this.os.app.getInstance(ServiceKeys.SETUP);
       if (setupApp) setTimeout(() => setupApp.open(), 1000);
     }
 
@@ -1386,7 +1386,7 @@ export class SessionManager {
 
   async apply3DSettings() {
     modeManager.enter(MODES["3D"]);
-    const app = this.os.app.getInstance("room3dApp");
+    const app = this.os.app.getInstance(ServiceKeys.ROOM3D);
     if (app) {
       try {
         await app.launchSystemMode(() => {
@@ -1401,7 +1401,7 @@ export class SessionManager {
 
   disable3DSettings() {
     modeManager.exit(MODES["3D"]);
-    const app = this.os.app.getInstance("room3dApp");
+    const app = this.os.app.getInstance(ServiceKeys.ROOM3D);
     if (app) {
       app.exitSystemMode();
     }

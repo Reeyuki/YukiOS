@@ -7,7 +7,7 @@ import { AppSource } from "./AppSource.js";
 import { WALLPAPER_NAME_URL_PAIRS } from "./wallpaperConfig.js";
 import { KeybindManager } from "./keybindManager.js";
 
-import { StorageKeys, os } from "./framework.js";
+import { StorageKeys, os, ServiceKeys } from "./framework.js";
 import { SETTINGS_CATEGORIES, launchSettingsPane } from "./settings/settingsNav.js";
 import { animateThemeChange } from "./settings/themeTransition.js";
 import { escapeHtml } from "./utils/utils.js";
@@ -369,7 +369,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-camera",
         execute: () => {
-          const app = os.app.getInstance("screenshotApp");
+          const app = os.app.getInstance(ServiceKeys.SCREENSHOT);
           if (app) {
             app.open();
             app.captureFull(true);
@@ -382,7 +382,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-video",
         execute: () => {
-          const app = os.app.getInstance("screenshotApp");
+          const app = os.app.getInstance(ServiceKeys.SCREENSHOT);
           if (app && !app.recording) {
             app.open();
             app.toggleRecording();
@@ -395,7 +395,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-stop",
         execute: () => {
-          const app = os.app.getInstance("screenshotApp");
+          const app = os.app.getInstance(ServiceKeys.SCREENSHOT);
           if (app && app.recording) {
             app.toggleRecording();
           }
@@ -407,7 +407,7 @@ export class CommandPalette {
         tag: "screenshot",
         icon: "fas fa-crop-alt",
         execute: () => {
-          const app = os.app.getInstance("screenshotApp");
+          const app = os.app.getInstance(ServiceKeys.SCREENSHOT);
           if (app) {
             app.open();
             app.captureArea(true);
@@ -464,7 +464,7 @@ export class CommandPalette {
           tag: "terminal",
           icon: "fas fa-terminal",
           execute: () => {
-            const termApp = os.app.getInstance("terminalApp");
+            const termApp = os.app.getInstance(ServiceKeys.TERMINAL);
             if (termApp) {
               termApp.open();
               setTimeout(() => termApp.executeCommand(cleanCmd), 250);

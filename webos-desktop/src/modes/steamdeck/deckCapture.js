@@ -1,4 +1,4 @@
-import { os, $ } from "../../framework.js";
+import { os, $, ServiceKeys } from "../../framework.js";
 import { BusEvents } from "../../core/EventBus.js";
 import { KeybindManager } from "../../keybindManager.js";
 
@@ -51,7 +51,7 @@ export const deckCapture = {
 
   async capture() {
     if (import.meta.env.VITE_DEV_BUILD === "true") return;
-    const shotApp = os.app.getInstance("screenshotApp");
+    const shotApp = os.app.getInstance(ServiceKeys.SCREENSHOT);
     if (!shotApp || typeof shotApp.pageCapture !== "function") return;
     try {
       const blob = await shotApp.pageCapture();

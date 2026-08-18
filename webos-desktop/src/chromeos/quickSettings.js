@@ -1,4 +1,4 @@
-import { createElement, os, StorageKeys } from "../framework.js";
+import { createElement, os, StorageKeys, ServiceKeys } from "../framework.js";
 import { $ } from "../shared/domUtils.js";
 import { subscribeTimeTick } from "../services/timeWorker.js";
 import { createCalendarPopup, closeCalendarPopup } from "../apps/calendar.js";
@@ -455,7 +455,7 @@ export class ChromeOsQuickSettings {
 
   handlePowerAction(action) {
     this.closePanel();
-    const sessionManager = os.app.getInstance("sessionManager");
+    const sessionManager = os.app.getInstance(ServiceKeys.SESSION_MANAGER);
     switch (action) {
       case "lock":
         sessionManager?.lockSession?.();

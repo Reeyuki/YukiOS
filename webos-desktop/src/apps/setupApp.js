@@ -9,7 +9,7 @@ import { applyFontFamily, applyTheme } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass, createElement } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";
 import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
-import { BaseApp, StorageKeys, os } from "../framework.js";
+import { BaseApp, StorageKeys, os, ServiceKeys } from "../framework.js";
 import { startIntroTour } from "./introTour.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
@@ -928,7 +928,7 @@ export class SetupApp extends BaseApp {
     os.storage.set(StorageKeys.username, finalizedName);
     os.storage.set(StorageKeys.profilePicture, finalizedAvatar);
 
-    const sm = this.os.app.getInstance("sessionManager");
+    const sm = this.os.app.getInstance(ServiceKeys.SESSION_MANAGER);
     if (sm?.currentSession) {
       sm.currentSession.name = finalizedName;
       sm.currentSession.key = finalizedName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest";

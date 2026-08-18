@@ -1,33 +1,6 @@
 [
   {
     "date": "August 18, 2026",
-    "label": "Steam Deck Fixes",
-    "sections": [
-      {
-        "icon": "fa-gamepad",
-        "title": "Steam Deck Mode",
-        "items": [
-          [
-            "fa-right-from-bracket",
-            "Sign Out from Power Menu",
-            "Sign out directly from the Deck power menu to return to the login screen."
-          ],
-          [
-            "fa-play-circle",
-            "Boot Video Fix",
-            "Steam Deck boot video now plays reliably on every visit without freezing."
-          ],
-          [
-            "fa-keyboard",
-            "Power Menu Input Fix",
-            "Holding Enter for power actions no longer accidentally launches background games."
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "date": "August 18, 2026",
     "label": "YukiOS v3.0.0",
     "sections": [
       {
@@ -74,6 +47,17 @@
             "fa-gamepad",
             "Steam Deck Session Mode",
             "Switch to a Steam Deck session with full boot animations and sound effects."
+          ]
+        ]
+      },
+      {
+        "icon": "fa-user-friends",
+        "title": "Deck Friends Menu",
+        "items": [
+          [
+            "fa-users",
+            "Friends & Social Hub",
+            "The Deck friends menu now includes your profile, live presence status, friend search, request management, and direct message access in one unified social experience."
           ]
         ]
       },
