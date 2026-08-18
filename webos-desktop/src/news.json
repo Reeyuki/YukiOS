@@ -1,57 +1,7 @@
 [
   {
-    "date": "August 17, 2026",
-    "label": "Launch Splash Revamp",
-    "sections": [
-      {
-        "icon": "fa-rocket",
-        "title": "Rich Game Launch Screen",
-        "items": [
-          ["fa-rocket", "Steam-Style Launch Splash", "Game launches now show an animated cover card with the game description, play time, and achievements."]
-        ]
-      }
-    ]
-  },
-  {
-    "date": "August 17, 2026",
-    "label": "Steam Deck Upgrades",
-    "sections": [
-      {
-        "icon": "fa-gauge-high",
-        "title": "Performance HUD",
-        "items": [["fa-gauge-high", "On-Screen FPS, Memory & Battery", "Flip on a live stats readout from Quick Settings while in Steam Deck mode."]]
-      },
-      {
-        "icon": "fa-bell",
-        "title": "Deck-Styled Toasts",
-        "items": [["fa-bell", "Native Notification Toasts", "Launch feedback and captures now appear as Steam-styled toasts with a smooth entrance."]]
-      },
-      {
-        "icon": "fa-bars",
-        "title": "Polished Menu & Motion",
-        "items": [
-          ["fa-bars", "Steam-Themed Context Menu", "Right-click menus now match the Steam Deck look and feel."],
-          ["fa-power-off", "Smoother Power & Sleep", "Power menu rises in and sleep fades gradually for a calmer experience."]
-        ]
-      },
-      {
-        "icon": "fa-wave-square",
-        "title": "Haptics & Controller Feel",
-        "items": [
-          ["fa-wave-square", "Haptic Feedback", "Toggle haptics in Quick Settings and feel pulses on navigation, confirms, and back."],
-          ["fa-gamepad", "Real Button Glyphs", "Foot hints switch to colored controller buttons when a gamepad is connected."]
-        ]
-      },
-      {
-        "icon": "fa-shield-halved",
-        "title": "Hold to Shut Down",
-        "items": [["fa-shield-halved", "Hold to Shut Down", "Shutdown and Restart now require a hold-to-confirm on the power menu."]]
-      }
-    ]
-  },
-  {
-    "date": "August 17, 2026",
-    "label": "Steam Overview",
+    "date": "August 18, 2026",
+    "label": "YukiOS v3.0.0",
     "sections": [
       {
         "icon": "fa-users",
@@ -86,6 +36,93 @@
           ],
           ["fa-compass", "Remix Favorites", "Tweak any community theme and make it your own."],
           ["fa-share-nodes", "Publish in One Step", "Create, preview, and publish a theme without leaving the editor."]
+        ]
+      },
+      {
+        "icon": "fa-gamepad",
+        "title": "New Steam Deck Mode",
+        "items": [
+          [
+            "fa-gamepad",
+            "Steam Deck Session Mode",
+            "Switch to a Steam Deck session with full boot animations and sound effects."
+          ]
+        ]
+      },
+      {
+        "icon": "fa-layer-group",
+        "title": "New Games",
+        "items": [
+          ["fa-spade", "Balatro Modded", "Play Balatro with a fully modded twist."],
+          ["fa-stopwatch", "60 Seconds", "Survive 60 seconds of atomic apocalypse chaos."],
+          ["fa-circle", "Zuma", "Match and pop colored balls in the classic Zuma puzzle."]
+        ]
+      },
+      {
+        "icon": "fa-infinity",
+        "title": "Unlimited AI",
+        "items": [
+          ["fa-infinity", "Unlimited Crax AI", "Chat with every model, free and unlimited, on your desktop."],
+          ["fa-robot", "Enhanced AI Assistant", "The AI Assistant app is smarter and faster than before."]
+        ]
+      },
+      {
+        "icon": "fa-gamepad",
+        "title": "New Web Games",
+        "items": [
+          ["fa-gamepad", "Newgrounds", "Play thousands of Flash and HTML5 games from Newgrounds."],
+          ["fa-gamepad", "CrazyGames", "Launch instant browser games from CrazyGames."],
+          ["fa-gamepad", "itch.io", "Browse and play indie games from the itch.io storefront."]
+        ]
+      },
+      {
+        "icon": "fa-gear",
+        "title": "Steam Settings",
+        "items": [
+          ["fa-gear", "Steam Settings Window", "A dedicated window with many new Steam setting categories."]
+        ]
+      },
+      {
+        "icon": "fa-users",
+        "title": "Steam Overviews",
+        "items": [
+          [
+            "fa-users",
+            "Detailed Game Overviews",
+            "Game pages show richer detail UI with live player activity."
+          ]
+        ]
+      },
+      {
+        "icon": "fa-window-restore",
+        "title": "Window & UI",
+        "items": [
+          [
+            "fa-expand",
+            "Resize Cursor Effect",
+            "Hover window corners to see a clear resize cursor guide."
+          ],
+          [
+            "fa-up-right-and-down-left-from-center",
+            "LuminSDK Fullscreen",
+            "Fullscreen button added for every LuminSDK game."
+          ],
+          ["fa-layer-group", "Mode Switcher App", "Preview and switch desktop modes from one handy app."],
+          ["fa-keyboard", "Command Palette", "The command palette is faster and easier to use."],
+          ["fa-image", "Wallpaper Engine", "Wallpaper Engine is simpler and more streamlined."],
+          ["fa-palette", "New Default Theme", "YukiOS now boots into a fresh default theme."]
+        ]
+      },
+      {
+        "icon": "fa-wand-magic-sparkles",
+        "title": "Bug Fixes",
+        "items": [
+          ["fa-wand-magic-sparkles", "SWF Games Fixed", "Every SWF game loads and runs without issues."],
+          ["fa-wand-magic-sparkles", "Web Apps Loading", "All web apps now load reliably every time."],
+          ["fa-wand-magic-sparkles", "Taskbar Shift", "Dragging windows no longer shifts the taskbar."],
+          ["fa-wand-magic-sparkles", "Game Overlays", "Game overlay panels render correctly."],
+          ["fa-wand-magic-sparkles", "MacOS Top Bar", "Windows no longer break against the top bar in Mac mode."],
+          ["fa-wand-magic-sparkles", "Restore Animations", "Page-load restores skip window animations."]
         ]
       }
     ]
