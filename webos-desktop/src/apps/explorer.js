@@ -1026,7 +1026,7 @@ export class ExplorerApp extends BaseApp {
   }
 
   formatFriendlyDate(d) {
-    if (!d) return "—";
+    if (!d) return "-";
     const date = new Date(d);
     const mo = (date.getMonth() + 1).toString().padStart(2, "0");
     const da = date.getDate().toString().padStart(2, "0");
@@ -1353,7 +1353,7 @@ export class ExplorerApp extends BaseApp {
           const typeLabel = isFile ? this.kindLabel(kind) || "File" : "File Folder";
           setHTML(
             row,
-            `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this.formatFriendlyDate(mtime) : "—"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
+            `${iconEl}<span class="file-item-name">${name}</span><span class="file-col-date">${mtime ? this.formatFriendlyDate(mtime) : "-"}</span><span class="file-col-type">${typeLabel}</span><span class="file-col-size">${isFile ? formatSize(size) : ""}</span>`
           );
           this.bindItemInteractions(row, name, isFile, inst, win);
           view.appendChild(row);
@@ -1400,11 +1400,58 @@ export class ExplorerApp extends BaseApp {
     }
   }
 
-  async buildItemIconHTML(name, isFile, itemData, inst) {
-    if (!isFile) {
-      return `<img src="${resolveIconUrl("static/icons/file.webp")}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
+  async renderFolderInto(container, folderPath, onNavigate = null) {
+    const path = Array.isArray(folderPath)
+      ? [...folderPath]
+      : String(folderPath || "")
+          .replace(/^\//, "")
+          .split("/")
+          .filter(Boolean);
+    if (!container) return;
+    setHTML(container, "");
+    let folder;
+    try {
+      folder = await os.fs.readdir(path);
+    } catch {
+      setHTML(container, `<div class="deck-note">Could not open this folder.</div>`);
+      return 0;
     }
+    const entries = Object.entries(folder);
+    for (const [name, itemData] of entries) {
+      const isFile = itemData?.type === "file";
+      let iconEl;
+      try {
+        iconEl = await this.buildItemIconHTML(name, isFile, itemData, {
+          currentPath: path,
+          thumbnailCache: this.thumbnailCache
+        });
+      } catch {
+        iconEl = buildFileIconHTML(name, {});
+      }
+      const item = createElement("div", { className: "file-item" });
+      item.dataset.isFile = String(isFile);
+      setHTML(item, `${iconEl}<span class="file-item-name">${name}</span>`);
+      item.addEventListener("click", () => {
+        container.querySelectorAll(".file-item.selected").forEach((el) => el.classList.remove("selected"));
+        item.classList.add("selected");
+      });
+      item.addEventListener("dblclick", async () => {
+        if (isFile) {
+          triggerCursorEffect();
+          await openFileWith({ name, path: [...path] });
+        } else if (typeof onNavigate === "function") {
+          onNavigate([...path, name]);
+        }
+      });
+      container.appendChild(item);
+    }
+    if (entries.length === 0) {
+      setHTML(container, `<div class="deck-note">This folder is empty.</div>`);
+    }
+    return entries.length;
+  }
 
+  async buildItemIconHTML(name, isFile, itemData, inst) {
     if (name.endsWith(".desktop")) {
       const raw = await os.fs.getFileContent(inst.currentPath, name);
       const iconSrc = resolveDesktopIcon(raw, name);

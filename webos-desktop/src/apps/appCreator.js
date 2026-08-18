@@ -725,7 +725,7 @@ export class AppCreatorApp extends BaseApp {
 
     if (scramjetEnabled) {
       const wispUrl = getWispUrl();
-      finalUrl = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(secureUrl)}`;
+      finalUrl = `/sapps/set-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(secureUrl)}`;
     } else if (proxyEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
       try {
         finalUrl = await fetchHtmlThroughProxy(secureUrl, proxyIndex, PROXIES);

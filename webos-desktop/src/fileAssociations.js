@@ -14,7 +14,6 @@ import {
   FONT_EXTS,
   SWF_EXTS,
   EXE_EXTS,
-  MODEL3D_EXTS,
   DISK_EXTS
 } from "./shared/fileKindDetector.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
@@ -81,7 +80,6 @@ const DEFAULT_EXT_MAP = {};
   };
   assignDefaults("mediaViewer", [...IMAGE_EXTS, ...VIDEO_EXTS, ...AUDIO_EXTS]);
   assignDefaults("fontViewer", FONT_EXTS);
-  assignDefaults("model3dApp", MODEL3D_EXTS);
   assignDefaults("emulatorApp", ROM_EXTS);
   assignDefaults("ruffleApp", SWF_EXTS);
   assignDefaults("jsDosApp", EXE_EXTS);

@@ -815,7 +815,7 @@
 
 .compression-level-value {
   font-size: 12px;
-  color: #a6adc8;
+  color: var(--text-secondary);
   font-weight: bold;
 }
 

@@ -20,3 +20,30 @@
   display: flex;
   flex-direction: column;
 }
+
+.system-apps-window .games-app-card {
+  position: relative;
+}
+
+.system-apps-window .games-app-card.is-disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.system-apps-window .games-app-card.is-uninstalled {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.system-apps-section-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sa-collapse-icon {
+  transition: transform 0.15s ease;
+}
+
+.system-apps-section.is-collapsed .sa-collapse-icon {
+  transform: rotate(-90deg);
+}

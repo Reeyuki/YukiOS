@@ -1,4 +1,4 @@
-import { StorageKeys, os, osName } from "./framework.js";
+import { StorageKeys, os } from "./framework.js";
 import logoImg from "./assets/logo.png";
 import versionStr from "../version.txt?raw";
 import "./styles/bootScreen.css";
@@ -8,7 +8,7 @@ import { $, $$, createElement, setStyle, addClass } from "./shared/domUtils.js";
 import { parseBool } from "./utils/utils.js";
 import { isFunction } from "./shared/functionUtils.js";
 
-const BRAND = osName();
+const BRAND = "YukiOS";
 const MIN_DURATION = 2500;
 
 export function showBootScreen() {
@@ -94,13 +94,14 @@ export function showBootScreen() {
     if (!isSkipKey(e) && !KeybindManager.matches(e, "boot.skip")) return;
     e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation();
     if (hidden) return;
     hidden = true;
-    document.removeEventListener("keydown", skipHandler);
+    document.removeEventListener("keydown", skipHandler, true);
     if (showTl && showTl.kill) showTl.kill();
     div.remove();
   };
-  document.addEventListener("keydown", skipHandler);
+  document.addEventListener("keydown", skipHandler, true);
 
   return {
     hide: () => {
@@ -109,7 +110,7 @@ export function showBootScreen() {
 
       return new Promise((resolve) => {
         const doHide = () => {
-          document.removeEventListener("keydown", skipHandler);
+          document.removeEventListener("keydown", skipHandler, true);
           if (hidden) {
             resolve();
             return;

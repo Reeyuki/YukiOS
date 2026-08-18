@@ -2,7 +2,7 @@ import { CDN_MIRRORS, resolveIconUrl, resolveGhUrl } from "../shared/assetResolv
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
 import { getBasicThemes, getCustomThemes } from "../shared/themeEngine.js";
-import { StorageKeys, os, brand, MODES, createElement } from "../framework.js";
+import { StorageKeys, os, MODES, createElement } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
@@ -97,25 +97,25 @@ function getOSInfo() {
 }
 
 function getGraphicsInfo() {
+  const unavailable = { vendor: "Unavailable", renderer: "Unavailable" };
   try {
     const canvas = createElement("canvas");
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    if (gl) {
-      const ext = gl.getExtension("WEBGL_debug_rendererinfo");
-      if (ext) {
-        return {
-          vendor: gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) || "Unknown",
-          renderer: gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || "Unknown"
-        };
-      }
-      return { vendor: "WEBGL_debug_rendererinfo unavailable", renderer: "WEBGL_debug_rendererinfo unavailable" };
+    if (!gl) return unavailable;
+    const ext = gl.getExtension("WEBGL_debug_rendererinfo");
+    if (ext) {
+      const vendor = gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
+      const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+      if (vendor && renderer) return { vendor, renderer };
     }
-    return { vendor: "WebGL not supported", renderer: "WebGL not supported" };
-  } catch (e) {
-    return { vendor: "Error", renderer: e.message };
+    const vendor = gl.getParameter(gl.VENDOR);
+    const renderer = gl.getParameter(gl.RENDERER);
+    if (vendor && renderer) return { vendor, renderer };
+    return unavailable;
+  } catch {
+    return unavailable;
   }
 }
-
 function getConnectionInfo() {
   const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (c) {
@@ -904,16 +904,6 @@ export function renderAppearanceSettings(s) {
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
-            <span class="settings-label-title">${brand("Yuri")} Easter Egg</span>
-            <span class="settings-label-desc">Force ${brand("YukiOS")} to boot as ${brand("YuriOS")} every time (Needs restart)</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsYuriMode" ${s.yuriMode ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
             <span class="settings-label-title">GUI Scale</span>
             <span class="settings-label-desc">Scale the entire interface</span>
           </div>
@@ -930,23 +920,6 @@ export function renderAppearanceSettings(s) {
           <div class="settings-range-group">
             ${renderRangeSlider("settingsFontSize", 75, 150, 5, s.fontSize)}
             <span id="settingsFontSizeValue" class="settings-range-value">${s.fontSize}%</span>
-          </div>
-        </div>
-        <div class="settings-row settings-row--stacked">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Font Family</span>
-            <span class="settings-label-desc">Choose the UI font</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-            <span style="font-size:14px;">${
-              s.fontFamily === "__custom__" && os.storage.get(StorageKeys.customFont)
-                ? (() => {
-                    const cf = os.storage.get(StorageKeys.customFont);
-                    return `<i class="fas fa-font" style="color:var(--brand);margin-right:4px;"></i>${cf.family || "Custom Font"}`;
-                  })()
-                : "Open Sans"
-            } <span style="opacity:0.5;font-size:12px;">(default)</span></span>
-            <button class="settings-btn" data-fonts-in-system style="margin-left:auto;"><i class="fas fa-folder-open"></i> Fonts in system</button>
           </div>
         </div>
         <div class="settings-row">
@@ -1201,11 +1174,11 @@ export function renderDataSettings() {
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">
-        <div class="settings-card-header"><i class="fas fa-download"></i> Save ${brand("YukiOS")}</div>
+        <div class="settings-card-header"><i class="fas fa-download"></i> Save YukiOS</div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Download Page</span>
-            <span class="settings-label-desc">Save a local copy of ${brand("YukiOS")}</span>
+            <span class="settings-label-desc">Save a local copy of YukiOS</span>
           </div>
           <button class="settings-btn" id="settingsDownloadPageBtn"><i class="fas fa-download"></i> Download</button>
         </div>
@@ -1386,6 +1359,35 @@ export function renderAudioSettings(s) {
     </div>
   `;
 }
+
+function renderCreditsSettings() {
+  const licenses = typeof __PACKAGE_LICENSES__ !== "undefined" ? __PACKAGE_LICENSES__ : [];
+  const items = licenses
+    .map((p) => {
+      const tag = p.repo ? "a" : "div";
+      const attrs = p.repo ? `href="${p.repo}" target="_blank" rel="noopener noreferrer"` : "";
+      return `
+        <${tag} class="settings-license-item" ${attrs}>
+          <span class="settings-license-name">${p.name}</span>
+          <span class="settings-license-version">${p.version}</span>
+          <span class="settings-license-badge" title="${p.license}">${p.license}</span>
+        </${tag}>
+      `;
+    })
+    .join("");
+  return `
+    <div class="settings-card settings-licenses-card">
+      <div class="settings-card-header"><i class="fas fa-scale-balanced"></i> Credits</div>
+      <div class="settings-credits-author">
+        <i class="fas fa-heart"></i>
+        <span>Made by Reeyuki · MIT Licensed</span>
+        <a class="settings-credits-author-link" href="https://github.com/reeyuki" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+      </div>
+      <div class="settings-licenses">${items}</div>
+    </div>
+  `;
+}
+
 export function renderAboutSettings() {
   return `
     <div id="pane-about" class="settings-category-pane">
@@ -1397,12 +1399,12 @@ export function renderAboutSettings() {
           <div style="display: flex; align-items: center; gap: 16px;">
             <img src="${resolveIconUrl("static/icons/logo.png")}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.src='favicon.ico'"/>
             <div>
-              <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text-primary);">${brand("YukiOS")} <span style="font-size:0.65em;background:var(--brand-dim);color:var(--brand);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
+              <h2 style="margin:0;font-size:1.3em;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text-primary);">YukiOS <span style="font-size:0.65em;background:var(--brand-dim);color:var(--brand);padding:2px 8px;border-radius:4px;font-weight:500;">${YUKIOS_VERSION}</span></h2>
               <p style="margin:4px 0 0 0;color:var(--text-secondary);font-size:0.8em;">Desktop, in your browser</p>
             </div>
           </div>
           <p style="margin:0;color:var(--text-primary);font-size:0.9em;line-height:1.5;opacity:0.75;">
-            A full desktop OS in your browser with emulators, tools, PWA support, virtual filesystem, and 2900+ games included.
+            A full desktop OS in your browser with emulators, tools, PWA support, virtual filesystem, and 3000+ games included.
           </p>
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="color:var(--text-muted);font-size:0.78em;font-weight:500;">Build</span>
@@ -1426,9 +1428,7 @@ export function renderAboutSettings() {
 
       ${renderSystemInfo()}
 
-      <div class="settings-card" style="margin-top: 16px; text-align: center; padding: 20px;">
-        <a href="https://github.com/reeyuki" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); font-size: 0.82em; text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">made by reeyuki <i class="fab fa-github"></i></a>
-      </div>
+      ${renderCreditsSettings()}
     </div>
   `;
 }

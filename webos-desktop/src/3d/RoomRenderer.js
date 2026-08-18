@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { HologramRenderer } from "./HologramRenderer.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
@@ -46,7 +47,6 @@ export class RoomRenderer {
   }
 
   async init() {
-    const THREE = await import("three");
     this.THREE = THREE;
 
     const w = this.container.clientWidth;
@@ -68,7 +68,6 @@ export class RoomRenderer {
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.2;
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.container.appendChild(this.renderer.domElement);
 
     this.composer = new EffectComposer(this.renderer);
@@ -554,7 +553,7 @@ export class RoomRenderer {
       steam.position.set(-0.55 + (i - 1) * 0.025, 0.81 + 0.09 + i * 0.02, -0.55);
       steam.rotation.x = (i - 1) * 0.1;
       steam.rotation.z = (i - 1) * 0.1;
-      steam.userData.title = "Steam";
+      steam.userData.title = "Yuki Steam";
       this.scene.add(steam);
     }
   }

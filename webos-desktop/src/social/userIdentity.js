@@ -89,7 +89,7 @@ export function avatarUrlForIndex(avatarIndex) {
 }
 
 export async function loginWithAccount(identifier, password) {
-  if (isSocialDisabled()) return { error: "Social features are disabled. Enable them in Steam Settings." };
+  if (isSocialDisabled()) return { error: "Social features are disabled. Enable them in Yuki Steam Settings." };
   try {
     const res = await fetch(`${SOCIAL_BASE}/live/account/login`, {
       method: "POST",
@@ -112,7 +112,7 @@ export async function loginWithAccount(identifier, password) {
 }
 
 export async function registerAccount({ nickname, password }) {
-  if (isSocialDisabled()) return { error: "Social features are disabled. Enable them in Steam Settings." };
+  if (isSocialDisabled()) return { error: "Social features are disabled. Enable them in Yuki Steam Settings." };
   const currentId = getLiveUserId();
   try {
     const body = { nickname, password, userId: currentId };

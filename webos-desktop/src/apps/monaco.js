@@ -9,7 +9,7 @@ import { showAboutDialog } from "../shared/aboutDialog.js";
 import { Shell } from "../shared/shell.js";
 import { FileKind } from "../shared/fileKindDetector.js";
 import { $, setStyle, createElement } from "../shared/domUtils.js";
-import { BaseApp, os, brand } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
 import { KeybindManager } from "../keybindManager.js";
 export class MonacoApp extends BaseApp {
@@ -43,7 +43,7 @@ export class MonacoApp extends BaseApp {
       try {
         await this.loadMonaco();
       } catch (e) {
-        os.notify.send(brand("Couldn't load Yuki Code"), AppSource.MONACO);
+        os.notify.send("Couldn't load Yuki Code", AppSource.MONACO);
         return;
       }
     }
@@ -388,7 +388,7 @@ export class MonacoApp extends BaseApp {
   }
 
   getHeaderHTML(title) {
-    return buildWindowHeader(brand("Yuki Code"));
+    return buildWindowHeader("Yuki Code");
   }
 
   createTab(tabId, title, isDirty = false) {
@@ -421,7 +421,7 @@ export class MonacoApp extends BaseApp {
 
   createNewWindow() {
     const winId = `monaco-window-${Date.now()}`;
-    const win = os.window.create(winId, brand("Yuki Code"), "900px", "650px", {
+    const win = os.window.create(winId, "Yuki Code", "900px", "650px", {
       icon: "fas fa-code"
     });
 
@@ -1665,7 +1665,7 @@ export class MonacoApp extends BaseApp {
       showDocs: () => window.open("https://code.visualstudio.com/docs", "_blank"),
       about: () => {
         showAboutDialog({
-          title: brand("Yuki Code"),
+          title: "Yuki Code",
           version: "1.0.0",
           description:
             "A powerful code editor built on Monaco, the engine behind VS Code. Write, edit, and manage code with syntax highlighting, multi-tab editing, and an integrated terminal.",

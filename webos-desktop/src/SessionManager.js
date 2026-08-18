@@ -5,9 +5,8 @@ import { audioMixer, SystemAudio } from "./audioMixer.js";
 import { YUKIOS_VERSION } from "./apps/about.js";
 import { resolveAvatarUrl } from "./social/avatarResolver.js";
 import { $, createElement } from "./shared/domUtils.js";
-import { renderLiveStats } from "./shared/liveStats.js";
 import { resolveAppId, generateUUID, timeAgo } from "./utils/utils.js";
-import { StorageKeys, os, brand, wasRandomYuriTrigger } from "./framework.js";
+import { StorageKeys, os } from "./framework.js";
 import { KeybindManager } from "./keybindManager.js";
 import { applyTheme } from "./settings/settingsApply.js";
 import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
@@ -17,6 +16,7 @@ import { modeManager, MODES } from "./modeManager.js";
 import { applyMacSettings, disableMacSettings } from "./modes/macos/session.js";
 import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/session.js";
 import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
+import { applySteamDeckSettings, disableSteamDeckSettings } from "./modes/steamdeck/session.js";
 import { getRecentNews } from "./apps/news.js";
 
 export class SessionManager {
@@ -156,6 +156,32 @@ export class SessionManager {
     const now = Date.now();
     os.storage.set(StorageKeys.lastLaunchTime, now.toString());
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const steamParam = urlParams.get("steam");
+    const deckParam = urlParams.get("deck");
+    const directBoot = steamParam || deckParam;
+
+    if (directBoot) {
+      if (deckParam) this.selectedSession = "Yuki Deck Mode";
+      this.currentSession = {
+        name: os.storage.get(StorageKeys.username) || "Guest",
+        key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
+        avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+      };
+      await this.initializeSession();
+      return;
+    }
+
+    if (this.selectedSession === "Yuki Deck Mode") {
+      this.currentSession = {
+        name: os.storage.get(StorageKeys.username) || "Guest",
+        key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
+        avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+      };
+      await this.initializeSession();
+      return;
+    }
+
     if (os.storage.get(StorageKeys.autoLogin)) {
       const savedName = os.storage.get(StorageKeys.username);
       if (savedName) {
@@ -204,12 +230,12 @@ export class SessionManager {
       <div class="session-wallpaper"></div>
       <div class="session-background"></div>
       <div class="session-content${state === "locked" ? "" : " extra-hidden"}">
-        <div class="session-brand">${brand("YukiOS")}</div>
+        <div class="session-brand">YukiOS</div>
         <div class="session-time">${timeStr}</div>
         <div class="session-date">${dateStr}</div>
 
         <div class="session-extra">
-        <div class="session-support-btn" id="session-support-btn" title="Support ${brand("YukiOS")}">
+        <div class="session-support-btn" id="session-support-btn" title="Support YukiOS">
           <i class="fas fa-heart"></i>
         </div>
         <a class="session-github-btn" href="https://github.com/Reeyuki/YukiOS" target="_blank" rel="noopener" title="Star Us On Github">
@@ -227,7 +253,7 @@ export class SessionManager {
           <div class="session-status-panel" id="session-status-panel">
             <div class="status-info-row">
               <span class="status-info-label">Version</span>
-              <span class="status-info-value">${brand("YukiOS")} ${YUKIOS_VERSION}</span>
+              <span class="status-info-value">YukiOS ${YUKIOS_VERSION}</span>
             </div>
             <div class="status-info-row">
               <span class="status-info-label">Build</span>
@@ -297,7 +323,7 @@ export class SessionManager {
             <div class="session-modes-grid">
               <button type="button" class="session-mode-btn" data-mode="reset">
                 <i class="fas fa-snowflake"></i>
-                <span>${brand("YukiOS")}</span>
+                <span>YukiOS</span>
               </button>
               <button type="button" class="session-mode-btn" data-mode="mac">
                 <i class="fab fa-apple"></i>
@@ -311,8 +337,10 @@ export class SessionManager {
                 <i class="fas fa-th-large"></i>
                 <span>Tiling</span>
               </button>
-            </div>
-            <div class="session-modes-3d">
+              <button type="button" class="session-mode-btn" data-mode="steamdeck">
+                <i class="fab fa-steam"></i>
+                <span>Deck</span>
+              </button>
               <button type="button" class="session-mode-btn" data-mode="3d">
                 <i class="fas fa-cube"></i>
                 <span>3D Fps Game</span>
@@ -326,12 +354,13 @@ export class SessionManager {
             <i class="fas fa-times"></i>
           </button>
           <i class="fas fa-download"></i>
-          <span><strong>${brand("YukiOS")} desktop app</strong> Persistent storage, system tray, remote desktop, and faster performance.</span>
+          <span><strong>YukiOS desktop app</strong> Persistent storage, system tray, remote desktop, and faster performance.</span>
           <div class="electron-banner-actions">
             <span class="electron-download-link" id="electron-download-btn"><i class="fas fa-download"></i> Download</span>
             <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-releases-link">View all releases</a>
           </div>
         </div>
+        <a href="/features.html" class="session-features-link">Explore Features</a>
         </div>
         <button class="session-settings-btn" id="session-settings-btn" title="Login settings" type="button">
           <i class="fas fa-gear"></i>
@@ -397,7 +426,7 @@ export class SessionManager {
               <div class="settings-card-header"><i class="fas fa-layer-group"></i> Session Modes</div>
               <div class="settings-row">
                 <div class="settings-label-group">
-                  <span class="settings-label-title">${brand("YukiOS")}</span>
+                  <span class="settings-label-title">YukiOS</span>
                   <span class="settings-label-desc">Default desktop session</span>
                 </div>
                 <label class="settings-toggle">
@@ -442,6 +471,16 @@ export class SessionManager {
                 </div>
                 <label class="settings-toggle">
                   <input type="checkbox" data-mode-toggle="3d" />
+                  <span class="settings-track"><span class="settings-thumb"></span></span>
+                </label>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label-group">
+                  <span class="settings-label-title">Yuki Deck</span>
+                  <span class="settings-label-desc">Fullscreen handheld gaming shell</span>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" data-mode-toggle="steamdeck" />
                   <span class="settings-track"><span class="settings-thumb"></span></span>
                 </label>
               </div>
@@ -710,14 +749,11 @@ export class SessionManager {
 
   formatLoginClock(date) {
     const use24h = os.storage.get(StorageKeys.loginClock24h) !== "false";
-    const hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    if (use24h) {
-      return `${String(hours).padStart(2, "0")}:${minutes}`;
-    }
-    const h12 = hours % 12 || 12;
-    const suffix = hours >= 12 ? "PM" : "AM";
-    return `${h12}:${minutes} ${suffix}`;
+    return date.toLocaleTimeString("en-US", {
+      hour12: !use24h,
+      hour: "2-digit",
+      minute: "2-digit"
+    });
   }
 
   loadSessionPrefs() {
@@ -736,7 +772,8 @@ export class SessionManager {
         mac: modes.mac !== false,
         chromeos: modes.chromeos !== false,
         tiling: modes.tiling !== false,
-        "3d": modes["3d"] !== false
+        "3d": modes["3d"] !== false,
+        steamdeck: modes.steamdeck !== false
       },
       showSocial,
       showBanner
@@ -931,7 +968,10 @@ export class SessionManager {
 
     const stats = await fetchLiveStats();
     if (!this.container || !panel.isConnected) return;
-    renderLiveStats(stats, panel, { showStats: false, onAppClick: (appId) => this.quickLaunch(appId) });
+    try {
+      const { renderLiveStats } = await import("./shared/liveStats.js");
+      renderLiveStats(stats, panel, { showStats: false, onAppClick: (appId) => this.quickLaunch(appId) });
+    } catch {}
   }
 
   initSessionActivity() {
@@ -1044,13 +1084,13 @@ export class SessionManager {
     }
 
     powerBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Shutdown", `Shut down ${brand("YukiOS")}?`)) {
+      if (await os.dialog.confirm("Shutdown", `Shut down YukiOS?`)) {
         window.close();
       }
     });
 
     restartBtn.addEventListener("click", async () => {
-      if (await os.dialog.confirm("Restart", `Restart ${brand("YukiOS")}?`)) {
+      if (await os.dialog.confirm("Restart", `Restart YukiOS?`)) {
         location.reload();
       }
     });
@@ -1065,7 +1105,8 @@ export class SessionManager {
       mac: "Yuki Mac Desktop",
       chromeos: "Yuki Chrome OS",
       tiling: "Yuki Tiling VM",
-      "3d": "Yuki 3D Desktop"
+      "3d": "Yuki 3D Desktop",
+      steamdeck: "Yuki Deck Mode"
     };
     const sessionToMode = {
       "Yuki Desktop(Default)": "reset",
@@ -1073,6 +1114,7 @@ export class SessionManager {
       "Yuki Chrome OS": "chromeos",
       "Yuki Tiling VM": "tiling",
       "Yuki 3D Desktop": "3d",
+      "Yuki Deck Mode": "steamdeck",
       tiling: "tiling"
     };
     const activeMode = sessionToMode[this.selectedSession] || "reset";
@@ -1100,6 +1142,14 @@ export class SessionManager {
 
     this.keyboardHandler = (e) => this.handleKeyboardNav(e, handleAction);
     document.addEventListener("keydown", this.keyboardHandler);
+
+    if (
+      import.meta.env.VITE_DEV_BUILD === "true" &&
+      this.selectedSession === "Yuki Deck Mode" &&
+      this.sessionState === "login"
+    ) {
+      setTimeout(() => actionBtn.click(), 300);
+    }
   }
 
   async handleElectronDownload() {
@@ -1287,13 +1337,6 @@ export class SessionManager {
     }
 
     os.events.emit(BusEvents.SESSION_INITIALIZED, this.currentSession);
-    if (wasRandomYuriTrigger()) {
-      os.notify.send("YuriOS", "Random chance triggered YuriOS! Pink mode has appeared.", {
-        type: "info",
-        duration: 6000,
-        icon: "fas fa-heart"
-      });
-    }
     liveActivityManager.init();
 
     if (this.selectedSession === "Yuki Mac Desktop") {
@@ -1314,6 +1357,12 @@ export class SessionManager {
       disableChromeOsSettings();
     }
 
+    if (this.selectedSession === "Yuki Deck Mode") {
+      applySteamDeckSettings();
+    } else {
+      disableSteamDeckSettings();
+    }
+
     if (this.selectedSession === "Yuki 3D Desktop") {
       await this.apply3DSettings();
     } else {
@@ -1323,11 +1372,7 @@ export class SessionManager {
     os.window.setFileSystemManager(os.fileSystemManager);
     setTimeout(() => os.window.restoreSession(), 500);
 
-    if (this.selectedSession === "Yuki Desktop(Default)") {
-      audioMixer().playSystemSound(SystemAudio.START);
-    }
-
-    if (!os.storage.get(StorageKeys.setupCompleted)) {
+    if (!os.storage.get(StorageKeys.setupCompleted) && this.selectedSession === "Yuki Desktop(Default)") {
       const setupApp = this.os.app.getInstance("setupApp");
       if (setupApp) setTimeout(() => setupApp.open(), 1000);
     }

@@ -1,11 +1,11 @@
 import { performanceManager } from "../shared/performanceManager.js";
 const BRIGHTNESS_PRESETS = {
-  default: { brightness: 100, contrast: 1, gamma: 1, temperature: 50, label: "Default" },
-  reading: { brightness: 90, contrast: 1.1, gamma: 1.1, temperature: 35, label: "Reading" },
-  cinema: { brightness: 85, contrast: 1.2, gamma: 0.9, temperature: 50, label: "Cinema" },
-  nightCoding: { brightness: 80, contrast: 1.15, gamma: 1.05, temperature: 20, label: "Night Coding" },
-  softWarm: { brightness: 95, contrast: 1, gamma: 1, temperature: 15, label: "Soft Warm" },
-  highClarity: { brightness: 110, contrast: 1.3, gamma: 1.2, temperature: 50, label: "High Clarity" }
+  default: { brightness: 100, contrast: 1, temperature: 50, label: "Default" },
+  reading: { brightness: 90, contrast: 1.1, temperature: 35, label: "Reading" },
+  cinema: { brightness: 85, contrast: 1.2, temperature: 50, label: "Cinema" },
+  nightCoding: { brightness: 80, contrast: 1.15, temperature: 20, label: "Night Coding" },
+  softWarm: { brightness: 95, contrast: 1, temperature: 15, label: "Soft Warm" },
+  highClarity: { brightness: 110, contrast: 1.3, temperature: 50, label: "High Clarity" }
 };
 import { Achievements } from "../achievements.js";
 import { $, $$, setStyle, createElement, BusEvents, BaseApp, StorageKeys, os, MODES } from "../framework.js";
@@ -25,17 +25,13 @@ class DisplayPerformanceApp extends BaseApp {
 
     this.brightness = parseInt(os.storage.get(StorageKeys.brightness), 10) || 100;
     this.contrast = parseFloat(os.storage.get(StorageKeys.contrast)) || 1;
-    this.gamma = parseFloat(os.storage.get(StorageKeys.gamma)) || 1;
     this.temperature = parseInt(os.storage.get(StorageKeys.temperature), 10) || 50;
     this.nightModeEnabled = os.storage.get(StorageKeys.nightModeEnabled) === "true";
-    this.nightModeStart = os.storage.get(StorageKeys.nightModeStart) || "20:00";
-    this.nightModeEnd = os.storage.get(StorageKeys.nightModeEnd) || "07:00";
 
     this.initBattery();
     this.initTray();
     this.applyDisplaySettings();
     this.setupKeybinds();
-    this.setupNightModeSchedule();
   }
 
   async initBattery() {
@@ -145,11 +141,8 @@ class DisplayPerformanceApp extends BaseApp {
   saveSettings() {
     os.storage.set(StorageKeys.brightness, this.brightness.toString());
     os.storage.set(StorageKeys.contrast, this.contrast.toString());
-    os.storage.set(StorageKeys.gamma, this.gamma.toString());
     os.storage.set(StorageKeys.temperature, this.temperature.toString());
     os.storage.set(StorageKeys.nightModeEnabled, this.nightModeEnabled.toString());
-    os.storage.set(StorageKeys.nightModeStart, this.nightModeStart);
-    os.storage.set(StorageKeys.nightModeEnd, this.nightModeEnd);
   }
 
   applyDisplaySettings() {
@@ -168,9 +161,6 @@ class DisplayPerformanceApp extends BaseApp {
       saturate = 1 - cool * 0.1;
       sepia = 0;
     }
-
-    const gammaValue = this.gamma;
-    const gammaFilter = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeComponentTransfer%3E%3CfeFuncR type='gamma' exponent='${gammaValue}'/%3E%3CfeFuncG type='gamma' exponent='${gammaValue}'/%3E%3CfeFuncB type='gamma' exponent='${gammaValue}'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3C/svg%3E#g")`;
 
     document.documentElement.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturate}) sepia(${sepia})`;
   }
@@ -198,35 +188,6 @@ class DisplayPerformanceApp extends BaseApp {
     if (this.keydownHandler) {
       document.removeEventListener("keydown", this.keydownHandler);
       this.keydownHandler = null;
-    }
-  }
-
-  setupNightModeSchedule() {
-    this.checkNightMode();
-    this.nightModeInterval = setInterval(() => this.checkNightMode(), 60000);
-  }
-
-  checkNightMode() {
-    if (!this.nightModeEnabled) return;
-
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const [startH, startM] = this.nightModeStart.split(":").map(Number);
-    const [endH, endM] = this.nightModeEnd.split(":").map(Number);
-    const startTime = startH * 60 + startM;
-    const endTime = endH * 60 + endM;
-
-    let isNight;
-    if (startTime < endTime) {
-      isNight = currentTime >= startTime && currentTime < endTime;
-    } else {
-      isNight = currentTime >= startTime || currentTime < endTime;
-    }
-
-    if (isNight && this.temperature > 25) {
-      this.temperature = 20;
-      this.applyDisplaySettings();
-      this.saveSettings();
     }
   }
 
@@ -266,7 +227,6 @@ class DisplayPerformanceApp extends BaseApp {
 
     this.brightness = preset.brightness;
     this.contrast = preset.contrast;
-    this.gamma = preset.gamma;
     this.temperature = preset.temperature;
 
     this.applyDisplaySettings();
@@ -323,19 +283,16 @@ class DisplayPerformanceApp extends BaseApp {
 
     const brightnessSlider = popup.querySelector("#brightness-slider");
     const contrastSlider = popup.querySelector("#contrast-slider");
-    const gammaSlider = popup.querySelector("#gamma-slider");
     const temperatureSlider = popup.querySelector("#temperature-slider");
 
     if (brightnessSlider) brightnessSlider.value = this.brightness;
     if (contrastSlider) contrastSlider.value = this.contrast;
-    if (gammaSlider) gammaSlider.value = this.gamma;
     if (temperatureSlider) temperatureSlider.value = this.temperature;
 
     const valueDisplays = popup.querySelectorAll(".brightness-value");
     if (valueDisplays[0]) valueDisplays[0].textContent = `${Math.round(this.brightness)}%`;
     if (valueDisplays[1]) valueDisplays[1].textContent = this.contrast.toFixed(2);
-    if (valueDisplays[2]) valueDisplays[2].textContent = this.gamma.toFixed(2);
-    if (valueDisplays[3]) valueDisplays[3].textContent = this.getTemperatureLabel(this.temperature);
+    if (valueDisplays[2]) valueDisplays[2].textContent = this.getTemperatureLabel(this.temperature);
   }
 
   togglePopup() {
@@ -429,11 +386,6 @@ class DisplayPerformanceApp extends BaseApp {
                 <input type="range" id="contrast-slider" class="brightness-advanced-slider" min="0.5" max="2" step="0.05" value="${this.contrast}" />
                 <span class="brightness-value">${this.contrast.toFixed(2)}</span>
               </div>
-              <div class="brightness-advanced-item">
-                <span>Gamma</span>
-                <input type="range" id="gamma-slider" class="brightness-advanced-slider" min="0.5" max="2" step="0.05" value="${this.gamma}" />
-                <span class="brightness-value">${this.gamma.toFixed(2)}</span>
-              </div>
             </div>
             <div class="brightness-presets-row">
               <button class="brightness-preset-btn" data-preset="default" title="Default"><i class="fas fa-circle"></i></button>
@@ -449,8 +401,6 @@ class DisplayPerformanceApp extends BaseApp {
                 <input type="checkbox" id="night-mode-toggle" ${this.nightModeEnabled ? "checked" : ""}/>
                 <span class="brightness-toggle-track"><span class="brightness-toggle-thumb"></span></span>
               </label>
-              <input type="time" id="night-mode-start" value="${this.nightModeStart}" class="brightness-time-input-small" />
-              <input type="time" id="night-mode-end" value="${this.nightModeEnd}" class="brightness-time-input-small" />
             </div>
             <button id="reset-display-performance" class="brightness-reset-btn-small">
               <i class="fas fa-undo"></i>
@@ -514,12 +464,9 @@ class DisplayPerformanceApp extends BaseApp {
 
     const brightnessSlider = popup.querySelector("#brightness-slider");
     const contrastSlider = popup.querySelector("#contrast-slider");
-    const gammaSlider = popup.querySelector("#gamma-slider");
     const temperatureSlider = popup.querySelector("#temperature-slider");
     const resetBtn = popup.querySelector("#reset-display-performance");
     const nightModeToggle = popup.querySelector("#night-mode-toggle");
-    const nightModeStart = popup.querySelector("#night-mode-start");
-    const nightModeEnd = popup.querySelector("#night-mode-end");
     const presetBtns = popup.querySelectorAll(".brightness-preset-btn");
     const advancedToggle = popup.querySelector("#display-performance-advanced-toggle");
     const advancedSection = popup.querySelector("#display-performance-advanced-section");
@@ -539,16 +486,6 @@ class DisplayPerformanceApp extends BaseApp {
         this.contrast = parseFloat(e.target.value);
         const valueDisplay = popup.querySelector(".brightness-advanced-item:nth-child(1) .brightness-value");
         if (valueDisplay) valueDisplay.textContent = this.contrast.toFixed(2);
-        this.applyDisplaySettings();
-        this.saveSettings();
-      });
-    }
-
-    if (gammaSlider) {
-      gammaSlider.addEventListener("input", (e) => {
-        this.gamma = parseFloat(e.target.value);
-        const valueDisplay = popup.querySelector(".brightness-advanced-item:nth-child(2) .brightness-value");
-        if (valueDisplay) valueDisplay.textContent = this.gamma.toFixed(2);
         this.applyDisplaySettings();
         this.saveSettings();
       });
@@ -585,7 +522,6 @@ class DisplayPerformanceApp extends BaseApp {
         this.saveSettings();
         if (this.nightModeEnabled) {
           os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.NightPerson });
-          this.checkNightMode();
           if (!this.shouldSuppressNotification()) {
             os.notify.send("Night Mode", "Scheduled night mode enabled", {
               type: "info",
@@ -605,30 +541,14 @@ class DisplayPerformanceApp extends BaseApp {
       });
     }
 
-    if (nightModeStart) {
-      nightModeStart.addEventListener("change", (e) => {
-        this.nightModeStart = e.target.value;
-        this.saveSettings();
-      });
-    }
-
-    if (nightModeEnd) {
-      nightModeEnd.addEventListener("change", (e) => {
-        this.nightModeEnd = e.target.value;
-        this.saveSettings();
-      });
-    }
-
     if (resetBtn) {
       resetBtn.addEventListener("click", () => {
         this.brightness = 100;
         this.contrast = 1;
-        this.gamma = 1;
         this.temperature = 50;
 
         if (brightnessSlider) brightnessSlider.value = 100;
         if (contrastSlider) contrastSlider.value = 1;
-        if (gammaSlider) gammaSlider.value = 1;
         if (temperatureSlider) temperatureSlider.value = 50;
 
         const brightnessValue = popup.querySelector(".brightness-quick-item:nth-child(1) .brightness-value");
@@ -637,8 +557,6 @@ class DisplayPerformanceApp extends BaseApp {
         if (tempValue) tempValue.textContent = this.getTemperatureLabel(50);
         const contrastValue = popup.querySelector(".brightness-advanced-item:nth-child(1) .brightness-value");
         if (contrastValue) contrastValue.textContent = "1.00";
-        const gammaValue = popup.querySelector(".brightness-advanced-item:nth-child(2) .brightness-value");
-        if (gammaValue) gammaValue.textContent = "1.00";
 
         this.applyDisplaySettings();
         this.saveSettings();
@@ -657,10 +575,6 @@ class DisplayPerformanceApp extends BaseApp {
   onClose(winId) {
     this.closePopup();
     this.cleanupKeybinds();
-    if (this.nightModeInterval) {
-      clearInterval(this.nightModeInterval);
-      this.nightModeInterval = null;
-    }
   }
 }
 

@@ -140,6 +140,8 @@ export function animateWindowOpen(win, isRestoring = false) {
   const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
   const restoring = isRestoring || isSessionRestoring;
 
+  if (restoring) return;
+
   const anim = restoring ? getRestoreAnim() : getOpenAnim();
   if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
 

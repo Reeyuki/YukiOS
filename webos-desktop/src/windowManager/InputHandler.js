@@ -1,4 +1,4 @@
-import { toggleStartMenu } from "../desktopui/startMenu.js";
+import { toggleStartMenu, isStartMenuBlocked } from "../desktopui/startMenu.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { KeybindManager } from "../keybindManager.js";
 import { SystemUtilities } from "../system.js";
@@ -6,6 +6,7 @@ import { WALLPAPER_NAME_URL_PAIRS } from "../wallpaperConfig.js";
 import { parseBool } from "../utils/utils.js";
 
 import { StorageKeys, os, $, createElement } from "../framework.js";
+import { MODES } from "../modeManager.js";
 export class InputHandler {
   constructor(manager) {
     this.manager = manager;
@@ -290,10 +291,12 @@ export class InputHandler {
   }
 
   shouldOpenStartMenuFromKeyEvent(e) {
-    const isTrigger =
-      KeybindManager.matches(e, "global.startMenu.ctrl") ||
-      KeybindManager.matches(e, "global.startMenu.tab") ||
-      KeybindManager.matches(e, "global.startMenu.space");
+    if (isStartMenuBlocked()) return false;
+
+    const nonDefaultModes = [MODES.MAC, MODES.TILING, MODES.STEAMDECK, MODES.CHROME_OS, MODES["3D"]];
+    if (nonDefaultModes.some((m) => os.modes.isActive(m))) return false;
+
+    const isTrigger = KeybindManager.matches(e, "global.startMenu.ctrl");
     if (!isTrigger) return false;
 
     const otherMods = e.altKey || e.metaKey || e.shiftKey;

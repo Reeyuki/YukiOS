@@ -2,7 +2,7 @@ import { os } from "../framework.js";
 import { StorageKeys } from "../StorageKeys.js";
 import { BusEvents } from "../core/EventBus.js";
 import { registerLiveIdentity } from "./userIdentity.js";
-import { SteamSettings } from "../games/steam.js";
+import { SteamSettings } from "../games/steamSettings.js";
 import { isSocialDisabled } from "./socialSettings.js";
 
 export const PRESENCE = Object.freeze({

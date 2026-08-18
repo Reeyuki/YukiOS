@@ -315,13 +315,13 @@ var $scramjetController;
       a = r(355);
     let c = {
         prefix: "/~/sj/",
-        scramjetPath: "/scramjet/scramjet.js",
+        scramjetPath: "/scramjet/set.js",
         injectPath: "/controller/controller.inject.js",
-        wasmPath: "/scramjet/scramjet.wasm",
-        virtualWasmPath: "scramjet.wasm.js",
+        wasmPath: "/scramjet/set.wasm",
+        virtualWasmPath: "set.wasm.js",
         codec: { encode: (e) => (e ? encodeURIComponent(e) : e), decode: (e) => (e ? decodeURIComponent(e) : e) }
       },
-      l = { flags: { ...i.sb.flags, allowFailedIntercepts: !0 }, maskedfiles: ["inject.js", "scramjet.wasm.js"] };
+      l = { flags: { ...i.sb.flags, allowFailedIntercepts: !0 }, maskedfiles: ["inject.js", "set.wasm.js"] };
     class d extends i.k_ {
       frame = null;
       dependencies = [];

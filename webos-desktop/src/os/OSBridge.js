@@ -68,11 +68,17 @@ export class AppAPI {
 
   launch(appId, options) {
     if (!this.launcher) return Promise.reject(new Error("AppLauncher not initialized"));
+    if (options && options.deckMode && this.launcher.wm) {
+      this.launcher.wm.pendingLaunchOptions = { deckMode: true, ...(this.launcher.wm.pendingLaunchOptions || {}) };
+    }
     return this.launcher.launch(appId, false, options);
   }
 
   launchGame(appId, isSwf, options) {
     if (!this.launcher) return Promise.reject(new Error("AppLauncher not initialized"));
+    if (options && options.deckMode && this.launcher.wm) {
+      this.launcher.wm.pendingLaunchOptions = { deckMode: true, ...(this.launcher.wm.pendingLaunchOptions || {}) };
+    }
     return this.launcher.launch(appId, isSwf, options);
   }
 

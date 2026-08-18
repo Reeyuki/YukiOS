@@ -1,8 +1,8 @@
 import "../styles/systemApps.css";
-import { BaseApp, os } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 import { getAppRegistry } from "../appRegistry.js";
 import { showContextMenu } from "../shared/contextMenu.js";
-import { $ } from "../shared/domUtils.js";
+import { $, toggleClass } from "../shared/domUtils.js";
 import { isFontAwesomeIcon, resolveIconHtml } from "../shared/iconUtils.js";
 import {
   isAppPinnedToTaskbar,
@@ -23,7 +23,7 @@ export class SystemAppsApp extends BaseApp {
       os.window.focus("system-apps-win");
       return existingWin;
     }
-    const win = os.window.create("system-apps-win", "System Apps", "800px", "600px", {
+    const win = os.window.create("system-apps-win", "Apps", "800px", "600px", {
       icon: "fas fa-screwdriver-wrench",
       appId: "systemAppsApp"
     });
@@ -38,19 +38,50 @@ export class SystemAppsApp extends BaseApp {
             autocomplete="off"
           />
           <div class="system-apps-section" id="system-apps-section-native">
-            <div class="system-apps-section-header">System Apps</div>
+            <div class="system-apps-section-header"><i class="fas fa-chevron-right sa-collapse-icon"></i><span>System</span></div>
             <div class="games-app-grid" id="system-apps-grid-native"></div>
           </div>
           <div class="system-apps-section" id="system-apps-section-web">
-            <div class="system-apps-section-header">Web Apps</div>
+            <div class="system-apps-section-header"><i class="fas fa-chevron-right sa-collapse-icon"></i><span>Web Apps</span></div>
             <div class="games-app-grid" id="system-apps-grid-web"></div>
           </div>
-          <div class="games-no-results" id="system-apps-empty" style="display:none;">No system apps found</div>
+          <div class="system-apps-section" id="system-apps-section-uninstalled">
+            <div class="system-apps-section-header"><i class="fas fa-chevron-right sa-collapse-icon"></i><span>Uninstalled</span></div>
+            <div class="games-app-grid" id="system-apps-grid-uninstalled"></div>
+          </div>
+          <div class="games-no-results" id="system-apps-empty" style="display:none;">No apps found</div>
         </div>
       </div>
     `;
+    this.collapsedSections = os.storage.get(StorageKeys.systemAppsCollapsed) || {};
+    this.bindSectionToggles(win);
     this.renderApps(win);
     return win;
+  }
+
+  bindSectionToggles(win) {
+    const keys = ["native", "web", "uninstalled"];
+    keys.forEach((key) => {
+      const header = $(".system-apps-section-header", $(`#system-apps-section-${key}`, win));
+      if (header) header.addEventListener("click", () => this.toggleSection(key));
+      this.applySectionState(key);
+    });
+  }
+
+  toggleSection(sectionKey) {
+    const collapsed = this.collapsedSections[sectionKey];
+    this.collapsedSections[sectionKey] = !collapsed;
+    os.storage.set(StorageKeys.systemAppsCollapsed, this.collapsedSections);
+    this.applySectionState(sectionKey);
+  }
+
+  applySectionState(sectionKey) {
+    const section = $(`#system-apps-section-${sectionKey}`);
+    const grid = $(`#system-apps-grid-${sectionKey}`, section);
+    if (!section || !grid) return;
+    const collapsed = this.collapsedSections[sectionKey];
+    toggleClass(section, "is-collapsed", !!collapsed);
+    grid.style.display = collapsed ? "none" : "";
   }
 
   renderApps(win) {
@@ -61,22 +92,24 @@ export class SystemAppsApp extends BaseApp {
     appRegistry.refresh();
 
     const allApps = Object.entries(appMap)
-      .filter(([id, data]) => {
-        if (data.type !== "system" || !data.icon || !data.title) return false;
-        if (appRegistry.isAppUninstalled(id) || appRegistry.isAppDisabled(id)) return false;
-        return true;
-      })
-      .map(([id, data]) => ({ id, ...data }));
+      .filter(([id, data]) => data.type === "system" && data.icon && data.title)
+      .map(([id, data]) => ({
+        id,
+        ...data,
+        disabled: appRegistry.isAppDisabled(id),
+        uninstalled: appRegistry.isAppUninstalled(id)
+      }));
 
     const sortByIcon = (arr) => {
       return [...arr.filter((a) => !isFontAwesomeIcon(a.icon)), ...arr.filter((a) => isFontAwesomeIcon(a.icon))];
     };
 
-    const nativeApps = sortByIcon(allApps.filter((a) => !a.targetUrl || a.id === "discordApp"));
-    const webApps = sortByIcon(allApps.filter((a) => a.targetUrl && a.id !== "discordApp"));
+    const installed = sortByIcon(allApps.filter((a) => !a.uninstalled));
+    const uninstalled = sortByIcon(allApps.filter((a) => a.uninstalled));
 
-    this.nativeApps = nativeApps;
-    this.webApps = webApps;
+    this.nativeApps = installed.filter((a) => !a.targetUrl || a.id === "discordApp");
+    this.webApps = installed.filter((a) => a.targetUrl && a.id !== "discordApp");
+    this.uninstalledApps = uninstalled;
     this.query = "";
     this.renderGrid(this.query);
 
@@ -97,26 +130,37 @@ export class SystemAppsApp extends BaseApp {
   renderGrid(query) {
     const sectionNative = $("#system-apps-section-native");
     const sectionWeb = $("#system-apps-section-web");
+    const sectionUninstalled = $("#system-apps-section-uninstalled");
     const containerNative = $("#system-apps-win #system-apps-grid-native");
     const containerWeb = $("#system-apps-win #system-apps-grid-web");
+    const containerUninstalled = $("#system-apps-win #system-apps-grid-uninstalled");
     const emptyEl = $("#system-apps-win #system-apps-empty");
-    if (!containerNative || !containerWeb) return;
+    if (!containerNative || !containerWeb || !containerUninstalled) return;
 
     const q = (query || "").toLowerCase();
-    const allApps = [...(this.nativeApps || []), ...(this.webApps || [])];
+    const allApps = [...(this.nativeApps || []), ...(this.webApps || []), ...(this.uninstalledApps || [])];
     const nativeFiltered = q
-      ? allApps.filter((a) => a.title.toLowerCase().includes(q) && (!a.targetUrl || a.id === "discordApp"))
+      ? allApps.filter(
+          (a) => !a.uninstalled && a.title.toLowerCase().includes(q) && (!a.targetUrl || a.id === "discordApp")
+        )
       : this.nativeApps;
     const webFiltered = q
-      ? allApps.filter((a) => a.title.toLowerCase().includes(q) && a.targetUrl && a.id !== "discordApp")
+      ? allApps.filter(
+          (a) => !a.uninstalled && a.title.toLowerCase().includes(q) && a.targetUrl && a.id !== "discordApp"
+        )
       : this.webApps;
+    const uninstalledFiltered = q
+      ? allApps.filter((a) => a.uninstalled && a.title.toLowerCase().includes(q))
+      : this.uninstalledApps;
 
-    const total = (nativeFiltered || []).length + (webFiltered || []).length;
+    const total = (nativeFiltered || []).length + (webFiltered || []).length + (uninstalledFiltered || []).length;
     if (total === 0) {
       containerNative.innerHTML = "";
       containerWeb.innerHTML = "";
+      containerUninstalled.innerHTML = "";
       if (sectionNative) sectionNative.style.display = "none";
       if (sectionWeb) sectionWeb.style.display = "none";
+      if (sectionUninstalled) sectionUninstalled.style.display = "none";
       if (emptyEl) emptyEl.style.display = "block";
       return;
     }
@@ -125,6 +169,7 @@ export class SystemAppsApp extends BaseApp {
 
     this.renderSection(containerNative, nativeFiltered, sectionNative);
     this.renderSection(containerWeb, webFiltered, sectionWeb);
+    this.renderSection(containerUninstalled, uninstalledFiltered, sectionUninstalled);
   }
 
   showCardContextMenu(e, app) {
@@ -134,6 +179,44 @@ export class SystemAppsApp extends BaseApp {
     const displayName = registry.getAppDisplayName(app.id, app.title);
     const isRenamed = Boolean(registry.renamedApps[app.id]);
     const pinned = isAppPinnedToTaskbar(app.id);
+    const isUninstalled = app.uninstalled;
+    const isDisabled = app.disabled;
+
+    if (isUninstalled) {
+      showContextMenu(
+        e,
+        [
+          { id: `sa-restore-${app.id}`, label: "Restore", action: "restore", icon: "fa-undo" },
+          "hr",
+          { id: `sa-rename-${app.id}`, label: "Edit Name", action: "rename", icon: "fas fa-pen-to-square" },
+          {
+            id: `sa-reset-${app.id}`,
+            label: "Reset Name",
+            action: "resetName",
+            icon: "fas fa-undo",
+            condition: () => isRenamed
+          }
+        ],
+        {
+          restore: () => this.handleRestore(app),
+          rename: async () => {
+            const newName = await os.dialog.prompt("Rename App", `Enter a new name for "${displayName}":`, displayName);
+            if (newName !== null && newName.trim() !== "" && newName.trim() !== displayName) {
+              registry.setAppName(app.id, newName.trim());
+              this.renderGrid(this.query);
+              this.notify("Apps", `"${displayName}" is now "${newName.trim()}"`, "success");
+            }
+          },
+          resetName: () => {
+            registry.resetAppName(app.id);
+            this.renderGrid(this.query);
+            this.notify("Apps", `"${displayName}" name reset to "${app.title}"`, "success");
+          }
+        }
+      );
+      return;
+    }
+
     showContextMenu(
       e,
       [
@@ -147,7 +230,6 @@ export class SystemAppsApp extends BaseApp {
         },
         { id: `sa-desktop-${app.id}`, label: "Add to Desktop", action: "addToDesktop", icon: "fas fa-desktop" },
         "hr",
-        { id: `sa-installed-${app.id}`, label: "View in Installed Apps", action: "view", icon: "fas fa-th-list" },
         { id: `sa-properties-${app.id}`, label: "Properties", action: "properties", icon: "fas fa-info-circle" },
         "hr",
         { id: `sa-rename-${app.id}`, label: "Edit Name", action: "rename", icon: "fas fa-pen-to-square" },
@@ -157,6 +239,13 @@ export class SystemAppsApp extends BaseApp {
           action: "resetName",
           icon: "fas fa-undo",
           condition: () => isRenamed
+        },
+        {
+          id: `sa-toggle-${app.id}`,
+          label: isDisabled ? "Enable" : "Disable",
+          action: "toggle",
+          icon: "fas fa-toggle-on",
+          condition: () => !registry.isProtected(app.id)
         },
         "hr",
         {
@@ -178,20 +267,25 @@ export class SystemAppsApp extends BaseApp {
           await addAppToDesktop(app.id, app);
           os.notify.send("Added to Desktop", `${app.title} is now on your desktop.`);
         },
-        view: () => os.app.launch("installedAppsApp", { searchQuery: app.title || app.id }),
         properties: () => showAppProperties(app.id, app),
         rename: async () => {
           const newName = await os.dialog.prompt("Rename App", `Enter a new name for "${displayName}":`, displayName);
           if (newName !== null && newName.trim() !== "" && newName.trim() !== displayName) {
             registry.setAppName(app.id, newName.trim());
             this.renderGrid(this.query);
-            this.notify("System Apps", `"${displayName}" is now "${newName.trim()}"`, "success");
+            this.notify("Apps", `"${displayName}" is now "${newName.trim()}"`, "success");
           }
         },
         resetName: () => {
           registry.resetAppName(app.id);
           this.renderGrid(this.query);
-          this.notify("System Apps", `"${displayName}" name reset to "${app.title}"`, "success");
+          this.notify("Apps", `"${displayName}" name reset to "${app.title}"`, "success");
+        },
+        toggle: () => {
+          if (registry.setAppDisabled(app.id, !app.disabled)) {
+            this.renderGrid(this.query);
+            this.notify("Apps", `"${displayName}" ${isDisabled ? "enabled" : "disabled"}.`, "success");
+          }
         },
         uninstall: async () => {
           const confirmed = await os.dialog.confirm(
@@ -201,7 +295,7 @@ export class SystemAppsApp extends BaseApp {
           if (confirmed) {
             if (registry.uninstallApp(app.id)) {
               this.renderGrid(this.query);
-              this.notify("System Apps", `${app.title} uninstalled.`, "info");
+              this.notify("Apps", `${app.title} uninstalled.`, "info");
             }
           }
         }
@@ -222,8 +316,9 @@ export class SystemAppsApp extends BaseApp {
       .map((app) => {
         const icon = app.icon || "";
         const iconHtml = resolveIconHtml(icon, { faClass: "icon", faStyle: "color:var(--brand);", alt: app.title });
+        const dimClass = app.uninstalled ? "is-uninstalled" : app.disabled ? "is-disabled" : "";
         return `
-          <div class="games-app-card" data-app="${app.id}">
+          <div class="games-app-card ${dimClass}" data-app="${app.id}">
             <div class="games-app-card-img-wrap">${iconHtml}</div>
             <div class="games-app-card-title">${this.appDisplayName(app)}</div>
           </div>
@@ -234,14 +329,29 @@ export class SystemAppsApp extends BaseApp {
     container.querySelectorAll(".games-app-card").forEach((card) => {
       card.addEventListener("dblclick", () => {
         const appId = card.dataset.app;
-        if (appId) os.app.launch(appId);
+        const app = this.findApp(appId);
+        if (!app) return;
+        if (app.uninstalled) this.handleRestore(app);
+        else os.app.launch(appId);
       });
       card.addEventListener("contextmenu", (e) => {
         const appId = card.dataset.app;
-        const app = [...(this.nativeApps || []), ...(this.webApps || [])].find((a) => a.id === appId);
+        const app = this.findApp(appId);
         if (app) this.showCardContextMenu(e, app);
       });
     });
+  }
+
+  findApp(appId) {
+    return [...(this.nativeApps || []), ...(this.webApps || []), ...(this.uninstalledApps || [])].find(
+      (a) => a.id === appId
+    );
+  }
+
+  handleRestore(app) {
+    getAppRegistry().restoreApp(app.id);
+    this.renderGrid(this.query);
+    this.notify("Apps", `"${this.appDisplayName(app)}" restored.`, "success");
   }
 
   onClose(winId) {}

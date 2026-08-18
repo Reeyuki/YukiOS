@@ -21,34 +21,22 @@ export class ClockWidget extends WidgetBase {
 
   tickFromWorker() {
     const now = new Date();
-    let hours = now.getHours();
-    let minutes = now.getMinutes().toString().padStart(2, "0");
-    let seconds = now.getSeconds().toString().padStart(2, "0");
-    let ampm = "";
-    if (!this.use24h) {
-      ampm = hours >= 12 ? " PM" : " AM";
-      hours = hours % 12 || 12;
-    }
-    const timeStr = `${hours.toString().padStart(2, "0")}:${minutes}${this.showSeconds ? ":" + seconds : ""}${ampm}`;
+    const timeOptions = {
+      hour12: !this.use24h,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: this.showSeconds ? "2-digit" : undefined
+    };
+    const timeStr = now.toLocaleTimeString("en-US", timeOptions);
+    const dateStr = now.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
     const timeEl = $(`#w-clock-time-${this.id}`);
     if (timeEl) timeEl.textContent = timeStr;
 
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    ];
-    const dateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
     const dateEl = $(`#w-clock-date-${this.id}`);
     if (dateEl) dateEl.textContent = dateStr;
   }

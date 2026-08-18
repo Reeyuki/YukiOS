@@ -3,151 +3,193 @@ export const STEAM_NEWS_ITEMS = [
   {
     "image": "https://cdn.fastly.steamstatic.com/steam/apps/367270/header.jpg",
     "title": "Now Available on Steam - Angels Fall First, 10% off!",
+    "description": "Angels Fall First is Now Available on Steam and is 10% off!* From commanding the battle standing on the bridge of your flagship all the way down to tactical infantry firefights - AFF brings together all the combat you ever loved in a rich science fiction setting. Boarding, pilotable capital ships, deep weapon customiza",
+    "date": "July 11, 2026"
+  },
+  {
+    "image": "fab fa-steam",
+    "title": "Left 4 Dead - Update",
+    "description": "An update has been released for Left 4 Dead: - Fixed several exploits that could be used to crash servers or remote players.",
+    "date": "May 6, 2026"
+  },
+  {
+    "image": "https://cdn.fastly.steamstatic.com/steam/apps/367270/header.jpg",
+    "title": "Now Available on Steam - Angels Fall First, 10% off!",
+    "description": "Angels Fall First is Now Available on Steam and is 10% off!* From commanding the battle standing on the bridge of your flagship all the way down to tactical infantry firefights - AFF brings together all the combat you ever loved in a rich science fiction setting. Boarding, pilotable capital ships, deep weapon customiza",
     "date": "July 11, 2026"
   },
   {
     "image": "https://cdn.fastly.steamstatic.com/steam/apps/513710/header.jpg",
     "title": "Now Available on Steam - SCUM",
+    "description": "SCUM is Now Available on Steam! Traverse punishing environments, looting, crafting and evading the constant threats to your life. The unprecedented levels of character customization and progression are your ultimate tools for survival.",
     "date": "June 17, 2025"
   },
   {
     "image": "https://cdn.fastly.steamstatic.com/steam/apps/690830/header.jpg",
     "title": "Now Available on Steam - Foundation, 25% off!",
+    "description": "Foundation is Now Available on Steam and is 25% off!* Foundation is a grid-less, laidback medieval city-building game with a focus on organic development, monument construction and resource management. *Offer ends February 7 at 10AM Pacific Time",
     "date": "January 31, 2025"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/352720/header.jpg",
     "title": "Now Available on Steam - The Universim",
+    "description": "The Universim is Now Available on Steam! Jump straight into managing your own planets as you guide a civilization through the ages. Build the ultimate empire in The Universim, a new breed of God Game in development by Crytivo.",
     "date": "January 22, 2024"
   },
   {
     "image": "https://cdn.akamai.steamstatic.com/steam/apps/517670/header.jpg",
     "title": "Now Available on Steam - Cowbots and Aliens",
+    "description": "Cowbots and Aliens is Now Available on Steam! Cowbots and Aliens is a furious PvP Multiplayer VR brawl set in the Saloon-iverse! Free movement, laser precise gunplay, multiple competitive modes and a custom networked physics system that lets you use EVERYTHING as a weapon makes for an immensely satisfying VR ruckus!",
     "date": "December 25, 2023"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/479010/header.jpg",
     "title": "Now Available on Steam - Kodon",
+    "description": "Kodon is Now Available on Steam! Kodon is a 3D sculpting software for VR and Desktop with an intuitive interface that allows even inexperienced users to create 3D models in a 3D space.",
     "date": "December 10, 2023"
   },
   {
     "image": "https://cdn.akamai.steamstatic.com/steam/apps/1355090/header.jpg",
     "title": "Now Available on Steam - RAILGRADE, 25% off!",
+    "description": "RAILGRADE is Now Available on Steam and is 25% off!* RAILGRADE is a train 🚂 resource management game! Construct dense vertical railroads, build cities, construct vast factory 🏭 chains with train automation! Restore an off world colony's economy all in the story driven campaign ! *Offer ends October 20 at 10AM Pacific",
     "date": "October 13, 2023"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/758870/header.jpg",
     "title": "Now Available on Steam - Kynseed, 10% off!",
+    "description": "Kynseed is Now Available on Steam and is 10% off!* A beautiful Life Sim Sandbox RPG. Raise a family, farm the land, run a business, cook, craft and build an everlasting legacy in a vast world filled with adventure, creativity and meaningful choices. *Offer ends December 13 at 10AM Pacific Time",
     "date": "December 6, 2022"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/611500/header.jpg",
     "title": "Now Available on Steam - Quake Champions",
+    "description": "Quake Champions is Now Available on Steam! Step into the Arena. Compete against players from around the world in this fast-paced shooter that combines the dark mythos of the original Quake with the skill-based competition of Quake III Arena. Become a Champion.",
     "date": "August 18, 2022"
   },
   {
     "image": "https://cdn.akamai.steamstatic.com/steam/apps/911430/header.jpg",
     "title": "Now Available on Steam - Good Company, 20% off!",
+    "description": "Good Company is Now Available on Steam and is 20% off!* Good Company is an in-depth management sim about building a trail-blazing tech corporation. Assemble complex production lines, manage employee logistics, and sell high-quality products on the market to become the best company in the whole county! *Offer ends June ",
     "date": "June 21, 2022"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/648800/header.jpg",
     "title": "Now Available on Steam - Raft, 15% off!",
+    "description": "Raft is Now Available on Steam and is 15% off!* Raft throws you and your friends into an epic oceanic adventure! Alone or together, players battle to survive a perilous voyage across a vast sea! Gather debris, scavenge reefs and build your own floating home, but be wary of the man-eating sharks! *Offer ends June 27 at ",
     "date": "June 20, 2022"
   },
   {
     "image": "https://cdn.akamai.steamstatic.com/steam/apps/860890/header.jpg",
     "title": "Now Available on Steam - Factory Town",
+    "description": "Factory Town is Now Available on Steam! Process raw materials, automate production, and optimize transport systems to sell goods and grow a quaint village into a machine-powered city.",
     "date": "November 17, 2021"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1276790/header.jpg",
     "title": "Now Available on Steam - Ruined King: A League of Legends Story™",
+    "description": "Ruined King: A League of Legends Story&trade; is Now Available on Steam! Rise Against Ruin - Unite a party of League of Legends Champions, explore Bilgewater and set sail for the Shadow Isles to uncover the secrets of the deadly Black Mist in this immersive turn-based RPG.",
     "date": "November 16, 2021"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/910490/header.jpg",
     "title": "Now Available on Steam - Killsquad, 20% off!",
+    "description": "Killsquad is Now Available on Steam and is 20% off!* Hack and slash? Check. Twin-stick-shooter? Check. 4 player coop to slay hordes of aliens &amp; bosses with your friends? Check. Skills, upgrades, weapons, gears, talismans and more to make you stronger? Check. Wake up, bounty hunter. We have a mission for you. Time t",
     "date": "October 21, 2021"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/469600/header.jpg",
     "title": "Now Available on Steam - Legion TD 2 - Multiplayer Tower Defense",
+    "description": "Legion TD 2 - Multiplayer Tower Defense is Now Available on Steam! An infinitely replayable multiplayer and single-player tower defense. Defend against waves of enemies and destroy the enemy's king before they destroy yours. Legion TD 2 is a one-of-a-kind game of tactics, teamwork, and prediction. Party as 1-8 players.",
     "date": "October 1, 2021"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/471710/header.jpg",
     "title": "Now Available on Steam - Rec Room",
+    "description": "Rec Room is Now Available on Steam! Rec Room is the best place to build and play games together. Chat, hang out, explore MILLIONS of rooms, or build something new to share with us all! Join the club!",
     "date": "September 2, 2021"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/597170/header.jpg",
     "title": "Now Available on Steam - Clone Drone in the Danger Zone, 15% off!",
+    "description": "Clone Drone in the Danger Zone is Now Available on Steam and is 15% off!* Clone Drone in the Danger Zone is a robot voxel slice-em-up where any part of your body can be sliced off. With your mind downloaded into a robot gladiator, you must survive the sinister trials of the arena. *Offer ends August 3 at 10AM Pacific T",
     "date": "July 27, 2021"
   },
   {
     "image": "https://cdn.akamai.steamstatic.com/steam/apps/508440/header.jpg",
     "title": "Now Available on Steam - Totally Accurate Battle Simulator",
+    "description": "Totally Accurate Battle Simulator is Now Available on Steam! Be the leader of wobblers from ancient lands, spooky places, and fantasy worlds. Watch them fight in simulations made with the wobbliest physics system ever created, make your own wobblers in the unit creator and send your army off to fight your friends in mu",
     "date": "April 1, 2021"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1427650/header.jpg",
     "title": "New DLC Available - ROMANCE OF THE THREE KINGDOMS XIV: Diplomacy and Strategy Expansion Pack, 10% off!",
+    "description": "ROMANCE OF THE THREE KINGDOMS XIV: Diplomacy and Strategy Expansion Pack , all new content for ROMANCE OF THE THREE KINGDOMS XIV is Now Available on Steam and is 10% off!* The Diplomacy and Strategy Expansion Pack for the series' latest title &quot;ROMANCE OF THE THREE KINGDOMS XIV&quot; is available at last!An all new",
     "date": "December 10, 2020"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1054690/header.jpg",
     "title": "Now Available on Steam - Dreadlands, 20% off!",
+    "description": "Dreadlands is Now Available on Steam and is 20% off!* Welcome to Dreadlands! A perilous landscape brimming with potential in the form of Glow. Command one of 3 unique factions in this turn-based tactical RPG and play through their campaigns, be it solo or Co-Op, or battle it out in PvP. So far no one has tamed the Drea",
     "date": "November 9, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/824570/header.jpg",
     "title": "Now Available on Steam - Kine, 34% off!",
+    "description": "Kine is Now Available on Steam and is 34% off!* A quirky 3D puzzle game about three musicians forming a band and trying to score their breakout hit. *Offer ends October 26 at 10AM Pacific Time",
     "date": "October 19, 2020"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/881100/header.jpg",
     "title": "Now Available on Steam - Noita, 20% off!",
+    "description": "Noita is Now Available on Steam and is 20% off!* Noita is a magical action roguelite set in a world where every pixel is physically simulated. Fight, explore, melt, burn, freeze and evaporate your way through the procedurally generated world using spells you've created yourself. *Offer ends October 22 at 10AM Pacific T",
     "date": "October 15, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/393380/header.jpg",
     "title": "Now Available on Steam - Squad",
+    "description": "Squad is Now Available on Steam! Squad is a tactical FPS that provides authentic combat experiences through teamwork, constant communication, and gameplay. It bridges the large gap between arcade shooter and military simulation with 100 player battles, combined arms combat, base building, and a great integrated VoIP sy",
     "date": "September 23, 2020"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/978180/header.jpg",
     "title": "Now Available on Steam - Stay Silent",
+    "description": "Stay Silent is Now Available on Steam! Stay Silent is a western-themed multiplayer online FPS game for VR. Step into a Wild West town in the aftermath of an alien incursion. Playing as either the Marauders or the Guardians, fight against stealthy opponents on silent nights using both traditional guns and powerful alien",
     "date": "September 17, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/632360/header.jpg",
     "title": "Now Available on Steam - Risk of Rain 2",
+    "description": "Risk of Rain 2 is Now Available on Steam! Escape a chaotic alien planet by fighting through hordes of frenzied monsters &ndash; with your friends, or on your own. Combine loot in surprising ways and master each character until you become the havoc you feared upon your first crash landing.",
     "date": "August 11, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/1072710/header.jpg",
     "title": "Now Available on Steam - Soviet Jump Game",
+    "description": "Soviet Jump Game is Now Available on Steam! Snag powerups, collect coins, and battle against 49 other comrades in this 2D sidescrolling free-for-all. Together, we are one--but will you be the one who is held above all others?",
     "date": "July 16, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/news/62557/social_media_share.jpg?t=1592505828",
     "title": "Weekend Deal - The Elder Scrolls Franchise, 60-70% Off",
+    "description": "The Elder Scrolls Franchise as part of this week's Weekend Deal*. Also, check out the Elder Scrolls Complete the Set Bundle to save even more! *Offer ends June 25th at 10AM Pacific Time",
     "date": "June 18, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/1151340/header.jpg",
     "title": "Free Weekend - Fallout 76",
+    "description": "Fallout 76 for FREE starting now through Monday at 10AM Pacific Time. You can also pickup Fallout 76 at 25% off the regular price!* If you already have Steam installed, click here to install or play Fallout 76. If you don't have Steam, you can download it here . *Offer ends Thursday, May 21st at 10AM Pacific Time",
     "date": "May 14, 2020"
   },
   {
     "image": "https://media.st.dl.pinyuncloud.com/steam/apps/548430/header.jpg",
     "title": "Now Available on Steam - Deep Rock Galactic",
+    "description": "Deep Rock Galactic is Now Available on Steam! Deep Rock Galactic is a 1-4 player co-op FPS featuring badass space Dwarves, 100% destructible environments, procedurally-generated caves, and endless hordes of alien monsters.",
     "date": "May 13, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/1295160/header.jpg",
     "title": "Now Available on Steam - Resident Evil 3 Special Soundtrack",
+    "description": "Resident Evil 3 Special Soundtrack is Now Available on Steam! 24 haunting tracks from Resident Evil 3 and 21 spine-chilling tracks from Resident Evil Resistance combine to make a soundtrack befitting of survival horror.",
     "date": "May 7, 2020"
   }
 ];

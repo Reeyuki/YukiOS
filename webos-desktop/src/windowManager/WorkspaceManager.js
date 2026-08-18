@@ -43,15 +43,17 @@ export class WorkspaceManager {
     if (!this.barEl) {
       this.barEl = createElement("div");
       this.barEl.id = "workspace-bar";
+    }
+
+    if (!this.barEl.parentNode) {
       const taskbar = $("#taskbar");
       if (taskbar) {
         taskbar.insertBefore(this.barEl, $("#system-tray"));
       }
-      Promise.resolve().then(() => {
-        const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
-        this.updateVisibility(showWorkspace);
-      });
     }
+
+    const showWorkspace = os.storage.get(StorageKeys.showWorkspace) !== "false";
+    this.updateVisibility(showWorkspace);
 
     this.barEl.innerHTML = "";
 
@@ -729,25 +731,6 @@ export class WorkspaceManager {
     });
   }
 
-  makeThumbDraggable(thumb, winId, fromWsId, fromPanel, scale) {
-    thumb.draggable = true;
-
-    thumb.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("text/plain", winId);
-      e.dataTransfer.effectAllowed = "move";
-      thumb.classList.add("ov-dragging");
-    });
-
-    thumb.addEventListener("dragend", () => {
-      thumb.classList.remove("ov-dragging");
-      $$(".ov-drop-target").forEach((p) => p.classList.remove("ov-drop-target"));
-    });
-
-    thumb.addEventListener("click", (e) => {
-      e.stopPropagation();
-      this.moveWindowTo(winId, this.activeId);
-    });
-  }
   renderOverviewSlide() {
     if (!this.overviewEl) return;
 

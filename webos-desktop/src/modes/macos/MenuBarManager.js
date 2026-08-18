@@ -5,6 +5,7 @@ import { $, $$, bindEvent, addClass, removeClass, toggleClass, setText, createEl
 import { DEFAULT_SYSTEM_MENUS, APP_MENU_OVERRIDES } from "./appMenus.js";
 import { StorageKeys } from "../../StorageKeys.js";
 import { os, MODES } from "../../framework.js";
+import { applyTransparentUI } from "../../settings/settingsApply.js";
 
 export class MenuBarManager {
   constructor(os) {
@@ -140,7 +141,15 @@ export class MenuBarManager {
 
     if (actionId.startsWith("settings:cat:")) {
       const cat = actionId.replace("settings:cat:", "");
-      this.os.app.launch("settingsApp", { category: cat }).catch(() => {});
+      const pane = {
+        system: "pane-system",
+        desktop: "pane-desktop",
+        appearance: "pane-appearance",
+        network: "pane-network",
+        audio: "pane-audio",
+        accounts: "pane-accounts"
+      }[cat];
+      this.os.app.launch("settingsApp", { section: pane }).catch(() => {});
       return;
     }
 
@@ -382,19 +391,34 @@ export class MenuBarManager {
   }
 }
 
+const focusedNotepadWindow = () => {
+  const focused = $(".window[style*='z-index']");
+  if (!focused) return null;
+  if (
+    focused.dataset.appId !== "notepadApp" &&
+    focused.id !== "notepadApp" &&
+    !focused.classList.contains("notepad-window")
+  )
+    return null;
+  return { win: focused, winId: focused.id };
+};
+
 const ACTION_MAP = {
   "about:open": (os) => os.app.launch("aboutApp").catch(() => {}),
   "settings:open": (os) => os.app.launch("settingsApp").catch(() => {}),
   "palette:open": () => os.app.getInstance("commandPalette")?.open(),
   "clippy:toggle": (os) => {
     const current = os.storage.get(StorageKeys.clippy);
-    os.storage.set(StorageKeys.clippy, current === "true" ? "false" : "true");
+    const next = current === "true" ? "false" : "true";
+    os.storage.set(StorageKeys.clippy, next);
+    window.dispatchEvent(new CustomEvent("yukios:clippy-toggle", { detail: { enabled: next === "true" } }));
   },
   "ai:open": (os) => os.app.launch("aiAssistantApp").catch(() => {}),
   "screenshot:capture": (os) => os.app.launch("screenshotApp").catch(() => {}),
   "screenshot:record": () => {},
   "colorpicker:open": (os) => os.app.launch("colorPickerApp").catch(() => {}),
   "emoji:open": (os) => os.app.launch("emojiSelectorApp").catch(() => {}),
+  "clipboard:open": (os) => os.app.launch("clipboardManagerApp").catch(() => {}),
   "window:hideOthers": () => {
     const topWin = $(".window[style*='z-index']");
     if (!topWin) return;
@@ -419,6 +443,8 @@ const ACTION_MAP = {
     window.location.reload();
   },
   "explorer:newWindow": (os) => os.app.launch("explorerApp").catch(() => {}),
+  "terminal:newWindow": (os) => os.app.launch("terminalApp").catch(() => {}),
+  "browser:newWindow": (os) => os.app.launch("browserApp").catch(() => {}),
   "desktop:newFolder": () => {
     const desktopUI = os.app.getInstance("desktopUI");
     if (desktopUI) desktopUI.createNewFolder();
@@ -436,6 +462,36 @@ const ACTION_MAP = {
   "app:close": (os) => {
     const focused = $(".window[style*='z-index']");
     if (focused) os.app.close(focused.id);
+  },
+  "notepad:open": () => {
+    const target = focusedNotepadWindow();
+    if (!target) return;
+    os.app.getInstance("notepadApp")?.openFileDialog?.(target.win, target.winId);
+  },
+  "notepad:save": () => {
+    const target = focusedNotepadWindow();
+    if (!target) return;
+    os.app.getInstance("notepadApp")?.saveFile?.(target.win, target.winId);
+  },
+  "notepad:saveAs": () => {
+    const target = focusedNotepadWindow();
+    if (!target) return;
+    os.app.getInstance("notepadApp")?.saveAsFile?.(target.win, target.winId);
+  },
+  "view:zoomIn": () => {
+    const target = focusedNotepadWindow();
+    if (!target) return;
+    os.app.getInstance("notepadApp")?.zoom?.(target.win, target.winId, 10);
+  },
+  "view:zoomOut": () => {
+    const target = focusedNotepadWindow();
+    if (!target) return;
+    os.app.getInstance("notepadApp")?.zoom?.(target.win, target.winId, -10);
+  },
+  "view:zoomReset": () => {
+    const target = focusedNotepadWindow();
+    if (!target) return;
+    os.app.getInstance("notepadApp")?.zoomReset?.(target.win, target.winId);
   },
   "edit:undo": () => document.execCommand("undo"),
   "edit:redo": () => document.execCommand("redo"),
@@ -501,7 +557,9 @@ const ACTION_MAP = {
   },
   "view:transparentUI": (os) => {
     const current = os.storage.get(StorageKeys.transparentUI);
-    os.storage.set(StorageKeys.transparentUI, current === "true" ? "false" : "true");
+    const next = current === "true" ? "false" : "true";
+    os.storage.set(StorageKeys.transparentUI, next);
+    applyTransparentUI(next === "true");
   },
   "scale:75": (os) => os.storage.set(StorageKeys.guiScale, "75"),
   "scale:100": (os) => os.storage.set(StorageKeys.guiScale, "100"),
@@ -509,7 +567,7 @@ const ACTION_MAP = {
   "scale:150": (os) => os.storage.set(StorageKeys.guiScale, "150"),
   "theme:dark": (os) => os.storage.set(StorageKeys.theme, "dark"),
   "theme:light": (os) => os.storage.set(StorageKeys.theme, "light"),
-  "settings:themes": (os) => os.app.launch("settingsApp", { category: "appearance" }).catch(() => {}),
+  "settings:themes": (os) => os.app.launch("settingsApp", { section: "pane-appearance" }).catch(() => {}),
   "workspace:overview": () => {
     const wm = os.window.wm;
     if (wm?.workspaceManager) wm.workspaceManager.toggleOverview?.();

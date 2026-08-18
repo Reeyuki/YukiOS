@@ -24,7 +24,7 @@
 .session-background {
   position: absolute;
   inset: 0;
-  backdrop-filter: blur(20px) brightness(0.5);
+  backdrop-filter: blur(12px) brightness(0.5);
   z-index: -1;
 }
 
@@ -79,10 +79,6 @@
   color: var(--text-primary);
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   opacity: 0.9;
-}
-
-html[data-yuri] .session-brand {
-  display: block;
 }
 
 .avatar-edit-btn {
@@ -227,12 +223,8 @@ html[data-yuri] .session-brand {
 
 .session-modes-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-}
-
-.session-modes-3d {
-  display: flex;
 }
 
 .session-mode-btn {
@@ -257,8 +249,8 @@ html[data-yuri] .session-brand {
 }
 
 .session-mode-btn svg {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
 }
 
 .session-mode-btn i {
@@ -1125,4 +1117,20 @@ html[data-yuri] .session-brand {
 
 .status-block[hidden] {
   display: none;
+}
+
+.session-features-link {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s;
+  z-index: 10;
+}
+
+.session-features-link:hover {
+  color: rgba(255, 255, 255, 0.7);
 }

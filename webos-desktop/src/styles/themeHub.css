@@ -381,7 +381,8 @@
 .theme-hub-publish,
 .theme-hub-share-cancel,
 .theme-hub-prev,
-.theme-hub-next {
+.theme-hub-next,
+.theme-hub-remix {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -412,7 +413,8 @@
 .theme-hub-local-remove:hover,
 .theme-hub-share-cancel:hover,
 .theme-hub-prev:hover,
-.theme-hub-next:hover {
+.theme-hub-next:hover,
+.theme-hub-remix:hover {
   border-color: var(--brand);
 }
 
@@ -1007,4 +1009,107 @@
 .theme-hub-featured-toggle:hover {
   border-color: var(--brand);
   color: var(--text-primary);
+}
+
+.theme-hub-empty-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  text-align: center;
+}
+
+.theme-hub-create-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: var(--brand);
+  color: var(--bg-primary);
+  font-weight: 700;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  box-shadow: 0 8px 22px var(--shadow-color);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.theme-hub-create-inline:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px var(--shadow-color);
+}
+
+.theme-hub-nav-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--brand);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  margin-top: 8px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.theme-hub-nav-create:hover {
+  border-color: var(--brand);
+}
+
+.theme-hub-density-row {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-hub-share-density {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.theme-hub-share-density:hover {
+  border-color: var(--brand);
+}
+
+.theme-hub-share-density.active {
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+.theme-hub-share-transparency-value {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.theme-hub-share-transparency-wrap {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.theme-hub-field {
+  margin-bottom: 10px;
 }

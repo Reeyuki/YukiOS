@@ -325,9 +325,13 @@ class TrayManager {
       document.body.appendChild(this.popupEl);
     }
     this.updatePopupContent(items);
+    const steamdeckActive = os.modes.isActive(MODES.STEAMDECK);
     const tilingActive = os.modes.isActive(MODES.TILING);
     let refEl, barAtTop;
-    if (tilingActive) {
+    if (steamdeckActive) {
+      refEl = sourceEl || $("#steamdeck-topbar-tray") || $("#steamdeck-quick-access-tray") || this.el;
+      barAtTop = true;
+    } else if (tilingActive) {
       refEl = sourceEl || $("#tiling-tray-items");
       const tilingBar = $("#tiling-bar");
       barAtTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : isTaskbarTop();
@@ -507,9 +511,13 @@ class TrayManager {
 }
 
 export function getTrayPosition(refEl) {
+  const steamdeckActive = os.modes.isActive(MODES.STEAMDECK);
   const tilingActive = os.modes.isActive(MODES.TILING);
   let el, atTop;
-  if (tilingActive) {
+  if (steamdeckActive) {
+    el = refEl || $("#steamdeck-topbar-tray") || $("#steamdeck-quick-access-tray") || $("#app-tray");
+    atTop = true;
+  } else if (tilingActive) {
     el = refEl || $("#tiling-tray-items");
     const tilingBar = $("#tiling-bar");
     atTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : false;

@@ -12,14 +12,13 @@ import { SnapSystem } from "./windowManager/SnapSystem.js";
 import { TaskbarSystem } from "./windowManager/TaskbarSystem.js";
 import { MacDock } from "./modes/macos/MacDock.js";
 import { Shelf } from "./chromeos/Shelf.js";
-import { WindowSessionManager } from "./windowManager/WindowSessionManager.js";
+
 import { AppRestorationService } from "./windowManager/AppRestorationService.js";
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
 import { TilingManager } from "./modes/tiling/TilingManager.js";
-
-import { StorageKeys, os, MODES, brand, yuriPageTitle } from "./framework.js";
+import { StorageKeys, os, MODES } from "./framework.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { isMobile } from "./shared/platformUtils.js";
 
@@ -30,7 +29,7 @@ export class WindowManager {
     this.gameWindowCount = 0;
     this.isDraggingWindow = false;
     this.notificationCenter = notificationCenter;
-    this.initialTitle = yuriPageTitle() || document.title || brand("YukiOS");
+    this.initialTitle = document.title || "YukiOS";
     const faviconLink = $("link[rel~='icon']");
     this.initialFavicon = faviconLink ? faviconLink.href : "";
     this.snapGhost = null;
@@ -56,7 +55,6 @@ export class WindowManager {
     this.taskbarSystem = new TaskbarSystem(this);
     this.macDock = new MacDock(this);
     this.chromeShelf = new Shelf(this);
-    this.sessionManager = new WindowSessionManager(this);
     this.appRestorationService = new AppRestorationService(this);
     this.windowStateManager = new WindowStateManager(this);
     this.contextMenuManager = new ContextMenuManager(this);
@@ -147,7 +145,7 @@ export class WindowManager {
   }
 
   guessAppIdFromWinId(winId) {
-    return this.sessionManager.guessAppIdFromWinId(winId);
+    return this.appRestorationService.guessAppIdFromWinId(winId);
   }
 
   saveSession() {
@@ -156,18 +154,6 @@ export class WindowManager {
 
   restoreSession() {
     return this.appRestorationService.restoreSession();
-  }
-
-  isHeavyApp(appId, appType) {
-    return this.sessionManager.isHeavyApp(appId, appType);
-  }
-
-  processRestorationQueue(queue) {
-    return this.sessionManager.processRestorationQueue(queue);
-  }
-
-  restoreSingleWindowState(state, appId) {
-    return this.sessionManager.restoreSingleWindowState(state, appId);
   }
 
   notify(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
@@ -302,6 +288,26 @@ export class WindowManager {
         position: "fixed",
         zIndex: this.nextWindowZIndex()
       });
+    } else if (options.deckMode) {
+      Object.assign(win.dataset, {
+        prevWidth: win.style.width,
+        prevHeight: win.style.height,
+        prevLeft: win.style.left,
+        prevTop: win.style.top,
+        prevZIndex: win.style.zIndex
+      });
+      Object.assign(win.style, {
+        width: "100vw",
+        height: "100vh",
+        left: "0",
+        top: "0",
+        position: "fixed",
+        zIndex: this.nextWindowZIndex()
+      });
+      win.dataset.fullscreen = "true";
+      win.classList.add("deck-launched");
+      const deckEntry = this.openWindows.get(win.id);
+      if (deckEntry?.record) deckEntry.record.fullscreen = true;
     } else {
       Object.assign(win.style, {
         width: `${finalW}px`,

@@ -10,8 +10,7 @@ import {
   setText,
   toggleClass,
   createElement,
-  StorageKeys,
-  brand
+  StorageKeys
 } from "../framework.js";
 import { toggleStartMenu, closeStartMenu } from "../desktopui/startMenu.js";
 import { Achievements } from "../achievements.js";
@@ -56,7 +55,7 @@ const STEPS = [
   {
     id: "welcome",
     icon: "fas fa-rocket",
-    title: brand("This is YukiOS."),
+    title: "This is YukiOS.",
     body: "A full desktop inside one browser tab. No installs, nothing for a school or work network to block, and everything saved right here in this browser. 60 seconds and you'll have seen what it does.",
     buttons: { primary: { label: "Start", action: "advance" } }
   },
@@ -83,7 +82,7 @@ const STEPS = [
   {
     id: "games",
     icon: "fas fa-gamepad",
-    title: "2900+ games run right here.",
+    title: "3000+ games run right here.",
     body: "This is a game launcher with steam theme. Web games, DOS, Flash, 3DS, retro consoles (Pokemon games), all with no downloads.",
     target: () => $(GAMES_WIN_SELECTOR) || null,
     buttons: { primary: { label: "Got it", action: "advance" } }
@@ -94,7 +93,7 @@ const STEPS = [
     title: "One desktop, four faces.",
     body: "Flip the whole desktop to a Mac, a Chromebook, or a tiling window manager. Try one, then jump back to default mode.",
     modeButtons: [
-      { label: brand("YukiOS"), icon: "fas fa-snowflake", mode: "reset" },
+      { label: "YukiOS", icon: "fas fa-snowflake", mode: "reset" },
       { label: "Mac", icon: "fab fa-apple", mode: "mac" },
       { label: "Chrome OS", icon: "fab fa-chrome", mode: "chromeos" },
       { label: "Tiling", icon: "fas fa-th-large", mode: "tiling" }

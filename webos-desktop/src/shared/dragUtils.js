@@ -113,6 +113,26 @@ export function makeResizable(element, callbacks, options = {}) {
     return edge;
   }
 
+  function getCursorForEdge(edge) {
+    if (edge.top && edge.left) return "nwse-resize";
+    if (edge.top && edge.right) return "nesw-resize";
+    if (edge.bottom && edge.left) return "nesw-resize";
+    if (edge.bottom && edge.right) return "nwse-resize";
+    if (edge.top || edge.bottom) return "ns-resize";
+    if (edge.left || edge.right) return "ew-resize";
+    return "";
+  }
+
+  function onHover(e) {
+    if (activeEdges) return;
+    const edge = getEdge(e);
+    element.style.cursor = edge ? getCursorForEdge(edge) : "";
+  }
+
+  function onLeave() {
+    if (!activeEdges) element.style.cursor = "";
+  }
+
   function onDown(e) {
     if (e.button !== undefined && e.button !== 0) return;
     const edge = getEdge(e);
@@ -162,10 +182,14 @@ export function makeResizable(element, callbacks, options = {}) {
 
   element.addEventListener("mousedown", onDown);
   element.addEventListener("touchstart", onDown, { passive: false });
+  element.addEventListener("mousemove", onHover);
+  element.addEventListener("mouseleave", onLeave);
 
   return function cleanup() {
     element.removeEventListener("mousedown", onDown);
     element.removeEventListener("touchstart", onDown);
+    element.removeEventListener("mousemove", onHover);
+    element.removeEventListener("mouseleave", onLeave);
     activeEdges = null;
     removeDocListeners({ move: onMove, up: onUp });
   };

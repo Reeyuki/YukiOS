@@ -1,7 +1,7 @@
 try {
-  importScripts("./controller.sw.js");
+  importScripts("./cont.sw.js");
 } catch (e) {
-  console.error("Failed to load controller.sw.js:", e);
+  console.error("Failed to load cont.sw.js:", e);
   throw e;
 }
 

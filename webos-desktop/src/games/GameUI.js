@@ -1,7 +1,8 @@
 import { refreshIcons, showContextMenu } from "../shared/contextMenu.js";
 import { SteamDataManager, desktopUI, steamAudio, refreshSteamUI, updateSteamProfileCoins } from "./games.js";
 import { observeLazyImages } from "./games.js";
-import { buildSteamShell, initDropdowns, initStorePage, getCdnBase, initSettingsPage } from "./steam.js";
+import { buildSteamShell, initDropdowns, initStorePage, getCdnBase } from "./steam.js";
+import { initSettingsPage } from "./steamSettings.js";
 import { KeybindManager } from "../keybindManager.js";
 import { sendLaunchAnalytics, getAnalyticsBase } from "../analytics.js";
 import {
@@ -33,6 +34,7 @@ import { BusEvents } from "../core/EventBus.js";
 
 import { StorageKeys, os } from "../framework.js";
 import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
+import { initSteamPopupWindow } from "./steamPopupWindow.js";
 export class GameUI {
   constructor(renderer) {
     this.renderer = renderer;
@@ -455,7 +457,8 @@ export class GameUI {
         steamAudio.playHover();
         const appId = card.dataset.app;
         const game = gameMap.get(appId);
-        const gameStats = stats[appId] || { totalMin: 0, recentMin: 0 };
+        const totalMin = Number(stats[appId]?.totalMin) || 0;
+        const recentMin = SteamDataManager.getRecentMinutes(appId);
         const icon = game?.icon || card.querySelector("img")?.src || card.querySelector("img")?.dataset.src || "";
         const title = game?.title || card.querySelector(".steam-game-title")?.textContent || appId;
 
@@ -466,11 +469,11 @@ export class GameUI {
           <div class="popover-stats">
             <div class="popover-stat-item">
               <span class="popover-stat-label">Last two weeks:</span>
-              <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(gameStats.recentMin)}</span>
+              <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(recentMin)}</span>
             </div>
             <div class="popover-stat-item">
               <span class="popover-stat-label">Total played:</span>
-              <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(gameStats.totalMin)}</span>
+              <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(totalMin)}</span>
             </div>
           </div>
         </div>
@@ -628,6 +631,10 @@ export class GameUI {
       } else if (page === "store") {
         storePage.classList.remove("hidden");
         container.querySelector(".steam-tab[data-page='store']").classList.add("active");
+        if (!storePage.storeInited) {
+          storePage.storeInited = true;
+          initStorePage(container, onLaunch, navigateTo, getCdnBase(), this.renderer.imgObserver);
+        }
       } else if (page === "community") {
         communityPage.classList.remove("hidden");
         container.querySelector(".steam-tab[data-page='community']").classList.add("active");
@@ -644,6 +651,7 @@ export class GameUI {
         } else {
           renderSelfProfilePage(userPage, {
             onLaunch,
+            onOpenGame: openGameOverview,
             onShowGames: (uid) => {
               this.renderer.profileUserId = uid;
               navigateTo("games");
@@ -664,6 +672,7 @@ export class GameUI {
           renderProfilePage(profilePage, {
             userId: this.renderer.profileUserId,
             onLaunch,
+            onOpenGame: openGameOverview,
             onShowGames: (uid) => {
               this.renderer.profileUserId = uid;
               navigateTo("games");
@@ -681,7 +690,8 @@ export class GameUI {
         } else {
           renderGamesPage(gamesPage, {
             userId: this.renderer.profileUserId,
-            onLaunch
+            onLaunch,
+            onOpenGame: openGameOverview
           });
         }
       } else if (page === "achievements") {
@@ -770,6 +780,13 @@ export class GameUI {
       updatePageUI(page);
     };
 
+    const openGameOverview = (appId) => {
+      this.renderer.currentGame = appId;
+      this.renderer.currentArchiveGame = null;
+      navigateTo("library");
+      this.renderer.gameRenderer.renderGameOverview(container, appId, onLaunch);
+    };
+
     if (!container.dataset.steamNavBound) {
       container.dataset.steamNavBound = "1";
       container.addEventListener("steam-navigate", (e) => {
@@ -807,6 +824,7 @@ export class GameUI {
         if (userPageEl && !userPageEl.classList.contains("hidden")) {
           renderSelfProfilePage(userPageEl, {
             onLaunch,
+            onOpenGame: openGameOverview,
             onShowGames: (uid) => {
               this.renderer.profileUserId = uid;
               navigateTo("games");
@@ -833,6 +851,7 @@ export class GameUI {
         if (userPageEl && !userPageEl.classList.contains("hidden")) {
           renderSelfProfilePage(userPageEl, {
             onLaunch,
+            onOpenGame: openGameOverview,
             onShowGames: (uid) => {
               this.renderer.profileUserId = uid;
               navigateTo("games");
@@ -849,6 +868,7 @@ export class GameUI {
           renderProfilePage(profileEl, {
             userId: this.renderer.profileUserId,
             onLaunch,
+            onOpenGame: openGameOverview,
             onShowGames: (uid) => {
               this.renderer.profileUserId = uid;
               navigateTo("games");
@@ -1098,7 +1118,7 @@ export class GameUI {
 
   async openFriendsWindow(wm) {
     if (isSocialDisabled()) {
-      os.notify.send("Social features are disabled", "Enable them in Steam Settings to use Friends & Chat.", {
+      os.notify.send("Social features are disabled", "Enable them in Yuki Steam Settings to use Friends & Chat.", {
         type: "info"
       });
       return;
@@ -1180,7 +1200,7 @@ export class GameUI {
       skipAutoSetup: true
     });
 
-    const headerHtml = wm.utils.generateWindowHeader("Friends List", "fas fa-user-friends");
+    const headerHtml = '<div class="window-header steam-popup-header">' + wm.utils.getWindowControls() + "</div>";
     win.insertAdjacentHTML("afterbegin", headerHtml);
 
     const contentDiv = createElement("div");
@@ -1199,6 +1219,7 @@ export class GameUI {
     windowMakeDraggable(win, wm);
     wm.makeResizable(win);
     wm.setupWindowControls(win);
+    initSteamPopupWindow(win);
     const addBtn = win.querySelector(".steam-friends-add-btn");
     if (addBtn) {
       const navigateToFriends = () => {
@@ -1411,12 +1432,13 @@ export class GameUI {
     });
 
     wm.mountWindow(win, winId, title, "fas fa-comment-dots");
-    const headerHtml = wm.utils.generateWindowHeader(title, "fas fa-comment-dots");
+    const headerHtml = '<div class="window-header steam-popup-header">' + wm.utils.getWindowControls() + "</div>";
     win.insertAdjacentHTML("afterbegin", headerHtml);
     wm.bringToFront(win);
     windowMakeDraggable(win, wm);
     if (wm.makeResizable) wm.makeResizable(win);
     if (wm.setupWindowControls) wm.setupWindowControls(win);
+    initSteamPopupWindow(win);
 
     const input = win.querySelector("[data-dm-input]");
     const sendBtn = win.querySelector(".dm-send");

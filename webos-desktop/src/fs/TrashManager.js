@@ -1,8 +1,4 @@
-let trashIdCounter = 0;
-
-function generateId() {
-  return `trash_${Date.now()}_${++trashIdCounter}`;
-}
+import { generateId } from "../utils/utils.js";
 
 export class TrashManager {
   constructor(fsManager) {
@@ -109,7 +105,7 @@ export class TrashManager {
     } catch {}
 
     const entry = {
-      id: generateId(),
+      id: generateId("trash_"),
       originalPath: Array.isArray(path) ? [...path] : [path],
       originalName: name,
       trashedName,

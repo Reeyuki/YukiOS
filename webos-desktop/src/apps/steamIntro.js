@@ -25,7 +25,7 @@ const STEAM_STEPS = [
   {
     id: "steam-welcome",
     icon: "fab fa-steam",
-    title: "Steam, your full game hub.",
+    title: "Your full game hub.",
     body: "Store, library, quests, a profile store, and a live community. One window, every way to play.",
     buttons: { primary: { label: "Next", action: "advance" } }
   },
@@ -72,7 +72,7 @@ const STEAM_STEPS = [
     id: "steam-shop",
     icon: "fas fa-bag-shopping",
     title: "The profile store.",
-    body: "Spend coins on profile borders, titles, and reaction flair that travels with you across Steam.",
+    body: "Spend coins on profile borders, titles, and reaction flair that travels with you across YukiOS.",
     target: () => $(SHOP_PAGE_SELECTOR, document) || null,
     onEnter: () => navigateContainer("shop"),
     cardSide: "top",
@@ -134,8 +134,8 @@ export async function offerSteamTour() {
   if (os.storage.get(StorageKeys.steamIntroSeen)) return;
   if (isAnyTourActive()) return;
   const accept = await os.dialog.confirm(
-    "Tour Steam",
-    "Steam packs a store, library, daily quests, a profile store, and a live community. Want a quick tour?"
+    "Tour Yuki Steam",
+    "Yuki Steam packs a store, library, daily quests, a profile store, and a live community. Want a quick tour?"
   );
   if (isAnyTourActive()) return;
   if (accept) {

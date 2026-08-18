@@ -342,7 +342,8 @@ export async function resolveUrl(url, isCdnGh = false) {
   return `${isHtml ? currentProvider.MAIN : currentProvider.GAMES}${normalized}`;
 }
 
-export async function fetchHtmlAsBlobUrl(url) {
+export async function fetchHtmlAsBlobUrl(url, options = {}) {
+  const { injectBannerHtml = "" } = options;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
   const html = await res.text();
@@ -542,6 +543,15 @@ export async function fetchHtmlAsBlobUrl(url) {
 <\/script>`;
 
   let withBase = rewritten;
+
+  if (injectBannerHtml) {
+    if (/<\/body\s*>/i.test(withBase)) {
+      withBase = withBase.replace(/<\/body\s*>/i, `${injectBannerHtml}</body>`);
+    } else {
+      withBase = `${withBase}\n${injectBannerHtml}`;
+    }
+  }
+
   const hasBase = /<base\b[^>]*>/i.test(rewritten);
 
   if (isIgnored) {

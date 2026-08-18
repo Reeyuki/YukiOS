@@ -1,12 +1,161 @@
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { descriptionMap } from "./gameDescriptions.js";
-import { injectAdsterraAd, suppressAdBlocks } from "../ads.js";
+import { injectAdsterraAd, suppressAdBlocks, ADSTERRA_KEYS } from "../ads.js";
 import { steamAudio } from "./steamAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { parseBool } from "../utils/utils.js";
 import { StorageKeys, os, createElement } from "../framework.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { startSteamTour } from "../apps/steamIntro.js";
+import { SteamSettings, openSteamSettingsWindow, buildSettingsPageHTML, getGridMin } from "./steamSettings.js";
+
+export const STORE_GAMES = [
+  {
+    app: "tabs",
+    icon: resolveIconUrl("static/icons/tabs.webp"),
+    title: "TABS: Totaly Accurate Battle Simulator",
+    tags: ["Strategy", "Simulation", "War"]
+  },
+  {
+    app: "catGoesFishing",
+    icon: resolveIconUrl("static/icons/cat.webp"),
+    title: "Cat Goes Fishing",
+    tags: ["Fishing", "Simulation", "Relaxing", "Casual"]
+  },
+  {
+    app: "angryBirds2",
+    icon: resolveIconUrl("static/icons/angryBirds2.webp"),
+    title: "Angry Birds 2",
+    tags: ["Slingshot", "Physics", "Puzzle"]
+  },
+  {
+    app: "slimeRancher",
+    icon: resolveIconUrl("static/icons/slime.webp"),
+    title: "Slime Rancher",
+    tags: ["Farming Sim", "Exploration", "First-Person"]
+  },
+  {
+    app: "lobotomyCorporation",
+    icon: resolveIconUrl("static/icons/lobotomy.webp"),
+    title: "Lobotomy Corporation,",
+    tags: ["Strategy", "Simulation"]
+  },
+  {
+    app: "plagueIncEvolved",
+    icon: resolveIconUrl("static/icons/plague.webp"),
+    title: "Plague Inc Evolved",
+    tags: ["Strategy", "Simulation"]
+  },
+  {
+    app: "fiveNightsAtFrickbears3",
+    icon: resolveIconUrl("static/icons/fiveNightsAtFrickbears.webp"),
+    title: "Five Nights At Frickbears 3",
+    tags: ["Horror", "Survival"]
+  },
+  {
+    app: "helltaker",
+    icon: resolveIconUrl("static/icons/helltaker.jpg"),
+    title: "Helltaker",
+    tags: ["Puzzle", "Anime"]
+  },
+  {
+    app: "inscryption",
+    icon: resolveIconUrl("static/icons/inscryption.webp"),
+    title: "Inscryption",
+    tags: ["Card Game", "Roguelike"]
+  },
+  {
+    app: "nightInTheWoods",
+    icon: resolveIconUrl("static/icons/night.webp"),
+    title: "Night In The Woods",
+    tags: ["Adventure", "Narrative"]
+  },
+  {
+    app: "daddy",
+    icon: resolveIconUrl("static/icons/daddy.webp"),
+    title: "Who's Your Daddy",
+    tags: ["Casual", "Multiplayer"]
+  },
+  {
+    app: "suicideGuy",
+    icon: resolveIconUrl("static/icons/suicideguy.webp"),
+    title: "Suicide Guy",
+    tags: ["Puzzle", "Platformer"]
+  },
+  {
+    app: "ytlifeomg",
+    icon: resolveIconUrl("static/icons/yt.webp"),
+    title: "Youtubers Life Omg",
+    tags: ["Simulation", "Management"]
+  },
+  {
+    app: "inStarsAndTime",
+    icon: resolveIconUrl("static/icons/star.webp"),
+    title: "In Stars And Time",
+    tags: ["RPG", "Story"]
+  },
+  {
+    app: "slenderina",
+    icon: resolveIconUrl("static/icons/slenderina.webp"),
+    title: "Slenderina The Cellar",
+    tags: ["Horror", "Action"]
+  },
+  {
+    app: "wheresBaldi",
+    icon: resolveIconUrl("static/icons/wheresBaldi.webp"),
+    title: "Where's Baldi",
+    tags: ["Horror", "Action"]
+  },
+  {
+    app: "baldiBalds",
+    icon: resolveIconUrl("static/icons/baldiBalds.webp"),
+    title: "Baldi Balds The Universe",
+    tags: ["Horror", "Action"]
+  },
+  {
+    app: "baldisBasicsTeachingOnTwos",
+    icon: resolveIconUrl("static/icons/baldisBasicsTeachingOnTwos.webp"),
+    title: "Baldi's Basics: Teaching On Twos",
+    tags: ["Horror", "Education"]
+  },
+  {
+    app: "playtimeHellBear5van",
+    icon: resolveIconUrl("static/icons/playtimeHellBear5van.webp"),
+    title: "Playtime Hell & Bear 5 Van",
+    tags: ["Horror", "Action"]
+  },
+  {
+    app: "antidisestablishmentarianism",
+    icon: resolveIconUrl("static/icons/antiDisestablishism.webp"),
+    title: "Antidisestablishmentarianism",
+    tags: ["Puzzle", "Indie", "Education"]
+  },
+  {
+    app: "minusThree",
+    icon: resolveIconUrl("static/icons/minusThree.webp"),
+    title: "Minus Three",
+    tags: ["Puzzle", "Indie", "Education"]
+  },
+  {
+    app: "three",
+    icon: resolveIconUrl("static/icons/three.webp"),
+    title: "Three",
+    tags: ["Puzzle", "Indie", "Education"]
+  },
+  {
+    app: "theMathIsLeaking",
+    icon: resolveIconUrl("static/icons/theMathIsLeaking.webp"),
+    title: "The Math Is Leaking",
+    tags: ["Puzzle", "Education"]
+  },
+  {
+    app: "pneumonoultramicroscopicsilicovolcanoconiosis",
+    icon: resolveIconUrl("static/icons/pneumo.webp"),
+    title: "Pneumonoultramicroscopicsilicovolcanoconiosis",
+    tags: ["Puzzle", "Educational", "Word", "Indie"]
+  }
+];
+
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
 }
@@ -18,24 +167,22 @@ export function getCdnBaseGames() {
 export function buildSteamShell(container, username, profilePic, hiddenGamesCount, CDN_BASE_REF) {
   const settings = SteamSettings.load();
   const showAnimation = settings.enableStartupAnimation !== false;
-  let gridMin = "140px";
-  if (settings.gridSize === "small") gridMin = "100px";
-  else if (settings.gridSize === "large") gridMin = "180px";
+  const gridMin = getGridMin(settings.gridSize);
 
   return `
     <div class="steam-loading-screen" style="${showAnimation ? "" : "display:none !important; opacity:0; pointer-events:none;"}">
       <div class="steam-loading-logo">
         <div class="steam-spinner"></div>
-        <i class="fab fa-steam"></i>
+        <i class="fas fa-steam"></i>
       </div>
     </div>
 
     <div class="steam-main">
       <div class="steam-top-bar window-header">
-        <i class="fab fa-steam" style="font-size: 20px; margin-right: 8px;"></i>
+        <i class="fas fa-steam" style="font-size: 20px; margin-right: 8px;"></i>
         <div class="steam-menu-items">
           <div class="steam-dropdown">
-            <span class="steam-menu-item steam-dropdown-trigger" data-dropdown="steam-menu">Steam</span>
+            <span class="steam-menu-item steam-dropdown-trigger" data-dropdown="steam-menu">Yuki</span>
             <div class="steam-dropdown-menu" id="steam-menu-dropdown">
               <div class="steam-dropdown-item" data-action="steam-settings">Settings</div>
               <div class="steam-dropdown-item" data-action="steam-account">Account</div>
@@ -93,6 +240,12 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
         </button>
       </div>
 
+      <div class="steam-disclaimer">
+        <i class="fas fa-info-circle"></i>
+        <span>This application is not affiliated with Steam or Valve Corporation.</span>
+        <button class="steam-disclaimer-close"><i class="fas fa-times"></i></button>
+      </div>
+
       <div class="steam-content-area">
         <div class="steam-library-sidebar hidden">
           <div class="sidebar-search-container">
@@ -117,7 +270,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
             <div class="store-layout">
               <div class="store-main-col">
                 <div class="store-featured-header">
-                  <h2 class="store-section-title">Reeyuki Ports Catalog</h2>
+                  <h2 class="store-section-title">Ports Catalog</h2>
                 </div>
                 <div class="store-featured-hero">
                   <div class="store-hero-img-wrap">
@@ -164,138 +317,7 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
           <div class="steam-downloads-page hidden" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:24px;opacity:0.5;">
             Downloads Center
           </div>
-          <div class="steam-settings-page hidden" style="display:flex;flex-direction:column;padding:30px;height:100%;color:#c6d4df;overflow-y:auto;">
-            <h2 style="margin:0 0 20px 0;font-size:20px;color:#fff;">Steam Settings</h2>
-            <div class="settings-container">
-              <div class="settings-section">
-                <h3 class="settings-section-title">General</h3>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Run on Startup</div>
-                    <div class="settings-item-description">Launch Steam when your computer starts</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="runOnStartup">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Start Minimized</div>
-                    <div class="settings-item-description">Start Steam minimized to system tray</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="startMinimized">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Enable Startup Animation</div>
-                    <div class="settings-item-description">Show loading animation when Steam starts</div>
-                  </div>
-                  <div class="settings-toggle active" data-setting="enableStartupAnimation">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="settings-section">
-                <h3 class="settings-section-title">Notifications</h3>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Currently Playing Popups</div>
-                    <div class="settings-item-description">Show popups when friends start playing a game</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="currentlyPlayingPopups">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Do Not Disturb</div>
-                    <div class="settings-item-description">Mute activity popups from friends</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="dnd">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Share My Activity</div>
-                    <div class="settings-item-description">Send what you're playing and load friends' live activity</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="shareLiveActivity">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="settings-section">
-                <h3 class="settings-section-title">Privacy</h3>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Disable Social Features</div>
-                    <div class="settings-item-description">Turn off friends, community, live activity and account sign-in</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="socialDisabled">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="settings-section">
-                <h3 class="settings-section-title">Library</h3>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Recently Played Row</div>
-                    <div class="settings-item-description">Show recently played games section in library</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="recentlyPlayedRow">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Grid Size</div>
-                    <div class="settings-item-description">Set the size of game tiles in library</div>
-                  </div>
-                  <select class="settings-select" data-setting="gridSize">
-                    <option value="small">Small</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="large">Large</option>
-                  </select>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Hide Archive Games</div>
-                    <div class="settings-item-description">Hide archive games from library view</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="hideArchiveGames">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-
-                <div class="settings-item">
-                  <div class="settings-item-label">
-                    <div class="settings-item-title">Hide LuminSDK Games</div>
-                    <div class="settings-item-description">Hide LuminSDK game catalog section from library view</div>
-                  </div>
-                  <div class="settings-toggle" data-setting="hideLuminSDK">
-                    <div class="settings-toggle-slider"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          ${buildSettingsPageHTML({ prefix: "steam-ui", hidden: true })}
         </div>
       </div>
 
@@ -318,134 +340,6 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
     <div class="steam-scroll-top"><i class="fas fa-chevron-up"></i></div>
   `;
 }
-export class SteamSettings {
-  static DEFAULTS = {
-    currentlyPlayingPopups: true,
-    dnd: false,
-    shareLiveActivity: true,
-    runOnStartup: false,
-    startMinimized: false,
-    enableStartupAnimation: true,
-    recentlyPlayedRow: true,
-    gridSize: "medium",
-    hideArchiveGames: false,
-    hideLuminSDK: false,
-    socialDisabled: false
-  };
-
-  static KEY = StorageKeys.steamSettings;
-
-  static load() {
-    try {
-      const saved = os.storage.get(this.KEY);
-      if (saved) {
-        return { ...this.DEFAULTS, ...saved };
-      }
-    } catch (e) {
-      console.error("Failed to load settings:", e);
-    }
-    return { ...this.DEFAULTS };
-  }
-
-  static save(settings) {
-    try {
-      os.storage.set(this.KEY, settings);
-      return true;
-    } catch (e) {
-      console.error("Failed to save settings:", e);
-      return false;
-    }
-  }
-
-  static get(key) {
-    const settings = this.load();
-    return settings[key] ?? this.DEFAULTS[key];
-  }
-
-  static set(key, value) {
-    const settings = this.load();
-    settings[key] = value;
-    return this.save(settings);
-  }
-
-  static reset() {
-    return this.save({ ...this.DEFAULTS });
-  }
-}
-
-export function initSettingsToggles(root) {
-  const settings = SteamSettings.load();
-
-  root.querySelectorAll(".settings-toggle").forEach((toggle) => {
-    if (toggle.inited) return;
-    toggle.inited = true;
-    const setting = toggle.dataset.setting;
-    const value = settings[setting];
-
-    if (value) {
-      toggle.classList.add("active");
-    } else {
-      toggle.classList.remove("active");
-    }
-
-    toggle.addEventListener("mouseenter", () => steamAudio.playHover());
-
-    toggle.addEventListener("click", () => {
-      const isActive = toggle.classList.contains("active");
-      toggle.classList.toggle("active");
-      steamAudio.playSelect();
-      SteamSettings.set(setting, !isActive);
-
-      if (
-        [
-          "hideArchiveGames",
-          "hideLuminSDK",
-          "recentlyPlayedRow",
-          "shareLiveActivity",
-          "dnd",
-          "socialDisabled"
-        ].includes(setting)
-      ) {
-        window.dispatchEvent(
-          new CustomEvent("steam-settings-changed", {
-            detail: { setting, value: !isActive }
-          })
-        );
-      }
-    });
-  });
-}
-
-export function initSettingsPage(container) {
-  const settingsPage = container.querySelector(".steam-settings-page");
-  if (!settingsPage) return;
-
-  initSettingsToggles(settingsPage);
-
-  const settings = SteamSettings.load();
-  settingsPage.querySelectorAll(".settings-select").forEach((select) => {
-    if (select.inited) return;
-    select.inited = true;
-    const setting = select.dataset.setting;
-    const value = settings[setting];
-
-    select.value = value;
-
-    select.addEventListener("change", (e) => {
-      steamAudio.playSelect();
-      SteamSettings.set(setting, e.target.value);
-
-      if (setting === "gridSize") {
-        window.dispatchEvent(
-          new CustomEvent("steam-settings-changed", {
-            detail: { setting, value: e.target.value }
-          })
-        );
-      }
-    });
-  });
-}
-
 export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
   const allDropdownMenus = container.querySelectorAll(".steam-dropdown-menu");
 
@@ -461,7 +355,7 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
         { id: "up-friends", action: "up-friends", label: "Friends & Chat", icon: "fa-user-group" },
         { id: "up-settings", action: "up-settings", label: "Settings", icon: "fa-gear" },
         { id: "up-account", action: "up-account", label: "Account", icon: "fa-user-lock" },
-        { id: "up-social-tour", action: "up-social-tour", label: "Steam Tour", icon: "fa-question-circle" }
+        { id: "up-social-tour", action: "up-social-tour", label: "Yuki Steam Tour", icon: "fa-question-circle" }
       ];
       const handlers = {
         "up-my-profile": () => navigateTo("user"),
@@ -518,7 +412,7 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
       const action = item.dataset.action;
       if (action === "steam-settings") {
         steamAudio.playSelect();
-        navigateTo("settings");
+        openSteamSettingsWindow(wm);
       } else if (action === "steam-account") {
         steamAudio.playSelect();
         navigateTo("login");
@@ -578,156 +472,26 @@ export function initDropdowns(container, navigateTo, openFriendsWindow, wm) {
   });
 
   document.addEventListener("click", closeAll);
+
+  const disclaimer = container.querySelector(".steam-disclaimer");
+  const disclaimerClose = container.querySelector(".steam-disclaimer-close");
+
+  const disclaimerAcknowledged = os.storage.get(StorageKeys.steamDisclaimerAcknowledged);
+  if (disclaimerAcknowledged && disclaimer) {
+    disclaimer.classList.add("hidden");
+  }
+
+  if (disclaimerClose && disclaimer) {
+    disclaimerClose.addEventListener("mouseenter", () => steamAudio.playHover());
+    disclaimerClose.addEventListener("click", () => {
+      steamAudio.playSelect();
+      disclaimer.classList.add("hidden");
+      os.storage.set(StorageKeys.steamDisclaimerAcknowledged, true);
+    });
+  }
 }
 
 export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, imgObserver) {
-  const STORE_GAMES = [
-    {
-      app: "tabs",
-      icon: resolveIconUrl("static/icons/tabs.webp"),
-      title: "TABS: Totaly Accurate Battle Simulator",
-      tags: ["Strategy", "Simulation", "War"]
-    },
-    {
-      app: "catGoesFishing",
-      icon: resolveIconUrl("static/icons/cat.webp"),
-      title: "Cat Goes Fishing",
-      tags: ["Fishing", "Simulation", "Relaxing", "Casual"]
-    },
-    {
-      app: "angryBirds2",
-      icon: resolveIconUrl("static/icons/angryBirds2.webp"),
-      title: "Angry Birds 2",
-      tags: ["Slingshot", "Physics", "Puzzle"]
-    },
-    {
-      app: "slimeRancher",
-      icon: resolveIconUrl("static/icons/slime.webp"),
-      title: "Slime Rancher",
-      tags: ["Farming Sim", "Exploration", "First-Person"]
-    },
-    {
-      app: "lobotomyCorporation",
-      icon: resolveIconUrl("static/icons/lobotomy.webp"),
-      title: "Lobotomy Corporation,",
-      tags: ["Strategy", "Simulation"]
-    },
-    {
-      app: "plagueIncEvolved",
-      icon: resolveIconUrl("static/icons/plague.webp"),
-      title: "Plague Inc Evolved",
-      tags: ["Strategy", "Simulation"]
-    },
-    {
-      app: "fiveNightsAtFrickbears3",
-      icon: resolveIconUrl("static/icons/fiveNightsAtFrickbears.webp"),
-      title: "Five Nights At Frickbears 3",
-      tags: ["Horror", "Survival"]
-    },
-    {
-      app: "helltaker",
-      icon: resolveIconUrl("static/icons/helltaker.jpg"),
-      title: "Helltaker",
-      tags: ["Puzzle", "Anime"]
-    },
-    {
-      app: "inscryption",
-      icon: resolveIconUrl("static/icons/inscryption.webp"),
-      title: "Inscryption",
-      tags: ["Card Game", "Roguelike"]
-    },
-    {
-      app: "nightInTheWoods",
-      icon: resolveIconUrl("static/icons/night.webp"),
-      title: "Night In The Woods",
-      tags: ["Adventure", "Narrative"]
-    },
-    {
-      app: "daddy",
-      icon: resolveIconUrl("static/icons/daddy.webp"),
-      title: "Who's Your Daddy",
-      tags: ["Casual", "Multiplayer"]
-    },
-    {
-      app: "suicideGuy",
-      icon: resolveIconUrl("static/icons/suicideguy.webp"),
-      title: "Suicide Guy",
-      tags: ["Puzzle", "Platformer"]
-    },
-    {
-      app: "ytlifeomg",
-      icon: resolveIconUrl("static/icons/yt.webp"),
-      title: "Youtubers Life Omg",
-      tags: ["Simulation", "Management"]
-    },
-    {
-      app: "inStarsAndTime",
-      icon: resolveIconUrl("static/icons/star.webp"),
-      title: "In Stars And Time",
-      tags: ["RPG", "Story"]
-    },
-    {
-      app: "slenderina",
-      icon: resolveIconUrl("static/icons/slenderina.webp"),
-      title: "Slenderina The Cellar",
-      tags: ["Horror", "Action"]
-    },
-    {
-      app: "wheresBaldi",
-      icon: resolveIconUrl("static/icons/wheresBaldi.webp"),
-      title: "Where's Baldi",
-      tags: ["Horror", "Action"]
-    },
-    {
-      app: "baldiBalds",
-      icon: resolveIconUrl("static/icons/baldiBalds.webp"),
-      title: "Baldi Balds The Universe",
-      tags: ["Horror", "Action"]
-    },
-    {
-      app: "baldisBasicsTeachingOnTwos",
-      icon: resolveIconUrl("static/icons/baldisBasicsTeachingOnTwos.webp"),
-      title: "Baldi's Basics: Teaching On Twos",
-      tags: ["Horror", "Education"]
-    },
-    {
-      app: "playtimeHellBear5van",
-      icon: resolveIconUrl("static/icons/playtimeHellBear5van.webp"),
-      title: "Playtime Hell & Bear 5 Van",
-      tags: ["Horror", "Action"]
-    },
-    {
-      app: "antidisestablishmentarianism",
-      icon: resolveIconUrl("static/icons/antiDisestablishism.webp"),
-      title: "Antidisestablishmentarianism",
-      tags: ["Puzzle", "Indie", "Education"]
-    },
-    {
-      app: "minusThree",
-      icon: resolveIconUrl("static/icons/minusThree.webp"),
-      title: "Minus Three",
-      tags: ["Puzzle", "Indie", "Education"]
-    },
-    {
-      app: "three",
-      icon: resolveIconUrl("static/icons/three.webp"),
-      title: "Three",
-      tags: ["Puzzle", "Indie", "Education"]
-    },
-    {
-      app: "theMathIsLeaking",
-      icon: resolveIconUrl("static/icons/theMathIsLeaking.webp"),
-      title: "The Math Is Leaking",
-      tags: ["Puzzle", "Education"]
-    },
-    {
-      app: "pneumonoultramicroscopicsilicovolcanoconiosis",
-      icon: resolveIconUrl("static/icons/pneumo.webp"),
-      title: "Pneumonoultramicroscopicsilicovolcanoconiosis",
-      tags: ["Puzzle", "Educational", "Word", "Indie"]
-    }
-  ];
-
   const heroImgs = [
     {
       app: "tabs",
@@ -827,7 +591,7 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       card.innerHTML = `
   <div class="store-game-card-img">
     <img data-src="${g.icon}" alt="${g.title}" />
-    <div class="store-port-corner">Reeyuki Port</div>
+    <div class="store-port-corner">Webport</div>
   </div>
 
   <div class="store-game-card-info">
@@ -860,15 +624,12 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
   }
 
   suppressAdBlocks(storePage);
-  injectAdsterraAd("store-ad-slot-1", "f88fd46583493c3820f283948e5e5391", 300, 160, 0);
-  injectAdsterraAd("store-ad-slot-2", "ee9dc67de90729e2804aa8aba6454ec8", 600, 160, 1000);
+  injectAdsterraAd("store-ad-slot-1", ADSTERRA_KEYS.storeWide, 300, 160, 0);
+  injectAdsterraAd("store-ad-slot-2", ADSTERRA_KEYS.storeRect, 600, 160, 1000);
 }
 
 window.addEventListener("steam-settings-changed", (e) => {
   if (e.detail.setting === "gridSize") {
-    let gridMin = "140px";
-    if (e.detail.value === "small") gridMin = "100px";
-    else if (e.detail.value === "large") gridMin = "180px";
-    document.documentElement.style.setProperty("--steam-grid-min", gridMin);
+    document.documentElement.style.setProperty("--steam-grid-min", getGridMin(e.detail.value));
   }
 });

@@ -553,7 +553,7 @@ async function loadCloudStatus() {
   }
   let extra = "";
   if (summary.needsReauth) {
-    extra = `<p class="sync-hint">Session expired — sign in again.</p>`;
+    extra = `<p class="sync-hint">Your session expired. Please sign in again.</p>`;
   } else if (summary.error) {
     extra = `<p class="sync-hint">${escapeHtml(summary.error)}</p>`;
   } else {

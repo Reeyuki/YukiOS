@@ -16,10 +16,29 @@ import { os, StorageKeys } from "../framework.js";
 import { $, $$, bindEvent, setText, setHTML, setStyle, createElement } from "../shared/domUtils.js";
 import { getPresence, setPresence, getDnd, setDnd, PRESENCE } from "../social/presence.js";
 import { showContextMenu } from "../shared/contextMenu.js";
+import { initSteamPopupWindow } from "./steamPopupWindow.js";
 import { callIfFunction, isFunction, hasMethod } from "../shared/functionUtils.js";
-import { initSettingsToggles } from "./steam.js";
-import { fetchFriends, getFriendRelation, sendFriendRequest, acceptFriendRequest, removeFriend, fetchConversations } from "../social/friendsApi.js";
-import { fetchLeaderboard, fetchReactions, sendReaction, removeReaction, fetchSocialMe, fetchQuests, claimQuest, invalidateSocialMe } from "../social/socialMeApi.js";
+import { initSettingsToggles, buildSettingsItemsHtml } from "./steamSettings.js";
+import {
+  fetchFriends,
+  getFriendRelation,
+  sendFriendRequest,
+  acceptFriendRequest,
+  removeFriend,
+  fetchConversations,
+  fetchMessages,
+  sendMessage
+} from "../social/friendsApi.js";
+import {
+  fetchLeaderboard,
+  fetchReactions,
+  sendReaction,
+  removeReaction,
+  fetchSocialMe,
+  fetchQuests,
+  claimQuest,
+  invalidateSocialMe
+} from "../social/socialMeApi.js";
 import { fetchShopCatalog, purchaseItem } from "../social/shopApi.js";
 import { fetchFeed } from "../social/feedApi.js";
 
@@ -80,11 +99,31 @@ function buildStatusHtml(user) {
 export function openStatusPicker(event) {
   const current = getPresence();
   const items = [
-    { id: "status-online", action: "status-online", label: "Online", icon: current === PRESENCE.ONLINE ? "fa-check" : "fa-circle" },
-    { id: "status-invisible", action: "status-invisible", label: "Invisible", icon: current === PRESENCE.INVISIBLE ? "fa-check" : "fa-eye-slash" },
-    { id: "status-offline", action: "status-offline", label: "Offline", icon: current === PRESENCE.OFFLINE ? "fa-check" : "fa-power-off" },
+    {
+      id: "status-online",
+      action: "status-online",
+      label: "Online",
+      icon: current === PRESENCE.ONLINE ? "fa-check" : "fa-circle"
+    },
+    {
+      id: "status-invisible",
+      action: "status-invisible",
+      label: "Invisible",
+      icon: current === PRESENCE.INVISIBLE ? "fa-check" : "fa-eye-slash"
+    },
+    {
+      id: "status-offline",
+      action: "status-offline",
+      label: "Offline",
+      icon: current === PRESENCE.OFFLINE ? "fa-check" : "fa-power-off"
+    },
     "hr",
-    { id: "status-dnd", action: "status-dnd", label: getDnd() ? "Do Not Disturb: On" : "Do Not Disturb: Off", icon: getDnd() ? "fa-check" : "fa-bell-slash" }
+    {
+      id: "status-dnd",
+      action: "status-dnd",
+      label: getDnd() ? "Do Not Disturb: On" : "Do Not Disturb: Off",
+      icon: getDnd() ? "fa-check" : "fa-bell-slash"
+    }
   ];
   const handlers = {
     "status-online": () => setPresence(PRESENCE.ONLINE),
@@ -129,115 +168,154 @@ function presenceTitleFor(user, isSelf) {
 }
 
 function renderUserRow(user, options) {
-    const row = createElement("div", { className: "steam-social-row" });
-    if (user.userId === getLiveUserId()) row.classList.add("steam-social-row--self");
+  const row = createElement("div", { className: "steam-social-row" });
+  if (user.userId === getLiveUserId()) row.classList.add("steam-social-row--self");
 
-    const isSelf = user.userId === getLiveUserId();
-    const avatarUrl = isSelf ? (options.localAvatar || null) : avatarUrlForIndex(user.avatarIndex);
+  const isSelf = user.userId === getLiveUserId();
+  const avatarUrl = isSelf ? options.localAvatar || null : avatarUrlForIndex(user.avatarIndex);
 
-    const avatarWrap = createElement("div", { className: "steam-social-avatar-wrap" });
-    if (avatarUrl) {
-      avatarWrap.appendChild(
-        createElement("img", {
-          className: "steam-social-avatar",
-          attributes: { src: avatarUrl, loading: "lazy" }
+  const avatarWrap = createElement("div", { className: "steam-social-avatar-wrap" });
+  if (avatarUrl) {
+    avatarWrap.appendChild(
+      createElement("img", {
+        className: "steam-social-avatar",
+        attributes: { src: avatarUrl, loading: "lazy" }
+      })
+    );
+  } else {
+    avatarWrap.appendChild(
+      createElement("div", {
+        className: "steam-social-avatar steam-social-avatar--default",
+        html: '<i class="fas fa-user"></i>'
+      })
+    );
+  }
+  avatarWrap.appendChild(
+    createElement("span", {
+      className: `steam-social-presence-dot steam-social-presence-dot--${presenceToneFor(user, isSelf)}`,
+      attributes: { title: presenceTitleFor(user, isSelf) }
+    })
+  );
+  row.appendChild(avatarWrap);
+
+  const info = createElement("div", { className: "steam-social-info" });
+  const nameLine = createElement("div", { className: "steam-social-name" });
+  nameLine.appendChild(
+    createElement("span", { className: "steam-social-name-text", text: user.username || "Unknown" })
+  );
+  if (isSelf) nameLine.appendChild(createElement("span", { className: "steam-social-you", text: "You" }));
+  info.appendChild(nameLine);
+
+  const statusRow = createElement("div", { className: "steam-social-status-row" });
+  statusRow.appendChild(createElement("span", { html: buildStatusHtml(user) }));
+  info.appendChild(statusRow);
+
+  const meta = createElement("div", { className: "steam-social-meta" });
+  meta.appendChild(
+    createElement("span", {
+      className: "steam-social-stat",
+      html: `<i class="fas fa-trophy"></i> ${(user.achievements || []).length}`
+    })
+  );
+  meta.appendChild(createElement("span", { className: "steam-social-stat-sep", html: "&middot;" }));
+  meta.appendChild(
+    createElement("span", {
+      className: "steam-social-stat",
+      html: `<i class="fas fa-clock"></i> ${formatPlaytime(user.totalMinutes)}`
+    })
+  );
+  info.appendChild(meta);
+
+  row.appendChild(info);
+
+  const friendRelations = options.friendRelations;
+  if (friendRelations && !isSelf) {
+    const relation = friendRelations.get(user.userId) || "none";
+    const actions = createElement("div", { className: "steam-social-friend-actions" });
+    if (relation === "friend") {
+      actions.appendChild(
+        createElement("span", {
+          className: "steam-friend-btn steam-friend-btn--active",
+          html: '<i class="fas fa-user-check"></i> Friends'
+        })
+      );
+      const removeBtn = createElement("button", {
+        type: "button",
+        className: "steam-friend-btn steam-friend-btn--remove",
+        html: '<i class="fas fa-user-minus"></i>',
+        attributes: { title: "Remove friend" }
+      });
+      bindEvent(removeBtn, "click", (e) => {
+        e.stopPropagation();
+        removeFriend(user.userId).then((res) => {
+          if (res.success) callIfFunction(options.onFriendChange);
+        });
+      });
+      actions.appendChild(removeBtn);
+    } else if (relation === "incoming") {
+      const acceptBtn = createElement("button", {
+        type: "button",
+        className: "steam-friend-btn steam-friend-btn--accept",
+        html: '<i class="fas fa-check"></i> Accept'
+      });
+      const declineBtn = createElement("button", {
+        type: "button",
+        className: "steam-friend-btn steam-friend-btn--decline",
+        html: '<i class="fas fa-times"></i> Decline'
+      });
+      bindEvent(acceptBtn, "click", (e) => {
+        e.stopPropagation();
+        acceptFriendRequest(user.userId).then((res) => {
+          if (res.status) callIfFunction(options.onFriendChange);
+        });
+      });
+      bindEvent(declineBtn, "click", (e) => {
+        e.stopPropagation();
+        removeFriend(user.userId).then((res) => {
+          if (res.success) callIfFunction(options.onFriendChange);
+        });
+      });
+      actions.appendChild(acceptBtn);
+      actions.appendChild(declineBtn);
+    } else if (relation === "outgoing") {
+      actions.appendChild(
+        createElement("span", {
+          className: "steam-friend-btn steam-friend-btn--sent",
+          html: '<i class="fas fa-clock"></i> Request sent'
         })
       );
     } else {
-      avatarWrap.appendChild(
-        createElement("div", {
-          className: "steam-social-avatar steam-social-avatar--default",
-          html: '<i class="fas fa-user"></i>'
-        })
-      );
+      const addBtn = createElement("button", {
+        type: "button",
+        className: "steam-friend-btn steam-friend-btn--add",
+        html: '<i class="fas fa-user-plus"></i> Add friend'
+      });
+      bindEvent(addBtn, "click", (e) => {
+        e.stopPropagation();
+        addBtn.disabled = true;
+        sendFriendRequest(user.userId).then((res) => {
+          if (res.status) {
+            os.notify.send("Friend Request Sent", `Request sent to ${user.username || "player"}.`);
+            callIfFunction(options.onFriendChange);
+          } else {
+            addBtn.disabled = false;
+            os.dialog.alert("Could Not Send Request", res.error || "The friend request could not be sent.");
+          }
+        });
+      });
+      actions.appendChild(addBtn);
     }
-    avatarWrap.appendChild(
-      createElement("span", {
-        className: `steam-social-presence-dot steam-social-presence-dot--${presenceToneFor(user, isSelf)}`,
-        attributes: { title: presenceTitleFor(user, isSelf) }
-      })
-    );
-    row.appendChild(avatarWrap);
-
-    const info = createElement("div", { className: "steam-social-info" });
-    const nameLine = createElement("div", { className: "steam-social-name" });
-    nameLine.appendChild(createElement("span", { className: "steam-social-name-text", text: user.username || "Unknown" }));
-    if (isSelf) nameLine.appendChild(createElement("span", { className: "steam-social-you", text: "You" }));
-    info.appendChild(nameLine);
-
-    const statusRow = createElement("div", { className: "steam-social-status-row" });
-    statusRow.appendChild(createElement("span", { html: buildStatusHtml(user) }));
-    info.appendChild(statusRow);
-
-    const meta = createElement("div", { className: "steam-social-meta" });
-    meta.appendChild(createElement("span", { className: "steam-social-stat", html: `<i class="fas fa-trophy"></i> ${(user.achievements || []).length}` }));
-    meta.appendChild(createElement("span", { className: "steam-social-stat-sep", html: "&middot;" }));
-    meta.appendChild(createElement("span", { className: "steam-social-stat", html: `<i class="fas fa-clock"></i> ${formatPlaytime(user.totalMinutes)}` }));
-    info.appendChild(meta);
-
-    row.appendChild(info);
-
-    const friendRelations = options.friendRelations;
-    if (friendRelations && !isSelf) {
-      const relation = friendRelations.get(user.userId) || "none";
-      const actions = createElement("div", { className: "steam-social-friend-actions" });
-      if (relation === "friend") {
-        actions.appendChild(createElement("span", { className: "steam-friend-btn steam-friend-btn--active", html: '<i class="fas fa-user-check"></i> Friends' }));
-        const removeBtn = createElement("button", { type: "button", className: "steam-friend-btn steam-friend-btn--remove", html: '<i class="fas fa-user-minus"></i>', attributes: { title: "Remove friend" } });
-        bindEvent(removeBtn, "click", (e) => {
-          e.stopPropagation();
-          removeFriend(user.userId).then((res) => {
-            if (res.success) callIfFunction(options.onFriendChange);
-          });
-        });
-        actions.appendChild(removeBtn);
-      } else if (relation === "incoming") {
-        const acceptBtn = createElement("button", { type: "button", className: "steam-friend-btn steam-friend-btn--accept", html: '<i class="fas fa-check"></i> Accept' });
-        const declineBtn = createElement("button", { type: "button", className: "steam-friend-btn steam-friend-btn--decline", html: '<i class="fas fa-times"></i> Decline' });
-        bindEvent(acceptBtn, "click", (e) => {
-          e.stopPropagation();
-          acceptFriendRequest(user.userId).then((res) => {
-            if (res.status) callIfFunction(options.onFriendChange);
-          });
-        });
-        bindEvent(declineBtn, "click", (e) => {
-          e.stopPropagation();
-          removeFriend(user.userId).then((res) => {
-            if (res.success) callIfFunction(options.onFriendChange);
-          });
-        });
-        actions.appendChild(acceptBtn);
-        actions.appendChild(declineBtn);
-      } else if (relation === "outgoing") {
-        actions.appendChild(createElement("span", { className: "steam-friend-btn steam-friend-btn--sent", html: '<i class="fas fa-clock"></i> Request sent' }));
-      } else {
-        const addBtn = createElement("button", { type: "button", className: "steam-friend-btn steam-friend-btn--add", html: '<i class="fas fa-user-plus"></i> Add friend' });
-        bindEvent(addBtn, "click", (e) => {
-          e.stopPropagation();
-          addBtn.disabled = true;
-          sendFriendRequest(user.userId).then((res) => {
-            if (res.status) {
-              os.notify.send("Friend Request Sent", `Request sent to ${user.username || "player"}.`);
-              callIfFunction(options.onFriendChange);
-            } else {
-              addBtn.disabled = false;
-              os.dialog.alert("Could Not Send Request", res.error || "The friend request could not be sent.");
-            }
-          });
-        });
-        actions.appendChild(addBtn);
-      }
-      row.appendChild(actions);
-    }
-    bindEvent(row, "click", () => {
-      if (isSelf) {
-        os.app.launch("steamApp", { steamPage: "user" });
-      } else {
-        os.app.launch("steamApp", { steamPage: "profile", steamUserId: user.userId });
-      }
-    });
-    return row;
+    row.appendChild(actions);
   }
+  bindEvent(row, "click", () => {
+    if (isSelf) {
+      os.app.launch("steamApp", { steamPage: "user" });
+    } else {
+      os.app.launch("steamApp", { steamPage: "profile", steamUserId: user.userId });
+    }
+  });
+  return row;
+}
 
 function loadCatalog() {
   try {
@@ -256,6 +334,42 @@ function formatPlaytime(minutes) {
   if (m <= 0) return "0 hrs";
   if (m < 60) return `${Math.max(1, Math.round(m))} min`;
   return `${hoursHours(m)} hrs`;
+}
+
+function isOwnProfile(user) {
+  if (!user) return false;
+  if (!user.userId || user.userId === "local") return true;
+  return user.userId === getLiveUserId();
+}
+
+function recentPlaytimeFromSessions(appId) {
+  const windowMs = 14 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  try {
+    const sessions = os.storage.get(StorageKeys.steamSessions) || {};
+    const appSessions = sessions[appId] || [];
+    return appSessions.filter((s) => now - s.ts < windowMs).reduce((sum, s) => sum + (Number(s.min) || 0), 0);
+  } catch {
+    return 0;
+  }
+}
+
+function profileGameStatsFor(user, appId) {
+  const entry = (user?.playtime || []).find((e) => e.app === appId);
+  const serverMinutes = Number(entry?.minutes) || 0;
+  const isSelf = isOwnProfile(user);
+  let totalMin = 0;
+  let recentMin = 0;
+  let hasRecent = false;
+  if (isSelf) {
+    const stats = os.storage.get(StorageKeys.steamStats) || {};
+    totalMin = Math.max(Number(stats[appId]?.totalMin) || 0, serverMinutes);
+    recentMin = recentPlaytimeFromSessions(appId);
+    hasRecent = true;
+  } else {
+    totalMin = serverMinutes;
+  }
+  return { totalMin, recentMin, hasRecent };
 }
 
 function hoursLabel(minutes) {
@@ -288,7 +402,7 @@ function buildNowPlayingCardHtml(user) {
   const appId = user.nowPlaying.appId;
   const icon = resolveAppIcon(appId) || user.nowPlaying.gameIcon || "fas fa-gamepad";
   return `
-    <div class="steam-profile-gamecard steam-profile-gamecard--ingame">
+    <div class="steam-profile-gamecard steam-profile-gamecard--ingame" data-app="${escapeHtml(appId)}">
       <div class="steam-profile-gamecard-thumb">${gameIconHtml(icon)}</div>
       <div class="steam-profile-gamecard-info">
         <div class="steam-profile-gamecard-title">${escapeHtml(resolveAppName(appId))}</div>
@@ -309,7 +423,7 @@ function buildPlaytimeCardsHtml(user) {
       const icon = resolveAppIcon(entry.app) || "fas fa-gamepad";
       const last = lastPlayedLabel(entry.lastPlayed);
       return `
-        <div class="steam-profile-gamecard">
+        <div class="steam-profile-gamecard" data-app="${escapeHtml(entry.app)}">
           <div class="steam-profile-gamecard-thumb">${gameIconHtml(icon)}</div>
           <div class="steam-profile-gamecard-info">
             <div class="steam-profile-gamecard-title">${escapeHtml(resolveAppName(entry.app))}</div>
@@ -324,9 +438,7 @@ function buildPlaytimeCardsHtml(user) {
 }
 
 function badgeTileHtml(badge) {
-  const cls = badge.earned
-    ? "steam-profile-badge"
-    : "steam-profile-badge steam-profile-badge--locked";
+  const cls = badge.earned ? "steam-profile-badge" : "steam-profile-badge steam-profile-badge--locked";
   return `
     <div class="${cls}">
       <i class="fas ${escapeHtml(badge.icon)}"></i>
@@ -411,14 +523,12 @@ function buildProfileHtml(user, opts) {
   const cardsHtml = buildPlaytimeCardsHtml(user);
   const emptyBody = !nowPlayingHtml && !cardsHtml ? '<div class="steam-profile-empty">No games played yet.</div>' : "";
 
-  const gamesRowCls =
-    isFunction(opts.onShowGames)
-      ? "steam-profile-stat-row steam-profile-stat-row--link"
-      : "steam-profile-stat-row";
-  const achievementsRowCls =
-    isFunction(opts.onShowAchievements)
-      ? "steam-profile-stat-row steam-profile-stat-row--link"
-      : "steam-profile-stat-row";
+  const gamesRowCls = isFunction(opts.onShowGames)
+    ? "steam-profile-stat-row steam-profile-stat-row--link"
+    : "steam-profile-stat-row";
+  const achievementsRowCls = isFunction(opts.onShowAchievements)
+    ? "steam-profile-stat-row steam-profile-stat-row--link"
+    : "steam-profile-stat-row";
 
   return `
     <div class="steam-profile">
@@ -501,6 +611,60 @@ function bindPlayButton(btn, user, opts) {
 function bindProfileEvents(root, user, opts) {
   const editable = Boolean(opts.editable);
   $$(".steam-profile-play-btn", root).forEach((btn) => bindPlayButton(btn, user, opts));
+  const profileRoot = root.closest(".steam-app-root");
+  const profilePopover = profileRoot ? profileRoot.querySelector(".steam-game-popover") : null;
+  $$(".steam-profile-gamecard", root).forEach((card) => {
+    bindEvent(card, "mouseenter", () => {
+      if (!profilePopover) return;
+      const appId = card.dataset.app;
+      if (!appId) return;
+      const icon = resolveAppIcon(appId) || "fas fa-gamepad";
+      const title = resolveAppName(appId);
+      const stats = profileGameStatsFor(user, appId);
+      const popoverStats = `
+        ${
+          stats.hasRecent
+            ? `<div class="popover-stat-item">
+              <span class="popover-stat-label">Last two weeks:</span>
+              <span class="popover-stat-value">${formatPlaytime(stats.recentMin)}</span>
+            </div>`
+            : ""
+        }<div class="popover-stat-item">
+              <span class="popover-stat-label">Total played:</span>
+              <span class="popover-stat-value">${formatPlaytime(stats.totalMin)}</span>
+            </div>`;
+      profilePopover.innerHTML = `
+        <img class="popover-banner" src="${icon}" />
+        <div class="popover-content">
+          <div class="popover-title">${escapeHtml(title)}</div>
+          <div class="popover-stats">${popoverStats}</div>
+        </div>
+      `;
+      profilePopover.style.display = "block";
+      const rect = card.getBoundingClientRect();
+      const rootRect = profileRoot.getBoundingClientRect();
+      profilePopover.style.left = `${rect.right - rootRect.left + 10}px`;
+      profilePopover.style.top = `${rect.top - rootRect.top}px`;
+      const popRect = profilePopover.getBoundingClientRect();
+      if (popRect.right > window.innerWidth) profilePopover.style.left = `${rect.left - popRect.width - 10}px`;
+      if (popRect.bottom > window.innerHeight)
+        profilePopover.style.top = `${window.innerHeight - popRect.height - 10}px`;
+    });
+    bindEvent(card, "mouseleave", () => {
+      if (profilePopover) profilePopover.style.display = "none";
+    });
+    bindEvent(card, "click", (e) => {
+      if (e.target.closest(".steam-profile-play-btn")) return;
+      const appId = card.dataset.app;
+      if (!appId) return;
+      if (isFunction(opts.onOpenGame)) callIfFunction(opts.onOpenGame, appId);
+      else if (isFunction(opts.onLaunch)) callIfFunction(opts.onLaunch, appId);
+      else {
+        const id = resolveAppId(appId);
+        if (id) os.app.launch(id).catch(() => {});
+      }
+    });
+  });
   const gamesBtn = $(".steam-profile-games-btn", root);
   if (gamesBtn) {
     bindEvent(gamesBtn, "click", () => {
@@ -636,7 +800,9 @@ function openAvatarUpload(onSelected) {
     }
     try {
       const currentUserId = os.storage.get(StorageKeys.userId) || "user";
-      const rawExt = String(file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const rawExt = String(file.name.split(".").pop() || "png")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
       const safeExt = ["png", "jpg", "jpeg", "gif", "webp"].includes(rawExt) ? rawExt : "png";
       const fileName = `steam-avatar-${currentUserId}-${Date.now()}.${safeExt}`;
       await os.fs.writeBinaryFile(["Pictures"], fileName, file, "image", "static/icons/image.webp");
@@ -678,8 +844,12 @@ async function renderUserList(host, users, options) {
   let lastQuery = "";
 
   const matchesQuery = (user, normalized) =>
-    String(user.username || "").toLowerCase().includes(normalized) ||
-    String(user.userId || "").toLowerCase().includes(normalized);
+    String(user.username || "")
+      .toLowerCase()
+      .includes(normalized) ||
+    String(user.userId || "")
+      .toLowerCase()
+      .includes(normalized);
 
   const refreshRelations = async () => {
     const data = await fetchFriends({ refresh: true }).catch(() => null);
@@ -788,18 +958,6 @@ function buildFriendRow(friend, opts) {
     );
   }
   row.appendChild(info);
-  if (friend.nowPlaying && isFunction(opts.onLaunch)) {
-    const playBtn = createElement("button", {
-      attributes: { type: "button" },
-      className: "steam-profile-play-btn steam-friend-play-btn",
-      html: '<i class="fas fa-play"></i> Play'
-    });
-    bindEvent(playBtn, "click", (e) => {
-      e.stopPropagation();
-      opts.onLaunch(friend.nowPlaying.appId);
-    });
-    row.appendChild(playBtn);
-  }
   bindEvent(row, "click", () => {
     os.app.launch("steamApp", { steamPage: "profile", steamUserId: friend.userId });
   });
@@ -815,12 +973,16 @@ function buildFriendRow(friend, opts) {
 }
 
 function buildFriendGroup(title, group, friends, opts) {
-  const host = createElement("div", { className: `steam-friend-group steam-friend-group--${group} steam-friend-group--open` });
+  const host = createElement("div", {
+    className: `steam-friend-group steam-friend-group--${group} steam-friend-group--open`
+  });
   const head = createElement("button", {
     type: "button",
     className: "steam-friend-group-head"
   });
-  head.appendChild(createElement("span", { className: "steam-friend-group-chevron", html: '<i class="fas fa-chevron-right"></i>' }));
+  head.appendChild(
+    createElement("span", { className: "steam-friend-group-chevron", html: '<i class="fas fa-chevron-right"></i>' })
+  );
   head.appendChild(createElement("span", { className: "steam-friend-group-title", text: title }));
   head.appendChild(createElement("span", { className: "steam-friend-group-count", text: String(friends.length) }));
   host.appendChild(head);
@@ -831,15 +993,143 @@ function buildFriendGroup(title, group, friends, opts) {
   return host;
 }
 
+export function openFriendDmWindow(friend) {
+  if (!friend) return;
+  const winId = `steam-dm-${friend.userId}`;
+  const existing = $(`#${winId}`);
+  if (existing) {
+    os.window.focus(existing);
+    return;
+  }
+  const username = friend.username || "Friend";
+  const host = createElement("div", {
+    className: "window-content dm-window",
+    html: `
+      <div class="dm-header">
+        <div class="dm-header-info">
+          <span class="dm-header-name"></span>
+          <span class="dm-header-status"></span>
+        </div>
+      </div>
+      <div class="dm-messages" data-dm-messages></div>
+      <div class="dm-composer">
+        <input type="text" class="dm-input" data-dm-input placeholder="Message" maxlength="1000" />
+        <button type="button" class="steam-friend-btn steam-friend-btn--accept dm-send"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    `
+  });
+  const win = os.window.create(winId, `Chat with ${username}`, "320px", "420px", {
+    skipHeader: true,
+    icon: "fas fa-comment-dots",
+    style: { background: "var(--bg-secondary)" }
+  });
+  win.insertAdjacentHTML(
+    "afterbegin",
+    '<div class="window-header steam-popup-header">' + os.window.getWindowControls() + "</div>"
+  );
+  win.appendChild(host);
+  initSteamPopupWindow(win);
+  const input = $("[data-dm-input]", win);
+  const sendBtn = $(".dm-send", win);
+  const messagesEl = $("[data-dm-messages]", win);
+  const nameEl = $(".dm-header-name", win);
+  if (nameEl) setText(nameEl, username);
+  const statusEl = $(".dm-header-status", win);
+  if (statusEl) setText(statusEl, friend.presence === "online" ? "Online" : "Offline");
+  const friendId = friend.userId;
+
+  const poll = async () => {
+    if (!messagesEl || !messagesEl.isConnected) return;
+    const messages = await fetchMessages(friendId);
+    if (!messagesEl.isConnected) return;
+    if (!messages || messages.length === 0) {
+      setHTML(messagesEl, '<div class="dm-empty">Say hello!</div>');
+      return;
+    }
+    const myUserId = getLiveUserId();
+    setHTML(messagesEl, "");
+    messages.forEach((message) => {
+      const isMe = message.fromId === myUserId;
+      const bubble = createElement("div", {
+        className: `dm-bubble ${isMe ? "dm-bubble--me" : ""}`,
+        text: message.body
+      });
+      const time = createElement("div", {
+        className: "dm-bubble-time",
+        text: new Date(message.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      });
+      bubble.appendChild(time);
+      messagesEl.appendChild(bubble);
+    });
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  };
+  const doSend = async () => {
+    const text = (input && input.value.trim()) || "";
+    if (!text) return;
+    const res = await sendMessage(friendId, text);
+    if (res && res.error) {
+      os.notify.send("Message failed", res.error, { type: "error" });
+      return;
+    }
+    if (input) input.value = "";
+    await poll();
+  };
+  if (sendBtn) bindEvent(sendBtn, "click", doSend);
+  if (input)
+    bindEvent(input, "keydown", (e) => {
+      if (e.key === "Enter") doSend();
+    });
+  const pollTimer = setInterval(poll, 6000);
+  win.addEventListener("remove", () => clearInterval(pollTimer));
+  poll();
+}
+
+export function openFriendRowContextMenu(event, friend, refresh) {
+  const items = [
+    { id: "friend-chat", label: "Send Message", icon: "fa-comment-dots", action: "chat" },
+    { id: "friend-profile", label: "View Profile", icon: "fa-id-badge", action: "profile" },
+    "hr",
+    { id: "friend-remove", label: "Remove Friend", icon: "fa-user-slash", action: "remove" }
+  ];
+  const handlers = {
+    chat: () => openFriendDmWindow(friend),
+    profile: () => os.app.launch("steamApp", { steamPage: "profile", steamUserId: friend.userId }),
+    remove: async () => {
+      const confirmed = await os.dialog.confirm(
+        "Remove Friend",
+        `Remove ${friend.username || "this friend"} from your friends list?`
+      );
+      if (!confirmed) return;
+      const res = await removeFriend(friend.userId);
+      if (res && (res.success || res.status)) refresh();
+    }
+  };
+  showContextMenu(event, items, handlers);
+}
+
 export async function renderFriendsListPanel(panel, options = {}) {
   if (!panel || !panel.isConnected) return;
   const opts = options || {};
+  const refreshList = isFunction(opts.onUpdate) ? opts.onUpdate : () => renderFriendsListPanel(panel, opts);
+  const rowOpts = {
+    ...opts,
+    onOpenChat: isFunction(opts.onOpenChat) ? opts.onOpenChat : openFriendDmWindow,
+    onOpenContextMenu: isFunction(opts.onOpenContextMenu)
+      ? opts.onOpenContextMenu
+      : (event, friend) => openFriendRowContextMenu(event, friend, refreshList)
+  };
   setHTML(panel, '<div class="steam-social-loading">Loading friends...</div>');
   const data = await fetchFriends();
   if (!panel.isConnected) return;
   const friends = Array.isArray(data?.friends) ? data.friends : [];
   const query = typeof opts.query === "string" ? opts.query.trim().toLowerCase() : "";
-  const filtered = query ? friends.filter((friend) => String(friend.username || "").toLowerCase().includes(query)) : friends;
+  const filtered = query
+    ? friends.filter((friend) =>
+        String(friend.username || "")
+          .toLowerCase()
+          .includes(query)
+      )
+    : friends;
   if (filtered.length === 0) {
     setHTML(
       panel,
@@ -859,9 +1149,9 @@ export async function renderFriendsListPanel(panel, options = {}) {
     grouped[key].sort((a, b) => String(b.lastSeen || "").localeCompare(String(a.lastSeen || "")));
   });
   const list = createElement("div", { className: "steam-friend-list" });
-  if (grouped.ingame.length) list.appendChild(buildFriendGroup("In Game", "ingame", grouped.ingame, opts));
-  if (grouped.online.length) list.appendChild(buildFriendGroup("Online", "online", grouped.online, opts));
-  if (grouped.offline.length) list.appendChild(buildFriendGroup("Offline", "offline", grouped.offline, opts));
+  if (grouped.ingame.length) list.appendChild(buildFriendGroup("In Game", "ingame", grouped.ingame, rowOpts));
+  if (grouped.online.length) list.appendChild(buildFriendGroup("Online", "online", grouped.online, rowOpts));
+  if (grouped.offline.length) list.appendChild(buildFriendGroup("Offline", "offline", grouped.offline, rowOpts));
   setHTML(panel, "");
   panel.appendChild(list);
 }
@@ -869,6 +1159,14 @@ export async function renderFriendsListPanel(panel, options = {}) {
 export async function renderRequestsPanel(panel, options = {}) {
   if (!panel || !panel.isConnected) return;
   const opts = options || {};
+  const refreshRequests = isFunction(opts.onChange) ? opts.onChange : () => renderRequestsPanel(panel, opts);
+  const rowOpts = {
+    ...opts,
+    onChange: refreshRequests,
+    onOpenContextMenu: isFunction(opts.onOpenContextMenu)
+      ? opts.onOpenContextMenu
+      : (event, request) => openFriendRowContextMenu(event, request, refreshRequests)
+  };
   setHTML(panel, '<div class="steam-social-loading">Loading requests...</div>');
   const data = await fetchFriends({ refresh: true });
   if (!panel.isConnected) return;
@@ -883,27 +1181,44 @@ export async function renderRequestsPanel(panel, options = {}) {
     const frame = createElement("div", { className: "steam-friend-avatar-frame" });
     const avatarUrl = avatarUrlForIndex(request.avatarIndex);
     if (avatarUrl) {
-      frame.appendChild(createElement("img", { className: "steam-friend-avatar", attributes: { src: avatarUrl, loading: "lazy" } }));
+      frame.appendChild(
+        createElement("img", { className: "steam-friend-avatar", attributes: { src: avatarUrl, loading: "lazy" } })
+      );
     } else {
-      frame.appendChild(createElement("span", { className: "steam-friend-avatar steam-friend-avatar--default", html: '<i class="fas fa-user"></i>' }));
+      frame.appendChild(
+        createElement("span", {
+          className: "steam-friend-avatar steam-friend-avatar--default",
+          html: '<i class="fas fa-user"></i>'
+        })
+      );
     }
     row.appendChild(frame);
     const info = createElement("div", { className: "steam-friend-info" });
-    info.appendChild(createElement("div", { className: "steam-friend-name-line", text: request.username || "Unknown" }));
+    info.appendChild(
+      createElement("div", { className: "steam-friend-name-line", text: request.username || "Unknown" })
+    );
     row.appendChild(info);
     const actions = createElement("div", { className: "steam-friend-request-actions" });
-    const acceptBtn = createElement("button", { type: "button", className: "steam-friend-request-btn steam-friend-request-btn--accept", html: '<i class="fas fa-check"></i>' });
-    const declineBtn = createElement("button", { type: "button", className: "steam-friend-request-btn steam-friend-request-btn--decline", html: '<i class="fas fa-xmark"></i>' });
+    const acceptBtn = createElement("button", {
+      type: "button",
+      className: "steam-friend-request-btn steam-friend-request-btn--accept",
+      html: '<i class="fas fa-check"></i>'
+    });
+    const declineBtn = createElement("button", {
+      type: "button",
+      className: "steam-friend-request-btn steam-friend-request-btn--decline",
+      html: '<i class="fas fa-xmark"></i>'
+    });
     bindEvent(acceptBtn, "click", (e) => {
       e.stopPropagation();
       acceptFriendRequest(request.userId).then((res) => {
-        if (res.status) callIfFunction(opts.onChange);
+        if (res.status) callIfFunction(rowOpts.onChange);
       });
     });
     bindEvent(declineBtn, "click", (e) => {
       e.stopPropagation();
       removeFriend(request.userId).then((res) => {
-        if (res.success) callIfFunction(opts.onChange);
+        if (res.success) callIfFunction(rowOpts.onChange);
       });
     });
     actions.appendChild(acceptBtn);
@@ -912,7 +1227,7 @@ export async function renderRequestsPanel(panel, options = {}) {
     bindEvent(row, "contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      callIfFunction(opts.onOpenContextMenu, e, request);
+      callIfFunction(rowOpts.onOpenContextMenu, e, request);
     });
     list.appendChild(row);
   });
@@ -927,10 +1242,7 @@ export async function renderConversationsPanel(panel, options = {}) {
   const conversations = await fetchConversations({ refresh: true });
   if (!panel.isConnected) return;
   if (!conversations || conversations.length === 0) {
-    setHTML(
-      panel,
-      '<div class="steam-social-empty">No conversations yet. Message a friend from this window.</div>'
-    );
+    setHTML(panel, '<div class="steam-social-empty">No conversations yet. Message a friend from this window.</div>');
     return;
   }
   const list = createElement("div", { className: "steam-social-list" });
@@ -938,21 +1250,28 @@ export async function renderConversationsPanel(panel, options = {}) {
     const row = createElement("div", { className: "steam-social-row" });
     const avatarUrl = avatarUrlForIndex(conversation.avatarIndex);
     if (avatarUrl) {
-      row.appendChild(createElement("img", { className: "steam-social-avatar", attributes: { src: avatarUrl, loading: "lazy" } }));
+      row.appendChild(
+        createElement("img", { className: "steam-social-avatar", attributes: { src: avatarUrl, loading: "lazy" } })
+      );
     } else {
-      row.appendChild(createElement("div", { className: "steam-social-avatar steam-social-avatar--default", html: '<i class="fas fa-user"></i>' }));
+      row.appendChild(
+        createElement("div", {
+          className: "steam-social-avatar steam-social-avatar--default",
+          html: '<i class="fas fa-user"></i>'
+        })
+      );
     }
     const info = createElement("div", { className: "steam-social-info" });
     const nameLine = createElement("div", { className: "steam-social-name" });
-    nameLine.appendChild(createElement("span", { className: "steam-social-name-text", text: conversation.username || "Unknown" }));
+    nameLine.appendChild(
+      createElement("span", { className: "steam-social-name-text", text: conversation.username || "Unknown" })
+    );
     const unread = Number(conversation.unreadCount || 0);
     if (unread > 0) {
       nameLine.appendChild(createElement("span", { className: "steam-conversation-unread", text: String(unread) }));
     }
     info.appendChild(nameLine);
-    const lastText = conversation.lastMessage
-      ? conversation.lastMessage.body
-      : "Say hello to start a conversation";
+    const lastText = conversation.lastMessage ? conversation.lastMessage.body : "Say hello to start a conversation";
     info.appendChild(
       createElement("div", {
         className: "steam-social-meta",
@@ -976,10 +1295,7 @@ export async function renderFeedPanel(panel, options = {}) {
   const feed = await fetchFeed({ refresh: true });
   if (!panel.isConnected) return;
   if (!feed || feed.length === 0) {
-    setHTML(
-      panel,
-      '<div class="steam-social-empty">No activity yet. Add friends to see what they are up to.</div>'
-    );
+    setHTML(panel, '<div class="steam-social-empty">No activity yet. Add friends to see what they are up to.</div>');
     return;
   }
   const list = createElement("div", { className: "steam-feed-list" });
@@ -1126,11 +1442,23 @@ async function renderCommunityLeaderboard(host, options) {
         row.appendChild(createElement("span", { className: "steam-leaderboard-rank", text: String(index + 1) }));
         const avatar = entry.avatarIndex >= 0 ? avatarUrlForIndex(entry.avatarIndex) : null;
         if (avatar) {
-          row.appendChild(createElement("img", { className: "steam-leaderboard-avatar", attributes: { src: avatar, loading: "lazy" } }));
+          row.appendChild(
+            createElement("img", {
+              className: "steam-leaderboard-avatar",
+              attributes: { src: avatar, loading: "lazy" }
+            })
+          );
         } else {
-          row.appendChild(createElement("div", { className: "steam-leaderboard-avatar steam-leaderboard-avatar--default", html: '<i class="fas fa-user"></i>' }));
+          row.appendChild(
+            createElement("div", {
+              className: "steam-leaderboard-avatar steam-leaderboard-avatar--default",
+              html: '<i class="fas fa-user"></i>'
+            })
+          );
         }
-        row.appendChild(createElement("span", { className: "steam-leaderboard-name", text: entry.username || "Unknown" }));
+        row.appendChild(
+          createElement("span", { className: "steam-leaderboard-name", text: entry.username || "Unknown" })
+        );
         row.appendChild(createElement("span", { className: "steam-leaderboard-value", text: value }));
         bindEvent(row, "click", () => {
           if (entry.userId === getLiveUserId()) os.app.launch("steamApp", { steamPage: "user" });
@@ -1205,21 +1533,41 @@ export async function renderQuestsPage(pageEl, options = {}) {
     const pct = quest.target > 0 ? Math.min(100, Math.round((quest.progress / quest.target) * 100)) : 0;
     const done = Boolean(quest.claimed);
     const ready = !done && quest.progress >= quest.target;
-    const card = createElement("div", { className: `steam-quest${ready ? " steam-quest--ready" : ""}${done ? " steam-quest--done" : ""}` });
-    card.appendChild(createElement("div", { className: "steam-quest-icon", html: `<i class="fas ${quest.icon}"></i>` }));
+    const card = createElement("div", {
+      className: `steam-quest${ready ? " steam-quest--ready" : ""}${done ? " steam-quest--done" : ""}`
+    });
+    card.appendChild(
+      createElement("div", { className: "steam-quest-icon", html: `<i class="fas ${quest.icon}"></i>` })
+    );
     const body = createElement("div", { className: "steam-quest-body" });
     body.appendChild(createElement("div", { className: "steam-quest-title", text: quest.title }));
     body.appendChild(createElement("div", { className: "steam-quest-desc", text: quest.desc }));
     const progressWrap = createElement("div", { className: "steam-quest-progress-wrap" });
-    progressWrap.appendChild(createElement("div", { className: "steam-quest-progress", html: `<div class="steam-quest-progress-fill" style="width:${pct}%"></div>` }));
-    progressWrap.appendChild(createElement("span", { className: "steam-quest-meta", text: `${quest.progress}/${quest.target}` }));
+    progressWrap.appendChild(
+      createElement("div", {
+        className: "steam-quest-progress",
+        html: `<div class="steam-quest-progress-fill" style="width:${pct}%"></div>`
+      })
+    );
+    progressWrap.appendChild(
+      createElement("span", { className: "steam-quest-meta", text: `${quest.progress}/${quest.target}` })
+    );
     body.appendChild(progressWrap);
     card.appendChild(body);
-    card.appendChild(createElement("div", { className: "steam-quest-reward", html: `+${quest.rewardCoins} <i class="fas fa-coins"></i>` }));
+    card.appendChild(
+      createElement("div", {
+        className: "steam-quest-reward",
+        html: `+${quest.rewardCoins} <i class="fas fa-coins"></i>`
+      })
+    );
     const claimBtn = createElement("button", {
       attributes: { type: "button" },
       className: `steam-quest-btn${ready ? " steam-quest-btn--claim" : ""}`,
-      html: done ? '<i class="fas fa-check"></i> Claimed' : ready ? '<i class="fas fa-gift"></i> Claim' : '<i class="fas fa-lock"></i> Locked'
+      html: done
+        ? '<i class="fas fa-check"></i> Claimed'
+        : ready
+          ? '<i class="fas fa-gift"></i> Claim'
+          : '<i class="fas fa-lock"></i> Locked'
     });
     if (ready) {
       bindEvent(claimBtn, "click", async () => {
@@ -1347,8 +1695,7 @@ function openItemPreview(pageEl, item, state) {
   const equippedType = equipped[item.type] === item.id;
   const prestige = item.rarity === "prestige";
   const limited = Boolean(item.endsAt);
-  const priceHtml =
-    item.priceCoins > 0 ? `${item.priceCoins} <i class="fas fa-coins"></i>` : "Free";
+  const priceHtml = item.priceCoins > 0 ? `${item.priceCoins} <i class="fas fa-coins"></i>` : "Free";
 
   const overlay = createElement("div", { className: "steam-store-overlay" });
   overlay.innerHTML = `
@@ -1457,9 +1804,7 @@ export async function renderStorePage(pageEl, options = {}) {
   const buildList = () => {
     const list = createElement("div", { className: "steam-store-list" });
     Object.entries(grouped).forEach(([type, items]) => {
-      list.appendChild(
-        createElement("div", { className: "steam-store-group-title", text: typeLabels[type] || type })
-      );
+      list.appendChild(createElement("div", { className: "steam-store-group-title", text: typeLabels[type] || type }));
       items.forEach((item) => {
         const owned = inventory.includes(item.id);
         const equippedType = equipped[type] === item.id;
@@ -1490,10 +1835,7 @@ export async function renderStorePage(pageEl, options = {}) {
             })
           );
         }
-        const priceHtml =
-          item.priceCoins > 0
-            ? `${item.priceCoins} <i class="fas fa-coins"></i>`
-            : "Free";
+        const priceHtml = item.priceCoins > 0 ? `${item.priceCoins} <i class="fas fa-coins"></i>` : "Free";
         info.appendChild(createElement("div", { className: "steam-store-item-price", html: priceHtml }));
         card.appendChild(info);
         if (owned && !equippedType) {
@@ -1597,7 +1939,7 @@ function ensureProfilePlaytime(user) {
   }
 
   const merged = Array.from(playtimeMap.values()).sort(
-    (a, b) => (b.minutes - a.minutes) || ((b.lastPlayed || 0) - (a.lastPlayed || 0))
+    (a, b) => b.minutes - a.minutes || (b.lastPlayed || 0) - (a.lastPlayed || 0)
   );
   user.playtime = merged;
   user.totalMinutes = merged.reduce((sum, item) => sum + (Number(item.minutes) || 0), 0);
@@ -1623,6 +1965,54 @@ function makeSidebarItem(icon, label, active) {
   return item;
 }
 
+function buildSelfProfileCard(opts) {
+  const current = getCurrentUser();
+  const userId = getLiveUserId() || "local";
+  const card = createElement("div", { className: "steam-friends-me" });
+  const avatar = createElement("div", { className: "steam-friends-me-avatar" });
+  if (opts.avatarUrl) {
+    avatar.appendChild(createElement("img", { attributes: { src: opts.avatarUrl, alt: "" } }));
+  } else {
+    avatar.appendChild(createElement("i", { className: "fas fa-user" }));
+  }
+  card.appendChild(avatar);
+  const info = createElement("div", { className: "steam-friends-me-info" });
+  info.appendChild(createElement("div", { className: "steam-friends-me-name", text: current.name || "Unknown" }));
+  const codeRow = createElement("button", {
+    type: "button",
+    className: "steam-friends-me-code",
+    attributes: { title: "Copy your friend code" }
+  });
+  codeRow.appendChild(createElement("span", { className: "steam-friends-me-code-label", text: "Friend Code" }));
+  codeRow.appendChild(createElement("span", { className: "steam-friends-me-code-value", text: userId }));
+  codeRow.appendChild(createElement("i", { className: "fas fa-copy" }));
+  bindEvent(codeRow, "click", async (e) => {
+    e.stopPropagation();
+    const id = getLiveUserId() || "local";
+    if (!id) return;
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(id);
+      copied = true;
+    } catch {}
+    if (copied) os.notify.send("Friend Code Copied", "Your friend code is on the clipboard.");
+    else os.dialog.alert("Copy Failed", "Couldn't access the clipboard.");
+  });
+  info.appendChild(codeRow);
+  card.appendChild(info);
+  const viewBtn = createElement("button", {
+    type: "button",
+    className: "steam-friends-me-view",
+    html: '<i class="fas fa-id-card"></i> View Profile'
+  });
+  bindEvent(viewBtn, "click", () => {
+    if (isFunction(opts.onNavigate)) opts.onNavigate("user");
+    else os.app.launch("steamApp", { steamPage: "user" });
+  });
+  card.appendChild(viewBtn);
+  return card;
+}
+
 export async function renderFriendsPage(pageEl, options = {}) {
   if (!pageEl || !pageEl.isConnected) return;
   const opts = options || {};
@@ -1645,9 +2035,15 @@ export async function renderFriendsPage(pageEl, options = {}) {
   const itemFriends = makeSidebarItem("fa-user-friends", "Your Friends", view === "list");
   const itemAdd = makeSidebarItem("fa-user-plus", "Add a Friend", view === "add");
   const itemPending = makeSidebarItem("fa-envelope", "Pending Requests", false);
-  const pendingCount = createElement("span", { className: "steam-friends-sb-count", text: requests.length ? String(requests.length) : "" });
+  const pendingCount = createElement("span", {
+    className: "steam-friends-sb-count",
+    text: requests.length ? String(requests.length) : ""
+  });
   itemPending.appendChild(pendingCount);
-  if (friends.length) itemFriends.appendChild(createElement("span", { className: "steam-friends-sb-count", text: String(friends.length) }));
+  if (friends.length)
+    itemFriends.appendChild(
+      createElement("span", { className: "steam-friends-sb-count", text: String(friends.length) })
+    );
 
   bindEvent(itemFriends, "click", () => opts.onNavigate("friends"));
   bindEvent(itemAdd, "click", () => opts.onNavigate("friends-add"));
@@ -1659,6 +2055,8 @@ export async function renderFriendsPage(pageEl, options = {}) {
   root.appendChild(sidebar);
 
   const main = createElement("div", { className: "steam-friends-main" });
+  const avatarUrl = await resolveAvatarUrl(getCurrentUser().avatar, "static/icons/guest.webp").catch(() => "");
+  main.appendChild(buildSelfProfileCard({ avatarUrl, onNavigate: opts.onNavigate }));
   const mainHost = createElement("div", { className: "steam-friends-main-inner" });
   main.appendChild(mainHost);
   root.appendChild(main);
@@ -1667,13 +2065,15 @@ export async function renderFriendsPage(pageEl, options = {}) {
 
   const refreshCounts = () => {
     const friendCountEl = itemFriends.querySelector(".steam-friends-sb-count");
-    fetchFriends({ refresh: true }).then((d) => {
-      if (!pendingCount.isConnected) return;
-      const r = Array.isArray(d?.requests) ? d.requests.length : 0;
-      const f = Array.isArray(d?.friends) ? d.friends.length : 0;
-      setText(pendingCount, r ? String(r) : "");
-      if (friendCountEl) setText(friendCountEl, String(f));
-    }).catch(() => {});
+    fetchFriends({ refresh: true })
+      .then((d) => {
+        if (!pendingCount.isConnected) return;
+        const r = Array.isArray(d?.requests) ? d.requests.length : 0;
+        const f = Array.isArray(d?.friends) ? d.friends.length : 0;
+        setText(pendingCount, r ? String(r) : "");
+        if (friendCountEl) setText(friendCountEl, String(f));
+      })
+      .catch(() => {});
   };
 
   if (view === "add") {
@@ -1683,7 +2083,8 @@ export async function renderFriendsPage(pageEl, options = {}) {
       friends,
       requests,
       userId,
-      onLaunch: opts.onLaunch
+      onLaunch: opts.onLaunch,
+      onUpdate: () => renderFriendsPage(pageEl, opts)
     });
   }
 
@@ -1704,9 +2105,16 @@ function renderFriendsListView(host, args) {
   const wrap = createElement("div", { className: "steam-friends-panel-list" });
   let pendingPanel = null;
   if (args.requests && args.requests.length) {
-    pendingPanel = createElement("div", { className: "steam-friends-panel steam-friends-pending steam-friends-panel--open" });
+    pendingPanel = createElement("div", {
+      className: "steam-friends-panel steam-friends-pending steam-friends-panel--open"
+    });
     const head = createElement("div", { className: "steam-friends-panel-head" });
-    head.appendChild(createElement("span", { className: "steam-friends-panel-title", text: `Pending Requests (${args.requests.length})` }));
+    head.appendChild(
+      createElement("span", {
+        className: "steam-friends-panel-title",
+        text: `Pending Requests (${args.requests.length})`
+      })
+    );
     pendingPanel.appendChild(head);
     const body = createElement("div", { className: "steam-friends-panel-body" });
     pendingPanel.appendChild(body);
@@ -1720,7 +2128,10 @@ function renderFriendsListView(host, args) {
     const body = pendingPanel.querySelector(".steam-friends-panel-body");
     renderRequestsPanel(body, { onChange: () => args.onUpdate && args.onUpdate() }).catch(() => {});
   }
-  renderFriendsListPanel(list, { onLaunch: args.onLaunch || (() => {}) }).catch(() => {});
+  renderFriendsListPanel(list, {
+    onLaunch: args.onLaunch || (() => {}),
+    onUpdate: args.onUpdate
+  }).catch(() => {});
 }
 
 async function renderFriendsAddView(host, opts) {
@@ -1731,10 +2142,19 @@ async function renderFriendsAddView(host, opts) {
   codeHead.appendChild(createElement("span", { className: "steam-friends-panel-title", text: "Your Friend Code" }));
   codePanel.appendChild(codeHead);
   const codeBody = createElement("div", { className: "steam-friends-panel-body" });
-  codeBody.appendChild(createElement("p", { className: "steam-friends-panel-desc", text: "Send your code so others can find you, or enter someone's code to invite them." }));
+  codeBody.appendChild(
+    createElement("p", {
+      className: "steam-friends-panel-desc",
+      text: "Send your code so others can find you, or enter someone's code to invite them."
+    })
+  );
   const codeRow = createElement("div", { className: "steam-friends-code-row" });
   codeRow.appendChild(createElement("div", { className: "steam-friends-code-box", text: opts.userId || "no profile" }));
-  const copyBtn = createElement("button", { className: "steam-friends-copy-btn", text: "COPY", attributes: { type: "button" } });
+  const copyBtn = createElement("button", {
+    className: "steam-friends-copy-btn",
+    text: "COPY",
+    attributes: { type: "button" }
+  });
   bindEvent(copyBtn, "click", () => copyToClipboard(opts.userId || ""));
   codeRow.appendChild(copyBtn);
   codeBody.appendChild(codeRow);
@@ -1744,7 +2164,11 @@ async function renderFriendsAddView(host, opts) {
     className: "steam-friends-input",
     attributes: { type: "text", placeholder: "Enter a Friend ID" }
   });
-  const inviteBtn = createElement("button", { className: "steam-friends-send-btn", text: "Send Request", attributes: { type: "button" } });
+  const inviteBtn = createElement("button", {
+    className: "steam-friends-send-btn",
+    text: "Send Request",
+    attributes: { type: "button" }
+  });
   const doInvite = async () => {
     const target = (inviteInput.value || "").trim();
     if (!target) return;
@@ -1769,10 +2193,17 @@ async function renderFriendsAddView(host, opts) {
 
   const searchPanel = createElement("div", { className: "steam-friends-panel" });
   const searchHead = createElement("div", { className: "steam-friends-panel-head" });
-  searchHead.appendChild(createElement("span", { className: "steam-friends-panel-title", text: "Or try searching for your friend" }));
+  searchHead.appendChild(
+    createElement("span", { className: "steam-friends-panel-title", text: "Or try searching for your friend" })
+  );
   searchPanel.appendChild(searchHead);
   const searchBody = createElement("div", { className: "steam-friends-panel-body" });
-  searchBody.appendChild(createElement("p", { className: "steam-friends-panel-desc", text: "Find players by name and send a request straight from their profile." }));
+  searchBody.appendChild(
+    createElement("p", {
+      className: "steam-friends-panel-desc",
+      text: "Find players by name and send a request straight from their profile."
+    })
+  );
   searchPanel.appendChild(searchBody);
   host.appendChild(searchPanel);
 
@@ -1867,9 +2298,7 @@ export async function renderProfilePage(pageEl, options = {}) {
 
   const catalog = loadCatalog();
   const localAvatar =
-    user.userId === getLiveUserId()
-      ? await resolveAvatarUrl(getCurrentUser().avatar, "static/icons/guest.webp")
-      : null;
+    user.userId === getLiveUserId() ? await resolveAvatarUrl(getCurrentUser().avatar, "static/icons/guest.webp") : null;
   const renderOpts = {
     catalog,
     editable: false,
@@ -1882,7 +2311,15 @@ export async function renderProfilePage(pageEl, options = {}) {
     userId: user.userId,
     friendRelation,
     reactions,
-    onFriendChange: () => { if (pageEl.isConnected && !isSocialDisabled()) renderProfilePage(pageEl, { userId: user.userId, onLaunch: opts.onLaunch, onShowGames: opts.onShowGames, onShowAchievements: opts.onShowAchievements }); }
+    onFriendChange: () => {
+      if (pageEl.isConnected && !isSocialDisabled())
+        renderProfilePage(pageEl, {
+          userId: user.userId,
+          onLaunch: opts.onLaunch,
+          onShowGames: opts.onShowGames,
+          onShowAchievements: opts.onShowAchievements
+        });
+    }
   };
   setHTML(pageEl, buildProfileHtml(user, renderOpts));
   bindProfileEvents(pageEl, user, renderOpts);
@@ -1946,7 +2383,8 @@ export async function renderGamesPage(pageEl, options = {}) {
     bindEvent(item, "click", () => {
       const id = resolveAppId(item.dataset.app);
       if (!id) return;
-      if (isFunction(opts.onLaunch)) callIfFunction(opts.onLaunch, id);
+      if (isFunction(opts.onOpenGame)) callIfFunction(opts.onOpenGame, id);
+      else if (isFunction(opts.onLaunch)) callIfFunction(opts.onLaunch, id);
       else os.app.launch(id).catch(() => {});
     });
   });
@@ -2118,33 +2556,7 @@ export async function renderEditProfilePage(pageEl, options = {}) {
           <h3 class="steam-edit-section-title"><i class="fas fa-bell"></i> Notifications</h3>
           <div class="steam-edit-settings">
             <div class="settings-section">
-              <div class="settings-item">
-                <div class="settings-item-label">
-                  <div class="settings-item-title">Currently Playing Popups</div>
-                  <div class="settings-item-description">Show popups when friends start playing a game</div>
-                </div>
-                <div class="settings-toggle" data-setting="currentlyPlayingPopups">
-                  <div class="settings-toggle-slider"></div>
-                </div>
-              </div>
-              <div class="settings-item">
-                <div class="settings-item-label">
-                  <div class="settings-item-title">Do Not Disturb</div>
-                  <div class="settings-item-description">Mute activity popups from friends</div>
-                </div>
-                <div class="settings-toggle" data-setting="dnd">
-                  <div class="settings-toggle-slider"></div>
-                </div>
-              </div>
-              <div class="settings-item">
-                <div class="settings-item-label">
-                  <div class="settings-item-title">Share My Activity</div>
-                  <div class="settings-item-description">Send what you're playing and load friends' live activity</div>
-                </div>
-                <div class="settings-toggle" data-setting="shareLiveActivity">
-                  <div class="settings-toggle-slider"></div>
-                </div>
-              </div>
+              ${buildSettingsItemsHtml(["currentlyPlayingPopups", "dnd", "shareLiveActivity"])}
             </div>
           </div>
         </div>
@@ -2180,7 +2592,9 @@ export async function renderLoginPage(pageEl, options = {}) {
         ${buildAccountBlockHtml(account ? undefined : "register", {
           socialDisabled: isSocialDisabled(),
           prefillNickname: account ? undefined : localName,
-          anonymousNote: account ? undefined : "Prefer to stay anonymous? That's fine, your local profile stays on this device until you register."
+          anonymousNote: account
+            ? undefined
+            : "Prefer to stay anonymous? That's fine, your local profile stays on this device until you register."
         })}
       </div>
       <p class="yukios-account-disclaimer">${escapeHtml(ACCOUNT_DISCLAIMER)}</p>
@@ -2284,4 +2698,3 @@ function bindEditProfileEvents(root, user, avatarUrl) {
     });
   }
 }
-

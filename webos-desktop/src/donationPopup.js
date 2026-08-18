@@ -6,7 +6,7 @@ import { parseBool } from "./utils/utils.js";
 const MONERO_ADDRESS =
   "4B5RKGR4C5WDkHGKVemU4rDcnKDG5NbwBLogE1tnxAWJAqbLPpNiDNaVZC1jrfwSdB7Sh1ALQNe3TMMvhdEJTPRcAUJhyVm";
 const DAY_MS = 86400000;
-const SEVEN_DAYS = 7 * DAY_MS;
+const FOURTEEN_DAYS = 14 * DAY_MS;
 
 let overlay = null;
 
@@ -22,7 +22,8 @@ function getOverlayHTML() {
         </div>
         <div class="donation-title">Support YukiOS</div>
         <div class="donation-message">
-          YukiOS is built and maintained by one person in their free time.
+          YukiOS is built and maintained by one person in their free time. It is 100% free with no locked features and no paid tiers, so this donation is purely optional.
+          <br><br>
           Your support keeps development active and helps fund new features.
           <br><br>
           You can donate via Patreon or Monero. It takes less than a minute.
@@ -130,10 +131,10 @@ export function checkAndShowDonationPopup() {
 
   const firstLaunch = Number(os.storage.get(StorageKeys.firstLaunchTime));
   if (!firstLaunch || isNaN(firstLaunch)) return;
-  if (Date.now() - firstLaunch < SEVEN_DAYS) return;
+  if (Date.now() - firstLaunch < FOURTEEN_DAYS) return;
 
   const lastShown = Number(os.storage.get(StorageKeys.donationLastShown));
-  if (lastShown && !isNaN(lastShown) && Date.now() - lastShown < SEVEN_DAYS) return;
+  if (lastShown && !isNaN(lastShown) && Date.now() - lastShown < FOURTEEN_DAYS) return;
 
   showPopup();
 }

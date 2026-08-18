@@ -682,13 +682,20 @@ async function fetchInsights(env, range) {
 function ensureThemesSchema(env) {
   if (themesInitPromise) return themesInitPromise;
   const statements = [
-    "CREATE TABLE IF NOT EXISTS themes (id TEXT PRIMARY KEY, author_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '', icon TEXT NOT NULL DEFAULT '', contract TEXT NOT NULL, colors TEXT NOT NULL DEFAULT '{}', effects TEXT NOT NULL DEFAULT '{}', upvotes INTEGER NOT NULL DEFAULT 0, downvotes INTEGER NOT NULL DEFAULT 0, score INTEGER NOT NULL DEFAULT 0, installs INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'approved', created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS themes (id TEXT PRIMARY KEY, author_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '', icon TEXT NOT NULL DEFAULT '', contract TEXT NOT NULL, colors TEXT NOT NULL DEFAULT '{}', effects TEXT NOT NULL DEFAULT '{}', config TEXT NOT NULL DEFAULT '{}', upvotes INTEGER NOT NULL DEFAULT 0, downvotes INTEGER NOT NULL DEFAULT 0, score INTEGER NOT NULL DEFAULT 0, installs INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'approved', created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
     "CREATE TABLE IF NOT EXISTS theme_ratings (theme_id TEXT NOT NULL, daily_id TEXT NOT NULL, vote INTEGER NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (theme_id, daily_id))",
     "CREATE TABLE IF NOT EXISTS theme_installs (theme_id TEXT NOT NULL, daily_id TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (theme_id, daily_id))",
     "CREATE INDEX IF NOT EXISTS idx_themes_status_score ON themes (status, score DESC)",
     "CREATE INDEX IF NOT EXISTS idx_themes_status_created ON themes (status, created_at DESC)"
   ];
-  themesInitPromise = env.DB.batch(statements.map((sql) => env.DB.prepare(sql))).catch((e) => {
+  themesInitPromise = (async () => {
+    await env.DB.batch(statements.map((sql) => env.DB.prepare(sql)));
+    const tableInfo = await env.DB.prepare("PRAGMA table_info(themes)").all();
+    const hasConfig = (tableInfo.results || []).some((column) => column.name === "config");
+    if (!hasConfig) {
+      await env.DB.prepare("ALTER TABLE themes ADD COLUMN config TEXT NOT NULL DEFAULT '{}'").run();
+    }
+  })().catch((e) => {
     themesInitPromise = null;
     throw e;
   });
@@ -1989,6 +1996,9 @@ const THEME_EFFECT_OPTIONS = {
   minimize: ["instant", "taskbarShrink", "dockZoomShrink", "magicLamp", "fadeToTaskbar", "elasticStretch", "spiralDown"]
 };
 
+const THEME_CONFIG_FONTS = ["opensans", "inter", "rubik", "sora", "jetbrainsmono", "monocraft"];
+const THEME_CONFIG_DENSITIES = ["compact", "comfortable", "spacious"];
+
 function sanitizeColorValue(value) {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -2016,7 +2026,7 @@ function sanitizeBackground(value) {
 function sanitizeThemeContract(input) {
   if (!input || typeof input !== "object") return { ok: false, errors: ["invalid contract"] };
   const errors = [];
-  if (input.schemaVersion !== 1) errors.push("invalid schemaVersion");
+  if (input.schemaVersion !== 1 && input.schemaVersion !== 2) errors.push("invalid schemaVersion");
   if (input.type !== "yukios-theme") errors.push("invalid type");
   if (typeof input.name !== "string" || input.name.trim().length === 0 || input.name.trim().length > 48)
     errors.push("invalid name");
@@ -2066,17 +2076,27 @@ function sanitizeThemeContract(input) {
     }
   }
 
+  const config = {};
+  if (input.config && typeof input.config === "object") {
+    if (THEME_CONFIG_FONTS.includes(input.config.fontFamily)) config.fontFamily = input.config.fontFamily;
+    if (THEME_CONFIG_DENSITIES.includes(input.config.density)) config.density = input.config.density;
+    if (typeof input.config.windowTransparency === "number" && Number.isFinite(input.config.windowTransparency)) {
+      config.windowTransparency = Math.max(20, Math.min(100, Math.round(input.config.windowTransparency)));
+    }
+  }
+
   return {
     ok: true,
     contract: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       type: "yukios-theme",
       name,
       description,
       author,
       icon,
       colors,
-      effects
+      effects,
+      config
     },
     errors: []
   };
@@ -2339,6 +2359,54 @@ async function handleYukiRequest(request, env) {
         );
       },
       5 * 1000
+    );
+
+    return jsonResponse({ users });
+  }
+
+  if (url.pathname === "/live/recent-players" && request.method === "GET") {
+    const rawApp = url.searchParams.get("app") || "";
+    const app = normalizeApp(rawApp);
+    if (!app || app === "unknown" || !/^[a-z0-9_.-]{1,64}$/.test(app)) {
+      return jsonResponse({ users: [] });
+    }
+
+    const users = await withCache(
+      Caches.social,
+      "recent-players-" + app,
+      async () => {
+        const result = await env.DB.prepare(
+          `SELECT data FROM analytics
+           WHERE json_extract(data, '$.event') = 'activity_start'
+             AND json_extract(data, '$.app') = ?
+           ORDER BY timestamp DESC
+           LIMIT 200`
+        )
+          .bind(app)
+          .all();
+
+        const usersMap = new Map();
+        for (const row of result.results) {
+          try {
+            const d = typeof row.data === "string" ? JSON.parse(row.data) : row.data;
+            if (!d.name) continue;
+            const key = d.userId || d.name;
+            if (!usersMap.has(key)) {
+              usersMap.set(key, {
+                userId: d.userId || null,
+                username: String(d.name).slice(0, 32),
+                appId: String(d.app || "").slice(0, 64),
+                gameTitle: String(d.gameTitle || "").slice(0, 128),
+                gameIcon: String(d.gameIcon || "").slice(0, 512),
+                avatarIndex: typeof d.avatarIndex === "number" ? d.avatarIndex : -1,
+                startedAt: d.timestamp
+              });
+            }
+          } catch {}
+        }
+        return Array.from(usersMap.values());
+      },
+      60 * 1000
     );
 
     return jsonResponse({ users });
@@ -3851,7 +3919,7 @@ async function handleYukiRequest(request, env) {
     const now = new Date().toISOString();
     try {
       await env.DB.prepare(
-        `INSERT INTO themes (id, author_id, name, description, author, icon, contract, colors, effects, upvotes, downvotes, score, installs, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,0,0,0,0,'approved',?,?)`
+        `INSERT INTO themes (id, author_id, name, description, author, icon, contract, colors, effects, config, upvotes, downvotes, score, installs, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,0,0,0,0,'approved',?,?)`
       )
         .bind(
           id,
@@ -3863,6 +3931,7 @@ async function handleYukiRequest(request, env) {
           JSON.stringify(validated.contract),
           JSON.stringify(validated.contract.colors),
           JSON.stringify(validated.contract.effects),
+          JSON.stringify(validated.contract.config || {}),
           now,
           now
         )
@@ -3880,6 +3949,7 @@ async function handleYukiRequest(request, env) {
         icon: validated.contract.icon,
         colors: validated.contract.colors,
         effects: validated.contract.effects,
+        config: validated.contract.config || {},
         upvotes: 0,
         downvotes: 0,
         score: 0,
@@ -3930,20 +4000,24 @@ async function handleYukiRequest(request, env) {
         if (sort === "installs") orderBy = "installs DESC";
         const offset = (page - 1) * perPage;
         const rows = await env.DB.prepare(
-          `SELECT id, name, description, author, icon, colors, effects, upvotes, downvotes, score, installs, created_at FROM themes WHERE ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
+          `SELECT id, name, description, author, icon, colors, effects, config, upvotes, downvotes, score, installs, created_at FROM themes WHERE ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`
         )
           .bind(...params, perPage, offset)
           .all();
         const themes = rows.results.map((row) => {
           let colors = {};
           let effects = {};
+          let config = {};
           try {
             colors = typeof row.colors === "string" ? JSON.parse(row.colors) : row.colors || {};
           } catch {}
           try {
             effects = typeof row.effects === "string" ? JSON.parse(row.effects) : row.effects || {};
           } catch {}
-          return { ...row, colors, effects };
+          try {
+            config = typeof row.config === "string" ? JSON.parse(row.config) : row.config || {};
+          } catch {}
+          return { ...row, colors, effects, config };
         });
         const total = totalRow?.count || 0;
         const pages = Math.max(1, Math.ceil(total / perPage));
@@ -3962,7 +4036,7 @@ async function handleYukiRequest(request, env) {
     }
     const id = url.pathname.split("/")[3];
     const row = await env.DB.prepare(
-      `SELECT id, name, description, author, icon, colors, effects, upvotes, downvotes, score, installs, created_at FROM themes WHERE id = ? AND status = 'approved'`
+      `SELECT id, name, description, author, icon, colors, effects, config, upvotes, downvotes, score, installs, created_at FROM themes WHERE id = ? AND status = 'approved'`
     )
       .bind(id)
       .first();
@@ -3973,13 +4047,17 @@ async function handleYukiRequest(request, env) {
       .first();
     let colors = {};
     let effects = {};
+    let config = {};
     try {
       colors = typeof row.colors === "string" ? JSON.parse(row.colors) : row.colors || {};
     } catch {}
     try {
       effects = typeof row.effects === "string" ? JSON.parse(row.effects) : row.effects || {};
     } catch {}
-    return jsonResponse({ theme: { ...row, colors, effects }, myVote: ratingRow?.vote ?? null });
+    try {
+      config = typeof row.config === "string" ? JSON.parse(row.config) : row.config || {};
+    } catch {}
+    return jsonResponse({ theme: { ...row, colors, effects, config }, myVote: ratingRow?.vote ?? null });
   }
 
   if (url.pathname.startsWith("/api/themes/") && url.pathname.endsWith("/rate") && request.method === "POST") {

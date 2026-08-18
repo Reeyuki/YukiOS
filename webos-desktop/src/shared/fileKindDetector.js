@@ -99,8 +99,6 @@ export const ISO_EXTS = ["iso", "bin", "img", "nrg", "mdf", "cdi"];
 export const EXE_EXTS = ["exe", "msi", "com", "bat", "cmd", "jsdos"];
 export const SWF_EXTS = ["swf"];
 
-export const MODEL3D_EXTS = ["obj", "gltf", "glb", "fbx", "dae", "3ds", "usdz", "stl", "ply", "x", "blend"];
-
 export const EBOOK_EXTS = ["epub", "mobi", "azw", "azw3", "fb2"];
 export const FONT_EXTS = ["ttf", "otf", "woff", "woff2"];
 export const DISK_EXTS = ["vhd", "vhdx", "vmdk", "img", "qcow2"];
@@ -273,9 +271,6 @@ export function isExeFile(name) {
 }
 export function isSwfFile(name) {
   return SWF_EXTS.includes(getExt(name));
-}
-export function isModel3DFile(name) {
-  return MODEL3D_EXTS.includes(getExt(name));
 }
 export function isEbookFile(name) {
   return EBOOK_EXTS.includes(getExt(name));

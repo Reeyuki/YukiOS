@@ -7,29 +7,40 @@ export const MODES = Object.freeze({
   MAC: "mac",
   TILING: "tiling",
   "3D": "3d",
-  CHROME_OS: "chromeos"
+  CHROME_OS: "chromeos",
+  STEAMDECK: "steamdeck"
 });
 
-const MODE_DEFS = {
+export const MODE_DEFS = {
   [MODES.MAC]: {
     cssClass: "mac-mode",
     cssTarget: "html",
-    storageKey: StorageKeys.macOsControls
+    storageKey: StorageKeys.macOsControls,
+    label: "Yuki Mac Desktop"
   },
   [MODES.TILING]: {
     cssClass: "tiling-active",
     cssTarget: "body",
-    storageKey: StorageKeys.tilingEnabled
+    storageKey: StorageKeys.tilingEnabled,
+    label: "Yuki Tiling VM"
   },
   [MODES["3D"]]: {
     cssClass: "3d-mode",
     cssTarget: "html",
-    storageKey: null
+    storageKey: null,
+    label: "Yuki 3D Desktop"
   },
   [MODES.CHROME_OS]: {
     cssClass: "chromeos-mode",
     cssTarget: "html",
-    storageKey: StorageKeys.chromeOsMode
+    storageKey: StorageKeys.chromeOsMode,
+    label: "Yuki Chrome OS"
+  },
+  [MODES.STEAMDECK]: {
+    cssClass: "steamdeck-mode",
+    cssTarget: "html",
+    storageKey: StorageKeys.steamDeckMode,
+    label: "Yuki Steam Client"
   }
 };
 

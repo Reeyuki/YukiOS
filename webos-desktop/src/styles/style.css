@@ -23,11 +23,11 @@
   --font-mono: "JetBrains Mono", monospace;
   --font-serif: Georgia, serif;
 
-  --brand: oklch(55% 0.11 264);
-  --brand-hover: oklch(48% 0.11 264);
-  --brand-dark: oklch(38% 0.11 264);
-  --brand-glow: oklch(55% 0.08 264 / 0.18);
-  --brand-dim: oklch(55% 0.11 264 / 0.12);
+  --brand: oklch(55% 0.12 260);
+  --brand-hover: oklch(48% 0.12 260);
+  --brand-dark: oklch(38% 0.12 260);
+  --brand-glow: oklch(55% 0.08 260 / 0.18);
+  --brand-dim: oklch(55% 0.12 260 / 0.12);
 
   --r-xxs: 2px;
   --r-xs: 4px;
@@ -39,28 +39,28 @@
   --r-2xl: 20px;
   --r-full: 999px;
 
-  --bg-base: oklch(12% 0.02 265);
-  --bg-elev-1: oklch(18% 0.01 265);
-  --bg-elev-2: oklch(24% 0.01 265);
-  --bg-elev-3: oklch(30% 0.01 265);
+  --bg-base: oklch(12% 0.005 250);
+  --bg-elev-1: oklch(16% 0.005 250);
+  --bg-elev-2: oklch(20% 0.005 250);
+  --bg-elev-3: oklch(26% 0.005 250);
 
-  --surface-solid: oklch(18% 0.01 265);
-  --surface-hover: oklch(26% 0.01 265);
+  --surface-solid: oklch(16% 0.005 250);
+  --surface-hover: oklch(24% 0.005 250);
 
   --glass: oklch(100% 0 0 / 0.04);
   --glass-strong: oklch(100% 0 0 / 0.07);
-  --glass-border: oklch(100% 0 0 / 0.08);
+  --glass-border: oklch(100% 0 0 / 0.09);
 
-  --text-primary: oklch(95% 0.01 265);
-  --text-secondary: oklch(72% 0.01 265);
-  --text-muted: oklch(60% 0.01 265);
+  --text-primary: oklch(93% 0.005 250);
+  --text-secondary: oklch(68% 0.005 250);
+  --text-muted: oklch(55% 0.005 250);
 
   --tx-on-brand: oklch(100% 0 0);
 
-  --border: oklch(80% 0.02 265 / 0.18);
-  --border-strong: oklch(80% 0.02 265 / 0.28);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
 
-  --overlay-bg: oklch(0% 0 0 / 0.55);
+  --overlay-bg: oklch(0% 0 0 / 0.6);
 
   --menu-bg: var(--bg-elev-2);
   --window-bg: var(--bg-elev-1);
@@ -78,6 +78,7 @@
   --error: oklch(60% 0.2 25);
   --error-bg: oklch(60% 0.2 25 / 0.12);
   --error-border: oklch(60% 0.2 25 / 0.25);
+  --warn: oklch(78% 0.13 85);
 
   --charging: oklch(65% 0.2 140);
 
@@ -238,7 +239,7 @@ h6 {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: oklch(45% 0.02 265 / 0.55);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 6px;
 }
 
@@ -1317,7 +1318,7 @@ html[data-theme] .dropdown-item:hover {
 }
 
 html[data-theme] *::-webkit-scrollbar-thumb {
-  background: var(--surface-hover);
+  background: var(--glass-hover);
   border-radius: 6px;
 }
 

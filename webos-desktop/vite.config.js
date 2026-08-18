@@ -4,6 +4,9 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 import { execSync, spawnSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
+import dns from "dns";
+
+dns.setDefaultResultOrder("verbatim");
 
 const commitHash = (() => {
   try {
@@ -14,6 +17,56 @@ const commitHash = (() => {
 })();
 
 const readmeContent = readFileSync(resolve(process.cwd(), "../README.md"), "utf-8");
+
+function normalizeRepoUrl(repository) {
+  let url = typeof repository === "string" ? repository : repository && repository.url;
+  if (!url) return "";
+  url = url
+    .replace(/^git\+/, "")
+    .replace(/^git:\/\//, "https://")
+    .replace(/^git@([^:]+):/, "https://$1/")
+    .replace(/^github:/, "https://github.com/")
+    .replace(/\.git$/, "");
+  if (/^[A-Za-z0-9-]+\/[\w.-]+$/.test(url)) {
+    url = `https://github.com/${url}`;
+  }
+  return /^https?:\/\//.test(url) ? url : "";
+}
+
+function readPackageMeta(pkgPath) {
+  try {
+    return JSON.parse(readFileSync(pkgPath, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
+function collectPackageLicenses() {
+  const entries = [];
+  try {
+    const pkgJson = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf-8"));
+    for (const [name, spec] of Object.entries(pkgJson.dependencies || {})) {
+      const meta = readPackageMeta(resolve(process.cwd(), "node_modules", name, "package.json"));
+      let version = spec;
+      let license = "Unknown";
+      let repo = "";
+      if (meta) {
+        if (meta.version) version = meta.version;
+        if (typeof meta.license === "string") license = meta.license;
+        else if (meta.license && meta.license.type) license = meta.license.type;
+        else if (Array.isArray(meta.licenses)) license = meta.licenses.map((l) => l.type || l).join(", ");
+        repo = normalizeRepoUrl(meta.repository);
+      }
+      entries.push({ name, version, license, repo });
+    }
+  } catch (err) {
+    console.warn("Failed to collect package licenses:", err.message);
+  }
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  return entries;
+}
+
+const packageLicenses = collectPackageLicenses();
 
 const isDevBuild = process.env.VITE_DEV_BUILD === "true";
 const isSingleFile = process.env.VITE_SINGLE_FILE === "true";
@@ -63,7 +116,7 @@ function serveStaticDev() {
 }
 
 function steamNewsData() {
-  const FALLBACK_ICON = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/steam.webp";
+  const FALLBACK_ICON = "fab fa-steam";
   const OUTPUT_PATH = resolve(process.cwd(), "src/games/steamNewsData.js");
   const FEEDS = [
     { url: "https://store.steampowered.com/feeds/news.xml", source: "News" },
@@ -73,7 +126,7 @@ function steamNewsData() {
 
   function parseRssItems(xml) {
     const items = [];
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    const itemRegex = /<item\b[^>]*>([\s\S]*?)<\/item>/g;
     let match;
     while ((match = itemRegex.exec(xml)) !== null) {
       const block = match[1];
@@ -81,11 +134,18 @@ function steamNewsData() {
       const descMatch = block.match(
         /<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>|<description>([\s\S]*?)<\/description>/
       );
+      const encodedMatch = block.match(/<content:encoded><!\[CDATA\[([\s\S]*?)\]\]><\/content:encoded>/);
       const pubDateMatch = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
       const enclosureMatch = block.match(/<enclosure[^>]*url="([^"]+)"/);
       const mediaContentMatch = block.match(/<media:content[^>]*url="([^"]+)"/);
-      const rawDesc = (descMatch && (descMatch[1] || descMatch[2])) || "";
+      const rawDesc = (descMatch && (descMatch[1] || descMatch[2])) || (encodedMatch && encodedMatch[1]) || "";
       const imgInDescMatch = rawDesc.match(/<img[^>]*src="([^"]+)"/);
+      const plainDesc = rawDesc
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/\s+/g, " ")
+        .replace(/\]\]>\s*$/, "")
+        .trim();
 
       items.push({
         title: ((titleMatch && (titleMatch[1] || titleMatch[2])) || "").trim(),
@@ -94,7 +154,8 @@ function steamNewsData() {
           (enclosureMatch && enclosureMatch[1]) ||
           (mediaContentMatch && mediaContentMatch[1]) ||
           (imgInDescMatch && imgInDescMatch[1]) ||
-          ""
+          "",
+        description: plainDesc
       });
     }
     return items;
@@ -152,13 +213,18 @@ function steamNewsData() {
         }
       }
 
-      const items = allItems.map((item) => ({
-        image: item.image || FALLBACK_ICON,
-        title: item.title || "",
-        date: item.pubDate
-          ? new Date(item.pubDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-          : "Recent"
-      }));
+      const items = [
+        ...allItems
+          .filter((item) => !/(team fortress 2)/i.test(item.title || ""))
+          .map((item) => ({
+            image: item.image || FALLBACK_ICON,
+            title: item.title || "",
+            description: (item.description || "").slice(0, 320),
+            date: item.pubDate
+              ? new Date(item.pubDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+              : "Recent"
+          }))
+      ];
 
       const content = `// Auto-generated by vite.config.js steamNewsData plugin
 export const STEAM_NEWS_ITEMS = ${JSON.stringify(items, null, 2)};
@@ -292,16 +358,43 @@ export default defineConfig({
   outDir,
   plugins,
   server: {
+    host: "127.0.0.1",
+    warmup: {
+      clientFiles: [
+        "./src/main.js",
+        "./src/SessionManager.js",
+        "./src/framework.js",
+        "./src/os/index.js",
+        "./src/utils/utils.js",
+        "./src/games/games.js",
+        "./src/games/gamesList.js"
+      ]
+    },
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
       "Cross-Origin-Resource-Policy": "cross-origin"
     }
   },
+  optimizeDeps: {
+    include: [
+      "monaco-editor",
+      "three",
+      "pdfjs-dist",
+      "marked",
+      "gsap",
+      "xlsx",
+      "docx",
+      "html2canvas-pro",
+      "webtorrent",
+      "vite-plugin-node-polyfills/shims/buffer"
+    ]
+  },
   define: {
     __GIT_COMMIT__: JSON.stringify(commitHash),
     __README_CONTENT__: JSON.stringify(readmeContent),
-    __SINGLE_FILE__: isSingleFile
+    __SINGLE_FILE__: isSingleFile,
+    __PACKAGE_LICENSES__: JSON.stringify(packageLicenses)
   },
   build: {
     target: "esnext",

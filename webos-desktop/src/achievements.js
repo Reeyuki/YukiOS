@@ -16,7 +16,6 @@ export const Achievements = {
   AppCollector: "app_collector",
   Skid: "skid",
   TerminalUser: "terminal_user",
-  ModelViewer: "model_viewer",
   FirstGame: "first_game",
   GameHopper: "game_hopper",
   GameHopperMega: "game_hopper_mega",
@@ -247,13 +246,6 @@ export class AchievementsApp extends BaseApp {
           desc: "Execute 5 commands in terminal",
           icon: "fa-terminal",
           rarity: "uncommon"
-        },
-        {
-          id: Achievements.ModelViewer,
-          title: "Depth Perception",
-          desc: "View a 3D model",
-          icon: "fa-cube",
-          rarity: "rare"
         },
         {
           id: Achievements.FirstGame,

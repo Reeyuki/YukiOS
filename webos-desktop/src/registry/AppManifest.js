@@ -8,11 +8,9 @@ import {
   FONT_EXTS,
   SWF_EXTS,
   EXE_EXTS,
-  MODEL3D_EXTS,
   DISK_EXTS
 } from "../shared/fileKindDetector.js";
 import { ROM_EXTS } from "../shared/coreMap.js";
-import { brand } from "../easterYuri.js";
 
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main";
 
@@ -155,7 +153,7 @@ export const APP_MANIFESTS = [
     serviceKey: "monacoApp",
     enhanced: true,
     type: "system",
-    title: brand("Yuki Code"),
+    title: "Yuki Code",
     icon: "fas fa-code",
     launchType: "instance",
     windowIdPatterns: ["monaco"],
@@ -166,23 +164,10 @@ export const APP_MANIFESTS = [
       "Full-featured code editor powered by VS Code engine with syntax highlighting, auto-completion, and multi-file support."
   },
   {
-    serviceKey: "model3dApp",
-    enhanced: false,
-    type: "system",
-    title: brand("Yuki Blender"),
-    icon: `${CDN_BASE}/static/icons/3dmodel.webp`,
-    launchType: "instance",
-    windowIdPatterns: ["model3d"],
-    category: "graphics",
-    fileAssociations: { extensions: [...MODEL3D_EXTS] },
-    clippy: { message: "Inspect models here and spin them from every angle.", animation: ClippyAnimation.LookDownLeft },
-    description: "View OBJ, GLTF, and GLB 3D models using Three.js with rotation and zoom controls."
-  },
-  {
     serviceKey: "emulatorApp",
     enhanced: true,
     type: "system",
-    title: brand("Yuki Emulator"),
+    title: "Yuki Emulator",
     icon: `${CDN_BASE}/static/icons/emulator.webp`,
     launchType: "instance",
     windowIdPatterns: ["emulator"],
@@ -237,7 +222,7 @@ export const APP_MANIFESTS = [
     serviceKey: "yukiConvertApp",
     enhanced: false,
     type: "system",
-    title: brand("Yuki Convert"),
+    title: "Yuki Convert",
     icon: "fas fa-exchange-alt",
     launchType: "instance",
     windowIdPatterns: ["yuki-convert"],
@@ -273,26 +258,10 @@ export const APP_MANIFESTS = [
     description: "View and edit IndexedDB storage data for debugging and advanced users."
   },
   {
-    serviceKey: "installedAppsApp",
-    enhanced: false,
-    type: "system",
-    title: "Installed Apps",
-    icon: "fas fa-th-list",
-    launchType: "instance",
-    windowIdPatterns: ["installed-apps"],
-    category: "system",
-    clippy: {
-      message: "Review installed apps and keep the registry tidy.",
-      animation: ClippyAnimation.CheckingSomething
-    },
-    excludeFromInstalledApps: true,
-    description: "Manage installed applications with rename, disable, and uninstall options."
-  },
-  {
     serviceKey: "yukiOsGuideApp",
     enhanced: true,
     type: "system",
-    title: brand("YukiOS Guide"),
+    title: "YukiOS Guide",
     icon: "fas fa-book-open",
     launchType: "instance",
     windowIdPatterns: ["yuki-os-guide", "yukios-guide"],
@@ -310,6 +279,17 @@ export const APP_MANIFESTS = [
     windowIdPatterns: [],
     category: "help",
     description: "Replay the 60-second guided tour of the desktop."
+  },
+  {
+    serviceKey: "modeSwitcherApp",
+    enhanced: false,
+    type: "system",
+    title: "Mode Switcher",
+    icon: "fas fa-layer-group",
+    launchType: "instance",
+    windowIdPatterns: [],
+    category: "system",
+    description: "Switch between desktop modes: MacOS, SteamDeck, ChromeOS, Tiling, and YukiOS default."
   },
   {
     serviceKey: "clipboardManagerApp",
@@ -330,7 +310,7 @@ export const APP_MANIFESTS = [
     serviceKey: "aiAssistantApp",
     enhanced: false,
     type: "system",
-    title: brand("Yuki AI Assistant"),
+    title: "Yuki AI Assistant",
     icon: "fas fa-robot",
     launchType: "instance",
     windowIdPatterns: ["ai-assistant"],
@@ -377,13 +357,13 @@ export const APP_MANIFESTS = [
     serviceKey: "systemAppsApp",
     enhanced: false,
     type: "system",
-    title: "System Apps",
+    title: "Apps",
     icon: "fas fa-screwdriver-wrench",
     launchType: "instance",
     windowIdPatterns: ["system-apps"],
     category: "system",
     clippy: { message: "Browse the built-in tools and jump to the one you need.", animation: ClippyAnimation.Show },
-    description: "Access and manage core system applications and utilities."
+    description: "Browse, launch, and manage every app from one big-icon hub."
   },
   {
     serviceKey: "launchpadApp",
@@ -416,7 +396,7 @@ export const APP_MANIFESTS = [
   {
     serviceKey: "browserApp",
     type: "system",
-    title: brand("Yuki Browser"),
+    title: "Yuki Browser",
     icon: `${CDN_BASE}/static/icons/firefox.webp`,
     launchType: "instance",
     windowIdPatterns: ["browser"],
@@ -520,6 +500,51 @@ export const APP_MANIFESTS = [
     clippy: { message: "Chat with AI on ChatGPT", animation: ClippyAnimation.GetTechy },
     description: "Chat with AI, brainstorm ideas, and get quick answers through ChatGPT.",
     targetUrl: "https://chatgpt.com",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "itchIoApp",
+    enhanced: true,
+    type: "system",
+    title: "Itch.io",
+    icon: "fas fa-gamepad",
+    launchType: "instance",
+    windowIdPatterns: ["itch-io"],
+    category: "games",
+    persistContentState: false,
+    clippy: { message: "Browse thousands of indie games on Itch.io", animation: ClippyAnimation.Show },
+    description: "Play and discover indie games, assets, and tools on Itch.io.",
+    targetUrl: "https://itch.io",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "crazyGamesApp",
+    enhanced: true,
+    type: "system",
+    title: "CrazyGames",
+    icon: "fas fa-dice",
+    launchType: "instance",
+    windowIdPatterns: ["crazy-games"],
+    category: "games",
+    persistContentState: false,
+    clippy: { message: "Play free browser games on CrazyGames", animation: ClippyAnimation.Show },
+    description: "Play free online games instantly, no downloads needed, on CrazyGames.",
+    targetUrl: "https://crazygames.com",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "newgroundsApp",
+    enhanced: true,
+    type: "system",
+    title: "Newgrounds",
+    icon: "fas fa-fire",
+    launchType: "instance",
+    windowIdPatterns: ["newgrounds"],
+    category: "games",
+    persistContentState: false,
+    clippy: { message: "Watch animations and play games on Newgrounds", animation: ClippyAnimation.Show },
+    description: "Watch animations, play games, and explore art and music on Newgrounds.",
+    targetUrl: "https://newgrounds.com",
     windowSize: ["90vw", "85vh"]
   },
   {
@@ -896,10 +921,25 @@ export const APP_MANIFESTS = [
     windowSize: ["90vw", "85vh"]
   },
   {
+    serviceKey: "craxgptApp",
+    enhanced: true,
+    type: "system",
+    title: "CraxGPT",
+    icon: "fas fa-robot",
+    launchType: "instance",
+    windowIdPatterns: ["craxgpt"],
+    category: "internet",
+    persistContentState: false,
+    clippy: { message: "Chat with unlimited free AI on CraxGPT", animation: ClippyAnimation.GetTechy },
+    description: "Chat with any AI model, free and unlimited, right in your browser.",
+    targetUrl: "https://gpt.crax.lol",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
     serviceKey: "aniwatchApp",
     enhanced: true,
     type: "system",
-    title: "Aniwatch",
+    title: "Aniwatch Anime",
     icon: "fas fa-play-circle",
     launchType: "instance",
     windowIdPatterns: ["aniwatch"],
@@ -946,7 +986,7 @@ export const APP_MANIFESTS = [
   {
     serviceKey: "yukiDevToolsApp",
     type: "system",
-    title: brand("Yuki Dev Tools"),
+    title: "Yuki Dev Tools",
     icon: "fas fa-code",
     launchType: "method",
     launchMethod: "openYukiDevToolsApp",
@@ -1021,20 +1061,19 @@ export const APP_MANIFESTS = [
       message: "Browse your wallpapers, set favorites, and customize the desktop look.",
       animation: ClippyAnimation.Show
     },
-    description:
-      "Browse, preview, and manage all your wallpapers — static, video, animated, and custom uploads — in one place."
+    description: "Browse, preview, and manage static, video, and animated wallpapers with custom uploads."
   },
   {
     serviceKey: "steamApp",
     type: "system",
-    title: "Steam",
-    icon: `${CDN_BASE}/static/icons/steam.webp`,
+    title: "Yuki Steam",
+    icon: "fab fa-steam",
     launchType: "steam",
     windowIdPatterns: ["games-app"],
     category: "games",
     clippy: { message: "Browse game picks here and find something worth launching.", animation: ClippyAnimation.Wave },
     description:
-      "Game storefront and launcher interface for browsing, managing, and launching games through Steam integration."
+      "Game storefront and launcher interface for browsing, managing, and launching games through Yuki Steam integration."
   },
   {
     serviceKey: "appCreatorApp",
@@ -1396,7 +1435,7 @@ export const APP_MANIFESTS = [
     serviceKey: "remoteHostApp",
     enhanced: true,
     type: "system",
-    title: brand("Yuki Remote Desktop"),
+    title: "Yuki Remote Desktop",
     icon: "fas fa-desktop",
     launchType: "instance",
     windowIdPatterns: ["remote-host"],
@@ -1417,5 +1456,15 @@ export const APP_MANIFESTS = [
     category: "system",
     clippy: { message: "Pick which app opens each file type.", animation: ClippyAnimation.Show },
     description: "Set the default app for every file type."
+  },
+  {
+    serviceKey: "portalApp",
+    type: "system",
+    title: "Portal",
+    icon: `${CDN_BASE}/static/icons/portal.webp`,
+    launchType: "instance",
+    windowIdPatterns: ["portal"],
+    category: "games",
+    description: "Solve spatial puzzles with a portal gun in Valve's iconic first-person puzzler."
   }
 ];

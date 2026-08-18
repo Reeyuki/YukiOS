@@ -34,8 +34,6 @@ const componentDefs = [
       StorageKeys.brightness,
       StorageKeys.temperature,
       StorageKeys.nightModeEnabled,
-      StorageKeys.nightModeStart,
-      StorageKeys.nightModeEnd,
       StorageKeys.powerMode,
       StorageKeys.batterySaverEnabled,
       StorageKeys.soundEnabled,
@@ -229,15 +227,21 @@ export async function getCloudSummary() {
     return { error: res.data.error || "Could not fetch the cloud." };
   }
   let payload = res.data && res.data.payload;
-  if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch { payload = null; } }
+  if (typeof payload === "string") {
+    try {
+      payload = JSON.parse(payload);
+    } catch {
+      payload = null;
+    }
+  }
   const components = [];
   let totalBytes = 0;
   if (payload && payload.components && typeof payload.components === "object") {
     for (const c of SYNC_COMPONENTS) {
       const comp = payload.components[c.id];
       if (!comp || typeof comp !== "object") continue;
-      const data = (comp && typeof comp.data === "object" && comp.data) ? comp.data : comp;
-      const bytes = (comp && typeof comp.bytes === "number") ? comp.bytes : JSON.stringify(data).length;
+      const data = comp && typeof comp.data === "object" && comp.data ? comp.data : comp;
+      const bytes = comp && typeof comp.bytes === "number" ? comp.bytes : JSON.stringify(data).length;
       totalBytes += bytes;
       components.push({ id: c.id, label: c.label, icon: c.icon, bytes });
     }

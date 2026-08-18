@@ -1,7 +1,7 @@
 import "../styles/calendar.css";
 import { createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
-import { os, StorageKeys } from "../framework.js";
+import { os, StorageKeys, MODES } from "../framework.js";
 import { getWeekNumber } from "../shared/calendarUtils.js";
 import { subscribeTimeTick } from "../services/timeWorker.js";
 import { isTaskbarTop } from "../utils/utils.js";
@@ -250,7 +250,13 @@ function positionCalendarPopup() {
 
   requestAnimationFrame(() => {
     if (!calendarPopup) return;
-    const dateCandidates = [$("#time-container"), $("#date"), $(".shelf-status-clock"), $(".shelf-clock")];
+    const dateCandidates = [
+      $("#steamdeck-topbar-time"),
+      $("#time-container"),
+      $("#date"),
+      $(".shelf-status-clock"),
+      $(".shelf-clock")
+    ];
     const dateEl =
       dateCandidates.find((el) => {
         if (!el) return false;
@@ -279,7 +285,7 @@ function positionCalendarPopup() {
       calendarPopup.style.right = `${window.innerWidth - rect.right}px`;
       calendarPopup.style.left = "auto";
     } else {
-      const isMac = isTaskbarTop();
+      const isMac = isTaskbarTop() || os.modes.isActive(MODES.STEAMDECK);
       if (isMac) {
         calendarPopup.style.top = `${rect.bottom + 8}px`;
         calendarPopup.style.bottom = "auto";
@@ -360,7 +366,8 @@ function closeCalendarOnClickOutside(e) {
     e.target.id !== "date" &&
     e.target.id !== "clock" &&
     !e.target.closest("#time-container") &&
-    !e.target.closest(".shelf-clock")
+    !e.target.closest(".shelf-clock") &&
+    !e.target.closest("#steamdeck-topbar-time")
   ) {
     closeCalendarPopup();
   }

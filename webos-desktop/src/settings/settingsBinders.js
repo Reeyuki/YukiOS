@@ -13,7 +13,6 @@ import {
   applyFontSize,
   applyCursor,
   applyMikuCursor,
-  applyFontFamily,
   applyUiDensity,
   applyDesktopIconSize,
   applyTaskbarScale,
@@ -31,7 +30,6 @@ import { bindAccountsCategory } from "./accountsPanel.js";
 import { taskbarPositionManager } from "../desktopui/taskbarPositionManager.js";
 import { applyAnimationSettings } from "../windowManager/AnimationSystem.js";
 import { getResolutionLabel } from "../resolution/resolutionManager.js";
-
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);
   const navItems = $$(".yuki-settings-nav li", win);
@@ -105,7 +103,6 @@ export function bindNavigation(win) {
     }
   });
 }
-
 export function bindSystemCategory(win, save, settings, notificationCenter, showSaved) {
   const systemSettings = [
     "#settingsWeather",
@@ -521,6 +518,7 @@ export function bindAppearanceCategory(
         });
         os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.ThemeSmith });
         os.dialog.alert("Alert", `Saved "${themeName}"`);
+        os.notify.send("Theme Hub", `Saved "${themeName}". Open Theme Hub to remix or publish it.`);
         showSaved();
         const customThemesSection = Array.from($$(".settings-row--stacked", win)).find(
           (row) => row.querySelector(".settings-label-title")?.textContent === "Custom Themes"
@@ -574,17 +572,6 @@ export function bindAppearanceCategory(
       os.storage.set(StorageKeys.transparentUI, String(enabled));
       applyTransparentUI(enabled);
       showSaved();
-    });
-  }
-
-  const yuriModeToggle = $("#settingsYuriMode", win);
-  if (yuriModeToggle) {
-    bindEvent(yuriModeToggle, "change", () => {
-      const enabled = yuriModeToggle.checked;
-      settings.yuriMode = enabled;
-      os.storage.set(StorageKeys.yuriMode, String(enabled));
-      showSaved();
-      setTimeout(() => location.reload(), 600);
     });
   }
 
@@ -757,18 +744,6 @@ export function bindAppearanceCategory(
     });
   }
 
-  const fontsBtn = $("[data-fonts-in-system]", win);
-  if (fontsBtn) {
-    bindEvent(fontsBtn, "click", () => {
-      const explorer = window.services?.explorerApp;
-      if (explorer) {
-        explorer.open(["Documents"]);
-      } else {
-        os.app.launch("explorerApp", { path: ["Documents"] });
-      }
-    });
-  }
-
   const openBtn = $("#settingsOpenWallpaperEngine", win);
   if (openBtn) {
     bindEvent(openBtn, "click", () => {
@@ -780,6 +755,13 @@ export function bindAppearanceCategory(
   if (themeHubBtn) {
     bindEvent(themeHubBtn, "click", () => {
       os.app.launch("themeHubApp");
+    });
+  }
+
+  const createThemeBtn = $("#settingsOpenThemeHubCreate", win);
+  if (createThemeBtn) {
+    bindEvent(createThemeBtn, "click", () => {
+      os.app.launch("themeHubApp", { intent: "create" });
     });
   }
 

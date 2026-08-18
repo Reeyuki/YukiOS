@@ -600,7 +600,7 @@ const featurePages = [
     rootFile: "features.html",
     title: "YukiOS Features - Desktop Environment in Your Browser",
     description:
-      "YukiOS is a full browser-based desktop environment with a tiling window manager, Mac desktop mode, 2900 free games, a terminal with Python and Git, retro emulators for DOS/Flash/x86/3DS, and 90+ built-in apps - all running directly in your browser with no installation."
+      "YukiOS is a full browser-based desktop environment with a tiling window manager, Mac desktop mode, 3000 free games, a terminal with Python and Git, retro emulators for DOS/Flash/x86/3DS, and 90+ built-in apps - all running directly in your browser with no installation."
   },
   {
     key: "tiling",
@@ -628,9 +628,9 @@ const featurePages = [
   },
   {
     key: "games",
-    title: "2900 Free Online Games - Play in Your Browser",
+    title: "3000 Free Online Games - Play in Your Browser",
     description:
-      "Play 2900 free games instantly in your browser on YukiOS. From Minecraft and Geometry Dash to Balatro and Angry Birds - no downloads, no sign-ups, just click and play in a full desktop environment."
+      "Play 3000 free games instantly in your browser on YukiOS. From Minecraft and Geometry Dash to Balatro and Angry Birds - no downloads, no sign-ups, just click and play in a full desktop environment."
   },
   {
     key: "3d-room",
@@ -729,10 +729,10 @@ function buildSitemap(apps, games, gameDescs, featurePages) {
   lines.push(
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'
   );
-  lines.push(entry(BASE, `${GH}/chromeos.png`, 1.0, "daily"));
-  lines.push(entry(`${BASE}/apps.html`, `${GH}/chromeos.png`, 0.9, "weekly"));
+  lines.push(entry(BASE, `${GH}/yuki-deck.png`, 1.0, "daily"));
+  lines.push(entry(`${BASE}/apps.html`, `${GH}/yuki-deck.png`, 0.9, "weekly"));
   lines.push(entry(`${BASE}/games.html`, `${GH}/steam.png`, 0.9, "daily"));
-  lines.push(entry(`${BASE}/features.html`, `${GH}/chromeos.png`, 0.8, "weekly"));
+  lines.push(entry(`${BASE}/features.html`, `${GH}/yuki-deck.png`, 0.8, "weekly"));
   const sitemapGenreMap = {};
   for (const g of games) {
     for (const gn of g.genre) {
@@ -748,11 +748,11 @@ function buildSitemap(apps, games, gameDescs, featurePages) {
     for (const f of featurePages) {
       if (f.rootFile) continue;
       const img = galleryImages.find((i) => i.featureKey === f.key);
-      lines.push(entry(`${BASE}/feature/${f.key}.html`, img ? img.src : `${GH}/chromeos.png`, 0.6, "monthly"));
+      lines.push(entry(`${BASE}/feature/${f.key}.html`, img ? img.src : `${GH}/yuki-deck.png`, 0.6, "monthly"));
     }
   }
   for (const a of apps) {
-    lines.push(entry(`${BASE}/app/${a.key}.html`, `${GH}/chromeos.png`, 0.6, "monthly"));
+    lines.push(entry(`${BASE}/app/${a.key}.html`, `${GH}/yuki-deck.png`, 0.6, "monthly"));
   }
   for (const g of games) {
     lines.push(entry(`${BASE}/class/${g.key}.html`, `${GH}/steam.png`, 0.5, "monthly"));
@@ -1062,7 +1062,7 @@ function generateBullets(description, minBullets) {
     .map((s) => s.replace(/\.+$/, "").trim());
   const fallbacks = [
     "Available directly in your browser with no downloads or installation required",
-    "Part of the YukiOS desktop environment with 90+ built-in applications and 2900 games",
+    "Part of the YukiOS desktop environment with 90+ built-in applications and 3000 games",
     "Accessible from the Start Menu and compatible with the full YukiOS ecosystem"
   ];
   for (const fb of fallbacks) {
@@ -1566,7 +1566,7 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/chromeos.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/yuki-deck.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://yukios.netlify.app/${itemType}s.html">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -1821,17 +1821,20 @@ ${adSlotScript("genre-ad")}
 
 function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
   const outDir = resolve(ROOT, "dist");
+  const APP_TITLE_OVERRIDES = { steamApp: "Games" };
+  const APP_DESC_OVERRIDES = { steamApp: "Steam-style game launcher (not affiliated with Valve)." };
 
   const appDir = resolve(outDir, "app");
   mkdirSync(appDir, { recursive: true });
   for (const a of apps) {
-    const desc = a.description || `${a.title} - a built-in YukiOS app.`;
+    const pageTitle = APP_TITLE_OVERRIDES[a.key] || a.title;
+    const desc = APP_DESC_OVERRIDES[a.key] || a.description || `${a.title} - a built-in YukiOS app.`;
     const url = `${BASE}/app/${a.key}.html`;
     const jsonld = JSON.stringify([
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        name: `${a.title} - YukiOS`,
+        name: `${pageTitle} - YukiOS`,
         url,
         description: desc,
         operatingSystem: "Web Browser",
@@ -1844,11 +1847,11 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "YukiOS", item: BASE },
           { "@type": "ListItem", position: 2, name: "Apps", item: `${BASE}/features.html` },
-          { "@type": "ListItem", position: 3, name: a.title, item: url }
+          { "@type": "ListItem", position: 3, name: pageTitle, item: url }
         ]
       }
     ]);
-    const pts = generateBullets(a.description || "");
+    const pts = generateBullets(desc);
     const bullets = pts.length ? `<h2>Features</h2><ul>${pts.map((s) => `<li>${s}.</li>`).join("")}</ul>` : "";
     const appIdx = apps.indexOf(a);
     const nearby = [];
@@ -1861,8 +1864,8 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
           .map((n) => `<a href="/app/${n.key}.html">${n.title}</a>`)
           .join(", ")}</p>`
       : "";
-    const extra = `${bullets}<p class="seo-cta">${a.title} is part of YukiOS - a free browser-based desktop environment with 90+ apps, 2900 games, and no downloads or sign-ups required. Launch it directly from the Start Menu or bookmark this page for quick access.</p>${relatedApps}`;
-    const html = makeStandalonePage(a.title, desc, jsonld, url, `${GH}/chromeos.png`, extra, `/?app=${a.key}`);
+    const extra = `${bullets}<p class="seo-cta">${pageTitle} is part of YukiOS - a free browser-based desktop environment with 90+ apps, 3000 games, and no downloads or sign-ups required. Launch it directly from the Start Menu or bookmark this page for quick access.</p>${relatedApps}`;
+    const html = makeStandalonePage(pageTitle, desc, jsonld, url, `${GH}/yuki-deck.png`, extra, `/?app=${a.key}`);
     writeFileSync(resolve(appDir, `${a.key}.html`), html, "utf-8");
   }
 
@@ -2010,7 +2013,7 @@ function buildPages(apps, games, gameDescs, featurePages, indexHtml) {
     const relatedLinks = related.length
       ? `<p class="seo-more">Explore more: ${related.map((r) => `<a href="/feature/${r.key}.html">${r.title}</a>`).join(", ")}</p>`
       : "";
-    const ogImage = (galleryImages.find((i) => i.featureKey === f.key) || {}).src || `${GH}/chromeos.png`;
+    const ogImage = (galleryImages.find((i) => i.featureKey === f.key) || {}).src || `${GH}/yuki-deck.png`;
     let extra;
     if (f.rootFile) {
       const featureTitleMap = Object.fromEntries(

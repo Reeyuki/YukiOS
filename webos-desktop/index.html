@@ -30,14 +30,14 @@
     <title>YukiOS</title>
     <meta
       name="description"
-      content="YukiOS is a free browser-based desktop environment with a tiling window manager, macOS-style interface, 2900 games, a terminal with Python &amp; Git, emulators for DOS/Flash/x86/3DS, and 90+ apps - no sign-up or download required. Open source with MIT license."
+      content="YukiOS is a free browser-based desktop environment with a tiling window manager, macOS-style interface, 3000 games, a terminal with Python &amp; Git, emulators for DOS/Flash/x86/3DS, and 90+ apps - no sign-up or download required. Open source with MIT license."
     />
 
     <meta property="og:title" content="YukiOS - Free Desktop Environment in Your Browser, No Download Needed" />
 
     <meta
       property="og:description"
-      content="Turn your browser into a full desktop OS with YukiOS. Tiling window manager, Mac desktop mode, 2900 free games, Python/Node terminal, DOS/Flash/x86 emulators, 90+ apps - all in one browser tab."
+      content="Turn your browser into a full desktop OS with YukiOS. Tiling window manager, Mac desktop mode, 3000 free games, Python/Node terminal, DOS/Flash/x86 emulators, 90+ apps - all in one browser tab."
     />
 
     <meta name="twitter:title" content="YukiOS - Free Desktop Environment in Your Browser, No Install Needed" />
@@ -56,7 +56,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:description"
-      content="Browser desktop OS with tiling WM, Mac mode, 2900 games, Python/Node terminal, emulators for DOS/Flash/x86/3DS, themes, wallpapers, PWA support, and 90+ apps - completely free and no download.
+      content="Browser desktop OS with tiling WM, Mac mode, 3000 games, Python/Node terminal, emulators for DOS/Flash/x86/3DS, themes, wallpapers, PWA support, and 90+ apps - completely free and no download."
     />
     <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Reeyuki/YukiOS@main/.github/chromeos.png" />
     <meta
@@ -250,26 +250,25 @@
           </div>
         </div>
       </div>
-
-      <div id="taskbar">
-        <div id="mac-menu-bar">
-          <span class="mac-menu-item mac-menu-apple" data-start="true"><i class="fab fa-apple"></i></span>
-          <span class="mac-menu-item">File</span>
-          <span class="mac-menu-item">Edit</span>
-          <span class="mac-menu-item">View</span>
-          <span class="mac-menu-item">Go</span>
-          <span class="mac-menu-item">Window</span>
-          <span class="mac-menu-item">Help</span>
+    </div>
+    <div id="taskbar">
+      <div id="mac-menu-bar">
+        <span class="mac-menu-item mac-menu-apple" data-start="true"><i class="fab fa-apple"></i></span>
+        <span class="mac-menu-item">File</span>
+        <span class="mac-menu-item">Edit</span>
+        <span class="mac-menu-item">View</span>
+        <span class="mac-menu-item">Go</span>
+        <span class="mac-menu-item">Window</span>
+        <span class="mac-menu-item">Help</span>
+      </div>
+      <div id="start-button"></div>
+      <div id="taskbar-windows" style="display: flex"></div>
+      <div id="system-tray">
+        <div id="time-container">
+          <div id="clock">12:00 PM</div>
+          <div id="date">01/01/2026</div>
         </div>
-        <div id="start-button"></div>
-        <div id="taskbar-windows" style="display: flex"></div>
-        <div id="system-tray">
-          <div id="time-container">
-            <div id="clock">12:00 PM</div>
-            <div id="date">01/01/2026</div>
-          </div>
-          <div id="social-bar-container"></div>
-        </div>
+        <div id="social-bar-container"></div>
       </div>
     </div>
     <div id="context-menu"></div>

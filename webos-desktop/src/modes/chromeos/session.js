@@ -1,11 +1,12 @@
-import { modeManager, MODES } from "../../modeManager.js";
-import { BusEvents } from "../../core/EventBus.js";
+import { MODES } from "../../modeManager.js";
 import { os } from "../../framework.js";
 import { SystemUtilities } from "../../system.js";
+import { SessionMode } from "../shared/sessionBase.js";
+
+const chromeSession = new SessionMode(MODES.CHROME_OS);
 
 export function applyChromeOsSettings() {
-  modeManager.enter(MODES.CHROME_OS);
-  os.events.emit(BusEvents.SETTINGS_CHANGED, {});
+  chromeSession.enter();
   const chromeWallpapers = [
     "Blues-Dark.jpg",
     "Blues.jpg",
@@ -30,5 +31,5 @@ export function applyChromeOsSettings() {
 }
 
 export function disableChromeOsSettings() {
-  modeManager.exit(MODES.CHROME_OS);
+  chromeSession.exit();
 }

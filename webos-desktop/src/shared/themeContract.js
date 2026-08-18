@@ -1,4 +1,4 @@
-export const THEME_CONTRACT_VERSION = 1;
+export const THEME_CONTRACT_VERSION = 2;
 
 export const THEME_COLOR_KEYS = [
   "brand",
@@ -73,6 +73,9 @@ export const THEME_EFFECT_OPTIONS = {
   restore: ["fromTaskbar", "scaleCenter", "fade", "slideUp", "instant"]
 };
 
+export const THEME_CONFIG_FONTS = ["opensans", "inter", "rubik", "sora", "jetbrainsmono", "monocraft"];
+export const THEME_CONFIG_DENSITIES = ["compact", "comfortable", "spacious"];
+
 const COLOR_VALUE_RE =
   /^(#[0-9a-fA-F]{3,8}|rgba?\([^()]{1,80}\)|hsla?\([^()]{1,80}\)|oklch\([^()]{1,120}\)|var\(--[a-zA-Z0-9-]{1,64}\)|transparent|currentcolor|none|inherit)$/i;
 const COLOR_BLOCKED_RE = /url\(|expression|javascript/i;
@@ -102,7 +105,7 @@ export function sanitizeThemeContract(input) {
   if (!input || typeof input !== "object") {
     return { ok: false, contract: null, errors: ["Invalid theme data"] };
   }
-  if (input.schemaVersion !== THEME_CONTRACT_VERSION) {
+  if (input.schemaVersion !== 1 && input.schemaVersion !== 2) {
     errors.push("Unsupported schema version");
   }
   if (input.type !== "yukios-theme") {
@@ -156,6 +159,14 @@ export function sanitizeThemeContract(input) {
     effects.background = background;
   }
 
+  const config = {};
+  const rawConfig = input.config && typeof input.config === "object" ? input.config : {};
+  if (THEME_CONFIG_FONTS.includes(rawConfig.fontFamily)) config.fontFamily = rawConfig.fontFamily;
+  if (THEME_CONFIG_DENSITIES.includes(rawConfig.density)) config.density = rawConfig.density;
+  if (typeof rawConfig.windowTransparency === "number" && Number.isFinite(rawConfig.windowTransparency)) {
+    config.windowTransparency = Math.max(20, Math.min(100, Math.round(rawConfig.windowTransparency)));
+  }
+
   if (errors.length > 0) {
     return { ok: false, contract: null, errors };
   }
@@ -168,12 +179,13 @@ export function sanitizeThemeContract(input) {
     author,
     icon: icon || "fas fa-palette",
     colors,
-    effects
+    effects,
+    config
   };
   return { ok: true, contract, errors: [] };
 }
 
-export function buildThemeContract({ name, description, author, icon, colors, effects } = {}) {
+export function buildThemeContract({ name, description, author, icon, colors, effects, config } = {}) {
   const result = sanitizeThemeContract({
     schemaVersion: THEME_CONTRACT_VERSION,
     type: "yukios-theme",
@@ -182,7 +194,8 @@ export function buildThemeContract({ name, description, author, icon, colors, ef
     author,
     icon,
     colors,
-    effects: effects || {}
+    effects: effects || {},
+    config: config || {}
   });
   if (!result.ok) {
     throw new Error(result.errors[0]);

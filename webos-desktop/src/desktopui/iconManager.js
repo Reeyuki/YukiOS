@@ -17,18 +17,18 @@ import { Achievements } from "../achievements.js";
 import { makeDraggable } from "../shared/dragUtils.js";
 
 import { $, $$, createElement, setHTML, setText, setStyle } from "../shared/domUtils.js";
-import { StorageKeys, os, MODES, brand } from "../framework.js";
+import { StorageKeys, os, MODES } from "../framework.js";
 
 const HARDCODED_DESKTOP_ICONS = [
   { app: "explorerApp", name: "Files", icon: "static/icons/file.webp" },
-  { app: "steamApp", name: "Steam", icon: "static/icons/steam.webp" },
+  { app: "steamApp", name: "Yuki Steam", icon: "fab fa-steam", isFa: true },
   { app: "discordApp", name: "Discord", icon: "fab fa-discord", isFa: true },
   { app: "browserApp", name: "Browser", icon: resolveIconUrl("static/icons/firefox.webp") },
   { app: "systemAppsApp", name: "System Apps", icon: "fas fa-tools", isFa: true },
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
   { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" },
   { app: "room3dApp", name: "3D Room", icon: "static/icons/3dyukios.webp" },
-  { app: "remoteHostApp", name: brand("Yuki Remote Desktop"), icon: "fas fa-desktop", isFa: true }
+  { app: "craxgptApp", name: "CraxGPT", icon: "fas fa-robot", isFa: true }
 ];
 
 export class IconManager {

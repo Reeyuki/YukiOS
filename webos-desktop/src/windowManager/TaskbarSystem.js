@@ -17,7 +17,7 @@ import {
   toggleClass,
   setStyle
 } from "../shared/domUtils.js";
-import { StorageKeys, os, brand } from "../framework.js";
+import { StorageKeys, os } from "../framework.js";
 import { Achievements } from "../achievements.js";
 export class TaskbarSystem {
   constructor(manager) {
@@ -530,7 +530,7 @@ export class TaskbarSystem {
           {
             winId: "browser-pinned",
             appId: "browserApp",
-            title: brand("Yuki Browser"),
+            title: "Yuki Browser",
             iconValue: resolveIconUrl("static/icons/firefox.webp"),
             color: null
           },

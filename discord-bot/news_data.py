@@ -2,9 +2,9 @@ import os
 import json
 import time
 
-from _jstool import fetch_text, extract_js_var, CACHE_DIR
+from _jstool import fetch_text, CACHE_DIR
 
-NEWS_URL = "https://github.com/Reeyuki/YukiOS/raw/refs/heads/main/webos-desktop/src/apps/news.js"
+NEWS_URL = "https://github.com/Reeyuki/YukiOS/raw/refs/heads/main/webos-desktop/src/news.json"
 CACHE_FILE = os.path.join(CACHE_DIR, "news_data.json")
 CACHE_TTL = 3600
 
@@ -24,8 +24,7 @@ def _load():
             return
 
     try:
-        news_js = fetch_text(NEWS_URL)
-        updates = extract_js_var(news_js, "EXISTING_NEWS_UPDATES")
+        updates = json.loads(fetch_text(NEWS_URL))
         NEWS_UPDATES = updates
 
         os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)

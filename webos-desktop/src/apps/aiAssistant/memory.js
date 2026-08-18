@@ -8,6 +8,7 @@ export class AIMemory {
     this.chatHistory = [];
     this.STORAGE_KEY = StorageKeys.aiMemory;
     this.CHAT_KEY = StorageKeys.aiChatHistory;
+    this.CHATS_KEY = StorageKeys.aiChats;
     this.PREFS_KEY = StorageKeys.aiPreferences;
   }
 
@@ -86,6 +87,55 @@ export class AIMemory {
   clearChatHistory() {
     this.chatHistory = [];
     os.storage.remove(this.CHAT_KEY);
+  }
+
+  async loadChats() {
+    try {
+      const saved = os.storage.get(this.CHATS_KEY);
+      if (saved && saved.chats) {
+        return saved;
+      }
+      const legacy = os.storage.get(this.CHAT_KEY);
+      if (Array.isArray(legacy)) {
+        const id = this.createChatId();
+        const chat = {
+          id,
+          title: this.buildChatTitle(legacy),
+          createdAt: Date.now(),
+          messages: legacy
+        };
+        await this.saveChats({ [id]: chat }, id);
+        os.storage.remove(this.CHAT_KEY);
+        return { activeChatId: id, chats: { [id]: chat } };
+      }
+    } catch (error) {
+      console.warn("[AIMemory] Failed to load chats:", error);
+    }
+    return { chats: {}, activeChatId: null };
+  }
+
+  saveChats(chats, activeChatId) {
+    try {
+      os.storage.set(this.CHATS_KEY, { chats, activeChatId });
+    } catch (error) {
+      console.warn("[AIMemory] Failed to save chats:", error);
+    }
+  }
+
+  createChatId() {
+    return "chat-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+  }
+
+  buildChatTitle(messages) {
+    const first = messages.find((message) => message.role === "user");
+    const content = first ? String(first.content).replace(/\s+/g, " ").trim() : "";
+    if (!content) {
+      return "New Chat";
+    }
+    if (content.length > 40) {
+      return content.slice(0, 40) + "...";
+    }
+    return content;
   }
 
   async savePersistentMemory(key, value) {

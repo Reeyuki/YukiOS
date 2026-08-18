@@ -1,4 +1,4 @@
-import { os, StorageKeys, brand } from "./framework.js";
+import { os, StorageKeys } from "./framework.js";
 
 const MODIFIER_ALIASES = {
   ctrl: ["ctrl", "control"],
@@ -80,22 +80,6 @@ export const KEYBIND_DEFINITIONS = [
     hidden: true
   },
   {
-    id: "global.startMenu.tab",
-    defaultKeys: ["Tab"],
-    desc: "Toggle Start Menu (when desktop is focused)",
-    cat: "global",
-    icon: "fas fa-bars",
-    hidden: true
-  },
-  {
-    id: "global.startMenu.space",
-    defaultKeys: ["Space"],
-    desc: "Toggle Start Menu (when desktop is focused)",
-    cat: "global",
-    icon: "fas fa-bars",
-    hidden: true
-  },
-  {
     id: "chromeos.launcher",
     defaultKeys: ["Meta"],
     desc: "Toggle Chrome OS Launcher",
@@ -143,6 +127,13 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Start / stop screen recording",
     cat: "global",
     icon: "fas fa-video"
+  },
+  {
+    id: "global.screenshot.deck",
+    defaultKeys: ["F12"],
+    desc: "Capture screenshot and auto-save (game-tagged on Steam Deck)",
+    cat: "global",
+    icon: "fas fa-camera"
   },
   {
     id: "global.colorPicker",
@@ -214,7 +205,7 @@ export const KEYBIND_DEFINITIONS = [
   {
     id: "steam.overlay",
     defaultKeys: ["Shift", "Tab"],
-    desc: "Open Steam overlay while in-game",
+    desc: "Open Yuki Steam overlay while in-game",
     cat: "games",
     icon: "fab fa-steam"
   },
@@ -646,97 +637,6 @@ export const KEYBIND_DEFINITIONS = [
     icon: "fas fa-expand"
   },
   {
-    id: "model3d.undo",
-    defaultKeys: ["Ctrl", "Z"],
-    desc: "Undo in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-undo"
-  },
-  {
-    id: "model3d.redo",
-    defaultKeys: ["Ctrl", "Y"],
-    desc: "Redo in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-redo"
-  },
-  {
-    id: "model3d.redoAlt",
-    defaultKeys: ["Ctrl", "Shift", "Z"],
-    desc: "Redo in 3D Model Editor (alternative)",
-    cat: "model3d",
-    icon: "fas fa-redo"
-  },
-  {
-    id: "model3d.duplicate",
-    defaultKeys: ["Ctrl", "D"],
-    desc: "Duplicate in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-copy"
-  },
-  {
-    id: "model3d.selectAll",
-    defaultKeys: ["Ctrl", "A"],
-    desc: "Select all in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-object-group"
-  },
-  {
-    id: "model3d.delete",
-    defaultKeys: ["Delete"],
-    desc: "Delete selected in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-trash",
-    hidden: true
-  },
-  {
-    id: "model3d.selectTool",
-    defaultKeys: ["Q"],
-    desc: "Select tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-mouse-pointer",
-    hidden: true
-  },
-  {
-    id: "model3d.moveTool",
-    defaultKeys: ["G"],
-    desc: "Move tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-arrows-alt",
-    hidden: true
-  },
-  {
-    id: "model3d.rotateTool",
-    defaultKeys: ["R"],
-    desc: "Rotate tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-sync",
-    hidden: true
-  },
-  {
-    id: "model3d.scaleTool",
-    defaultKeys: ["S"],
-    desc: "Scale tool in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-expand-arrows-alt",
-    hidden: true
-  },
-  {
-    id: "model3d.toggleVis",
-    defaultKeys: ["H"],
-    desc: "Toggle visibility in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-eye",
-    hidden: true
-  },
-  {
-    id: "model3d.zoomFit",
-    defaultKeys: ["F"],
-    desc: "Zoom to fit in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-expand",
-    hidden: true
-  },
-  {
     id: "games.search",
     defaultKeys: ["Ctrl", "F"],
     desc: "Search in games",
@@ -842,14 +742,6 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Toggle terminal panel in code editor",
     cat: "monaco",
     icon: "fas fa-terminal"
-  },
-  {
-    id: "model3d.backspace",
-    defaultKeys: ["Backspace"],
-    desc: "Delete selected in 3D Model Editor",
-    cat: "model3d",
-    icon: "fas fa-trash",
-    hidden: true
   },
   {
     id: "session.confirm",
@@ -1112,7 +1004,7 @@ export const KEYBIND_DEFINITIONS = [
   {
     id: "global.launchBrowser",
     defaultKeys: ["Alt", "F"],
-    desc: brand("Open Yuki Browser"),
+    desc: "Open Yuki Browser",
     cat: "global",
     icon: "fas fa-globe"
   },
@@ -1561,6 +1453,62 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Launch or focus dock item 10",
     cat: "dock",
     icon: "fab fa-apple"
+  },
+  {
+    id: "steamdeck.openQuickAccess",
+    defaultKeys: ["Ctrl", "Shift", "Q"],
+    desc: "Open Yuki Deck Quick Access panel",
+    cat: "steamdeck",
+    icon: "fas fa-bolt"
+  },
+  {
+    id: "steamdeck.home",
+    defaultKeys: ["Ctrl", "Shift", "H"],
+    desc: "Return to Yuki Deck Home",
+    cat: "steamdeck",
+    icon: "fas fa-house"
+  },
+  {
+    id: "steamdeck.moveUp",
+    defaultKeys: ["ArrowUp"],
+    desc: "Move focus up in Yuki Deck",
+    cat: "steamdeck",
+    icon: "fas fa-arrow-up"
+  },
+  {
+    id: "steamdeck.moveDown",
+    defaultKeys: ["ArrowDown"],
+    desc: "Move focus down in Yuki Deck",
+    cat: "steamdeck",
+    icon: "fas fa-arrow-down"
+  },
+  {
+    id: "steamdeck.moveLeft",
+    defaultKeys: ["ArrowLeft"],
+    desc: "Move focus left in Yuki Deck",
+    cat: "steamdeck",
+    icon: "fas fa-arrow-left"
+  },
+  {
+    id: "steamdeck.moveRight",
+    defaultKeys: ["ArrowRight"],
+    desc: "Move focus right in Yuki Deck",
+    cat: "steamdeck",
+    icon: "fas fa-arrow-right"
+  },
+  {
+    id: "steamdeck.confirm",
+    defaultKeys: ["Enter"],
+    desc: "Confirm selection in Yuki Deck",
+    cat: "steamdeck",
+    icon: "fas fa-check"
+  },
+  {
+    id: "steamdeck.back",
+    defaultKeys: ["Escape"],
+    desc: "Go back in Yuki Deck",
+    cat: "steamdeck",
+    icon: "fas fa-arrow-left"
   }
 ];
 

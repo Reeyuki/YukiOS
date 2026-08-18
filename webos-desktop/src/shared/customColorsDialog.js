@@ -4,12 +4,12 @@ import { buildWindowHeader } from "./windowHeader.js";
 import "../styles/customColorsDialog.css";
 
 export const CUSTOM_COLOR_FIELDS = [
-  { key: "brand", label: "Brand Color", fallback: "#b4befe" },
-  { key: "bg-primary", label: "Background Primary", fallback: "#1e1e2e" },
-  { key: "bg-secondary", label: "Background Secondary", fallback: "#313244" },
-  { key: "text-primary", label: "Text Primary", fallback: "#cdd6f4" },
-  { key: "text-secondary", label: "Text Secondary", fallback: "#a6adc8" },
-  { key: "glass", label: "Glass", fallback: "#45475a" }
+  { key: "brand", label: "Brand Color", fallback: "oklch(55% 0.11 264)" },
+  { key: "bg-primary", label: "Background Primary", fallback: "oklch(18% 0.01 265)" },
+  { key: "bg-secondary", label: "Background Secondary", fallback: "oklch(24% 0.01 265)" },
+  { key: "text-primary", label: "Text Primary", fallback: "oklch(95% 0.01 265)" },
+  { key: "text-secondary", label: "Text Secondary", fallback: "oklch(72% 0.01 265)" },
+  { key: "glass", label: "Glass", fallback: "oklch(100% 0 0 / 0.04)" }
 ];
 
 export function getStoredCustomColors() {

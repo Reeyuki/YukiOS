@@ -1,16 +1,21 @@
 import { HIGHLIGHTED_GAMES } from "./games.js";
 import { SteamDataManager } from "./games.js";
 import { popularityMap } from "./games.js";
-import { SteamSettings } from "./steam.js";
-import { lazyImg, observeLazyImages, getCdnBase } from "./games.js";
+import { SteamSettings } from "./steamSettings.js";
+import { lazyImg, observeLazyImages } from "./games.js";
+import { resolveIconHtml } from "../shared/iconUtils.js";
 import { fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { $, $$, createElement } from "../shared/domUtils.js";
-import { injectAdsterraAd, injectNativeAd, suppressAdBlocks } from "../ads.js";
-
-const AD_KEYS = {
-  leaderboard: "28c33f91ee21bcf1063e489aae3024f8",
-  rectangle: "914131b4a8e7414d1576d6d7c5a6c87f"
-};
+import { injectAdsterraAd, injectNativeAd, suppressAdBlocks, ADSTERRA_KEYS } from "../ads.js";
+import { formatGameActivityTime, escapeHtml as esc } from "../utils/utils.js";
+import {
+  achievementsPercent,
+  fetchCommunityOverview,
+  fetchActivityOverview,
+  buildPlayerRows,
+  buildFriendCards,
+  buildAvatarStrip
+} from "./steamOverviewData.js";
 
 export class GameRenderer {
   constructor(renderer) {
@@ -70,11 +75,7 @@ export class GameRenderer {
   }
 
   formatTime(min) {
-    if (!min) return "0min";
-    if (min < 60) return `${min}min`;
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    return formatGameActivityTime(min);
   }
 
   getSortedGames(games, sortBy, sortReverse) {
@@ -120,6 +121,7 @@ export class GameRenderer {
 
     const stats = SteamDataManager.getStats();
     const gameStats = stats[appId] || { totalMin: 0, lastPlayed: 0 };
+    const achPct = achievementsPercent(gameStats.totalMin);
     const target = container.querySelector(".steam-library-page");
     const mainContent = container.querySelector(".steam-main-content");
     if (mainContent) mainContent.scrollTop = 0;
@@ -141,24 +143,40 @@ export class GameRenderer {
 
             ${this.getReeyukiBadge(game)}
 
-            <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-              <button class="steam-play-btn" style="background: var(--charging); border: none; color: var(--text-primary); padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px var(--overlay-bg);">
+            <div class="play-bar">
+              <button class="steam-play-btn">
                 Play
               </button>
 
-              <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: var(--text-secondary);">
+              <button class="steam-overview-btn" data-action="favorite">
+                <i class="far fa-star"></i>
+                <span>Add to Favorites</span>
+              </button>
+
+              <button class="steam-overview-btn" data-action="saveToCollection">
+                <i class="fas fa-folder-plus"></i>
+                <span>Save to Collection</span>
+              </button>
+
+              <div class="overview-stats">
                 <div>
-                  <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                  <div style="color: var(--text-primary);">
+                  <div class="overview-stats-label">Last Played</div>
+                  <div class="overview-stats-value">
                     ${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}
                   </div>
                 </div>
 
                 <div>
-                  <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                  <div style="color: var(--text-primary);">
+                  <div class="overview-stats-label">Play Time</div>
+                  <div class="overview-stats-value">
                     ${this.formatTime(gameStats.totalMin)}
                   </div>
+                </div>
+
+                <div>
+                  <div class="overview-stats-label">Achievements</div>
+                  <div class="overview-stats-value">${achPct}%</div>
+                  <div class="steam-overview-ach-bar"><span class="steam-overview-ach-fill"></span></div>
                 </div>
               </div>
             </div>
@@ -176,14 +194,35 @@ export class GameRenderer {
             </p>
           </div>
 
-          <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-          <div style="color: var(--text-secondary); font-style: italic; font-size: 13px;">No recent activity to show.</div>
+          <div class="steam-overview-panel">
+            <div class="steam-overview-panel-head">
+              <h3 class="steam-overview-panel-title">Friends Activity</h3>
+              <span class="steam-overview-panel-sub" data-overview-friends-count>Loading...</span>
+            </div>
+            <div data-overview-friends></div>
+            <div class="steam-overview-avatar-strips">
+              <div>
+                <h4>Played Previously</h4>
+                <div class="steam-overview-avatar-row" data-overview-played></div>
+              </div>
+              <div>
+                <h4>On Their Wishlist</h4>
+                <div class="steam-overview-avatar-row" data-overview-wishlist></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="overview-sidebar">
-          <div style="background: var(--surface-1); padding: 20px; border-radius: 4px;">
-            <h3 style="margin-top: 0; color: var(--text-primary); font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-            <div style="color: var(--text-secondary); font-size: 13px;">None of your friends have played this game.</div>
+          <div class="steam-overview-panel">
+            <div class="steam-overview-panel-head">
+              <h3 class="steam-overview-panel-title">Community</h3>
+              <span class="steam-overview-panel-sub" data-overview-plays>0 PLAYS ALL TIME</span>
+            </div>
+            <div class="steam-overview-row"><span>Total Plays</span><b data-overview-total-plays>0</b></div>
+            <div class="steam-overview-row"><span>Playing Now</span><b data-overview-playing-now>0</b></div>
+            <h3 class="steam-overview-panel-title steam-overview-community-sub">Recently Played By</h3>
+            <div data-overview-recent><span class="steam-overview-note">Loading...</span></div>
           </div>
           <div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="overview-ad-slot"></div></div>
           <div id="container-5f797791a9771b6940fb9385a69ce168" style="margin-top:20px;"></div>
@@ -194,12 +233,80 @@ export class GameRenderer {
 
     this.injectReeyukiStyle(target);
 
-    injectAdsterraAd("overview-ad-slot", AD_KEYS.rectangle, 300, 250, 200);
+    injectAdsterraAd("overview-ad-slot", ADSTERRA_KEYS.rectangle, 300, 250, 200);
     injectNativeAd("container-5f797791a9771b6940fb9385a69ce168");
     suppressAdBlocks(target);
 
+    const achFill = target.querySelector(".steam-overview-ach-fill");
+    if (achFill) achFill.style.width = `${achPct}%`;
+
     target.querySelector(".steam-play-btn").onclick = () => onLaunch(appId);
+
+    const favoriteBtn = target.querySelector('[data-action="favorite"]');
+    if (favoriteBtn) {
+      favoriteBtn.onclick = async () => {
+        const { SteamDataManager } = await import("./steamSettings.js");
+        SteamDataManager.toggleFavorite(appId);
+        const icon = favoriteBtn.querySelector("i");
+        const span = favoriteBtn.querySelector("span");
+        const isFavorite = SteamDataManager.isFavorite(appId);
+        icon.className = isFavorite ? "fas fa-star" : "far fa-star";
+        span.textContent = isFavorite ? "In Favorites" : "Add to Favorites";
+      };
+    }
+
+    const saveToCollectionBtn = target.querySelector('[data-action="saveToCollection"]');
+    if (saveToCollectionBtn) {
+      saveToCollectionBtn.onclick = async () => {
+        const { SteamDataManager } = await import("./steamSettings.js");
+        SteamDataManager.addCurrentToCollection(appId);
+      };
+    }
+
     this.renderer.setActiveSidebarItem(container, appId);
+    this.hydrateOverview(target, appId);
+  }
+
+  async hydrateOverview(target, appId) {
+    const [community, activity] = await Promise.all([fetchCommunityOverview(appId), fetchActivityOverview()]);
+    if (!target.isConnected) return;
+    const sub = target.querySelector("[data-overview-plays]");
+    if (sub) sub.textContent = `${community.playCount.toLocaleString()} PLAYS ALL TIME`;
+    const total = target.querySelector("[data-overview-total-plays]");
+    if (total) total.textContent = community.playCount.toLocaleString();
+    const playing = target.querySelector("[data-overview-playing-now]");
+    if (playing) playing.textContent = String(community.playingNow.length);
+    const recent = target.querySelector("[data-overview-recent]");
+    if (recent) {
+      const rows = buildPlayerRows(community.recentPlayers, community.playingNow, {
+        row: "steam-overview-friend",
+        avatar: "steam-overview-friend-avatar",
+        info: "steam-overview-friend-info"
+      });
+      recent.innerHTML = rows || '<span class="steam-overview-note">No one has played this recently.</span>';
+    }
+    const friendsCount = target.querySelector("[data-overview-friends-count]");
+    if (friendsCount)
+      friendsCount.textContent = `${activity.count} FRIEND${activity.count === 1 ? "" : "S"} HAVE PLAYED RECENTLY`;
+    const friendsEl = target.querySelector("[data-overview-friends]");
+    if (friendsEl) {
+      const cards = buildFriendCards(activity.friends, activity.count, {
+        row: "steam-overview-friend",
+        avatar: "steam-overview-friend-avatar",
+        info: "steam-overview-friend-info"
+      });
+      friendsEl.innerHTML = cards || '<span class="steam-overview-note">Add friends to see their activity here.</span>';
+    }
+    const playedEl = target.querySelector("[data-overview-played]");
+    if (playedEl)
+      playedEl.innerHTML =
+        buildAvatarStrip(activity.friends, "steam-overview-avatar") ||
+        '<span class="steam-overview-note">No activity yet.</span>';
+    const wishlistEl = target.querySelector("[data-overview-wishlist]");
+    if (wishlistEl)
+      wishlistEl.innerHTML =
+        buildAvatarStrip(activity.friends, "steam-overview-avatar") ||
+        '<span class="steam-overview-note">No activity yet.</span>';
   }
 
   renderArchiveGameOverview(container, archiveGame, onLaunch) {
@@ -208,6 +315,7 @@ export class GameRenderer {
 
     const stats = SteamDataManager.getStats();
     const gameStats = stats[archiveGame.appId] || { totalMin: 0, lastPlayed: 0 };
+    const achPct = achievementsPercent(gameStats.totalMin);
     const target = container.querySelector(".steam-library-page");
     const thumb = archiveGame.thumb || "";
 
@@ -223,16 +331,29 @@ export class GameRenderer {
             }
             <div class="banner-info" style="flex: 1;">
               <h1 style="font-size: 48px; margin: 0 0 10px 0; color: var(--text-primary); text-shadow: 0 2px 10px var(--overlay-bg); font-family: 'Motiva Sans', Sans-serif;">${archiveGame.title}</h1>
-              <div class="play-bar" style="display: flex; align-items: center; gap: 20px;">
-                <button class="steam-play-btn" style="background: var(--charging); border: none; color: var(--text-primary); padding: 12px 60px; font-size: 20px; font-weight: 700; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px var(--overlay-bg);">Play</button>
-                <div class="overview-stats" style="display: flex; gap: 30px; font-size: 13px; color: var(--text-secondary);">
+              <div class="play-bar">
+                <button class="steam-play-btn">Play</button>
+                <button class="steam-overview-btn" data-action="favorite">
+                  <i class="far fa-star"></i>
+                  <span>Add to Favorites</span>
+                </button>
+                <button class="steam-overview-btn" data-action="saveToCollection">
+                  <i class="fas fa-folder-plus"></i>
+                  <span>Save to Collection</span>
+                </button>
+                <div class="overview-stats">
                   <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Last Played</div>
-                    <div style="color: var(--text-primary);">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
+                    <div class="overview-stats-label">Last Played</div>
+                    <div class="overview-stats-value">${gameStats.lastPlayed ? new Date(gameStats.lastPlayed).toLocaleDateString() : "Never"}</div>
                   </div>
                   <div>
-                    <div style="text-transform: uppercase; margin-bottom: 4px;">Play Time</div>
-                    <div style="color: var(--text-primary);">${this.formatTime(gameStats.totalMin)}</div>
+                    <div class="overview-stats-label">Play Time</div>
+                    <div class="overview-stats-value">${this.formatTime(gameStats.totalMin)}</div>
+                  </div>
+                  <div>
+                    <div class="overview-stats-label">Achievements</div>
+                    <div class="overview-stats-value">${achPct}%</div>
+                    <div class="steam-overview-ach-bar"><span class="steam-overview-ach-fill"></span></div>
                   </div>
                 </div>
               </div>
@@ -245,13 +366,34 @@ export class GameRenderer {
               <h3 style="margin-top: 0; color: var(--brand); text-transform: uppercase; font-size: 14px;">Game Info</h3>
               <p style="line-height: 1.6; color: var(--text-muted);">Experience ${archiveGame.title} on YukiOS. This game is part of the archive collection.</p>
             </div>
-            <div class="steam-whats-new-header" style="margin-bottom: 15px;">Recent Activity</div>
-            <div style="color: var(--text-secondary); font-style: italic; font-size: 13px;">No recent activity to show.</div>
+            <div class="steam-overview-panel">
+              <div class="steam-overview-panel-head">
+                <h3 class="steam-overview-panel-title">Friends Activity</h3>
+                <span class="steam-overview-panel-sub" data-overview-friends-count>Loading...</span>
+              </div>
+              <div data-overview-friends></div>
+              <div class="steam-overview-avatar-strips">
+                <div>
+                  <h4>Played Previously</h4>
+                  <div class="steam-overview-avatar-row" data-overview-played></div>
+                </div>
+                <div>
+                  <h4>On Their Wishlist</h4>
+                  <div class="steam-overview-avatar-row" data-overview-wishlist></div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="overview-sidebar">
-             <div style="background: var(--surface-1); padding: 20px; border-radius: 4px;">
-               <h3 style="margin-top: 0; color: var(--text-primary); font-size: 14px; text-transform: uppercase;">Friends who play</h3>
-               <div style="color: var(--text-secondary); font-size: 13px;">None of your friends have played this game.</div>
+             <div class="steam-overview-panel">
+               <div class="steam-overview-panel-head">
+                 <h3 class="steam-overview-panel-title">Community</h3>
+                 <span class="steam-overview-panel-sub" data-overview-plays>0 PLAYS ALL TIME</span>
+               </div>
+               <div class="steam-overview-row"><span>Total Plays</span><b data-overview-total-plays>0</b></div>
+               <div class="steam-overview-row"><span>Playing Now</span><b data-overview-playing-now>0</b></div>
+               <h3 class="steam-overview-panel-title steam-overview-community-sub">Recently Played By</h3>
+               <div data-overview-recent><span class="steam-overview-note">Loading...</span></div>
              </div>
              <div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="archive-overview-ad-slot"></div></div>
              <div id="container-5f797791a9771b6940fb9385a69ce168" style="margin-top:20px;"></div>
@@ -260,13 +402,39 @@ export class GameRenderer {
       </div>
     `;
 
-    injectAdsterraAd("archive-overview-ad-slot", AD_KEYS.rectangle, 300, 250, 200);
+    injectAdsterraAd("archive-overview-ad-slot", ADSTERRA_KEYS.rectangle, 300, 250, 200);
     injectNativeAd("container-5f797791a9771b6940fb9385a69ce168");
     suppressAdBlocks(target);
 
+    const achFill = target.querySelector(".steam-overview-ach-fill");
+    if (achFill) achFill.style.width = `${achPct}%`;
+
     target.querySelector(".steam-play-btn").onclick = () =>
       this.renderer.showGameOverlay(archiveGame.title, archiveGame.url);
+
+    const favoriteBtn = target.querySelector('[data-action="favorite"]');
+    if (favoriteBtn) {
+      favoriteBtn.onclick = async () => {
+        const { SteamDataManager } = await import("./steamSettings.js");
+        SteamDataManager.toggleFavorite(archiveGame.appId);
+        const icon = favoriteBtn.querySelector("i");
+        const span = favoriteBtn.querySelector("span");
+        const isFavorite = SteamDataManager.isFavorite(archiveGame.appId);
+        icon.className = isFavorite ? "fas fa-star" : "far fa-star";
+        span.textContent = isFavorite ? "In Favorites" : "Add to Favorites";
+      };
+    }
+
+    const saveToCollectionBtn = target.querySelector('[data-action="saveToCollection"]');
+    if (saveToCollectionBtn) {
+      saveToCollectionBtn.onclick = async () => {
+        const { SteamDataManager } = await import("./steamSettings.js");
+        SteamDataManager.addCurrentToCollection(archiveGame.appId);
+      };
+    }
+
     this.renderer.setActiveSidebarItem(container, archiveGame.appId);
+    this.hydrateOverview(target, archiveGame.appId);
   }
 
   renderGrid(container, onLaunch, focusCollection = null) {
@@ -334,7 +502,7 @@ export class GameRenderer {
               .map(
                 (item) => `
               <div class="news-card">
-                <img src="${item.image}" onerror="this.src='${getCdnBase()}/static/icons/steam.webp'" />
+                ${resolveIconHtml(item.image)}
                 <div class="news-info">
                   <div class="news-title">${item.title}</div>
                   <div class="news-date">${item.date}</div>
@@ -391,8 +559,8 @@ export class GameRenderer {
     this.renderer.loadArchiveSection(container, onLaunch, collapsed);
     this.renderer.loadLuminSDKSection(container, collapsed);
 
-    injectAdsterraAd("ad-library-top", AD_KEYS.leaderboard, 728, 90, 0);
-    injectAdsterraAd("ad-library-bottom", AD_KEYS.rectangle, 300, 250, 500);
+    injectAdsterraAd("ad-library-top", ADSTERRA_KEYS.leaderboard, 728, 90, 0);
+    injectAdsterraAd("ad-library-bottom", ADSTERRA_KEYS.rectangle, 300, 250, 500);
     suppressAdBlocks(target);
 
     const sidebar = container.querySelector(".steam-library-sidebar");

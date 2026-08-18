@@ -2,10 +2,10 @@ import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os, createElement } from "../framework.js";
 import { resolveAppName, resolveAppIcon, escapeHtml } from "../utils/utils.js";
 import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
-import { SteamSettings } from "../games/steam.js";
+import { SteamSettings } from "../games/steamSettings.js";
 import { isSocialDisabled } from "./socialSettings.js";
 import { getLiveUserId, ensureLiveUserId } from "./userIdentity.js";
-import { SOCIAL_ACTIVITY_ENDPOINT, SOCIAL_NOW_PLAYING_ENDPOINT } from "./endpoints.js";
+import { SOCIAL_ACTIVITY_ENDPOINT, SOCIAL_NOW_PLAYING_ENDPOINT, SOCIAL_BASE } from "./endpoints.js";
 import { isBroadcastAllowed, isPopupAllowed } from "./presence.js";
 import { areFriends } from "./friendsApi.js";
 
@@ -202,6 +202,28 @@ export class LiveActivityManager {
       this.processPopupQueue();
     } catch (e) {
       // silent - network errors expected when offline
+    }
+  }
+
+  async getNowPlaying() {
+    try {
+      const res = await fetch(SOCIAL_NOW_PLAYING_ENDPOINT);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data.users) ? data.users : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getRecentPlayers(appId) {
+    try {
+      const res = await fetch(SOCIAL_BASE + "/live/recent-players?app=" + encodeURIComponent(appId));
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data.users) ? data.users : [];
+    } catch {
+      return [];
     }
   }
 

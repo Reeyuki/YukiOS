@@ -1,6 +1,6 @@
 import "../styles/shortcuts.css";
 import { Achievements } from "../achievements.js";
-import { BusEvents, os, BaseApp, brand, createElement } from "../framework.js";
+import { BusEvents, os, BaseApp, createElement } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 
 const MODIFIER_KEY_MAP = {
@@ -32,16 +32,15 @@ export class ShortcutsApp extends BaseApp {
             </div>
           </div>
           <div class="sc-nav">
-            <div class="sc-nav-item active" data-cat="all"><i class="fas fa-keyboard"></i>All Shortcuts</div>
+            <div class="sc-nav-item active" data-cat="desktop"><i class="fas fa-desktop"></i>Desktop & Files</div>
+            <div class="sc-nav-item" data-cat="all"><i class="fas fa-keyboard"></i>All Shortcuts</div>
             <div class="sc-nav-item" data-cat="global"><i class="fas fa-globe"></i>Global & System</div>
-            <div class="sc-nav-item" data-cat="desktop"><i class="fas fa-desktop"></i>Desktop & Files</div>
             <div class="sc-nav-item" data-cat="notepad"><i class="fas fa-file-alt"></i>Notepad</div>
-            <div class="sc-nav-item" data-cat="browser"><i class="fas fa-compass"></i>${brand("Yuki Browser")}</div>
+            <div class="sc-nav-item" data-cat="browser"><i class="fas fa-compass"></i>Yuki Browser</div>
             <div class="sc-nav-item" data-cat="calc"><i class="fas fa-calculator"></i>Calculator</div>
             <div class="sc-nav-item" data-cat="calendar"><i class="fas fa-calendar-alt"></i>Calendar</div>
             <div class="sc-nav-item" data-cat="terminal"><i class="fas fa-terminal"></i>Terminal</div>
             <div class="sc-nav-item" data-cat="office"><i class="fas fa-file-word"></i>Office</div>
-            <div class="sc-nav-item" data-cat="model3d"><i class="fas fa-cube"></i>3D Model Editor</div>
             <div class="sc-nav-item" data-cat="games"><i class="fas fa-gamepad"></i>Games</div>
             <div class="sc-nav-item" data-cat="custom"><i class="fas fa-star"></i>Custom</div>
           </div>
@@ -197,7 +196,7 @@ export class ShortcutsApp extends BaseApp {
     const customSave = win.querySelector("#sc-custom-save");
     const customCancel = win.querySelector("#sc-custom-cancel");
 
-    let currentCategory = "all";
+    let currentCategory = "desktop";
     let customRecordedKeys = [];
     let customEditingId = null;
 
@@ -207,13 +206,13 @@ export class ShortcutsApp extends BaseApp {
         global: "Global & System",
         desktop: "Desktop & Files",
         notepad: "Notepad",
-        browser: brand("Yuki Browser"),
+        browser: "Yuki Browser",
         calc: "Calculator",
         calendar: "Calendar",
         terminal: "Terminal",
         office: "Office",
-        model3d: "3D Model Editor",
         games: "Games",
+        steamdeck: "Yuki Deck",
         custom: "Custom"
       };
       return labels[cat] || "Shortcuts";

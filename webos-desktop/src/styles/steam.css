@@ -78,6 +78,11 @@
   background: #171d25 !important;
   cursor: grab;
   display: flex !important;
+  border-top: 1px solid transparent;
+  background-image: linear-gradient(to right, #0e6a83, #223a7c);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: top;
   grid: none !important;
   grid-template-columns: unset !important;
   grid-template-rows: unset !important;
@@ -144,6 +149,40 @@
 .steam-quick-nav-btn:hover {
   background: #203a50;
   color: var(--brand);
+}
+
+.steam-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #c6d4df;
+}
+
+.steam-disclaimer.hidden {
+  display: none;
+}
+
+.steam-disclaimer i {
+  color: #66c0f4;
+}
+
+.steam-disclaimer-close {
+  background: transparent;
+  border: none;
+  color: #66c0f4;
+  font-size: 14px;
+  padding: 4px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.15s;
+}
+
+.steam-disclaimer-close:hover {
+  color: #fff;
 }
 
 .steam-user-profile {
@@ -367,6 +406,17 @@
   min-height: 100%;
 }
 
+.games-app-window {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid transparent;
+  background-image: linear-gradient(to right, #0e6a83, #223a7c);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: top;
+}
+
 .steam-yukios-content {
   width: 100%;
   display: flex;
@@ -521,6 +571,17 @@
   width: 100%;
   height: 100px;
   object-fit: cover;
+}
+
+.news-card i {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .news-info {
@@ -705,6 +766,59 @@
   letter-spacing: var(--ls-wide);
 }
 
+.steam-luminsdk-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.steam-luminsdk-fullscreen-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.12s,
+    border-color 0.12s,
+    background 0.12s;
+}
+
+.steam-luminsdk-fullscreen-btn:hover {
+  transform: scale(1.04);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.steam-luminsdk-iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  background: var(--bg-secondary);
+}
+
+.steam-luminsdk-container:fullscreen,
+.steam-luminsdk-container:-webkit-full-screen {
+  display: flex !important;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  background: var(--bg-primary);
+}
+
+.steam-luminsdk-container:fullscreen .steam-luminsdk-iframe,
+.steam-luminsdk-container:-webkit-full-screen .steam-luminsdk-iframe {
+  height: auto;
+  flex: 1;
+}
+
 .steam-grid-controls {
   display: flex;
   align-items: center;
@@ -841,6 +955,59 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.play-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.steam-play-btn {
+  background: var(--charging);
+  border: none;
+  color: var(--text-primary);
+  padding: 12px 60px;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px var(--overlay-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.steam-overview-btn {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overview-stats {
+  display: flex;
+  gap: 30px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.overview-stats-label {
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.overview-stats-value {
+  color: var(--text-primary);
 }
 
 .steam-play-btn:hover {
@@ -1390,4 +1557,479 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.steam-settings-page {
+  background: #171a21;
+}
+
+.steam-settings-sidebar {
+  width: 260px;
+  background: #2a2d34;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3d4450 #1b2838;
+}
+
+.steam-settings-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.steam-settings-sidebar::-webkit-scrollbar-track {
+  background: #1b2838;
+}
+
+.steam-settings-sidebar::-webkit-scrollbar-thumb {
+  background: #3d4450;
+  border-radius: 4px;
+}
+
+.steam-settings-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #4a5460;
+}
+
+.steam-settings-header {
+  padding: 20px 16px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #66c0f4;
+  flex-shrink: 0;
+}
+
+.steam-settings-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.steam-settings-divider {
+  height: 1px;
+  width: 80%;
+  background: #2b3542;
+  margin: 8px auto;
+  flex-shrink: 0;
+}
+
+.steam-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.steam-settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #b8c6d1;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  border-radius: 0;
+  user-select: none;
+}
+
+.steam-settings-nav-item i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.steam-settings-nav-item:hover {
+  background: #dcdedf;
+  color: #1a1a2e;
+}
+
+.steam-settings-nav-item.active {
+  background: #3d4450;
+  color: #ffffff;
+}
+
+.steam-settings-nav-item.active i {
+  opacity: 1;
+}
+
+.steam-settings-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-bottom: 200px;
+  background: #171d25;
+  min-width: 0;
+}
+
+.steam-settings-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 40px;
+  max-width: 900px;
+}
+
+.steam-settings-panel--out.steam-settings-panel--down {
+  animation: steam-settings-panel-out-up 0.15s ease forwards;
+}
+
+.steam-settings-panel--out.steam-settings-panel--up {
+  animation: steam-settings-panel-out-down 0.15s ease forwards;
+}
+
+.steam-settings-panel--in.steam-settings-panel--down {
+  animation: steam-settings-panel-in-up 0.18s ease;
+}
+
+.steam-settings-panel--in.steam-settings-panel--up {
+  animation: steam-settings-panel-in-down 0.18s ease;
+}
+
+@keyframes steam-settings-panel-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes steam-settings-panel-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes steam-settings-panel-out-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes steam-settings-panel-out-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.steam-settings-panel-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 24px 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.settings-button {
+  background: #1b2838;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #b8c6d1;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  border-radius: 4px;
+}
+
+.settings-button:hover {
+  background: #2d3540;
+  color: #ffffff;
+}
+
+.storage-mounts-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.storage-mount-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.steam-unmount-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #b8c6d1;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  border-radius: 4px;
+}
+
+.steam-unmount-btn:hover {
+  background: rgba(255, 100, 100, 0.2);
+  color: #ff6b6b;
+  border-color: rgba(255, 100, 100, 0.3);
+}
+
+.sync-components-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sync-component-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.sync-status {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.steam-settings-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 10px;
+  height: 40px;
+  background: transparent;
+  border-bottom: none;
+  flex-shrink: 0;
+}
+
+html.transparent-ui[data-theme] .window-header.steam-popup-header,
+html[data-theme] .window-header.steam-popup-header,
+.window-header.steam-popup-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: none;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0;
+  padding: 2px 10px;
+  height: 40px;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  border-bottom: none !important;
+  cursor: grab;
+}
+
+.window-header.steam-popup-header:active {
+  cursor: grabbing;
+}
+
+.window-header.steam-popup-header .window-controls,
+.window-header.steam-popup-header .steam-settings-window-controls {
+  pointer-events: auto !important;
+}
+
+.window-header.steam-settings-window-header.steam-popup-header {
+  pointer-events: auto !important;
+}
+
+.steam-settings-window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.steam-settings-window-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.steam-settings-window-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.steam-settings-window-btn.close-btn:hover {
+  background: rgba(255, 80, 80, 0.3);
+  color: #ff6b6b;
+}
+
+.steam-overview-panel {
+  background: var(--surface-1);
+  padding: 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.steam-overview-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.steam-overview-panel-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.steam-overview-panel-sub {
+  color: var(--text-secondary);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.steam-overview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.steam-overview-row b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.steam-overview-community-sub {
+  margin-top: 16px;
+}
+
+.steam-overview-friend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.steam-overview-friend-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--glass);
+  flex-shrink: 0;
+}
+
+.steam-overview-friend-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.steam-overview-friend-info b {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.steam-overview-friend-info span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.steam-overview-avatar-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.steam-overview-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--glass-border);
+  flex-shrink: 0;
+}
+
+.steam-overview-avatar-strips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.steam-overview-avatar-strips h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.steam-overview-ach-bar {
+  height: 4px;
+  background: var(--glass);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.steam-overview-ach-fill {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  border-radius: 2px;
+}
+
+.steam-overview-note {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 13px;
 }

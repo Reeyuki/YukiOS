@@ -1,13 +1,15 @@
 import { KeybindManager } from "./keybindManager.js";
 import { StorageKeys, os } from "./framework.js";
 import { BusEvents } from "./core/EventBus.js";
-import { SteamDataManager, steamAppRenderer } from "./games/games.js";
+import { SteamDataManager, SteamAppRenderer } from "./games/games.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
 import { TerminalApp } from "./apps/terminal.js";
 import { audioMixer } from "./audioMixer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { isImageFile } from "./shared/fileKindDetector.js";
-import { escapeHtml } from "./utils/utils.js";
+import { escapeHtml, resolveAppId } from "./utils/utils.js";
+import { showContextMenu } from "./shared/contextMenu.js";
+import { renderFriendsListPanel } from "./games/steamSocial.js";
 import {
   $,
   $$,
@@ -524,10 +526,8 @@ export class GameOverlayController {
 
   makePanelDraggable(panel) {
     const header = panel.querySelector(".overlay-panel-header");
-    const container = panel.parentElement;
     let isDragging = false;
     let startX, startY, origX, origY;
-    let activeSnapZone = null;
 
     header.addEventListener("mousedown", (e) => {
       if (e.target.closest(".overlay-panel-close") || e.target.closest(".overlay-panel-maximize")) return;
@@ -558,31 +558,12 @@ export class GameOverlayController {
       const dy = e.clientY - startY;
       panel.style.left = origX + dx + "px";
       panel.style.top = origY + dy + "px";
-
-      const containerRect = container.getBoundingClientRect();
-      activeSnapZone = this.getSnapZone(e.clientX, e.clientY, containerRect);
-      if (activeSnapZone) {
-        this.showSnapPreview(container, this.getSnapRect(activeSnapZone, containerRect));
-      } else {
-        this.hideSnapPreview(container);
-      }
     });
 
-    document.addEventListener("mouseup", (e) => {
+    document.addEventListener("mouseup", () => {
       if (isDragging) {
         isDragging = false;
         header.style.cursor = "grab";
-        this.hideSnapPreview(container);
-
-        if (activeSnapZone) {
-          const containerRect = container.getBoundingClientRect();
-          const snapRect = this.getSnapRect(activeSnapZone, containerRect);
-          panel.style.left = snapRect.x + "px";
-          panel.style.top = snapRect.y + "px";
-          panel.style.width = snapRect.w + "px";
-          panel.style.height = snapRect.h + "px";
-          activeSnapZone = null;
-        }
 
         this.panelPositions[panel.dataset.panel] = {
           x: parseInt(panel.style.left),
@@ -693,73 +674,6 @@ export class GameOverlayController {
       if (icon) icon.className = "fas fa-compress";
     }
     this.bringPanelToFront(panel);
-  }
-
-  getSnapZone(clientX, clientY, containerRect) {
-    const edge = 36;
-    const nearLeft = clientX - containerRect.left <= edge;
-    const nearRight = containerRect.right - clientX <= edge;
-    const nearTop = clientY - containerRect.top <= edge;
-    const nearBottom = containerRect.bottom - clientY <= edge;
-
-    if (nearTop && nearLeft) return "nw";
-    if (nearTop && nearRight) return "ne";
-    if (nearBottom && nearLeft) return "sw";
-    if (nearBottom && nearRight) return "se";
-    if (nearLeft) return "w";
-    if (nearRight) return "e";
-    if (nearTop) return "n";
-    return null;
-  }
-
-  getSnapRect(zone, containerRect) {
-    const w = containerRect.width;
-    const h = containerRect.height;
-    const halfW = w / 2;
-    const halfH = h / 2;
-
-    switch (zone) {
-      case "nw":
-        return { x: 0, y: 0, w: halfW, h: halfH };
-      case "ne":
-        return { x: halfW, y: 0, w: halfW, h: halfH };
-      case "sw":
-        return { x: 0, y: halfH, w: halfW, h: halfH };
-      case "se":
-        return { x: halfW, y: halfH, w: halfW, h: halfH };
-      case "w":
-        return { x: 0, y: 0, w: halfW, h };
-      case "e":
-        return { x: halfW, y: 0, w: halfW, h };
-      case "n":
-        return { x: 0, y: 0, w, h };
-      default:
-        return null;
-    }
-  }
-
-  getSnapPreviewEl(container) {
-    let preview = container.querySelector(".overlay-snap-preview");
-    if (!preview) {
-      preview = createElement("div");
-      preview.className = "overlay-snap-preview";
-      container.appendChild(preview);
-    }
-    return preview;
-  }
-
-  showSnapPreview(container, snapRect) {
-    const preview = this.getSnapPreviewEl(container);
-    preview.style.left = snapRect.x + "px";
-    preview.style.top = snapRect.y + "px";
-    preview.style.width = snapRect.w + "px";
-    preview.style.height = snapRect.h + "px";
-    preview.classList.add("active");
-  }
-
-  hideSnapPreview(container) {
-    const preview = container.querySelector(".overlay-snap-preview");
-    if (preview) preview.classList.remove("active");
   }
 
   activateDockBtn(id) {
@@ -948,30 +862,26 @@ export class GameOverlayController {
     const pane = this.overlayEl.querySelector('[data-panel="friends"] .overlay-panel-body');
     if (!pane) return;
 
-    if (pane.querySelector(".window-content")) return;
-
-    this.openFriendsPopup();
-
-    const win = $("#steam-friends-win");
-    if (win) {
-      const content = win.querySelector(".window-content");
-      if (content) {
-        pane.innerHTML = "";
-        pane.appendChild(content);
-        win.remove();
+    renderFriendsListPanel(pane, {
+      onLaunch: (appId) => {
+        const resolvedId = resolveAppId(appId);
+        if (resolvedId) os.app.launch(resolvedId).catch(() => {});
+      },
+      onOpenChat: (friend) => {
+        os.dialog.alert("Chat", "Chat feature not available in overlay mode.");
+      },
+      onOpenContextMenu: (event, friend) => {
+        const items = [{ id: "friend-profile", label: "View Profile", icon: "fa-id-badge", action: "profile" }];
+        const handlers = {
+          profile: () => {
+            os.app.launch("steamApp", { steamPage: "profile", steamUserId: friend.userId });
+          }
+        };
+        showContextMenu(event, items, handlers);
       }
-    }
-  }
-
-  openFriendsPopup() {
-    const existing = $("#steam-friends-win");
-    if (existing) {
-      os.window.bringToFront(existing);
-      return;
-    }
-
-    const renderer = new steamAppRenderer();
-    renderer.gameUI.openFriendsWindow(os.window);
+    }).catch(() => {
+      pane.innerHTML = `<div class="overlay-no-data">Failed to load friends</div>`;
+    });
   }
 
   renderNotes() {
@@ -1297,7 +1207,7 @@ export class GameOverlayController {
           <div class="overlay-settings-section-title">Overlay Settings</div>
           <div class="overlay-settings-row">
             <div>
-              <div class="overlay-settings-label">Enable Steam Overlay While In-Game</div>
+              <div class="overlay-settings-label">Enable Yuki Steam Overlay While In-Game</div>
               <div class="overlay-settings-desc">Show overlay when pressing the shortcut key</div>
             </div>
             <div class="overlay-settings-toggle ${this.settings.enabled ? "active" : ""}" data-setting="enabled"></div>

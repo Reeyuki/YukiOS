@@ -1,4 +1,5 @@
 import { os, StorageKeys } from "../framework.js";
+import { generateId } from "../utils/utils.js";
 
 export function getDateKey(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -22,7 +23,7 @@ export function daysInMonth(year, month) {
 }
 
 export function generateEventId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  return generateId();
 }
 
 export const EVENT_COLORS = ["#7c5cfc", "#f59e0b", "#ef4444", "#22c55e", "#3b82f6", "#ec4899", "#14b8a6", "#f97316"];

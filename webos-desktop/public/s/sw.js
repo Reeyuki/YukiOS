@@ -1,4 +1,4 @@
-importScripts("./controller.sw.js");
+importScripts("./cont.sw.js");
 
 const { route, shouldRoute } = $scramjetController;
 

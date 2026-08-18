@@ -1,9 +1,46 @@
 import { sendLaunchAnalytics, getAnalyticsBase, fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import { lazyImg, observeLazyImages, SteamDataManager, launcher, steamAudio } from "./games.js";
-import { SteamSettings } from "./steam.js";
+import { SteamSettings } from "./steamSettings.js";
 import { os } from "../framework.js";
-import { $$, createElement } from "../shared/domUtils.js";
+import { $, $$, createElement, setText } from "../shared/domUtils.js";
+
+let luminFsSyncBound = false;
+
+const toggleLuminFullscreen = (container) => {
+  if (!container) return;
+  try {
+    if (document.fullscreenElement === container || document.webkitFullscreenElement === container) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    } else if (container.requestFullscreen) {
+      container.requestFullscreen();
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen();
+    }
+  } catch {}
+};
+
+const syncLuminFullscreenState = () => {
+  const btn = $(".steam-luminsdk-fullscreen-btn");
+  if (!btn) return;
+  const content = btn.closest(".steam-luminsdk-container");
+  const active = !!content && (document.fullscreenElement === content || document.webkitFullscreenElement === content);
+  const icon = $(".steam-luminsdk-fullscreen-icon", btn);
+  const label = $(".steam-luminsdk-fullscreen-label", btn);
+  if (icon)
+    icon.className = active
+      ? "fas fa-compress steam-luminsdk-fullscreen-icon"
+      : "fas fa-expand steam-luminsdk-fullscreen-icon";
+  if (label) setText(label, active ? "Exit Fullscreen" : "Fullscreen");
+};
+
+const bindLuminFullscreenSync = () => {
+  if (luminFsSyncBound) return;
+  luminFsSyncBound = true;
+  document.addEventListener("fullscreenchange", syncLuminFullscreenState);
+  document.addEventListener("webkitfullscreenchange", syncLuminFullscreenState);
+};
 
 export class GameLauncher {
   constructor(renderer) {
@@ -49,7 +86,14 @@ export class GameLauncher {
     sendLaunchAnalytics(gameId);
 
     if (launcher) {
-      launcher.openIframeApp({ appId: gameId, type: "game", source: url, originalName: title, analyticsBase });
+      launcher.openIframeApp({
+        appId: gameId,
+        type: "game",
+        source: url,
+        originalName: title,
+        analyticsBase,
+        isArchive: true
+      });
     } else {
       console.error("No launcher available to open game.");
     }
@@ -275,7 +319,8 @@ export class GameLauncher {
         card.addEventListener("mouseenter", () => {
           steamAudio.playHover();
           const rect = card.getBoundingClientRect();
-          const gameStats = stats[appId] || { totalMin: 0, recentMin: 0 };
+          const totalMin = Number(stats[appId]?.totalMin) || 0;
+          const recentMin = SteamDataManager.getRecentMinutes(appId);
 
           popover.innerHTML = `
             <img class="popover-banner" src="${thumbImg}" />
@@ -284,11 +329,11 @@ export class GameLauncher {
               <div class="popover-stats">
                 <div class="popover-stat-item">
                   <span class="popover-stat-label">Last two weeks:</span>
-                  <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(gameStats.recentMin)}</span>
+                  <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(recentMin)}</span>
                 </div>
                 <div class="popover-stat-item">
                   <span class="popover-stat-label">Total played:</span>
-                  <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(gameStats.totalMin)}</span>
+                  <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(totalMin)}</span>
                 </div>
               </div>
             </div>
@@ -341,7 +386,13 @@ export class GameLauncher {
         <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
       </div>
       <div class="steam-luminsdk-container" style="display: ${isExpanded ? "block" : "none"}; padding: 20px 0;">
-        <iframe id="luminsdk-iframe" style="width: 100%; height: 600px; border: none; background: var(--bg-secondary);"></iframe>
+        <div class="steam-luminsdk-toolbar">
+          <button class="steam-luminsdk-fullscreen-btn" type="button">
+            <i class="fas fa-expand steam-luminsdk-fullscreen-icon"></i>
+            <span class="steam-luminsdk-fullscreen-label">Fullscreen</span>
+          </button>
+        </div>
+        <iframe id="luminsdk-iframe" allowfullscreen class="steam-luminsdk-iframe"></iframe>
       </div>
     `;
     yukiosContent.appendChild(placeholder);
@@ -388,5 +439,11 @@ export class GameLauncher {
         icon.style.cssText = "font-size: 10px; color: var(--text-secondary);";
       }
     };
+
+    const fullscreenBtn = $(".steam-luminsdk-fullscreen-btn", placeholder);
+    if (fullscreenBtn) {
+      fullscreenBtn.onclick = () => toggleLuminFullscreen($(".steam-luminsdk-container", placeholder));
+    }
+    bindLuminFullscreenSync();
   }
 }

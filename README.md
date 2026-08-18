@@ -14,24 +14,21 @@
 > emulators, utilities, and web applications.
 
 YukiOS provides a desktop-style interface inside a browser tab with draggable windows, multitasking, file handling,
-emulators, productivity tools, and web applications. Core functionality runs in the browser using client-side storage
-and session state.
+emulators, and productivity tools. It includes support for Flash content, DOS programs, console emulation,
+WebAssembly applications, and standard web applications running alongside each other.
 
-It includes support for Flash content, DOS programs, console emulation, WebAssembly applications, and standard web
-applications running alongside each other.
-
-Its built entirely in vanilla javascript without any frameworks.
+It's built entirely in vanilla JavaScript without any frameworks.
 
 ## Screenshots
 
 |                                                                                                             |                                                                                             |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| ![Mac Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png)                          | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)    |
+| ![Mac Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/mac.png)                          | ![YukiDeck](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/yuki-deck.png)     |
 | ![ChromeOS Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/chromeos.png)                | ![Start Menu](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/startmenu.png)  |
-| ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)                | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)       |
+| ![Workspaces](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/workspaces.png)                 | ![Widgets](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/widgets.png)       |
 | ![WASM Terminal Apps](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/btop-lavat-cmatrix.png) | ![3D Os Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/3d.png)         |
 | ![Remote Desktop](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/remote.png)                 | ![Steam](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/steam.png)           |
-| ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)                 |                                                                                             |
+| ![Steam Overlay](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/overlay.png)                 | ![Tiling Mode](https://raw.githubusercontent.com/Reeyuki/YukiOS/main/.github/tiling.png)    |
 
 # Desktop Experience
 
@@ -50,7 +47,6 @@ Its built entirely in vanilla javascript without any frameworks.
 - Tray context menus with per-item quick actions
 - Desktop icon system with persistent shortcuts and image thumbnails
 - Desktop drag-and-drop from host OS and icon rearrangement
-- Desktop stretch scroll prevention toggle
 - Alt+Left-Click window drag / Alt+Right-Click window resize
 - Window animation system with 35+ effects
 - Kde inspired physics-based wobbly windows when dragging
@@ -81,21 +77,27 @@ config editing.
 
 - Alt+Space toggles tiling on and off; Alt+Arrow moves focus, Ctrl+Alt+Arrow resizes boundaries, Alt+Shift+Arrow swaps
   windows
-- Alt+1-9 switches between 9 independent workspaces, each with its own BSP tree
-- Alt+Q closes the focused window, Alt+F toggles floating, alt + 1-2-3-4-5 keys switch workspaces, alt+t spawns terminal
-  etc.
+- Alt+1-9 switches between 9 independent workspaces, each with its own BSP tree; Alt+Q closes the focused window,
+  Alt+F toggles floating, Alt+T spawns a terminal
 - Drag a tiled window onto another to swap them in the tree
-- Gap, border width, and split ratio adjustable from Settings > Tiling or by editing Config/yukiOs/tiling.conf
+- Gap, border width, and split ratio adjustable from Settings > Tiling or the config file at
+  `Config/yukiOs/tiling.conf` (live-reload on save)
 - hyprctl terminal command provides Hyprland-style CLI control
-- Config file at `Config/yukiOs/tiling.conf` (auto-created with defaults if missing)
 - Customizable: gaps (inner/outer), split ratio, border width/radius, resize step, animation duration/easing, mouse
   resize toggle, workspace switch delay, resize debounce
-- Live-reload: edit and save with any text editor for updating config
+
+# 🎮 Yuki Deck Mode
+
+A fullscreen, animated and full sfx featured game-console style mode you can pick at login, controlled with a gamepad or keyboard/mouse.
+
+- Home feed: see what's new, your friends, and games
+- Library: search your games, sort by name, mark favorites, and build collections
+- Quick Actions Panel: Manage deck mode quick settings & friends
 
 # 🧭 Navigation & UI
 
 - Start menu with:
-  - Fuzzy search (Levenshtein distance, word-boundary matching) across all apps and settings categories
+  - Fuzzy search across all apps and settings categories
   - Favorites system: star/unstar apps with gold-tinted highlights and dedicated favorites page
   - Customizable app grid: add/edit/remove items
   - Category management: rename, delete/hide, restore categories via right-click context menu
@@ -117,7 +119,7 @@ config editing.
   submenu traversal)
 - Command palette (Ctrl+K/P/F1) for app, file, and command search with built-in calculator, terminal run support with >
   prefix, and unit converter
-- Run dialog (Ctrl+R-Windows+R): compact quick-launch window for opening apps, URLs, and terminal commands
+- Run dialog (Ctrl+R): compact quick-launch window for opening apps, URLs, and terminal commands
 - Clippy contextual assistant with per-app tips
 - Animated UI components including start menu, wallpaper switcher, audio mixer, context menus, and notifications
 - Keyboard shortcuts app for customizing global hotkeys
@@ -143,12 +145,11 @@ config editing.
 - Terminal commands (prefix with `>`)
 - Built-in calculator and unit converter
 - Screenshot and screen recording controls
-- Dynamic favicon updates based on current app
 
 # 📁 Files & Storage
 
 - IndexedDB-backed explorer with grid/list views, sortable columns, image thumbnails, inline rename, file properties,
-  trash, and drag-select
+  trash, drag-select, storage usage indicator, and thumbnail cache
 - Sidebar with persistent Quick Access pin/unpin
 - Archive support: extract `.zip`/`.7z`/`.tar`/`.gz`/`.bz2`/`.xz`/`.rar`, create `.zip`/`.7z`/`.tar`/`.tar.gz`/`.bz2`
   with compression level and ZIP password support
@@ -160,7 +161,6 @@ config editing.
 - Save As and file/directory picker dialog
 - File associations: Default Apps app to set, change, or remove the default app per file type
 - "Open with" context menu on files lists every compatible app, plus an app picker dialog
-- storage usage indicator, thumbnail cache
 - Explorer keyboard shortcuts: Ctrl+C copy, Ctrl+X cut, Ctrl+V paste Ctrl+F search, Ctrl+A select all, arrow keys
   navigate, Enter open, F5 refresh, F2 rename, Delete trash
 
@@ -182,12 +182,11 @@ config editing.
 - Custom font system: set any TTF/OTF file as system font
 - Import/export system for backup and migration
 - Transparent UI toggle with: glass effect on windows, taskbar, start menu.
-- Clock system using OffscreenCanvas rendering and lightweight NTP offset sync with js worker
-- Calendar popup from taskbar clock with monthly grid, keyboard navigation, and today button coding
+- Live taskbar clock with calendar popup, monthly grid, and keyboard navigation
 
 # 📦 Built-in Applications
 
-80+ built-in applications and direct launch via URL parameters (`?app=` and `?game=`)
+80+ built-in applications and direct launch via URL parameters (`?app=`, `?game=`, and `?deck=1` for Yuki Deck Mode)
 
 ## 🧠 Productivity & Development
 
@@ -195,14 +194,13 @@ config editing.
 - Installed Apps (rename, disable, uninstall apps)
 - Default Apps (set the default app for any file type)
 - Terminal: Unix-like shell with filesystem access, Python/Node REPLs, and Git
-  - Python REPL (Pyodide WASM), Node.js REPL (WebContainers)
+  - Python and Node.js REPLs
   - Full Git integration (clone, init, add, commit, push, pull, branch, stash, fetch, diff, remote, rm, checkout, log,
     status)
   - Multiple independent tabs with Alt+T / Ctrl+Tab / Alt+1-9
   - `file` command with content-based magic byte detection for 10+ file formats
   - `neofetch` with GPU/RAM/browser/engine detection
-  - Pipeline (`|`), redirects (`>`/`>>`), command chaining (`&&`/`||`/`;`), Ctrl+R reverse search, and `file` with
-    magic-byte content detection
+  - Pipeline (`|`), redirects (`>`/`>>`), command chaining (`&&`/`||`/`;`), and Ctrl+R reverse search
   - `yuki` command for OS control: power mode, brightness, theme, wallpaper, workspaces, app management
     (list/uninstall/install/disable/enable), DND, notifications, storage report
   - **[lavat](https://github.com/Reeyuki/lavat-web)** -- lava lamp simulation with customizable metaballs and gravity;
@@ -230,7 +228,7 @@ config editing.
 - Yuki Convert
 - Clipboard Manager
 - Emoji Selector
-- YukiDevTools (IT - TOOLS)
+- Yuki Dev Tools (It Tools)
 - Dev Tools (Eruda)
 - Weather
 - News
@@ -259,11 +257,11 @@ config editing.
 
 ## 🌐 Browser & Internet
 
-- Yuki Browser with Sidebar Tabs mode, bookmarks, proxy, tor, history, dark mode, tab system,screenshot
+- Yuki Browser with Sidebar Tabs mode, bookmarks, proxy, tor, history, dark mode, tab system, screenshot
 - WebTorrent Client
 - Tor Manager - tor browsing via WASM-based Tor client with Snowflake transport
 - VNC Client using novnc
-- Steam-like game launcher
+- Yuki Steam launcher
 
 ## Web Apps
 
@@ -283,9 +281,9 @@ config editing.
 - Virtual 86 (x86)
 - Azahar (3DS Emulator)
 - Flashpoint Database
-- Steam app
+- Yuki Steam app
 
-### Steam-like In-Game Overlay
+### Yuki Steam In-Game Overlay
 
 Shift+Tab overlay with draggable, resizable panels for any running game:
 
@@ -313,8 +311,6 @@ pnpm run preview
 # 🤝 Contributing
 
 See the [Development Guide](DEVELOPMENT.md).
-
-# 🛠 Tech Stack
 
 # 🖥️ Electron Desktop App
 
@@ -362,4 +358,4 @@ The web-only version runs in any browser with all core features intact; the Elec
 
 ## License
 
-YukiOS is licensed under the MIT License. While attribution isn't required, it would be greatly appreciated if you use this project.
+YukiOS is licensed under the MIT License. It would be greatly appreciated to attribute if you use this project.

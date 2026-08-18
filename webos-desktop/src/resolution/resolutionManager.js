@@ -57,10 +57,17 @@ export function applyResolution(value, guiScale) {
   }
 
   document.documentElement.style.setProperty("--gui-scale", String(totalScale));
-  document.documentElement.style.transform = `scale(${totalScale})`;
-  document.documentElement.style.transformOrigin = "top left";
-  document.documentElement.style.width = `${100 / totalScale}%`;
-  document.documentElement.style.height = `${100 / totalScale}%`;
+  if (totalScale === 1) {
+    document.documentElement.style.transform = "";
+    document.documentElement.style.transformOrigin = "";
+    document.documentElement.style.width = "";
+    document.documentElement.style.height = "";
+  } else {
+    document.documentElement.style.transform = `scale(${totalScale})`;
+    document.documentElement.style.transformOrigin = "top left";
+    document.documentElement.style.width = `${100 / totalScale}%`;
+    document.documentElement.style.height = `${100 / totalScale}%`;
+  }
 
   fixWallpaperLayer(totalScale);
 }

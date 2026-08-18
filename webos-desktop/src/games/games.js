@@ -14,8 +14,18 @@ import { STEAM_NEWS_ITEMS } from "./steamNewsData.js";
 import { fetchSocialMe } from "../social/socialMeApi.js";
 import { offerSteamTour } from "../apps/steamIntro.js";
 import { StorageKeys, os, MODES } from "../framework.js";
+import { openSteamSettingsWindow } from "./steamSettings.js";
+import { BusEvents } from "../core/EventBus.js";
+import { launchSplash } from "../modes/steamdeck/launchSplash.js";
+import { SteamSettings } from "./steamSettings.js";
+import { applySteamDeckSettings } from "../modes/steamdeck/session.js";
+
 export function getCdnBase() {
   return CDN_CONFIG.repos.main.base;
+}
+
+function switchToSteamDeckMode() {
+  applySteamDeckSettings();
 }
 
 export function getCdnBaseGames() {
@@ -211,15 +221,36 @@ function isFlashGame(id, data) {
 }
 
 export const SteamDataManager = {
-  getStats: () => os.storage.get(StorageKeys.steamStats) || {},
+  cache: {},
 
-  getRecentMinutes: (appId) => {
-    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  invalidateCache() {
+    this.cache = {};
+  },
+
+  getStats() {
+    if (this.cache.stats === undefined) this.cache.stats = os.storage.get(StorageKeys.steamStats) || {};
+    return this.cache.stats;
+  },
+
+  getRecentGames() {
+    try {
+      if (this.cache.recentGames === undefined) {
+        const stored = os.storage.get(StorageKeys.steamRecentGames);
+        this.cache.recentGames = stored || [];
+      }
+      return this.cache.recentGames;
+    } catch (e) {
+      return [];
+    }
+  },
+
+  getRecentMinutes(appId) {
+    const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
     const now = Date.now();
     try {
-      const sessions = os.storage.get(StorageKeys.steamSessions) || {};
-      const appSessions = sessions[appId] || [];
-      return appSessions.filter((s) => now - s.ts < ONE_WEEK_MS).reduce((sum, s) => sum + s.min, 0);
+      if (this.cache.sessions === undefined) this.cache.sessions = os.storage.get(StorageKeys.steamSessions) || {};
+      const appSessions = this.cache.sessions[appId] || [];
+      return appSessions.filter((s) => now - s.ts < TWO_WEEKS_MS).reduce((sum, s) => sum + s.min, 0);
     } catch {
       return 0;
     }
@@ -306,6 +337,7 @@ export const SteamDataManager = {
   setRecentGames: (games) => {
     try {
       os.storage.set(StorageKeys.steamRecentGames, games);
+      SteamDataManager.invalidateCache();
     } catch (e) {
       console.warn("Failed to save recent games:", e);
     }
@@ -321,11 +353,23 @@ export const SteamDataManager = {
     SteamDataManager.setRecentGames(trimmed);
     return trimmed;
   },
-  getSteamContextMenuItems: (appLauncher) => {
+  removeRecentGame: (gameId) => {
+    const recentGames = SteamDataManager.getRecentGames();
+    const next = recentGames.filter((g) => g.id !== gameId);
+    SteamDataManager.setRecentGames(next);
+    return next;
+  },
+  getSteamContextMenuItems: (appLauncher, wm, gameUI) => {
     const recentGames = SteamDataManager.getRecentGames();
     const items = [
       { label: "Library", icon: "fa-book", action: null },
       { label: "Store", icon: "fa-store", action: null },
+      { label: "Community", icon: "fa-users", action: () => dispatchSteamNavigate("community") },
+      { type: "divider" },
+      { label: "Friends", icon: "fa-user-group", action: () => gameUI.openFriendsWindow(wm) },
+      { label: "Settings", icon: "fa-gear", action: () => openSteamSettingsWindow(wm) },
+      { type: "divider" },
+      { label: "Steam Deck Mode", icon: "fa-gamepad", action: () => switchToSteamDeckMode() },
       { type: "divider" }
     ];
 
@@ -346,6 +390,11 @@ export const SteamDataManager = {
     return items;
   }
 };
+
+export function initSteamDataManagerCache() {
+  const subscribeKeys = [StorageKeys.steamStats, StorageKeys.steamRecentGames, StorageKeys.steamSessions];
+  subscribeKeys.forEach((key) => os.storage.subscribe(key, () => SteamDataManager.invalidateCache()));
+}
 
 const STEAM_WIN_ID = "games-app-win";
 
@@ -382,10 +431,10 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
       };
 
       if (container.classList.contains("steam-app-root")) {
-        const gamesRenderer = new steamAppRenderer();
+        const gamesRenderer = new SteamAppRenderer();
         gamesRenderer.renderGameOverview(container, gameId, onLaunch);
       } else {
-        const gamesRenderer = new steamAppRenderer();
+        const gamesRenderer = new SteamAppRenderer();
         gamesRenderer.render(container, onLaunch, wm, focusCollection);
         setTimeout(() => {
           gamesRenderer.renderGameOverview(container, gameId, onLaunch);
@@ -395,11 +444,8 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
     return;
   }
 
-  const winTitle = "Steam";
-  const taskbarIcon =
-    focusCollection === "Flash Games"
-      ? resolveIconUrl("static/icons/flash.webp")
-      : resolveIconUrl("static/icons/steam.webp");
+  const winTitle = "Games";
+  const taskbarIcon = focusCollection === "Flash Games" ? resolveIconUrl("static/icons/flash.webp") : "fab fa-steam";
 
   const win = os.window.create(STEAM_WIN_ID, winTitle, "90%", "90%", {
     icon: taskbarIcon,
@@ -410,7 +456,7 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
   win.style.display = "flex";
   win.style.flexDirection = "column";
 
-  const gamesRenderer = new steamAppRenderer();
+  const gamesRenderer = new SteamAppRenderer();
 
   win.innerHTML = `
     <div class="window-content games-app-window" style="flex:1;overflow:auto;padding:0;box-sizing:border-box;">
@@ -420,7 +466,7 @@ export function openSteamWindow(appLauncher, wm, focusCollection = null, gameId 
   if (!os.modes.isActive(MODES.MAC)) {
     os.tray.register(STEAM_WIN_ID, taskbarIcon, winTitle, {
       showInTray: true,
-      contextMenuItems: SteamDataManager.getSteamContextMenuItems(appLauncher),
+      contextMenuItems: SteamDataManager.getSteamContextMenuItems(appLauncher, wm, gamesRenderer),
       priority: 100
     });
   }
@@ -495,8 +541,8 @@ class GameWindowRenderer {
     this.profileUserId = null;
     this.newsItems =
       STEAM_NEWS_ITEMS.length > 0
-        ? STEAM_NEWS_ITEMS
-        : [{ image: `${getCdnBase()}/static/icons/steam.webp`, title: "Steam App Added", date: "May 1, 2026" }];
+        ? STEAM_NEWS_ITEMS.flat()
+        : [{ image: "fas fa-snowflake", title: "Yuki Steam App Added", date: "May 1, 2026" }];
     this.imgObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -526,7 +572,7 @@ class GameWindowRenderer {
       return descriptionMap[appId];
     }
     const title = appMap[appId]?.title || appId;
-    return `Experience ${title} on YukiOS. This game is part of your Steam library.`;
+    return `Experience ${title} on YukiOS. This game is part of your Yuki Steam library.`;
   }
 
   setCurrentGame(appId) {
@@ -614,7 +660,7 @@ class GameWindowRenderer {
   }
 }
 
-export class steamAppRenderer extends GameWindowRenderer {
+export class SteamAppRenderer extends GameWindowRenderer {
   getGames() {
     if (this.gamesCache) return this.gamesCache;
     const appRegistry = getAppRegistry();
@@ -632,14 +678,14 @@ export class steamAppRenderer extends GameWindowRenderer {
 }
 
 function handleGameUrlParam(renderer, container, onLaunch, wm = null) {
+  renderer.render(container, onLaunch, wm);
+
   const urlParams = new URLSearchParams(window.location.search);
   const gameParam = urlParams.get("steam");
   if (!gameParam) return;
 
   const matchedGame = renderer.getGames().find((g) => g.app === gameParam);
   if (!matchedGame) return;
-
-  renderer.render(container, onLaunch, wm);
 
   setTimeout(() => {
     const sidebarEl = container.querySelector(".steam-library-sidebar");

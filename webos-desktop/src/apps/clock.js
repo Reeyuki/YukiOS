@@ -2,10 +2,7 @@ import "../styles/clock.css";
 import { BaseApp, os, StorageKeys, createElement } from "../framework.js";
 
 import { renderSelectMenu, getSelectMenuValue, bindSelectMenu } from "../shared/selectMenu.js";
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
+import { generateId } from "../utils/utils.js";
 
 function formatTime(ms, showMs = false) {
   const totalSeconds = Math.floor(ms / 1000);

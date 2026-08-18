@@ -26,12 +26,20 @@ import {
   setStyle
 } from "../shared/domUtils.js";
 import { BusEvents } from "../core/EventBus.js";
-import { StorageKeys, os, brand } from "../framework.js";
+import { StorageKeys, os } from "../framework.js";
 import { KeybindManager } from "../keybindManager.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { isIntroTourKeepingStartMenuOpen } from "../apps/introTour.js";
 function getStartMenuEl() {
   return $("#start-menu") || $(".start-menu");
+}
+
+export function isStartMenuBlocked() {
+  if ($("#session-overlay")) return true;
+  const sessionManager = os.app.getInstance("sessionManager");
+  if (sessionManager?.isLocked) return true;
+  if (!sessionManager?.currentSession) return true;
+  return false;
 }
 
 let descriptionTooltip = null;
@@ -134,6 +142,7 @@ export function applyStartMenuSettings(el) {
 }
 
 async function openStartMenu({ focusSearch = false, openDefaultPage = true } = {}) {
+  if (isStartMenuBlocked()) return;
   if (os.tiling.enabled) return;
   if (modeManager.isActive(MODES.CHROME_OS)) {
     const { getLauncher } = await import("../chromeos/Launcher.js");
@@ -1299,21 +1308,21 @@ function getGridItems() {
     }
   }
   return [
-    { app: "browserApp", title: brand("Yuki Browser"), icon: "fas fa-globe" },
+    { app: "browserApp", title: "Yuki Browser", icon: "fas fa-globe" },
     { app: "explorerApp", title: "Files", icon: "fas fa-folder" },
     { app: "settingsApp", title: "Settings", icon: "fas fa-cog" },
-    { app: "aiAssistantApp", title: brand("Yuki AI Assistant"), icon: "fas fa-robot" },
+    { app: "aiAssistantApp", title: "Yuki AI Assistant", icon: "fas fa-robot" },
     { app: "notepadApp", title: "Notepad", icon: "fas fa-edit" },
     { app: "calculatorApp", title: "Calculator", icon: "fas fa-calculator" },
     { app: "shortcutsApp", title: "Shortcuts", icon: "fas fa-keyboard" },
-    { app: "yukiConvertApp", title: brand("Yuki Convert"), icon: "fas fa-exchange-alt" },
+    { app: "yukiConvertApp", title: "Yuki Convert", icon: "fas fa-exchange-alt" },
     { app: "cameraApp", title: "Camera", icon: "fas fa-camera" },
     { app: "officeApp", title: "Office", icon: "fas fa-file-word" },
     { app: "installedAppsApp", title: "Installed Apps", icon: "fas fa-th-list" },
     { app: "clipboardManagerApp", title: "Clipboard Manager", icon: "fas fa-paste" },
     { app: "weatherApp", title: "Weather", icon: "fas fa-cloud" },
-    { app: "yukiOsGuideApp", title: brand("YukiOS Guide"), icon: "fas fa-book-open" },
-    { app: "steamApp", title: "Steam", icon: "fab fa-steam" },
+    { app: "yukiOsGuideApp", title: "YukiOS Guide", icon: "fas fa-book-open" },
+    { app: "steamApp", title: "Yuki Steam", icon: "fab fa-steam" },
     { app: "paint", title: "Paint", icon: "fas fa-paint-brush" },
     { app: "newsApp", title: "What's New", icon: "fas fa-newspaper" },
     { app: "shittifyApp", title: "Evil Spotify", icon: "fas fa-music" },
@@ -1321,7 +1330,7 @@ function getGridItems() {
     { app: "systemAppsApp", title: "System Apps", icon: "fas fa-screwdriver-wrench" },
     { app: "taskManagerApp", title: "Task Manager", icon: "fas fa-list-check" },
     { app: "terminal", title: "Terminal", icon: "fas fa-terminal" },
-    { app: "aboutApp", title: brand("About YukiOS"), icon: "fas fa-info-circle" },
+    { app: "aboutApp", title: "About YukiOS", icon: "fas fa-info-circle" },
     { app: "achievementsApp", title: "Achievements", icon: "fas fa-trophy" }
   ];
 }

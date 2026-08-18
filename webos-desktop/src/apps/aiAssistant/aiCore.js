@@ -1,4 +1,9 @@
+import { fetchThroughWisp } from "../../shared/wispTransport.js";
+
 export class AICore {
+  static REMOTE_DEFAULT_ENDPOINT = "https://gpt.crax.lol";
+  static REMOTE_DEFAULT_MODEL = "gpt-5-6-sol";
+
   constructor() {
     this.engine = null;
     this.model = null;
@@ -10,6 +15,11 @@ export class AICore {
     this.webLLMLoaded = false;
     this.webLLMModule = null;
     this.initPromise = null;
+    this.remoteEndpoint = null;
+    this.remoteApiKey = null;
+    this.remoteModel = null;
+    this.autoAppendV1 = true;
+    this.forceProxy = false;
   }
 
   static MODEL_PROFILES = {
@@ -162,7 +172,7 @@ export class AICore {
 
   async generate(prompt, systemPrompt, chatHistory = []) {
     if (!this.isInitialized) {
-      return this.fallbackResponse(prompt);
+      throw new Error("Local model is not initialized");
     }
 
     try {
@@ -182,7 +192,7 @@ export class AICore {
       return this.parseResponse(content);
     } catch (error) {
       console.error("[AI Core] Generation failed:", error);
-      return this.fallbackResponse(prompt);
+      throw error;
     }
   }
 
@@ -213,26 +223,6 @@ export class AICore {
     return { text, actions, reasoning, rawContent: content };
   }
 
-  fallbackResponse(prompt) {
-    const lowerPrompt = prompt.toLowerCase();
-    const actions = [];
-
-    if (lowerPrompt.includes("open") && lowerPrompt.includes("setting")) {
-      actions.push({ action: "open_app", target: "settingsApp" });
-    } else if (lowerPrompt.includes("open") && lowerPrompt.includes("terminal")) {
-      actions.push({ action: "open_app", target: "terminal" });
-    } else if (lowerPrompt.includes("list") && lowerPrompt.includes("file")) {
-      actions.push({ action: "fs_read", target: "/home/reeyuki/Documents" });
-    }
-
-    return {
-      text: "I'm currently running in fallback mode without WebLLM. I can still help with basic actions, but for full AI capabilities, please ensure WebGPU is available.",
-      actions,
-      reasoning: "WebLLM not initialized, using pattern matching",
-      rawContent: ""
-    };
-  }
-
   setWebGPUEnabled(enabled) {
     this.webGPUEnabled = enabled;
     if (this.isInitialized) {
@@ -247,6 +237,92 @@ export class AICore {
       return this.initialize(modelType, this.webGPUEnabled, this.initCallback, { force: true });
     }
     return Promise.resolve(true);
+  }
+
+  setRemoteConfig(config = {}) {
+    this.remoteEndpoint = config.endpoint || AICore.REMOTE_DEFAULT_ENDPOINT;
+    this.remoteApiKey = config.apiKey || null;
+    this.remoteModel = config.model || AICore.REMOTE_DEFAULT_MODEL;
+    this.autoAppendV1 = config.autoAppendV1 !== false;
+    this.forceProxy = Boolean(config.forceProxy);
+  }
+
+  buildEndpointUrl(base, autoAppendV1) {
+    let url = String(base || "")
+      .trim()
+      .replace(/\/+$/, "");
+    if (autoAppendV1 && !url.endsWith("/v1")) {
+      url += "/v1";
+    }
+    return url;
+  }
+
+  async fetchWithProxy(url, options = {}) {
+    if (this.forceProxy) {
+      return fetchThroughWisp(url, options);
+    }
+    try {
+      return await fetch(url, options);
+    } catch (directError) {
+      try {
+        return await fetchThroughWisp(url, options);
+      } catch (wispError) {
+        console.error("[AI Core] Wisp request failed:", wispError);
+        throw directError;
+      }
+    }
+  }
+
+  async listRemoteModels(config) {
+    const endpoint = this.buildEndpointUrl(
+      config?.endpoint || this.remoteEndpoint,
+      config?.autoAppendV1 ?? this.autoAppendV1
+    );
+    if (!endpoint) throw new Error("Remote endpoint not configured");
+    const headers = { "Content-Type": "application/json" };
+    if (this.remoteApiKey) {
+      headers.Authorization = `Bearer ${this.remoteApiKey}`;
+    }
+    const res = await this.fetchWithProxy(`${endpoint}/models`, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status} listing models`);
+    const data = await res.json();
+    return (data.data || []).map((m) => m.id).filter(Boolean);
+  }
+
+  async generateRemote(prompt, systemPrompt, chatHistory = [], config) {
+    const endpoint = this.buildEndpointUrl(
+      config?.endpoint || this.remoteEndpoint,
+      config?.autoAppendV1 ?? this.autoAppendV1
+    );
+    const model = config?.model || this.remoteModel;
+    if (!endpoint || !model) throw new Error("Remote endpoint or model is not configured");
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...chatHistory.slice(-10),
+      { role: "user", content: prompt }
+    ];
+    const headers = { "Content-Type": "application/json" };
+    if (this.remoteApiKey) {
+      headers.Authorization = `Bearer ${this.remoteApiKey}`;
+    }
+    try {
+      const res = await this.fetchWithProxy(`${endpoint}/chat/completions`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 1024, stream: false })
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+      }
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) throw new Error("Empty response from remote backend");
+      return this.parseResponse(content);
+    } catch (error) {
+      console.error("[AI Core] Remote generation failed:", error);
+      throw error;
+    }
   }
 
   dispose() {

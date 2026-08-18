@@ -161,23 +161,26 @@ export const APP_MANIFESTS = [
 
 **Manifest fields:**
 
-- `serviceKey` - Unique identifier for the app
+- `serviceKey` - Unique identifier for the app (omitted for `source`-based entries)
 - `enhanced` - Generic flag for enhanced app features
 - `type` - App type (usually "system")
 - `title` - Display name
 - `icon` - Font Awesome icon class or CDN URL
-- `launchType` - "instance", "steam", "iframe", or "method"
+- `launchType` - "instance", "steam", "iframe", "remote", or "method"
 - `windowIdPatterns` - Array of window ID patterns
-- `category` - App category (development, graphics, games, help, internet, media, office, system)
+- `category` - App category (development, graphics, games, help, internet, media, office, system, utilities)
 - `clippy` - Clippy message and animation
 - `description` - App description for the guide
-- `news` (optional) - News entry for the What's New app
+- `fileAssociations` (optional) - `{ extensions: [...] }` for default-app handling
+- `launchMethod` (optional) - Custom launch method name for `launchType: "method"`
+- `source` (optional) - URL for `iframe`/`remote` launch types
+- `targetUrl` (optional) - URL for scramjet web apps (used with `windowSize`)
+- `windowSize` (optional) - `["90vw", "85vh"]` size for web apps
+- `trayOptions` (optional) - `{ contextMenuItems, onClick, onQuit }`
 - `onLoad` (optional) - Callback when app loads
 - `isHeavy` (optional) - Mark as resource-intensive
 - `persistContentState` (optional) - Persist window content
 - `excludeFromInstalledApps` (optional) - Exclude from Installed Apps
-- `launchMethod` (optional) - Custom launch method name
-- `source` (optional) - URL for iframe launch type
 
 ### Step 4: Register in AppLoader.js
 
@@ -249,15 +252,15 @@ cd webos-desktop && pnpm build:dev
 1. **Definition** — App class created in `src/apps/`
 2. **Registration** — Class added to `APP_CLASS_MAP` in `AppLoader.js` and metadata to `APP_MANIFESTS` in
    `src/registry/AppManifest.js`
-3. **Instantiation** — `loadApps(services)` in `AppLoader.js` creates one singleton instance per app class and registers
-   it via `os.app.register(key, instance)`
+3. **Instantiation** — `loadApps(os, preloaded)` in `AppLoader.js` creates one singleton instance per manifest entry and
+   registers it via `os.app.register(key, instance)`
 4. **Launch** — `AppLauncher.launch(appId)` retrieves the singleton and calls `instance.open(appExtra)`
 5. **Open** — `open()` creates a window via `os.window.create()`, builds UI, binds events
 6. **Close** — `onClose(winId)` is called; the window element fires a `remove` event for cleanup
 
 ### BaseApp Interface
 
-All apps extend `BaseApp` (`src/core/BaseApp.ts`). The base class provides:
+All apps extend `BaseApp` (`src/core/BaseApp.js`). The base class provides:
 
 | Method | Purpose |
 |--------|---------|
@@ -320,50 +323,65 @@ import { os } from "../framework.js";
 
 ### Window API - `os.window`
 
-| Method                                      | Purpose                                     |
-| ------------------------------------------- | ------------------------------------------- |
-| `create(id, title, width, height, options)` | Create styled window element                |
-| `close(win)`                                | Close window, cleanup, remove taskbar entry |
-| `focus(win)`                                | Raise z-index, focus window                 |
-| `minimize(win)`                             | Hide window, mark taskbar minimized         |
-| `maximize(win)`                             | Expand/restore window                       |
-| `bringToFront(win)`                         | Raise z-index, focus window                 |
-| `addToTaskbar(winId, title, icon, color)`   | Add window to taskbar                       |
-| `removeFromTaskbar(winId)`                  | Remove window from taskbar                  |
-| `getWindowControls(externalUrl)`            | Get window control buttons HTML             |
+| Method                                          | Purpose                                                   |
+| ----------------------------------------------- | --------------------------------------------------------- |
+| `create(id, title, width, height, options)`     | Create styled window (auto-mounts, adds to taskbar)       |
+| `close(win)`                                    | Close window (accepts element or id string)               |
+| `closeAll()`                                    | Close all open windows                                    |
+| `focus(win)` / `bringToFront(win)`              | Raise z-index, focus window                               |
+| `minimize(win)`                                 | Hide window, mark taskbar minimized                       |
+| `maximize(win)` / `toggleFullscreen(win)`       | Expand/restore window (fullscreen)                        |
+| `setTitle(winId, title)` / `getTitle(winId)`    | Set / read window title                                   |
+| `addToTaskbar(winId, title, icon, color)`       | Add window to taskbar                                     |
+| `removeFromTaskbar(winId)`                      | Remove window from taskbar                                |
+| `pinAppToTaskbar(appId, title, icon, color)`    | Pin an app to the taskbar                                 |
+| `getWindowControls(externalUrl, showDownload)`  | Get window control buttons HTML                           |
+| `applySnap(win, direction)` / `unsnap(win)`     | Snap / unsnap a window                                    |
+| `getOpenWindows()`                              | Get the Map of open windows                               |
+| `setupWindowControls(win)` / `makeDraggable(win)` / `makeResizable(win)` | Manual window setup helpers            |
+| `notify(title, message, type, duration, icon, appSource)` | Send notification via window manager               |
+
+**`create()` options:** `{ icon, iconColor, externalUrl, appId, isGame, autoMount, autoFocus, skipHeader, skipAutoSetup }`
 
 ### Filesystem API - `os.fs`
 
-| Method                                                | Purpose                                                |
-| ----------------------------------------------------- | ------------------------------------------------------ |
-| `read(path, options)`                                 | Read file content (options: { encoding: "binary" })    |
-| `write(path, content, options)`                       | Write file content (options: { encoding, kind, icon }) |
-| `readdir(path)`                                       | Get directory contents                                 |
-| `mkdir(path)`                                         | Create directory recursively                           |
-| `delete(path, name)`                                  | Delete file or directory                               |
-| `exists(path)`                                        | Check if path exists                                   |
-| `copy(source, destination)`                           | Copy file/directory                                    |
-| `rename(oldPath, newPath)`                            | Rename file/directory                                  |
-| `isFile(path)`                                        | Check if path is a file                                |
-| `getFileKind(path)`                                   | Get file kind/metadata                                 |
-| `getFileIcon(path)`                                   | Get file icon path                                     |
-| `writeBinaryFile(path, name, blob, kind, icon)`       | Write binary file to blob storage                      |
-| `readBinaryFile(path, name)`                          | Read binary file from blob storage                     |
-| `deleteBinaryFile(path, name)`                        | Delete binary file from blob storage                   |
-| `renameBinaryFile(path, oldName, newName)`            | Rename binary file in blob storage                     |
-| `createFile(path, name, content, kind, icon, faIcon)` | Create file                                            |
-| `createFolder(path, name)`                            | Create folder                                          |
-| `deleteItem(path, name)`                              | Delete item (file or folder)                           |
-| `renameItem(path, oldName, newName)`                  | Rename item                                            |
-| `updateFile(path, name, content, meta)`               | Update file                                            |
+| Method                                                       | Purpose                                                  |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| `read(path, options)`                                        | Read file content (options: `{ encoding: "binary" }`)    |
+| `write(path, content, options)`                              | Write file content (options: `{ encoding, kind, icon }`) |
+| `readdir(path)` / `getFolder(path)`                          | Get directory contents                                   |
+| `mkdir(path)`                                                | Create directory recursively                             |
+| `delete(path, name)`                                         | Delete file or directory                                 |
+| `exists(path)`                                               | Check if path exists                                     |
+| `copy(source, destination)`                                  | Copy file/directory                                      |
+| `rename(oldPath, newPath)`                                   | Rename file/directory                                    |
+| `isFile(path)`                                               | Check if path is a file                                  |
+| `getFileKind(path)` / `getFileIcon(path)`                    | Get file kind / icon metadata                            |
+| `getMetadata(path, name)` / `writeMeta(path, name, data)`    | Read / write item metadata                               |
+| `createFile(path, name, content, kind, icon, faIcon)`        | Create file                                              |
+| `createFolder(path, name)`                                   | Create folder                                            |
+| `deleteItem(path, name)`                                     | Delete item (file or folder)                             |
+| `renameItem(path, oldName, newName)`                         | Rename item                                              |
+| `updateFile(path, name, content, meta)`                      | Update file (meta: `{ kind, icon }`)                     |
+| `trashFile(path, name)`                                      | Move item to trash                                       |
+| `getTrashItems()` / `restoreTrashItem(id)` / `restoreAllTrashItems()` / `deleteTrashItem(id)` / `emptyTrash()` / `getTrashCount()` | Trash management                    |
+| `writeBinaryFile(path, name, blob, kind, icon)`              | Write binary file to blob storage                        |
+| `readBinaryFile(path, name)` / `deleteBinaryFile(path, name)` / `renameBinaryFile(path, oldName, newName)` | Binary blob operations                 |
+| `calcDirSize(path)`                                          | Recursively compute `{ size, files, dirs }`              |
+| `getUniqueFileName(path, name)`                              | Generate a non-colliding file name                       |
+| `dirname(path)` / `basename(path)` / `join(...parts)` / `resolveUserPath(path)` / `inferKind(filename)` | Path helpers                   |
+| `pickDirectory()` / `registerMount(handle, label)` / `unmount(label)` / `getMounts()` | Native mount support          |
+| `mountISO(path, name)` / `unmountISO(label)` / `getISOMounts()` | ISO image mounts                                   |
+| `setSession(name)`                                           | Switch the active user session                           |
+| `getFileContent(path, name)`                                 | Read file content (with kind)                            |
 
-**Note:** Binary file methods use blob storage and require separate `name` parameter.
+**Note:** Binary file methods use blob storage and require a separate `name` parameter.
 
 ### Notification API - `os.notify`
 
 | Method                          | Purpose                                                                |
 | ------------------------------- | ---------------------------------------------------------------------- |
-| `send(title, message, options)` | Show toast notification (options: { type, duration, icon, appSource }) |
+| `send(title, message, options)` | Show toast notification (options: `{ type, duration, icon, appSource }`) |
 | `clear(id)`                     | Clear specific notification by ID                                      |
 | `clearAll()`                    | Clear all notifications                                                |
 | `getAll()`                      | Get all notifications                                                  |
@@ -382,10 +400,10 @@ import { os } from "../framework.js";
 | `updateContextMenuItems(winId, items)`  | Update context menu items               |
 | `sendToTray(winId)`                     | Hide window + taskbar → tray            |
 | `restoreFromTray(winId)`                | Restore window + taskbar from tray      |
-| `getTrayItems()`                        | Get Map of all tray items (raw)         |
-| `getAllItems()`                         | Get array of all tray items (formatted) |
-| `updateItemVisibility(winId, visible)`  | Update item visibility                  |
+| `getTrayItems()`                        | Get Map of all tray items               |
 | `isRegistered(winId)`                   | Check if window is registered           |
+| `isInTray(winId)`                       | Check if window is currently in tray    |
+| `updateItemVisibility(winId, visible)`  | Update item visibility                  |
 
 **Tray Register options:**
 
@@ -398,30 +416,52 @@ import { os } from "../framework.js";
 
 ### App API - `os.app`
 
-| Method                              | Purpose                      |
-| ----------------------------------- | ---------------------------- |
-| `launch(appId, options)`            | Launch app by ID             |
-| `launchGame(appId, isSwf, options)` | Launch game with SWF support |
-| `close(winId)`                      | Close app by window ID       |
-| `getRunningApps()`                  | Get list of running apps     |
-| `getAllApps()`                      | Get all registered apps      |
-| `getAppInfo(appId)`                 | Get app metadata             |
-| `hasApp(appId)`                     | Check if app is registered   |
-| `searchApps(query)`                 | Search apps by title         |
+| Method                                          | Purpose                                     |
+| ----------------------------------------------- | ------------------------------------------- |
+| `launch(appId, options)`                        | Launch app by ID                            |
+| `launchGame(appId, isSwf, options)`             | Launch game with SWF support                |
+| `openIframeApp(options)`                        | Open an iframe-based web app                |
+| `close(winId)`                                  | Close app by window ID                      |
+| `getInstance(key)` / `register(key, instance)`  | Get / register app instance by service key  |
+| `getRunningApps()`                              | Get list of running apps                    |
+| `getAllApps()`                                  | Get all registered apps                     |
+| `getAppInfo(appId)` / `hasApp(appId)`           | Get app metadata / existence check          |
+| `searchApps(query)`                             | Search apps by title                        |
+| `lockSession()` / `lockToLoginScreen()`         | Lock the current session                    |
+| `triggerAchievement(id)`                        | Trigger an achievement                      |
+| `executeCommand(cmd)`                           | Run a command in the terminal               |
+| `setClipboardContent(value)`                    | Write to the clipboard manager              |
+| `takeScreenshot(autoCapture)`                   | Open screenshot app / capture               |
+| `registerCustomApp(appId, entry)` / `unregisterCustomApp(appId)` | Manage custom apps           |
+| `registerAppRuntime(appId, instance)` / `unregisterAppRuntime(appId)` | Runtime registry       |
+| `openFileInApp(name, path)`                     | Open a file in its default app              |
 
 ### Events API - `os.events`
 
-| Method                 | Purpose                                        |
-| ---------------------- | ---------------------------------------------- |
-| `on(event, handler)`   | Register listener                              |
-| `off(event, handler)`  | Unregister listener                            |
-| `emit(event, data)`    | Fire event to all listeners                    |
-| `once(event, handler)` | Register one-time listener                     |
-| `clear(event)`         | Clear all listeners for an event or all events |
-| `listenerCount(event)` | Get listener count for an event                |
+| Method                 | Purpose              |
+| ---------------------- | -------------------- |
+| `on(event, handler)`   | Register listener    |
+| `off(event, handler)`  | Unregister listener  |
+| `emit(event, data)`    | Fire event           |
+| `once(event, handler)` | Register one-time listener |
 
-**Standard events:** `SETTINGS_CHANGED`, `WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_CLOSED`, `FILE_CHANGED`,
-`SESSION_INITIALIZED`, `AI_ACTION_EXECUTED`
+Use `BusEvents` constants from `src/core/EventBus.js` (re-exported by `framework.js`) instead of raw strings:
+`WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_MINIMIZED`, `WINDOW_CLOSED`, `WINDOW_FULLSCREEN`, `WINDOW_SNAPPED`,
+`SETTINGS_CHANGED`, `APP_LAUNCHED`, `NOTIFY`, `ACHIEVEMENT_TRIGGER`, `TERMINAL_CMD_EXECUTED`, `WALLPAPER_CHANGED`,
+`LOGIN_WALLPAPER_CHANGED`, `DESKTOP_ICON_ADDED`, `DESKTOP_ICON_REMOVED`, `WORKSPACE_SWITCHED`, `WORKSPACE_ADDED`,
+`WORKSPACE_REMOVED`, `FILE_CHANGED`, `SESSION_INITIALIZED`, `SYSTEM_LOCKED`, `SYSTEM_UNLOCKED`, `CLIPBOARD_UPDATE`,
+`CLIPBOARD_READ`, `CLIPBOARD_CLEAR`, `PROFILE_UPDATED`, `SOCIAL_PRESENCE_CHANGED`, `SOCIAL_DND_CHANGED`,
+`TILING_MODE_CHANGED`, `TILING_LAYOUT_CHANGED`, `MODE_ENTERED`, `MODE_EXITED`
+
+### Storage API - `os.storage` (synchronous)
+
+| Method            | Purpose                        |
+| ----------------- | ------------------------------ |
+| `get(key)`        | Get value from storage         |
+| `set(key, value)` | Set value in storage           |
+| `remove(key)`     | Remove value from storage      |
+| `clear()`         | Clear all storage              |
+| `has(key)`        | Check if key exists in storage |
 
 ### Dialog API - `os.dialog`
 
@@ -438,15 +478,47 @@ import { os } from "../framework.js";
 
 **Never use browser native alerts, prompts, or confirms. Always use `os.dialog.*`.**
 
-### Storage API - `os.storage`
+### Ports API - `os.ports`
 
-| Method            | Purpose                        |
-| ----------------- | ------------------------------ |
-| `get(key)`        | Get value from storage         |
-| `set(key, value)` | Set value in storage           |
-| `remove(key)`     | Remove value from storage      |
-| `clear()`         | Clear all storage              |
-| `has(key)`        | Check if key exists in storage |
+Named local ports for inter-app messaging (backed by `services/PortManager.js`):
+`register(port, handler, root)`, `unregister(port)`, `get(port)`, `isRegistered(port)`, `list()`
+
+### Tor API - `os.tor`
+
+Anonymized networking through Tor (backed by `tor/TorManager.js`):
+`isReady`, `running`, `fetch(url)`, `post(url, body)`, `request(method, url, headers, body, timeout)`,
+`createClient()`, `getStatus()`, `start(options)`, `stop()`, `getLogs()`, `getSnowflakeUrl()`,
+`setSnowflakeUrl(url)`, `getFetchCount()`, `reconnect()`
+
+### Tiling API - `os.tiling`
+
+Window tiling mode control (backed by `modes/tiling/TilingManager.js`):
+`enabled`, `setEnabled(enabled)`, `getEffectiveConfig()`, `updateConfig(changes)`, `applyBarSettings()`,
+`focusDirection(dir)`, `swapDirection(dir)`, `resizeDirection(dir)`, `cycleFocus(forward)`, `toggleFloating()`,
+`toggleFullscreenOnTiled()`, `toggleSplitType()`, `closeFocusedWindow()`
+
+### Modes API - `os.modes`
+
+Session modes: `isActive(id)`, `getActiveModes()`, `enter(id)`, `exit(id)`, `exitAll()`.
+`MODES` constant: `MODES.MAC`, `MODES.TILING`, `MODES.CHROME_OS`, `MODES.STEAMDECK`, `MODES["3D"]`
+
+### Achievements API - `os.achievements`
+
+`trigger(id)`, `unlock(key)`, `incrementAppLaunched()`, `incrementGameLaunched()`, `incrementScreenshotTaken()`,
+`incrementCalculationDone()`, `incrementPowerProfileChange()`, `incrementSession()`, `incrementWallpaper()`,
+`incrementTerminalCmd()`, `incrementFileUploaded()`, `triggerCommandExecution(command)`
+
+### Account API - `os.account`
+
+`client` (`signIn`, `signUp`, `signOut`, `getUser`), `signIn`, `signUp`, `signOut`, `isAccount()`, `isSynced()`,
+`getInfo()`, `updateInfo(user)`, `reauth()`, `onAccountChange`, `getSession`, `formatSize`, and
+`sync` (`enabled()`, `enable(on)`, `components()`, `toggleComponent(id, on)`, `getEnabledComponents()`,
+`buildBundle()`, `push()`, `pull()`)
+
+### Direct service references
+
+`os.windowManager`, `os.fileSystemManager`, `os.clipboardManager`, `os.desktopUI` expose raw services for advanced
+integrations.
 
 ---
 
@@ -621,7 +693,7 @@ Always use the OS-level dialog API instead of shared dialog utilities or browser
 Import and use these instead of direct DOM manipulation:
 
 ```javascript
-import { $, $$, bindEvent, toggleClass, setText, setHTML, createElement } from "./shared/domUtils.js";
+import { $, $$, bindEvent, toggleClass, setText, setHTML, createElement } from "../shared/domUtils.js";
 ```
 
 | Function                                      | Parameters                                                          | Purpose                                                                     |
@@ -644,18 +716,36 @@ import { $, $$, bindEvent, toggleClass, setText, setHTML, createElement } from "
 
 Common utility functions like `formatSize`, `isImageFile`, `isTextFile`, `pluralize`.
 
+### Other shared helpers
+
+| File                  | Exports                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| `contextMenu.js`      | `showContextMenu`, `showDynamicContextMenu`, `showStartStyleMenu`, `positionMenu`, `hideMenu`, `refreshIcons` |
+| `assetResolver.js`    | `resolveUrl`, `resolveYukiAsset`, `fetchHtmlAsBlobUrl`, `resolveIconUrl`, `resolveWallpaperUrl`      |
+| `fileKindDetector.js` | `FileKind`, `fileKindFromName`, `getExt`, plus extension arrays (`IMAGE_EXTS`, `CODE_EXTS`, ...)    |
+| `cdnConfig.js`        | `CDN_CONFIG`, `getLibraryUrl`, `getRepoUrl`                                                         |
+| `iconUtils.js`        | `isFontAwesomeIcon`, `resolveIconHtml`, `resolveDesktopIcon`                                        |
+| `platformUtils.js`    | `isMobile`, `isTouchDevice`                                                                         |
+| `coreMap.js`          | `CORE_EXTENSIONS`, `EXT_TO_CORE`, `ROM_EXTS`                                                        |
+| `weatherCodes.js`     | `WEATHER_CODES`, `getWeatherIcon`, `getWeatherInfo`                                                 |
+| `dialogs.js`          | `showAlert`, `showPrompt`, `showConfirm`, `customAlert`, `customPrompt`, `customConfirm`            |
+| `selectMenu.js`       | `renderSelectMenu`, `getSelectMenuValue`, `setSelectMenuValue`, `bindSelectMenu`                    |
+| `rangeSlider.js`      | `renderRangeSlider`, `getRangeSliderValue`, `setRangeSliderValue`, `bindRangeSlider`                |
+| `themeEngine.js`      | `getAllThemes`, `getBasicThemes`, `getSpecialThemes`, `getThemeByValue`, `getThemeColors`, `addCustomTheme` |
+| `dragUtils.js`        | `makeDraggable`, `makeResizable`                                                                    |
+
 ### Storage
 
 Always use `os.storage` API instead of bare `localStorage`:
 
 ```javascript
-import { os } from "./os/index.js";
+import { StorageKeys, os } from "../framework.js";
 
-// Read
-const value = await os.storage.get(StorageKeys.MY_KEY);
+// Read (os.storage is synchronous)
+const value = os.storage.get(StorageKeys.MY_KEY);
 
 // Write
-await os.storage.set(StorageKeys.MY_KEY, value);
+os.storage.set(StorageKeys.MY_KEY, value);
 ```
 
 Always use `src/framework.js` barrel for app-level imports. Import common dependencies
@@ -693,17 +783,26 @@ explorerApp.open(["Documents"], (selectedPath) => {
 ## Build & Deployment
 
 ```bash
-# Development
+# Development server
 pnpm run dev
 
-# Development build
+# Development build (validates the app registry via prebuild)
 pnpm run build:dev
 
 # Production build
 pnpm run build
 
+# Single-file build
+pnpm run build:single
+
 # Preview production build
 pnpm run preview
+
+# Electron build
+pnpm run build:electron
+
+# Tests (Vitest)
+pnpm run test
 ```
 
 Single-file build output is supported for easy deployment.
@@ -734,16 +833,19 @@ pnpm electron:build
 ## Important Rules
 
 - Never run `pnpm format`.
-- Always use CSS variables defined at :root from `src/styles/style.css`. Never hardcode colors
-- Whenever you define a new app to appLauncher or gamesList, define description for it on `gameDescriptions.js`
-- Always use StorageKeys from `src/StorageKeys.js` for localStorage access
-- Always use `os.storage` API instead of bare `localStorage`
-- Never use browser native alerts, prompts, or confirms. Always use `os.dialog` API (`os.dialog.alert()`,
-  `os.dialog.confirm()`, `os.dialog.prompt()`, `os.dialog.fileOpen()`, `os.dialog.fileSave()`,
-  `os.dialog.openDirectory()`)
-- Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use
-  utility functions from `src/shared/domUtils.js`
-- Use `os.notify.send()` for discrete, user-facing application events that represent a state change or completion
+- Never add comments anywhere — not in JS, HTML, or CSS.
+- Always use CSS variables defined at `:root` from `src/styles/style.css`. Never hardcode colors.
+- Always use `src/framework.js` barrel for app-level imports (`{ BaseApp, PersistenceTypes, os, StorageKeys, MODES, APP_MANIFESTS, BusEvents }`).
+- Whenever you define a new app in the manifest, define a `description` for it in the `APP_MANIFESTS` entry in `src/registry/AppManifest.js`.
+- When making significant changes, new features, or new apps: add a news entry to `EXISTING_NEWS_UPDATES` in `src/apps/news.js` with a punchy, active-voice description under 15 words.
+- Always use StorageKeys from `src/StorageKeys.js` for localStorage access.
+- Always use `os.storage` API instead of bare `localStorage`.
+- Never use browser native alerts, prompts, or confirms. Always use `os.dialog` API (`os.dialog.alert()`, `os.dialog.confirm()`, `os.dialog.prompt()`, `os.dialog.fileOpen()`, `os.dialog.fileSave()`, `os.dialog.openDirectory()`).
+- Never use `document.querySelector`, `document.querySelectorAll`, or direct DOM manipulation methods. Always use utility functions from `src/shared/domUtils.js`.
+- Never use `this.wm.*`; always use the `os.window` module for window operations.
+- Always use `KeybindManager` from `src/keybindManager.js` for keyboard shortcuts instead of raw `keydown` listeners with hardcoded key checks.
+- Use `os.notify.send()` for discrete, user-facing application events that represent a state change or completion. Never emit notifications from high-frequency or continuously-updating processes.
+- When applying changes to multiple files (2+ files), launch multiple concurrent Task sub-agents in a single message — one sub-agent per non-overlapping set of files.
 
 ---
 

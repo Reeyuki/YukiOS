@@ -18,6 +18,7 @@ import {
   contractToThemeData,
   themeScoreLabel,
   themeToContract,
+  THEME_CONFIG_FONTS,
   THEME_EFFECT_OPTIONS
 } from "../shared/themeContract.js";
 import { applyThemeEffects, clearThemeEffects, collectCurrentEffects } from "../shared/themeEffects.js";
@@ -37,8 +38,9 @@ import {
   getThemeColors,
   getFeaturedThemes
 } from "../shared/themeEngine.js";
-import { applyTheme } from "../settings/settingsApply.js";
+import { applyTheme, applyThemeConfig } from "../settings/settingsApply.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
+import { renderRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
 
 function formatRelativeDate(iso) {
   if (!iso) return "";
@@ -165,7 +167,7 @@ export class ThemeHubApp extends BaseApp {
     this.openWindows = new Set();
   }
 
-  open() {
+  open(opts = {}) {
     const winId = "theme-hub";
     if (this.openWindows.has(winId)) return;
 
@@ -190,6 +192,7 @@ export class ThemeHubApp extends BaseApp {
             <div class="theme-hub-nav-label">Explore</div>
             <button class="theme-hub-nav-item active" data-tab="mine"><i class="fas fa-layer-group"></i> My Themes</button>
             <button class="theme-hub-nav-item" data-tab="browse"><i class="fas fa-compass"></i> Browse</button>
+            <button class="theme-hub-nav-item theme-hub-nav-create"><i class="fas fa-plus"></i> Create Theme</button>
           </nav>
           <div class="theme-hub-sidebar-footer">
             <button class="theme-hub-create"><i class="fas fa-pen-ruler"></i> Create Theme</button>
@@ -206,7 +209,10 @@ export class ThemeHubApp extends BaseApp {
             </div>
             <div class="theme-hub-section-title"><i class="fas fa-pen-nib theme-hub-section-icon"></i> Your themes</div>
             <div class="theme-hub-local-list"></div>
-            <div class="theme-hub-empty">No themes yet. Install one from Browse, or create one.</div>
+            <div class="theme-hub-empty theme-hub-empty-cta">
+              <span>No themes yet. Install one from Browse, or create one.</span>
+              <button class="theme-hub-create theme-hub-create-inline"><i class="fas fa-pen-ruler"></i> Create Theme</button>
+            </div>
             <div class="theme-hub-section-title"><i class="fas fa-globe theme-hub-section-icon"></i> Published by you</div>
             <div class="theme-hub-published-list"></div>
             <div class="theme-hub-empty theme-hub-mypublished-empty">Nothing published from this device yet.</div>
@@ -290,6 +296,9 @@ export class ThemeHubApp extends BaseApp {
     this.renderLocalThemes();
     this.renderPublished();
 
+    if (opts && opts.intent === "create") this.openCreateForm();
+    else if (opts && opts.intent === "browse") this.switchTab("browse");
+
     win.addEventListener("remove", () => {
       this.openWindows.delete(winId);
     });
@@ -302,8 +311,10 @@ export class ThemeHubApp extends BaseApp {
   bindEvents() {
     const win = this.win;
     $$(".theme-hub-nav-item", win).forEach((tab) => {
+      if (!tab.dataset.tab) return;
       bindEvent(tab, "click", () => this.switchTab(tab.dataset.tab));
     });
+    bindEvent($(".theme-hub-nav-create", win), "click", () => this.openCreateForm());
 
     const search = $(".theme-hub-search", win);
     bindEvent(search, "input", (e) => {
@@ -343,7 +354,8 @@ export class ThemeHubApp extends BaseApp {
       }
     });
 
-    bindEvent($(".theme-hub-create", win), "click", () => this.shareCurrentSetup());
+    bindEvent($(".theme-hub-create", win), "click", () => this.openCreateForm());
+    bindEvent($(".theme-hub-create-inline", win), "click", () => this.openCreateForm());
 
     bindEvent($(".theme-hub-featured-toggle", win), "click", () => {
       this.featuredExpanded = !this.featuredExpanded;
@@ -436,6 +448,7 @@ export class ThemeHubApp extends BaseApp {
             <button class="theme-hub-vote-up ${vote === 1 ? "voted" : ""}"><i class="fas fa-arrow-up"></i></button>
             <button class="theme-hub-vote-down ${vote === -1 ? "voted" : ""}"><i class="fas fa-arrow-down"></i></button>
             <button class="theme-hub-install"><i class="fas fa-download"></i> Install</button>
+            <button class="theme-hub-remix"><i class="fas fa-pen"></i> Remix</button>
           </div>
         </div>
       </div>
@@ -458,6 +471,10 @@ export class ThemeHubApp extends BaseApp {
     bindEvent($(".theme-hub-install", el), "click", (e) => {
       e.stopPropagation();
       this.installTheme(theme);
+    });
+    bindEvent($(".theme-hub-remix", el), "click", (e) => {
+      e.stopPropagation();
+      this.remixTheme(theme);
     });
   }
 
@@ -528,7 +545,8 @@ export class ThemeHubApp extends BaseApp {
       author: theme.author || "",
       icon: theme.icon || "fas fa-palette",
       colors: theme.colors,
-      effects: theme.effects || {}
+      effects: theme.effects || {},
+      config: theme.config || {}
     });
     this.installContract(contract);
     trackInstall(theme.id);
@@ -537,13 +555,25 @@ export class ThemeHubApp extends BaseApp {
   installContract(contract) {
     const data = contractToThemeData(contract);
     try {
-      addCustomTheme({ value: data.value, label: data.label, icon: data.icon, colors: data.colors });
+      addCustomTheme({
+        value: data.value,
+        label: data.label,
+        icon: data.icon,
+        colors: data.colors,
+        description: contract.description || "",
+        author: contract.author || "",
+        effects: contract.effects || {},
+        config: contract.config || {}
+      });
     } catch (e) {}
     applyTheme(data.value, () => os.storage.get(StorageKeys.customColors));
     if (contract.effects && Object.keys(contract.effects).length > 0) {
       applyThemeEffects(contract.effects);
     } else {
       clearThemeEffects();
+    }
+    if (contract.config && Object.keys(contract.config).length > 0) {
+      applyThemeConfig(contract.config);
     }
     os.storage.set(StorageKeys.theme, data.value);
     os.notify.send("Theme Hub", "Theme installed!");
@@ -567,6 +597,7 @@ export class ThemeHubApp extends BaseApp {
         <button class="theme-hub-detail-voteup"><i class="fas fa-arrow-up"></i> Upvote</button>
         <button class="theme-hub-detail-votedown"><i class="fas fa-arrow-down"></i> Downvote</button>
         <button class="theme-hub-install"><i class="fas fa-download"></i> Install</button>
+        <button class="theme-hub-remix"><i class="fas fa-pen"></i> Remix</button>
         <button class="theme-hub-report"><i class="fas fa-flag"></i> Report</button>
       </div>
     `
@@ -580,6 +611,7 @@ export class ThemeHubApp extends BaseApp {
     bindEvent($(".theme-hub-detail-voteup", detail), "click", () => this.handleVote(theme.id, 1));
     bindEvent($(".theme-hub-detail-votedown", detail), "click", () => this.handleVote(theme.id, -1));
     bindEvent($(".theme-hub-install", detail), "click", () => this.installTheme(theme));
+    bindEvent($(".theme-hub-remix", detail), "click", () => this.remixTheme(theme));
     bindEvent($(".theme-hub-report", detail), "click", async () => {
       const reason = await os.dialog.prompt("Report Theme", "Why are you reporting this theme?", "");
       if (typeof reason === "string" && reason.trim()) {
@@ -694,6 +726,7 @@ export class ThemeHubApp extends BaseApp {
           <span class="theme-hub-local-name">${escapeHtml(theme.label)}</span>
           <div class="theme-hub-local-actions">
             <button class="theme-hub-local-publish">Publish</button>
+            <button class="theme-hub-local-remix">Remix</button>
             <button class="theme-hub-local-export">Export</button>
             <button class="theme-hub-local-remove">Remove</button>
           </div>
@@ -706,6 +739,7 @@ export class ThemeHubApp extends BaseApp {
       const theme = themes.find((t) => String(t.value) === el.dataset.value);
       if (!theme) return;
       bindEvent($(".theme-hub-local-publish", el), "click", () => this.publishLocalTheme(theme));
+      bindEvent($(".theme-hub-local-remix", el), "click", () => this.remixTheme(theme));
       bindEvent($(".theme-hub-local-export", el), "click", () => this.exportLocalTheme(theme));
       bindEvent($(".theme-hub-local-remove", el), "click", () => this.removeLocalTheme(theme));
     });
@@ -737,6 +771,43 @@ export class ThemeHubApp extends BaseApp {
     this.openShareForm({ colors, effects: collectCurrentEffects(), name: themeObj ? themeObj.label : "" });
   }
 
+  neutralPalette() {
+    const {
+      brand,
+      "bg-primary": bgPrimary,
+      "bg-secondary": bgSecondary,
+      glass,
+      "glass-border": glassBorder,
+      "text-primary": textPrimary,
+      "text-secondary": textSecondary,
+      "window-bg": windowBg
+    } = WINDOW_PREVIEW_FALLBACKS;
+    return {
+      brand,
+      "bg-primary": bgPrimary,
+      "bg-secondary": bgSecondary,
+      glass,
+      "glass-border": glassBorder,
+      "text-primary": textPrimary,
+      "text-secondary": textSecondary,
+      "window-bg": windowBg
+    };
+  }
+
+  openCreateForm() {
+    this.openShareForm({ colors: this.neutralPalette(), effects: {}, name: "", mode: "create" });
+  }
+
+  remixTheme(theme) {
+    this.openShareForm({
+      colors: theme.colors || {},
+      effects: theme.effects || {},
+      config: theme.config || {},
+      name: theme.name || theme.label || "",
+      mode: "create"
+    });
+  }
+
   populateSelect(sel, options, current) {
     let html = `<option value="">Default</option>`;
     html += options.map((opt) => `<option value="${opt}">${humanizeEffectValue(opt)}</option>`).join("");
@@ -744,15 +815,25 @@ export class ThemeHubApp extends BaseApp {
     sel.value = current || "";
   }
 
-  openShareForm({ colors, effects, name }) {
-    this.shareForm = { colors: colors || {}, effects: effects || {}, name: name || "" };
+  openShareForm({ colors, effects, name, description = "", author = "", config = {}, mode = "create" }) {
+    this.shareForm = {
+      colors: colors || {},
+      effects: effects || {},
+      name: name || "",
+      description,
+      author,
+      config,
+      mode
+    };
     const share = $(".theme-hub-share", this.win);
+    const currentTransparency = config.windowTransparency != null ? config.windowTransparency : 90;
+    const submitLabel = mode === "publish" ? "Publish" : "Create Theme";
     setHTML(
       share,
       `
       <div class="theme-hub-share-head">
         <button class="theme-hub-share-cancel"><i class="fas fa-arrow-left"></i> Back</button>
-        <div class="theme-hub-share-title">Create Theme</div>
+        <div class="theme-hub-share-title">${mode === "publish" ? "Publish Theme" : "Create Theme"}</div>
       </div>
       <div class="theme-hub-share-grid">
         <div class="theme-hub-share-preview-wrap">
@@ -760,8 +841,8 @@ export class ThemeHubApp extends BaseApp {
         </div>
         <div class="theme-hub-share-form">
           <input class="theme-hub-share-name" placeholder="Theme name" value="${escapeHtml(name || "")}" />
-          <textarea class="theme-hub-share-desc" placeholder="Short description (optional)"></textarea>
-          <input class="theme-hub-share-author" placeholder="Author name (optional)" />
+          <textarea class="theme-hub-share-desc" placeholder="Short description (optional)">${escapeHtml(description)}</textarea>
+          <input class="theme-hub-share-author" placeholder="Author name (optional)" value="${escapeHtml(author)}" />
           <div class="theme-hub-field-label">Colors</div>
           <div class="theme-hub-color-grid"></div>
           <button class="theme-hub-advanced-toggle" type="button"><i class="fas fa-chevron-down theme-hub-advanced-chevron"></i> <span>Advanced</span></button>
@@ -791,9 +872,27 @@ export class ThemeHubApp extends BaseApp {
               <span>Disable cursor effect</span>
             </label>
             <input class="theme-hub-share-bg" placeholder="Background (e.g. #123 or a gradient, optional)" />
+            <div class="theme-hub-field-label">OS Config</div>
+            <div class="theme-hub-field">
+              <label class="theme-hub-field-label">Font</label>
+              <div class="theme-hub-select-wrap"><select class="theme-hub-share-font"></select></div>
+            </div>
+            <div class="theme-hub-field">
+              <label class="theme-hub-field-label">UI density</label>
+              <div class="theme-hub-density-row">
+                <button type="button" class="theme-hub-share-density" data-density="compact">Compact</button>
+                <button type="button" class="theme-hub-share-density" data-density="comfortable">Comfortable</button>
+                <button type="button" class="theme-hub-share-density" data-density="spacious">Spacious</button>
+              </div>
+            </div>
+            <div class="theme-hub-field">
+              <label class="theme-hub-field-label">Window transparency</label>
+              <div class="theme-hub-transparency-wrap">${renderRangeSlider("themeHubShareTransparency", 20, 100, 1, currentTransparency)}</div>
+              <span class="theme-hub-share-transparency-value"></span>
+            </div>
           </div>
           <div class="theme-hub-share-actions">
-            <button class="theme-hub-publish"><i class="fas fa-check"></i> Create Theme</button>
+            <button class="theme-hub-publish"><i class="fas fa-check"></i> ${submitLabel}</button>
           </div>
           <div class="theme-hub-share-hint">Saved to My Themes. Publish it to the hub from there.</div>
         </div>
@@ -846,11 +945,21 @@ export class ThemeHubApp extends BaseApp {
     cursor.checked = !!effectsData.cursorOff;
     const bgInput = $(".theme-hub-share-bg", share);
     bgInput.value = effectsData.background || "";
+    this.populateSelect($(".theme-hub-share-font", share), THEME_CONFIG_FONTS, config.fontFamily);
+    const density = config.density || "comfortable";
+    $$(".theme-hub-share-density", share).forEach((btn) => {
+      toggleClass(btn, "active", btn.dataset.density === density);
+    });
+    const transparencyValue = $(".theme-hub-share-transparency-value", share);
+    setText(transparencyValue, currentTransparency + "%");
 
     this.refreshSharePreview();
 
     bindEvent($(".theme-hub-share-cancel", share), "click", () => this.hideOverlays());
-    bindEvent($(".theme-hub-publish", share), "click", () => this.createShare());
+    bindEvent($(".theme-hub-publish", share), "click", () => {
+      if (mode === "publish") this.publishFromForm();
+      else this.createShare();
+    });
     $$(".theme-hub-color-input", share).forEach((input) => {
       bindEvent(input, "input", () => {
         this.shareForm.colors[input.dataset.colorKey] = input.value;
@@ -884,6 +993,21 @@ export class ThemeHubApp extends BaseApp {
     bindEvent(cursor, "change", (e) => {
       if (e.target.checked) this.shareForm.effects.cursorOff = true;
       else delete this.shareForm.effects.cursorOff;
+    });
+    bindEvent($(".theme-hub-share-font", share), "change", (e) => {
+      if (e.target.value) this.shareForm.config.fontFamily = e.target.value;
+      else delete this.shareForm.config.fontFamily;
+    });
+    $$(".theme-hub-share-density", share).forEach((btn) => {
+      bindEvent(btn, "click", () => {
+        this.shareForm.config.density = btn.dataset.density;
+        $$(".theme-hub-share-density", share).forEach((b) => toggleClass(b, "active", b === btn));
+      });
+    });
+    bindEvent($("#themeHubShareTransparency", share), "change", () => {
+      const value = Number(getRangeSliderValue("themeHubShareTransparency", this.win));
+      this.shareForm.config.windowTransparency = value;
+      setText($(".theme-hub-share-transparency-value", share), value + "%");
     });
     bindEvent($(".theme-hub-advanced-toggle", share), "click", () => {
       const panel = $(".theme-hub-advanced", share);
@@ -936,6 +1060,7 @@ export class ThemeHubApp extends BaseApp {
     if ($(".theme-hub-share-cursor", share).checked) effects.cursorOff = true;
     const bg = $(".theme-hub-share-bg", share).value.trim();
     if (bg) effects.background = bg;
+    const config = this.shareForm.config || {};
 
     let contract;
     try {
@@ -945,7 +1070,8 @@ export class ThemeHubApp extends BaseApp {
         author,
         icon: "fas fa-palette",
         colors,
-        effects
+        effects,
+        config
       });
     } catch (e) {
       os.dialog.alert("Theme Hub", String(e.message || e));
@@ -953,7 +1079,16 @@ export class ThemeHubApp extends BaseApp {
     }
     const data = contractToThemeData(contract);
     try {
-      addCustomTheme({ value: data.value, label: data.label, icon: data.icon, colors: data.colors });
+      addCustomTheme({
+        value: data.value,
+        label: data.label,
+        icon: data.icon,
+        colors: data.colors,
+        description,
+        author,
+        effects,
+        config
+      });
     } catch (e) {}
     this.renderLocalThemes();
 
@@ -962,39 +1097,74 @@ export class ThemeHubApp extends BaseApp {
       `
       <div class="theme-hub-published">
         <div class="theme-hub-share-title">Theme created!</div>
-        <div class="theme-hub-published-note">Saved to My Themes. Publish it to the hub from there.</div>
-        <button class="theme-hub-publish"><i class="fas fa-check"></i> Done</button>
+        <div class="theme-hub-published-note">Saved to My Themes. Publish it now or later.</div>
+        <button class="theme-hub-publish theme-hub-done"><i class="fas fa-check"></i> Done</button>
+        <button class="theme-hub-publish theme-hub-tohub"><i class="fas fa-upload"></i> Publish to Hub</button>
       </div>
     `
     );
-    bindEvent($(".theme-hub-publish", share), "click", () => this.hideOverlays());
+    bindEvent($(".theme-hub-done", share), "click", () => this.hideOverlays());
+    bindEvent($(".theme-hub-tohub", share), "click", () =>
+      this.openPublishForm({
+        value: data.value,
+        label: name,
+        icon: "fas fa-palette",
+        colors,
+        description,
+        author,
+        effects,
+        config
+      })
+    );
   }
 
-  async publishLocalTheme(theme) {
-    const colors = theme.colors || {};
-    if (Object.keys(colors).length < 1) {
-      os.dialog.alert("Theme Hub", "This theme has no colors to publish.");
-      return;
-    }
-    const ok = await os.dialog.confirm(
-      "Publish Theme",
-      '"' + theme.label + '" will be publicly visible on the YukiOS Theme Hub for other users. Publish it?'
-    );
-    if (!ok) return;
+  publishLocalTheme(theme) {
+    this.openPublishForm(theme);
+  }
+
+  openPublishForm(theme) {
+    this.openShareForm({
+      colors: theme.colors || {},
+      effects: theme.effects || {},
+      name: theme.label || theme.name || "",
+      description: theme.description || "",
+      author: theme.author || "",
+      config: theme.config || {},
+      mode: "publish"
+    });
+  }
+
+  async publishFromForm() {
+    const shareForm = this.shareForm;
     let contract;
     try {
       contract = buildThemeContract({
-        name: theme.label,
-        description: "",
-        author: "",
-        icon: theme.icon || "fas fa-palette",
-        colors,
-        effects: {}
+        name: shareForm.name,
+        description: shareForm.description || "",
+        author: shareForm.author || "",
+        icon: "fas fa-palette",
+        colors: shareForm.colors || {},
+        effects: shareForm.effects || {},
+        config: shareForm.config || {}
       });
     } catch (e) {
       os.dialog.alert("Theme Hub", String(e.message || e));
       return;
     }
+    const data = contractToThemeData(contract);
+    try {
+      addCustomTheme({
+        value: data.value,
+        label: data.label,
+        icon: data.icon,
+        colors: data.colors,
+        description: shareForm.description || "",
+        author: shareForm.author || "",
+        effects: shareForm.effects || {},
+        config: shareForm.config || {}
+      });
+      this.renderLocalThemes();
+    } catch (e) {}
     const res = await publishTheme(contract);
     if (!res) {
       os.dialog.alert("Theme Hub", "Couldn't publish. Check your connection.");
@@ -1003,6 +1173,7 @@ export class ThemeHubApp extends BaseApp {
     os.notify.send("Theme Hub", "Theme published to the hub!");
     this.trackPublished(res, contract);
     this.refreshBrowseAfterPublish(res);
+    this.hideOverlays();
   }
 
   refreshBrowseAfterPublish(res) {

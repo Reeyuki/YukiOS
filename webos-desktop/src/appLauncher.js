@@ -7,7 +7,7 @@ import { initializeAppGrid, tryGetIcon, trackRecentlyUsed } from "./desktopui/st
 const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 import { getLibraryUrl } from "./shared/cdnConfig.js";
-import { StorageKeys, os, brand, yuriPageTitle, $ } from "./framework.js";
+import { StorageKeys, os, $ } from "./framework.js";
 import { getWispUrl } from "./shared/wispConfig.js";
 import { parseBool } from "./utils/utils.js";
 import {
@@ -27,9 +27,9 @@ const clippySpeak = speak;
 import { GameOverlayController } from "./gameOverlay.js";
 import "./styles/gameOverlay.css";
 import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage, recordUsageDuration } from "./analytics.js";
-import { maybeTriggerSmartlink } from "./ads.js";
+import { maybeTriggerSmartlink, buildGameAdBannerHtml, ADSTERRA_KEYS, shouldEnableAds } from "./ads.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
-import { SteamSettings } from "./games/steam.js";
+import { SteamSettings } from "./games/steamSettings.js";
 import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
 import { trigger as triggerCursorEffect } from "./cursorEffect.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
@@ -133,7 +133,7 @@ export class AppLauncher {
 
     this.ensureIframeNavigateHandler();
 
-    this.overlayController = new GameOverlayController(this, this.services);
+    this.overlayController = new GameOverlayController(os);
   }
 
   setEmulatorApp(emulatorApp) {
@@ -294,7 +294,7 @@ export class AppLauncher {
 
         if (info?.scramjetEnabled) {
           const wispUrl = getWispUrl();
-          source = `/scramapps/scramjet-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
+          source = `/sapps/set-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
         } else if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
           try {
@@ -350,7 +350,7 @@ export class AppLauncher {
   updateSteamStats(appId, minutes) {
     try {
       const now = Date.now();
-      const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+      const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
       const stats = os.storage.get(StorageKeys.steamStats) || {};
       if (!stats[appId]) {
@@ -363,7 +363,7 @@ export class AppLauncher {
       const sessions = os.storage.get(StorageKeys.steamSessions) || {};
       if (!sessions[appId]) sessions[appId] = [];
       sessions[appId].push({ ts: now, min: minutes });
-      sessions[appId] = sessions[appId].filter((s) => now - s.ts < ONE_WEEK_MS);
+      sessions[appId] = sessions[appId].filter((s) => now - s.ts < TWO_WEEKS_MS);
       os.storage.set(StorageKeys.steamSessions, sessions);
     } catch (e) {}
   }
@@ -388,7 +388,7 @@ export class AppLauncher {
     const appId = "yukiDevTools";
     if (this.bringToFrontIfExists(appId)) return;
 
-    const title = this.appMap[appId]?.title || brand("Yuki Dev Tools");
+    const title = this.appMap[appId]?.title || "Yuki Dev Tools";
     let iframeUrl = YUKI_DEV_TOOLS_URL;
 
     try {
@@ -446,7 +446,7 @@ const player=ruffle.createPlayer();
 player.style.width="100%";
 player.style.height="100%";
 player.style.display="block";
-$("#player").appendChild(player);
+document.getElementById("player").appendChild(player);
 player.load("${swfPath}");
 </script>
 </body>
@@ -605,7 +605,7 @@ player.load("${swfPath}");
         });
 
         const overlayBtnHtml = isGame
-          ? `<button class="overlay-open-btn" title="Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
+          ? `<button class="overlay-open-btn" title="Yuki Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
           : "";
 
         win.innerHTML = `
@@ -644,7 +644,9 @@ player.load("${swfPath}");
           (isCdnGhUrl(resolvedSource) || isCdnGhUrl(window.location.href))
         ) {
           try {
-            iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource);
+            const injectBannerHtml =
+              extra.isArchive && shouldEnableAds() ? buildGameAdBannerHtml(ADSTERRA_KEYS.leaderboard) : "";
+            iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource, { injectBannerHtml });
           } catch (err) {
             const message = err?.message ? String(err.message) : "Unknown error";
             const errHtml = `<!doctype html><meta charset="utf-8"><title>Failed to load</title>
@@ -726,7 +728,7 @@ player.load("${swfPath}");
   createWindow(id, title, contentHtml, externalUrl = null, appId = null, appMeta = {}) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("game") && appId) {
-      document.title = yuriPageTitle() || sanitizeTitle(title);
+      document.title = sanitizeTitle(title);
       document.head.insertAdjacentHTML(
         "beforeend",
         `<style>
@@ -775,7 +777,7 @@ player.load("${swfPath}");
     const iconHtml = this.buildWindowIconHtml(resolvedIcon, { margin: "8px" });
 
     const overlayBtnHtml = isGame
-      ? `<button class="overlay-open-btn" title="Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
+      ? `<button class="overlay-open-btn" title="Yuki Steam Overlay (Shift+Tab)"><i class="fab fa-steam"></i></button>`
       : "";
 
     win.innerHTML = `

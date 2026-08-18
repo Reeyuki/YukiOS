@@ -16,7 +16,6 @@ export const AppSource = {
   MARKDOWN: "Markdown",
   OFFICE: "Office",
   DATA_EDITOR: "Data Editor",
-  MODEL_3D: "3D Model Viewer",
   TASK_MANAGER: "Task Manager",
   ACHIEVEMENTS: "Achievements",
   ABOUT: "About",

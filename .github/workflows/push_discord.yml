@@ -165,46 +165,57 @@ jobs:
           cd webos-desktop
 
           pnpm install --frozen-lockfile
+
+          pnpm build
+          mv dist dist-web
           pnpm build:single
+          mv dist dist-single
 
-          HTML_FILE="dist/index.html"
+          SHA="${GITHUB_SHA::7}"
+          SUBJECT="$COMMIT_MESSAGE"
 
-          if [ -f "$HTML_FILE" ]; then
-            SHA="${GITHUB_SHA::7}"
-            SUBJECT="$COMMIT_MESSAGE"
-
-            PAYLOAD=$(jq -n \
+          upload_file() {
+            local file="$1"
+            local type="$2"
+            local content="$3"
+            local payload
+            payload=$(jq -n \
               --arg sha "$SHA" \
               --arg subject "$SUBJECT" \
-              --arg content "🚀 Built HTML for YukiOS from $SHA ($SUBJECT)" \
+              --arg content "$content" \
               '{content: $content}')
-
-            curl -F "payload_json=$PAYLOAD" \
-                 -F "file1=@${HTML_FILE};type=text/html" \
+            curl -s -F "payload_json=$payload" \
+                 -F "file1=@${file};type=$type" \
                  "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+          }
 
-            ZIP_FILE="dist.zip"
-            zip -r "$ZIP_FILE" dist/ -x "dist/wasm/*" -x "dist/class/*"
-
-            if [ -f "$ZIP_FILE" ]; then
-              ZIP_PAYLOAD=$(jq -n \
-                --arg sha "$SHA" \
-                --arg subject "$SUBJECT" \
-                --arg content "📦 Build archive for YukiOS from $SHA ($SUBJECT)" \
-                '{content: $content}')
-
-              curl -F "payload_json=$ZIP_PAYLOAD" \
-                   -F "file1=@${ZIP_FILE};type=application/zip" \
-                   "${{ secrets.DISCORD_BUILD_WEBHOOK }}"
+          SINGLE_HTML="dist-single/index.html"
+          if [ -f "$SINGLE_HTML" ]; then
+            RESPONSE=$(upload_file "$SINGLE_HTML" "text/html" "🚀 Single-file HTML for YukiOS from $SHA ($SUBJECT)")
+            if echo "$RESPONSE" | grep -q '40005\|Request entity too large'; then
+              echo "Single HTML exceeds Discord upload limit, uploading zipped instead"
+              (cd dist-single && zip ../yukios-single.zip index.html)
+              if [ -f "yukios-single.zip" ]; then
+                upload_file "yukios-single.zip" "application/zip" "📄 Single-file HTML (zipped) for YukiOS from $SHA ($SUBJECT)"
+              fi
             fi
           fi
 
-      - name: Upload dist.zip artifact
+          if [ -d dist-web ]; then
+            ZIP_FILE="dist.zip"
+            zip -r "$ZIP_FILE" dist-web -x "dist-web/wasm/*" -x "dist-web/class/*"
+
+            if [ -f "$ZIP_FILE" ]; then
+              upload_file "$ZIP_FILE" "application/zip" "📦 Build archive for YukiOS from $SHA ($SUBJECT)"
+            fi
+          fi
+
+      - name: Upload build zips artifact
         if: env.BUILD_WEB == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: dist-zip
-          path: webos-desktop/dist.zip
+          path: webos-desktop/*.zip
           if-no-files-found: ignore
 
   electron:

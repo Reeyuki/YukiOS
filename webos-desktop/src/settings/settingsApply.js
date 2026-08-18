@@ -6,6 +6,7 @@ import { $, $$, createElement } from "../shared/domUtils.js";
 import { applyResolution as applyResolutionTransform } from "../resolution/resolutionManager.js";
 import { animateThemeChange } from "./themeTransition.js";
 import { initThemeEffects } from "../shared/themeEffects.js";
+import { os, StorageKeys, BusEvents } from "../framework.js";
 const desktop = $("#desktop");
 
 const LIGHT_THEMES = new Set([
@@ -288,4 +289,22 @@ export function applyDockScale(scale) {
 export function applyDockAnimationSpeed(speed) {
   const s = Math.max(0.05, Math.min(0.5, Number(speed) || 0.2));
   document.documentElement.style.setProperty("--dock-anim-speed", `${s}s`);
+}
+
+export function applyThemeConfig(config) {
+  if (!config || typeof config !== "object") return;
+  if (config.fontFamily && typeof config.fontFamily === "string") {
+    applyFontFamily(config.fontFamily);
+    os.storage.set(StorageKeys.fontFamily, config.fontFamily);
+  }
+  if (config.density && typeof config.density === "string") {
+    applyUiDensity(config.density);
+    os.storage.set(StorageKeys.uiDensity, config.density);
+  }
+  if (typeof config.windowTransparency === "number" && Number.isFinite(config.windowTransparency)) {
+    const pct = Math.max(20, Math.min(100, Math.round(config.windowTransparency)));
+    applyWindowTransparency(pct / 100);
+    os.storage.set(StorageKeys.windowTransparency, String(pct));
+  }
+  os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "themeConfig", value: config });
 }

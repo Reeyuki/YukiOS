@@ -1,12 +1,24 @@
 import { StorageKeys, os } from "../framework.js";
 import { getLiveUserId } from "./userIdentity.js";
 import { socialGet, socialPost } from "./socialApi.js";
+import {
+  fakeFriendsEnabled,
+  fakeFriendsResult,
+  fakeSendFriendRequest,
+  fakeSendMessage,
+  fakeFetchMessages,
+  fakeFetchConversations,
+  fakeRemoveFriend,
+  fakeAcceptFriendRequest,
+  fakeFriendRelation
+} from "./fakeFriends.js";
 
 let cachedFriends = null;
 let cachedFriendsTime = 0;
 const FRIENDS_TTL = 10 * 1000;
 
 export async function fetchFriends({ refresh = false } = {}) {
+  if (fakeFriendsEnabled()) return fakeFriendsResult();
   const userId = getLiveUserId();
   if (!userId) return { friends: [], requests: [], sentRequests: [] };
   if (!refresh && cachedFriends && Date.now() - cachedFriendsTime < FRIENDS_TTL) return cachedFriends;
@@ -23,6 +35,7 @@ export async function fetchFriends({ refresh = false } = {}) {
 }
 
 export function getCachedFriends() {
+  if (fakeFriendsEnabled()) return fakeFriendsResult();
   if (cachedFriends) return cachedFriends;
   const stored = os.storage.get(StorageKeys.socialFriends);
   return {
@@ -38,6 +51,7 @@ export async function areFriends(userId) {
 }
 
 export async function sendFriendRequest(friendId) {
+  if (fakeFriendsEnabled()) return fakeSendFriendRequest(friendId);
   const userId = getLiveUserId();
   if (!userId || !friendId) return { error: "You need a profile first." };
   const res = await socialPost("/live/friends/request", { userId, friendId });
@@ -46,6 +60,7 @@ export async function sendFriendRequest(friendId) {
 }
 
 export async function acceptFriendRequest(friendId) {
+  if (fakeFriendsEnabled()) return fakeAcceptFriendRequest(friendId);
   const userId = getLiveUserId();
   if (!userId || !friendId) return { error: "Missing profile." };
   const res = await socialPost("/live/friends/accept", { userId, friendId });
@@ -54,6 +69,7 @@ export async function acceptFriendRequest(friendId) {
 }
 
 export async function removeFriend(friendId) {
+  if (fakeFriendsEnabled()) return fakeRemoveFriend(friendId);
   const userId = getLiveUserId();
   if (!userId || !friendId) return { error: "Missing profile." };
   const res = await socialPost("/live/friends/remove", { userId, friendId });
@@ -62,6 +78,7 @@ export async function removeFriend(friendId) {
 }
 
 export async function sendMessage(friendId, body) {
+  if (fakeFriendsEnabled()) return fakeSendMessage(friendId, body);
   const userId = getLiveUserId();
   if (!userId || !friendId) return { error: "Missing profile." };
   const res = await socialPost("/live/messages", { userId, friendId, body });
@@ -69,6 +86,7 @@ export async function sendMessage(friendId, body) {
 }
 
 export async function fetchMessages(friendId, after) {
+  if (fakeFriendsEnabled()) return fakeFetchMessages(friendId);
   const userId = getLiveUserId();
   if (!userId || !friendId) return [];
   const params = new URLSearchParams({ userId, friendId });
@@ -82,6 +100,7 @@ let cachedConversationsTime = 0;
 const CONVERSATIONS_TTL = 12 * 1000;
 
 export async function fetchConversations({ refresh = false } = {}) {
+  if (fakeFriendsEnabled()) return fakeFetchConversations();
   const userId = getLiveUserId();
   if (!userId) return [];
   if (!refresh && cachedConversations && Date.now() - cachedConversationsTime < CONVERSATIONS_TTL) {
@@ -100,6 +119,7 @@ export function invalidateConversations() {
 }
 
 export async function getFriendRelation(userId) {
+  if (fakeFriendsEnabled()) return fakeFriendRelation(userId);
   if (!userId) return "none";
   if (userId === getLiveUserId()) return "self";
   const list = await fetchFriends();

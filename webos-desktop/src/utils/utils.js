@@ -27,6 +27,27 @@ export function formatSize(bytes) {
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
 }
 
+export function formatGameActivityTime(min) {
+  if (!min) return "0min";
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+export function formatLastPlayed(timestamp) {
+  if (!timestamp) return "Never";
+  const then = new Date(timestamp);
+  const now = new Date();
+  const sameDay = then.toDateString() === now.toDateString();
+  if (sameDay) return "Today";
+  const diffMs = now.getTime() - then.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays < 7) return "This Week";
+  if (diffDays < 31) return "This Month";
+  return then.toLocaleDateString();
+}
+
 export function pluralize(count, singular, plural = singular + "s") {
   return count === 1 ? singular : plural;
 }
@@ -202,27 +223,8 @@ export function timeAgo(date) {
   return date.toLocaleDateString();
 }
 
-export function debounce(fn, delay = 300) {
-  let timer = null;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
-
-export function throttle(fn, limit = 200) {
-  let lastTime = 0;
-  return function (...args) {
-    const now = Date.now();
-    if (now - lastTime >= limit) {
-      lastTime = now;
-      fn.apply(this, args);
-    }
-  };
-}
-
 export function generateId(prefix = "") {
-  return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  return prefix + generateUUID();
 }
 
 export function truncate(str, maxLength) {
@@ -257,6 +259,9 @@ export function base64ToBlob(dataUrl) {
 }
 
 export function generateUUID() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === "x" ? r : (r & 0x3) | 0x8;

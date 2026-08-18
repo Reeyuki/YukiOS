@@ -9,7 +9,7 @@ import { applyFontFamily, applyTheme } from "../settings/settingsApply.js";
 import { $, $$, bindEvent, setText, setHTML, toggleClass, createElement } from "../shared/domUtils.js";
 import { getAllThemes } from "../shared/themeEngine.js";
 import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
-import { BaseApp, StorageKeys, os, brand } from "../framework.js";
+import { BaseApp, StorageKeys, os } from "../framework.js";
 import { startIntroTour } from "./introTour.js";
 import { modeManager, MODES } from "../modeManager.js";
 import { isTaskbarTop } from "../utils/utils.js";
@@ -23,7 +23,7 @@ export const FEATURE_DATA = {
     },
     {
       icon: "fas fa-gamepad",
-      title: "2900+ Games & Emulators",
+      title: "3000+ Games & Emulators",
       desc: "JS-DOS, V86, Ruffle Flash, Azahar 3DS, and retro console emulation",
       animation: "spin-card"
     },
@@ -126,8 +126,8 @@ export const FEATURE_DATA = {
     },
     {
       icon: "fas fa-gamepad",
-      title: "Steam Game Hub",
-      desc: "Browse 2900+ games with store pages"
+      title: "Yuki Steam Game Hub",
+      desc: "Browse 3000+ games with store pages"
     },
     {
       icon: "fas fa-microchip",
@@ -172,7 +172,7 @@ export const FEATURE_DATA = {
     {
       icon: "fas fa-mouse-pointer",
       title: "Context Menus",
-      desc: "Right-click menus for desktop, explorer, taskbar, tray, start menu, and Steam library"
+      desc: "Right-click menus for desktop, explorer, taskbar, tray, start menu, and Yuki Steam library"
     },
     {
       icon: "fas fa-file-export",
@@ -186,7 +186,7 @@ export const FEATURE_DATA = {
     },
     {
       icon: "fas fa-gamepad",
-      title: "Steam Context Actions",
+      title: "Yuki Steam Context Actions",
       desc: "Favorites, hide/unhide, collections, add game shortcuts to desktop, and report broken games"
     },
     {
@@ -270,7 +270,7 @@ export class SetupApp extends BaseApp {
 
     await this.loadWallpapers();
 
-    const win = os.window.create(winId, brand("Set Up YukiOS"), "85vw", "75vh", {
+    const win = os.window.create(winId, "Set Up YukiOS", "85vw", "75vh", {
       icon: "fas fa-rocket",
       position: "center"
     });
@@ -289,7 +289,7 @@ export class SetupApp extends BaseApp {
     const headerClass = isTaskbarTop() ? "window-header mac-header" : "window-header";
     return `
       <div class="${headerClass}">
-        <span>${brand("Set Up YukiOS")}</span>
+        <span>Set Up YukiOS</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="window-content setup-wizard">
@@ -705,7 +705,7 @@ export class SetupApp extends BaseApp {
         <div class="complete-actions">
           <button id="setup-launch-guide" class="setup-guide-btn">
             <i class="fas fa-book-open"></i>
-            <span>Open ${brand("YukiOS Guide")}</span>
+            <span>Open YukiOS Guide</span>
           </button>
         </div>
       </div>
@@ -985,7 +985,7 @@ Here's what you picked:
 - Notifications: ${this.userChoices.notifications ? "On" : "Off"}
 
 Quick tips to get going:
-• Click the Start Menu to find 90 apps and 2900+ games
+• Click the Start Menu to find 90 apps and 3000+ games
 • Right-click the desktop when you need quick options
 • Tweak anything later in the Settings app
 
@@ -1016,7 +1016,6 @@ Have fun!`;
 
     this.os.app.triggerAchievement(Achievements.SetupComplete);
     os.window.close(win);
-    setTimeout(() => startIntroTour(), 600);
     this.untrackWindow("setup-wizard");
   }
 

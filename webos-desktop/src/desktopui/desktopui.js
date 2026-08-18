@@ -1,4 +1,4 @@
-import { updateFavoritesUI, setupStartMenu as setupStartMenuFn } from "./startMenu.js";
+import { updateFavoritesUI, setupStartMenu as setupStartMenuFn, isStartMenuBlocked } from "./startMenu.js";
 import { isIntroTourKeepingStartMenuOpen } from "../apps/introTour.js";
 import { desktop } from "./desktop.js";
 import { makeDraggable } from "../shared/dragUtils.js";
@@ -431,7 +431,7 @@ class IconDataHelper {
       photopea: resolveIconUrl("static/icons/photopea.webp"),
       vscode: resolveIconUrl("static/icons/vscode.webp"),
       liventcord: resolveIconUrl("static/icons/liventcord.webp"),
-      steamApp: resolveIconUrl("static/icons/steam.webp"),
+      steamApp: "fab fa-steam",
       return: resolveIconUrl("static/icons/file.webp")
     };
   }
@@ -899,6 +899,7 @@ export class DesktopUI {
   }
 
   toggleStartMenu() {
+    if (isStartMenuBlocked()) return;
     if (this.startMenu.style.display === "flex") {
       this.closeStartMenu();
     } else {

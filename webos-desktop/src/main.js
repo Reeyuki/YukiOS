@@ -4,7 +4,7 @@ import { AppLauncher } from "./appLauncher.js";
 import { BrowserApp } from "./apps/browser.js";
 import { NotepadApp } from "./apps/notepad.js";
 import { SystemUtilities } from "./system.js";
-import { setGameLauncher } from "./games/games.js";
+import { setGameLauncher, initSteamDataManagerCache } from "./games/games.js";
 import { FileSystemManager } from "./fs.js";
 import { setupStartMenu, toggleStartMenu } from "./desktopui/startMenu.js";
 import { DesktopUI } from "./desktopui/desktopui.js";
@@ -16,13 +16,11 @@ import { parseBool } from "./utils/utils.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
-
 import { setDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { registerPWA } from "./pwa/pwa.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
 import { ClipboardManager } from "./systemClipboardManager.js";
-
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
 import { appMap } from "./games/gamesList.js";
 import "./desktopui/taskbarPositionManager.js";
@@ -37,8 +35,11 @@ import { loadApps } from "./AppLoader.js";
 import { init } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $, createElement } from "./shared/domUtils.js";
+import { StorageKeys } from "./StorageKeys.js";
 import { showBootScreen } from "./bootScreen.js";
-import { initYuriEasterEgg, applyYuriTheme, isYuri } from "./easterYuri.js";
+import { playDeckBootVideo } from "./modes/steamdeck/deckBootVideo.js";
+import { SteamSettings } from "./games/steamSettings.js";
+import { deckCapture } from "./modes/steamdeck/deckCapture.js";
 import { checkAndShowDonationPopup } from "./donationPopup.js";
 import { initPopunder } from "./ads.js";
 import { bus } from "./core/EventBus.js";
@@ -78,11 +79,11 @@ os.clipboardManager = clipboardManager;
 new MacControlCenter();
 init();
 window.os = os;
+deckCapture.install();
 
-initYuriEasterEgg();
-applyYuriTheme();
-
-const boot = showBootScreen();
+const deckSessionSelected = os.storage.get(StorageKeys.selectedSession) === "Yuki Deck Mode";
+const deckBootEnabled = deckSessionSelected && SteamSettings.load().deckBootAnimation !== false;
+const boot = deckBootEnabled ? (playDeckBootVideo(), { hide: () => Promise.resolve() }) : showBootScreen();
 
 const preloaded = {};
 
@@ -120,13 +121,12 @@ const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app.reg
 os.setAppLauncher(appLauncher);
 windowManager.setAppLauncher(appLauncher);
 setGameLauncher(appLauncher);
+initSteamDataManagerCache();
 
 appLauncher.setEmulatorApp(os.app.getInstance("emulatorApp"));
 appLauncher.overlayController = null;
 
 appCreatorApp.restoreInstalledApps();
-
-const installedAppsApp = os.app.getInstance("installedAppsApp");
 
 const desktopUI = new DesktopUI(explorerApp);
 os.desktopUI = desktopUI;
@@ -138,6 +138,7 @@ setDesktopUI(desktopUI);
 const sessionManager = new SessionManager(os);
 os.app.register("sessionManager", sessionManager);
 const commandPalette = new CommandPalette(os);
+os.app.register("commandPalette", commandPalette);
 
 const menuBar = new MenuBarManager(os);
 

@@ -1,14 +1,16 @@
-import { modeManager, MODES } from "../../modeManager.js";
+import { MODES } from "../../modeManager.js";
 import { BusEvents } from "../../core/EventBus.js";
 import { StorageKeys, os } from "../../framework.js";
 import { $, createElement } from "../../shared/domUtils.js";
 import { applyTheme } from "../../settings/settingsApply.js";
 import { taskbarPositionManager } from "../../desktopui/taskbarPositionManager.js";
+import { SessionMode } from "../shared/sessionBase.js";
+
+const macSession = new SessionMode(MODES.MAC);
 
 export function applyMacSettings() {
-  modeManager.enter(MODES.MAC);
   os.storage.set(StorageKeys.dockEnabled, "true");
-  os.events.emit(BusEvents.SETTINGS_CHANGED, {});
+  macSession.enter();
   os.storage.set(StorageKeys.theme, "macos-fluent");
   applyTheme("macos-fluent", () => os.storage.get(StorageKeys.customColors) || null);
   os.storage.set(StorageKeys.taskbarPosition, "top");
@@ -24,7 +26,7 @@ export function applyMacSettings() {
 }
 
 export function disableMacSettings() {
-  modeManager.exit(MODES.MAC);
+  macSession.exit();
   os.storage.set(StorageKeys.dockEnabled, "false");
   os.events.emit(BusEvents.SETTINGS_CHANGED, {});
   const currentTheme = os.storage.get(StorageKeys.theme);

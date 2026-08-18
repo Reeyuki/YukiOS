@@ -687,21 +687,21 @@ export class CommandPalette {
         subtitle: "Switch between Quality, Balanced, and Performance",
         tag: "settings",
         icon: "fas fa-tachometer-alt",
-        execute: () => go("pane-system", "sc-general")
+        execute: () => go("pane-system-general", "sc-general")
       },
       {
         title: "Settings: Skip Boot Screen",
         subtitle: "Bypass login screen on startup",
         tag: "settings",
         icon: "fas fa-forward",
-        execute: () => go("pane-system", "settingsDisableBootScreen")
+        execute: () => go("pane-system-session", "settingsDisableBootScreen")
       },
       {
         title: "Settings: Notifications",
         subtitle: "DND, position, duration, animation",
         tag: "settings",
         icon: "fas fa-bell",
-        execute: () => go("pane-system", "settingsDND")
+        execute: () => go("pane-system-notifications", "settingsDND")
       },
       {
         title: "Settings: Taskbar Position",

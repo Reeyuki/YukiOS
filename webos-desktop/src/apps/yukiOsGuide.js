@@ -6,7 +6,7 @@ import { APP_DESCRIPTIONS, descriptionMap } from "../games/gameDescriptions.js";
 const gameDescriptions = descriptionMap;
 import "../styles/yukiOsGuide.css";
 import { $, $$ } from "../shared/domUtils.js";
-import { BaseApp, os, brand } from "../framework.js";
+import { BaseApp, os } from "../framework.js";
 import { buildTilingKeybindHTML } from "../tiling/TilingKeybindOverlay.js";
 import { startIntroTour } from "./introTour.js";
 
@@ -68,17 +68,10 @@ const SHOWCASE = [
     action: "cameraApp"
   },
   {
-    group: "Make something",
-    icon: "fas fa-cube",
-    title: "3D Models",
-    desc: "Open and orbit OBJ, GLTF, and GLB models in 3D.",
-    action: "model3dApp"
-  },
-  {
     group: "Play something",
     icon: "fab fa-steam",
-    title: "Steam",
-    desc: "Browse and launch 2900+ games from a full library.",
+    title: "Yuki Steam",
+    desc: "Browse and launch 3000+ games from a full library.",
     action: "steamApp"
   },
   {
@@ -106,7 +99,7 @@ export class YukiOsGuideApp extends BaseApp {
   }
 
   open(opts = {}) {
-    const win = os.window.create("yuki-os-guide", brand("YukiOS Guide"), "980px", "720px", {
+    const win = os.window.create("yuki-os-guide", "YukiOS Guide", "980px", "720px", {
       icon: "fas fa-book-open",
       appId: "yuki-os-guide"
     });
@@ -190,7 +183,7 @@ export class YukiOsGuideApp extends BaseApp {
             <i class="fas fa-rocket"></i>
           </div>
           <div class="guide-hero-content">
-            <h1>${brand("Welcome to YukiOS")}</h1>
+            <h1>Welcome to YukiOS</h1>
             <p class="guide-tagline">A full desktop inside one browser tab. No installs, nothing to block, everything saved.</p>
             <p class="guide-blurb">Everything on this page is real and running right now. Drag windows, browse the web, open a terminal, or boot a retro game, then close the tab and come back later. It all remembers.</p>
             <button class="guide-tour-btn" type="button"><i class="fas fa-play"></i> Take the 60-second tour</button>
@@ -481,7 +474,6 @@ export class YukiOsGuideApp extends BaseApp {
       clipboardManagerApp: "system",
 
       cameraApp: "media",
-      model3dApp: "media",
       paint: "media",
       photopea: "media",
       youtube: "media",
@@ -505,7 +497,7 @@ export class YukiOsGuideApp extends BaseApp {
       aboutApp: "system",
       achievementsApp: "system",
 
-      installedAppsApp: "system",
+      systemAppsApp: "system",
       yukiOsGuideApp: "system"
     };
 

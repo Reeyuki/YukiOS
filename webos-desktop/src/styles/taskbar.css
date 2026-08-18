@@ -1114,25 +1114,6 @@ html.mac-mode .desktop-peek-btn {
   color: var(--text-secondary);
 }
 
-.brightness-time-input-small {
-  padding: 4px 6px;
-  background: var(--surface-2);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--r-xs);
-  color: var(--text-primary);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  outline: none;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.brightness-time-input-small:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
-}
-
 .brightness-reset-btn-small {
   width: 100%;
   padding: var(--spacing-sm);
@@ -1430,7 +1411,7 @@ html.mac-mode .desktop-peek-btn {
 
 #display-performance-tray-popup .brightness-night-mode-row {
   display: grid;
-  grid-template-columns: minmax(74px, 1fr) 44px repeat(2, minmax(82px, 1fr));
+  grid-template-columns: 1fr 44px;
   align-items: center;
   gap: var(--spacing-sm);
 }
@@ -1439,14 +1420,6 @@ html.mac-mode .desktop-peek-btn {
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-secondary);
-}
-
-#display-performance-tray-popup .brightness-time-input-small {
-  width: 100%;
-  min-width: 0;
-  height: 28px;
-  padding: 4px 6px;
-  appearance: none;
 }
 
 #display-performance-tray-popup .brightness-reset-btn-small {
@@ -1470,11 +1443,7 @@ html.mac-mode .desktop-peek-btn {
   }
 
   #display-performance-tray-popup .brightness-night-mode-row {
-    grid-template-columns: minmax(0, 1fr) 44px;
-  }
-
-  #display-performance-tray-popup .brightness-time-input-small {
-    grid-column: span 1;
+    grid-template-columns: 1fr 44px;
   }
 }
 

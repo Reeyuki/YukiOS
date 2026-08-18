@@ -90,6 +90,8 @@ export const descriptionMap = {
     "Deltarune is an episodic RPG by Toby Fox, the creator of Undertale, with the first chapter released in 2018. Players follow Kris and friends through alternate worlds in a story that builds on Undertale's universe with new mechanics and themes.",
   balatro:
     "Balatro is a 2024 poker-based roguelike deckbuilder developed solo by LocalThunk. Players build poker hands enhanced by joker cards that warp the rules into chaotic and creative scoring combos.",
+  balatroModded:
+    "Balatro modded is a modified version of the poker roguelike deckbuilder with additional content, custom jokers, and enhanced gameplay features.",
   brotato:
     "Brotato is a 2023 top-down arena roguelite by Blobfish. Players control a potato wielding up to six weapons at once, surviving short waves of aliens with auto-firing combat and rapid build experimentation.",
   brotatoPaws:
@@ -338,7 +340,6 @@ export const descriptionMap = {
     "Grab your wand and help fend off a ghostly catastrophe. In this Doodle you'll swipe spells, save your friends, and help restore the peace at the Magic Cat Academy.",
   halfLife:
     "Half-Life is a 1998 first-person shooter by Valve. Players control physicist Gordon Freeman as he fights aliens and a shadowy military force after a research experiment goes catastrophically wrong.",
-  cs: "Counter-Strike is a competitive team-based first-person shooter originally released in 2000 as a Half-Life mod by Minh Le and Jess Cliffe. Terrorists and counter-terrorists face off across iconic maps.",
   angryBirdsOnline:
     "Angry Birds is a 2009 physics puzzle game by Rovio Entertainment. Players slingshot wingless birds at fortresses built by green pigs to recover stolen eggs.",
   angryBirdsChrome:
@@ -420,7 +421,6 @@ export const descriptionMap = {
   vscode:
     "Visual Studio Code is a free, lightweight code editor by Microsoft, released in 2015. It supports virtually every programming language with extensions, debugging, and integrated Git.",
   yukiCode: "A Monaco-powered code editor built into YukiOS, based on the same engine that runs Visual Studio Code.",
-  model3dApp: "Inspect and rotate 3D models including .obj, .glb, and more with full lighting and camera controls.",
   jsDosApp:
     "JsDos is a JavaScript port of the DOSBox emulator, allowing classic DOS programs and games to run natively inside a web browser.",
   v86app:

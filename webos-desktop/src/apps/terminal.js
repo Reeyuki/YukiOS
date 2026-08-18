@@ -79,7 +79,7 @@ export class TerminalApp extends BaseApp {
       terminalInputLine: null,
       terminalContent: null,
       terminalTabsEl: null,
-      tabs: [{ id: 1, currentPath: [...initialPath], outputHTML: "" }],
+      tabs: [{ id: 1, currentPath: [...initialPath], outputHTML: "", commands: [] }],
       activeTabId: 1,
       tabCounter: 1,
       currentPath: [...initialPath],
@@ -394,7 +394,7 @@ export class TerminalApp extends BaseApp {
     const isTiling = os.modes.isActive(MODES.TILING);
     for (const state of this.windowsMap.values()) {
       if (state.terminalTabsEl) {
-        state.terminalTabsEl.classList.toggle("hidden", isTiling);
+        state.terminalTabsEl.classList.toggle("hidden", isTiling || state.tabs.length <= 1);
       }
     }
   }
@@ -447,7 +447,7 @@ export class TerminalApp extends BaseApp {
     this.terminalInputLine = win.querySelector("#terminal-input-line");
     this.terminalContent = win.querySelector(".terminal-content");
     this.terminalTabsEl = win.querySelector("#terminal-tabs");
-    this.tabs = [{ id: 1, currentPath: [...this.currentPath], outputHTML: "" }];
+    this.tabs = [{ id: 1, currentPath: [...this.currentPath], outputHTML: "", commands: [] }];
     this.activeTabId = 1;
     this.tabCounter = 1;
     this.renderTabs();
@@ -874,7 +874,7 @@ export class TerminalApp extends BaseApp {
   newTab() {
     this.snapshotActiveTab();
     const id = ++this.tabCounter;
-    const tab = { id, currentPath: ["home", this.displayName], outputHTML: "" };
+    const tab = { id, currentPath: ["home", this.displayName], outputHTML: "", commands: [] };
     this.tabs.push(tab);
     this.activeTabId = id;
     this.currentPath = [...tab.currentPath];
@@ -927,13 +927,17 @@ export class TerminalApp extends BaseApp {
     const state = this.activeState;
     if (!state || !state.terminalTabsEl) return;
     state.terminalTabsEl.innerHTML = "";
+    state.terminalTabsEl.classList.toggle("hidden", state.tabs.length <= 1);
 
     state.tabs.forEach((tab, i) => {
       const el = createElement("div");
       el.className = "terminal-tab" + (tab.id === state.activeTabId ? " active" : "");
+      el.style.flex = "1 1 0";
+      el.style.minWidth = "0";
 
       const label = createElement("span");
-      label.textContent = `Tab ${i + 1}`;
+      label.className = "terminal-tab-label";
+      label.textContent = tab.commands.length ? tab.commands.join(" ") : `Tab ${i + 1}`;
       el.appendChild(label);
 
       const closeBtn = createElement("span");
@@ -1432,6 +1436,14 @@ export class TerminalApp extends BaseApp {
   async executeCommand(commandStr) {
     const state = this.activeState;
     if (!state) return;
+    const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+    if (activeTab) {
+      const name = commandStr.trim().split(/\s+/)[0];
+      if (name && name !== activeTab.commands[activeTab.commands.length - 1]) {
+        activeTab.commands.push(name);
+        this.renderTabs();
+      }
+    }
     os.events.emit(BusEvents.TERMINAL_CMD_EXECUTED, { command: commandStr });
     await this.enqueuePrint(commandStr, null, true, this.promptHtml());
 
@@ -3822,10 +3834,10 @@ export class TerminalApp extends BaseApp {
       ["logout", "Sign out and return to login screen"],
       ["signout", "Sign out and return to login screen"],
       ["exit", "Close the terminal"],
-      ["yuki", "OS control command — see 'yuki help'"],
+      ["yuki", "OS control command - see 'yuki help'"],
       ["notepad", "Edit a file in Notepad"],
       ["vim/nano/gedit", "Aliases for notepad"],
-      ["hyprctl", "Hyprland-style window manager control — see 'hyprctl help'"],
+      ["hyprctl", "Hyprland-style window manager control - see 'hyprctl help'"],
       ["movefocus", "Move focus to neighbor window (<l|r|u|d>)"],
       ["swapwindow", "Swap focused window with neighbor (<l|r|u|d>)"],
       ["togglefloating", "Toggle floating mode for focused window"],

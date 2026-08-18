@@ -275,7 +275,7 @@ export class MapsApp extends BaseApp {
     const wispUrl = getWispUrl();
     return (
       window.location.origin +
-      "/scramapps/scramjet-template.html?wisp=" +
+      "/sapps/set-template.html?wisp=" +
       encodeURIComponent(wispUrl) +
       "&target=" +
       encodeURIComponent("https://www.google.com/maps")

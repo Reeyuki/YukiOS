@@ -432,7 +432,9 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
   }
 
   const root = document.documentElement;
-  const taskbarH = getComputedStyle(root).getPropertyValue("--taskbar-h").trim() || "3.2em";
+  const taskbarH = taskbar
+    ? `${taskbar.getBoundingClientRect().height}px`
+    : getComputedStyle(root).getPropertyValue("--taskbar-h").trim() || "3.2em";
 
   let tilingBarH = "0px";
   let tilingBarTop = "0px";
@@ -441,6 +443,8 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
     tilingBarH = getComputedStyle(tilingBar).height || "38px";
     tilingBarTop = tilingBar.classList.contains("position-bottom") ? "0px" : tilingBarH;
   }
+
+  const topOffset = taskbarPosition === "top" ? `calc(${taskbarH} + ${tilingBarTop})` : tilingBarTop;
 
   let availableWidth, availableHeight;
 
@@ -457,49 +461,49 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
 
   if (zone === "maximize") {
     Object.assign(win.style, {
-      top: tilingBarTop,
+      top: topOffset,
       left: "0",
       width: availableWidth,
       height: availableHeight
     });
   } else if (zone === "left") {
     Object.assign(win.style, {
-      top: "0",
+      top: topOffset,
       left: "0",
       width: halfW,
       height: availableHeight
     });
   } else if (zone === "right") {
     Object.assign(win.style, {
-      top: "0",
+      top: topOffset,
       left: halfW,
       width: halfW,
       height: availableHeight
     });
   } else if (zone === "top-left") {
     Object.assign(win.style, {
-      top: "0",
+      top: topOffset,
       left: "0",
       width: halfW,
       height: halfH
     });
   } else if (zone === "top-right") {
     Object.assign(win.style, {
-      top: "0",
+      top: topOffset,
       left: halfW,
       width: halfW,
       height: halfH
     });
   } else if (zone === "bottom-left") {
     Object.assign(win.style, {
-      top: halfH,
+      top: `calc(${topOffset} + ${halfH})`,
       left: "0",
       width: halfW,
       height: halfH
     });
   } else if (zone === "bottom-right") {
     Object.assign(win.style, {
-      top: halfH,
+      top: `calc(${topOffset} + ${halfH})`,
       left: halfW,
       width: halfW,
       height: halfH

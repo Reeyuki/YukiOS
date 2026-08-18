@@ -7,9 +7,9 @@ export const appMap = {
   },
   deltaruneCh5: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/mynamescrax/gamesforaetheris/drch5/runner.html",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/deltarunefull.html",
     icon: "/static/icons/deltarune.png",
-    title: "Deltarune CH5"
+    title: "Deltarune CH1-5"
   },
   slimeRancher: {
     type: "game",
@@ -94,6 +94,12 @@ export const appMap = {
     url: "/static/games/html/star.html",
     icon: "/static/icons/star.webp",
     title: "In Stars And Time"
+  },
+  sixSeconds: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/usheje883-maker/60-Seconds-Webport@main/index.html",
+    icon: "/static/icons/60seconds.webp",
+    title: "60 Seconds"
   },
   baldiBalds: {
     type: "game",
@@ -216,6 +222,13 @@ export const appMap = {
     icon: "/static/icons/balatro.webp",
     title: "Balatro"
   },
+  balatroModded: {
+    type: "game",
+    url: "https://truffled.lol/games/balatromodded/",
+    icon: "/static/icons/balatro.webp",
+    title: "Balatro modded",
+    scramjetEnabled: true
+  },
   brotato: {
     type: "game",
     url: "/static/games/html/brotato.html",
@@ -305,6 +318,12 @@ export const appMap = {
     swf: "/static/games/swfGames/balloonstd5.swf",
     icon: "/static/icons/balloonstd5.webp",
     title: "Balloons TD 5"
+  },
+  zuma: {
+    type: "swf",
+    swf: "/static/games/swfGames/zuma.swf",
+    icon: "/static/icons/zuma.webp",
+    title: "Zuma"
   },
   BalloonsTd6: {
     type: "game",
@@ -922,18 +941,6 @@ export const appMap = {
     url: "https://doodle-halloween-momo-cat--academy.games.playgama.net/cmj06y04k00r8nv0h6m63h9pc/index.html",
     icon: "/static/icons/doodle.webp",
     title: "Doodle Halloween Cat"
-  },
-  halfLife2: {
-    type: "game",
-    url: "https://hl2.slqnt.dev",
-    icon: "/static/icons/half.webp",
-    title: "Half Life 2"
-  },
-  portal: {
-    type: "game",
-    url: "https://yikes.pw/portal/",
-    icon: "/static/icons/portal.webp",
-    title: "Portal"
   },
   cs: {
     type: "game",

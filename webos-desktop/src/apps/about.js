@@ -1,6 +1,6 @@
 import "../styles/about.css";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
-import { BaseApp, os, StorageKeys, brand } from "../framework.js";
+import { BaseApp, os, StorageKeys } from "../framework.js";
 import { bindEvent, $ } from "../shared/domUtils.js";
 import versionTxt from "../../version.txt?raw";
 export const YUKIOS_VERSION = versionTxt.trim();
@@ -19,7 +19,7 @@ const capabilities = [
   {
     tag: "PLAY",
     title: "Games Library",
-    desc: "2900+ games via Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
+    desc: "3000+ games via Yuki Steam integration, Flash (Ruffle), DOS (JS-DOS), and console emulation."
   },
   {
     tag: "APPS",
@@ -39,7 +39,7 @@ const capabilities = [
 ];
 
 const privacyText = `
-  ${brand("YukiOS")} collects limited anonymous analytics to help improve stability and usage insights.
+  YukiOS collects limited anonymous analytics to help improve stability and usage insights.
 
   Collected data:
   • App launches and feature usage
@@ -55,13 +55,13 @@ const privacyText = `
   • Understanding feature usage
   • Diagnosing issues and errors
 
-  ${brand("YukiOS")} does not sell user data or share it with advertisers.
+  YukiOS does not sell user data or share it with advertisers.
 `;
 
 const copyrightText = `
   Copyright & Takedown Requests
 
-  ${brand("YukiOS")} doesn't host any copyrighted content. Games and apps are loaded from their original sources or CDNs.
+  YukiOS doesn't host any copyrighted content. Games and apps are loaded from their original sources or CDNs.
 
   If you believe something here violates your rights, contact us at:
 
@@ -75,7 +75,7 @@ export class AboutApp extends BaseApp {
   }
 
   open(opts = {}) {
-    const win = os.window.create("about-yukios", brand("About YukiOS"), "720px", "85vh", {
+    const win = os.window.create("about-yukios", "About YukiOS", "720px", "85vh", {
       icon: "fa fa-circle-info"
     });
 
@@ -86,7 +86,7 @@ export class AboutApp extends BaseApp {
           <div class="abx-top">
             <div class="abx-mark">
               <img class="abx-badge" src="${resolveIconUrl("static/icons/logo.png")}">
-              <h1 class="abx-title">${brand("YukiOS")}</h1>
+              <h1 class="abx-title">YukiOS</h1>
               <p class="abx-sub">
                 A browser-based desktop with apps, games, emulators, and a virtual filesystem.
               </p>
@@ -153,7 +153,7 @@ export class AboutApp extends BaseApp {
             </div>
 
             <div class="abx-panel">
-              <div class="abx-panel-h">${brand("Support YukiOS")}</div>
+              <div class="abx-panel-h">Support YukiOS</div>
               <div class="abx-panel-b">
                 <div class="abx-sponsor">
                   <div class="abx-sponsor-icon">
@@ -161,7 +161,7 @@ export class AboutApp extends BaseApp {
                   </div>
                   <div class="abx-sponsor-content">
                     <div class="abx-sponsor-title">Become a Sponsor</div>
-                    <div class="abx-sponsor-desc">${brand("Help keep YukiOS free and open source. Your support directly funds development.")}</div>
+                    <div class="abx-sponsor-desc">Help keep YukiOS free and open source. Your support directly funds development.</div>
                     <div class="abx-sponsor-buttons">
                       <a href="https://www.patreon.com/Reeyuki" target="_blank" rel="noopener noreferrer" class="abx-sponsor-btn abx-sponsor-btn-patreon"><i class="fab fa-patreon"></i> Patreon</a>
                       <span class="abx-sponsor-btn abx-sponsor-btn-monero" id="about-monero-btn" style="cursor:pointer;">

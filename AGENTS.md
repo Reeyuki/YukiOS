@@ -11,10 +11,10 @@ You are working under webos-desktop directory. when src is mentioned it means we
 - Before finalizing any code changes, run `pnpm build:dev` in `webos-desktop/`. A change that breaks the build is
   incomplete.
 - Always use CSS variables from `src/styles/style.css`. Never hardcode colors.
-- When making significant changes, new features, or new apps: you must register them in src/news.js with an icon, title,
-  and a punchy, active-voice description under 15 words. Bad: 'First-time setup now includes a dedicated profile
-  step...' Good: 'Choose your nickname and avatar during setup, with a quick final preview!'. it should not have
-  punchlines or seperating sentences with "—" or "-"
+- When making significant changes, new features, or new apps: add a news entry to the `EXISTING_NEWS_UPDATES` array in
+  `src/apps/news.js` with a date, label, and a punchy, active-voice description under 15 words. Bad: 'First-time setup
+  now includes a dedicated profile step...' Good: 'Choose your nickname and avatar during setup, with a quick final
+  preview!'. It should not have punchlines or separating sentences with "—" or "-"
 - When adding a new app, add a `description` field to its manifest entry in `src/registry/AppManifest.js`
 - Always use StorageKeys from `src/StorageKeys.js` for localStorage access. Never hardcode localStorage key strings.
 - Always use `src/framework.js` barrel for app-level imports. When writing a new app, import
@@ -49,6 +49,10 @@ You are working under webos-desktop directory. when src is mentioned it means we
   must enumerate exactly which files it should edit and what changes to make. Group files by ownership/subsystem to
   avoid two agents editing the same file. Example: for a 12-file change, launch 4 sub-agents of 3 files each, not 1
   sub-agent with all 12 files.
+- This rule applies to SUBSTANTIAL changes only (new features, multi-step edits, or diffs that meaningfully add
+  context). Trivial edits — adding a one-line method call, inserting a single guard, renaming a reference, touching 2-3
+  files with a few lines each — may be done directly from your own context. Do not spawn sub-agents for edits that
+  take under a few seconds of work.
 
 ---
 
@@ -130,23 +134,37 @@ When a file exceeds these sizes:
 ```
 main.js initializes services
     ↓
-Services Container (WindowManager, FileSystemManager, NotificationCenter, EventBus)
+Services (WindowManager, FileSystemManager, NotificationCenter, EventBus, TrayManager, PortManager)
     ↓
-40+ Applications (all inherit BaseApp, receive injected services)
+60+ Applications (all inherit BaseApp, receive injected services)
     ↓
 Desktop UI renders windows, taskbar, start menu
 ```
 
+The codebase is modular — facades delegate to sub-directories:
+
+- `windowManager.js` + `windowManager/` — window lifecycle, taskbar, workspaces, snapping, tiling layout
+- `desktopui/` — desktop, start menu, widgets, icon manager, drag & drop
+- `fs.js` + `fs/` — IndexedDB/Electron filesystem, blob storage, trash, mounts
+- `core/` — `BaseApp`, `ScramjetBaseApp`, `ScramjetWebAppFactory`, `EventBus`, `WindowRecord`
+- `os/` — the `os.*` bridge API surface (`OSBridge.js`, `window.js`, `fs.js`, `dialog.js`, `storage.js`, `modes.js`)
+- `services/` — `PortManager`, `ProcessManager`, `BatteryPerformanceManager`, `GitManager`, `PyodideManager`,
+  `WebContainerManager`
+- `modes/` — `macos/`, `chromeos/`, `steamdeck/`, `tiling/` session modes
+- `games/` — `gamesList`, `gameDescriptions`, `GameLauncher`, `GameRenderer`, `GameUI`, `steam`
+- `terminal/` — shell parser/interpreter, ANSI renderer, python http.server
+- `shared/` — DOM utils, dialogs, asset resolver, theme engine, file kind detection
+
 **App lifecycle:**
 
 1. **Definition** - App class created in `src/apps/`
-2. **Registration** - App added to `APP_DEFINITIONS` in `AppLoader.js` and metadata to `APP_MANIFESTS` in
+2. **Registration** - App added to `APP_CLASS_MAP` in `AppLoader.js` and metadata to `APP_MANIFESTS` in
    `src/registry/AppManifest.js`
-3. **Instantiation** - `loadApps(services)` in `main.js` instantiates all registered apps and attaches to `services`
-   object
+3. **Instantiation** - `loadApps(os, preloaded)` in `AppLoader.js` creates one singleton instance per manifest entry and
+   registers it via `os.app.register(key, instance)`
 4. **Launch** - `AppLauncher.launch(appId)` dispatches
-5. **Open** - `app.open()` creates window via `WindowManager`
-6. **Close** - `onClose(winId)` cleanup hook called
+5. **Open** - `app.open()` creates window via `os.window.create()`
+6. **Close** - `onClose(winId)` cleanup hook called; the window element fires a `remove` event
 
 ---
 
@@ -156,58 +174,74 @@ The OS Bridge provides a unified API surface for applications to interact with s
 accessing kernel services (WindowManager, FileSystemManager, NotificationCenter, EventBus, TrayManager, AppLauncher),
 apps should use the `os.*` bridge.
 
-**Import:**
+**Import (preferred):**
 
 ```javascript
-import { os } from "./os/index.js";
+import { os } from "../framework.js";
 ```
 
 ### Window API - `os.window`
 
-| Method                                      | Purpose                                     |
-| ------------------------------------------- | ------------------------------------------- |
-| `create(id, title, width, height, options)` | Create styled window element                |
-| `close(win)`                                | Close window, cleanup, remove taskbar entry |
-| `focus(win)`                                | Raise z-index, focus window                 |
-| `minimize(win)`                             | Hide window, mark taskbar minimized         |
-| `maximize(win)`                             | Expand/restore window                       |
-| `bringToFront(win)`                         | Raise z-index, focus window                 |
-| `addToTaskbar(winId, title, icon, color)`   | Add window to taskbar                       |
-| `removeFromTaskbar(winId)`                  | Remove window from taskbar                  |
-| `getWindowControls(externalUrl)`            | Get window control buttons HTML             |
+| Method                                          | Purpose                                                   |
+| ----------------------------------------------- | --------------------------------------------------------- |
+| `create(id, title, width, height, options)`     | Create styled window (auto-mounts, adds to taskbar)       |
+| `close(win)`                                    | Close window (accepts element or id string)               |
+| `closeAll()`                                    | Close all open windows                                    |
+| `focus(win)` / `bringToFront(win)`              | Raise z-index, focus window                               |
+| `minimize(win)`                                 | Hide window, mark taskbar minimized                       |
+| `maximize(win)` / `toggleFullscreen(win)`       | Expand/restore window (fullscreen)                        |
+| `setTitle(winId, title)` / `getTitle(winId)`    | Set / read window title                                   |
+| `addToTaskbar(winId, title, icon, color)`       | Add window to taskbar                                     |
+| `removeFromTaskbar(winId)`                      | Remove window from taskbar                                |
+| `pinAppToTaskbar(appId, title, icon, color)`    | Pin an app to the taskbar                                 |
+| `getWindowControls(externalUrl, showDownload)`  | Get window control buttons HTML                           |
+| `applySnap(win, direction)` / `unsnap(win)`     | Snap / unsnap a window                                    |
+| `getOpenWindows()`                              | Get the Map of open windows                               |
+| `setupWindowControls(win)` / `makeDraggable(win)` / `makeResizable(win)` | Manual window setup helpers            |
+| `notify(title, message, type, duration, icon, appSource)` | Send notification via window manager               |
+| `waitFor(win, condition, callback, timeoutMs)`  | Run callback once a MutationObserver condition matches    |
+
+**`create()` options:** `{ icon, iconColor, externalUrl, appId, isGame, autoMount, autoFocus, skipHeader, skipAutoSetup }`
 
 ### Filesystem API - `os.fs`
 
-| Method                                                | Purpose                                                |
-| ----------------------------------------------------- | ------------------------------------------------------ |
-| `read(path, options)`                                 | Read file content (options: { encoding: "binary" })    |
-| `write(path, content, options)`                       | Write file content (options: { encoding, kind, icon }) |
-| `readdir(path)`                                       | Get directory contents                                 |
-| `mkdir(path)`                                         | Create directory recursively                           |
-| `delete(path, name)`                                  | Delete file or directory                               |
-| `exists(path)`                                        | Check if path exists                                   |
-| `copy(source, destination)`                           | Copy file/directory                                    |
-| `rename(oldPath, newPath)`                            | Rename file/directory                                  |
-| `isFile(path)`                                        | Check if path is a file                                |
-| `getFileKind(path)`                                   | Get file kind/metadata                                 |
-| `getFileIcon(path)`                                   | Get file icon path                                     |
-| `writeBinaryFile(path, name, blob, kind, icon)`       | Write binary file to blob storage                      |
-| `readBinaryFile(path, name)`                          | Read binary file from blob storage                     |
-| `deleteBinaryFile(path, name)`                        | Delete binary file from blob storage                   |
-| `renameBinaryFile(path, oldName, newName)`            | Rename binary file in blob storage                     |
-| `createFile(path, name, content, kind, icon, faIcon)` | Create file                                            |
-| `createFolder(path, name)`                            | Create folder                                          |
-| `deleteItem(path, name)`                              | Delete item (file or folder)                           |
-| `renameItem(path, oldName, newName)`                  | Rename item                                            |
-| `updateFile(path, name, content, meta)`               | Update file                                            |
+| Method                                                       | Purpose                                                  |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| `read(path, options)`                                        | Read file content (options: `{ encoding: "binary" }`)    |
+| `write(path, content, options)`                              | Write file content (options: `{ encoding, kind, icon }`) |
+| `readdir(path)` / `getFolder(path)`                          | Get directory contents                                   |
+| `mkdir(path)`                                                | Create directory recursively                             |
+| `delete(path, name)`                                         | Delete file or directory                                 |
+| `exists(path)`                                               | Check if path exists                                     |
+| `copy(source, destination)`                                  | Copy file/directory                                      |
+| `rename(oldPath, newPath)`                                   | Rename file/directory                                    |
+| `isFile(path)`                                               | Check if path is a file                                  |
+| `getFileKind(path)` / `getFileIcon(path)`                    | Get file kind / icon metadata                            |
+| `getMetadata(path, name)` / `writeMeta(path, name, data)`    | Read / write item metadata                               |
+| `createFile(path, name, content, kind, icon, faIcon)`        | Create file                                              |
+| `createFolder(path, name)`                                   | Create folder                                            |
+| `deleteItem(path, name)`                                     | Delete item (file or folder)                             |
+| `renameItem(path, oldName, newName)`                         | Rename item                                              |
+| `updateFile(path, name, content, meta)`                      | Update file (meta: `{ kind, icon }`)                     |
+| `trashFile(path, name)`                                      | Move item to trash                                       |
+| `getTrashItems()` / `restoreTrashItem(id)` / `restoreAllTrashItems()` / `deleteTrashItem(id)` / `emptyTrash()` / `getTrashCount()` | Trash management                    |
+| `writeBinaryFile(path, name, blob, kind, icon)`              | Write binary file to blob storage                        |
+| `readBinaryFile(path, name)` / `deleteBinaryFile(path, name)` / `renameBinaryFile(path, oldName, newName)` | Binary blob operations                 |
+| `calcDirSize(path)`                                          | Recursively compute `{ size, files, dirs }`              |
+| `getUniqueFileName(path, name)`                              | Generate a non-colliding file name                       |
+| `dirname(path)` / `basename(path)` / `join(...parts)` / `resolveUserPath(path)` / `inferKind(filename)` | Path helpers                   |
+| `pickDirectory()` / `registerMount(handle, label)` / `unmount(label)` / `getMounts()` | Native mount support          |
+| `mountISO(path, name)` / `unmountISO(label)` / `getISOMounts()` | ISO image mounts                                   |
+| `setSession(name)`                                           | Switch the active user session                           |
+| `getFileContent(path, name)`                                 | Read file content (with kind)                            |
 
-**Note:** Binary file methods use blob storage and require separate `name` parameter.
+**Note:** Binary file methods use blob storage and require a separate `name` parameter.
 
 ### Notification API - `os.notify`
 
 | Method                          | Purpose                                                                |
 | ------------------------------- | ---------------------------------------------------------------------- |
-| `send(title, message, options)` | Show toast notification (options: { type, duration, icon, appSource }) |
+| `send(title, message, options)` | Show toast notification (options: `{ type, duration, icon, appSource }`) |
 | `clear(id)`                     | Clear specific notification by ID                                      |
 | `clearAll()`                    | Clear all notifications                                                |
 | `getAll()`                      | Get all notifications                                                  |
@@ -226,48 +260,60 @@ import { os } from "./os/index.js";
 | `updateContextMenuItems(winId, items)`  | Update context menu items               |
 | `sendToTray(winId)`                     | Hide window + taskbar → tray            |
 | `restoreFromTray(winId)`                | Restore window + taskbar from tray      |
-| `getTrayItems()`                        | Get Map of all tray items (raw)         |
-| `getAllItems()`                         | Get array of all tray items (formatted) |
-| `updateItemVisibility(winId, visible)`  | Update item visibility                  |
+| `getTrayItems()`                        | Get Map of all tray items               |
 | `isRegistered(winId)`                   | Check if window is registered           |
+| `isInTray(winId)`                       | Check if window is currently in tray    |
+| `updateItemVisibility(winId, visible)`  | Update item visibility                  |
 
-## Tray Register options:
+**Tray Register options:**
 
 - `resident: boolean` - App stays in tray permanently (cannot be restored to window)
 - `showInTray: boolean` - App shows in tray icon area
 - `onClick: function` - Callback when tray icon clicked
 - `onQuit: function` - Callback when app is quit from tray
-- `contextMenuItems: array` - Custom context menu items (objects with label, action, icon, type)
+- `contextMenuItems: array` - Custom context menu items (objects with `label`, `action`, `icon`, `type`)
 - `priority: number` - Sorting priority (higher = more prominent)
 
 ### App API - `os.app`
 
-| Method                              | Purpose                      |
-| ----------------------------------- | ---------------------------- |
-| `launch(appId, options)`            | Launch app by ID             |
-| `launchGame(appId, isSwf, options)` | Launch game with SWF support |
-| `close(winId)`                      | Close app by window ID       |
-| `getRunningApps()`                  | Get list of running apps     |
-| `getAllApps()`                      | Get all registered apps      |
-| `getAppInfo(appId)`                 | Get app metadata             |
-| `hasApp(appId)`                     | Check if app is registered   |
-| `searchApps(query)`                 | Search apps by title         |
+| Method                                          | Purpose                                     |
+| ----------------------------------------------- | ------------------------------------------- |
+| `launch(appId, options)`                        | Launch app by ID                            |
+| `launchGame(appId, isSwf, options)`             | Launch game with SWF support                |
+| `openIframeApp(options)`                        | Open an iframe-based web app                |
+| `close(winId)`                                  | Close app by window ID                      |
+| `getInstance(key)` / `register(key, instance)`  | Get / register app instance by service key  |
+| `getRunningApps()`                              | Get list of running apps                    |
+| `getAllApps()`                                  | Get all registered apps                     |
+| `getAppInfo(appId)` / `hasApp(appId)`           | Get app metadata / existence check          |
+| `searchApps(query)`                             | Search apps by title                        |
+| `lockSession()` / `lockToLoginScreen()`         | Lock the current session                    |
+| `triggerAchievement(id)`                        | Trigger an achievement                      |
+| `executeCommand(cmd)`                           | Run a command in the terminal               |
+| `setClipboardContent(value)`                    | Write to the clipboard manager              |
+| `takeScreenshot(autoCapture)`                   | Open screenshot app / capture               |
+| `registerCustomApp(appId, entry)` / `unregisterCustomApp(appId)` | Manage custom apps           |
+| `registerAppRuntime(appId, instance)` / `unregisterAppRuntime(appId)` | Runtime registry       |
+| `openFileInApp(name, path)`                     | Open a file in its default app              |
 
 ### Events API - `os.events`
 
-| Method                 | Purpose                                        |
-| ---------------------- | ---------------------------------------------- |
-| `on(event, handler)`   | Register listener                              |
-| `off(event, handler)`  | Unregister listener                            |
-| `emit(event, data)`    | Fire event to all listeners                    |
-| `once(event, handler)` | Register one-time listener                     |
-| `clear(event)`         | Clear all listeners for an event or all events |
-| `listenerCount(event)` | Get listener count for an event                |
+| Method                 | Purpose              |
+| ---------------------- | -------------------- |
+| `on(event, handler)`   | Register listener    |
+| `off(event, handler)`  | Unregister listener  |
+| `emit(event, data)`    | Fire event           |
+| `once(event, handler)` | Register one-time listener |
 
-**Standard events:** `SETTINGS_CHANGED`, `WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_CLOSED`, `FILE_CHANGED`,
-`SESSION_INITIALIZED`, `AI_ACTION_EXECUTED`
+Use `BusEvents` constants from `src/core/EventBus.js` (re-exported by `framework.js`) instead of raw strings:
+`WINDOW_CREATED`, `WINDOW_FOCUSED`, `WINDOW_MINIMIZED`, `WINDOW_CLOSED`, `WINDOW_FULLSCREEN`, `WINDOW_SNAPPED`,
+`SETTINGS_CHANGED`, `APP_LAUNCHED`, `NOTIFY`, `ACHIEVEMENT_TRIGGER`, `TERMINAL_CMD_EXECUTED`, `WALLPAPER_CHANGED`,
+`LOGIN_WALLPAPER_CHANGED`, `DESKTOP_ICON_ADDED`, `DESKTOP_ICON_REMOVED`, `WORKSPACE_SWITCHED`, `WORKSPACE_ADDED`,
+`WORKSPACE_REMOVED`, `FILE_CHANGED`, `SESSION_INITIALIZED`, `SYSTEM_LOCKED`, `SYSTEM_UNLOCKED`, `CLIPBOARD_UPDATE`,
+`CLIPBOARD_READ`, `CLIPBOARD_CLEAR`, `PROFILE_UPDATED`, `SOCIAL_PRESENCE_CHANGED`, `SOCIAL_DND_CHANGED`,
+`TILING_MODE_CHANGED`, `TILING_LAYOUT_CHANGED`, `MODE_ENTERED`, `MODE_EXITED`
 
-### Storage API - `os.storage`
+### Storage API - `os.storage` (synchronous)
 
 | Method            | Purpose                        |
 | ----------------- | ------------------------------ |
@@ -292,6 +338,48 @@ import { os } from "./os/index.js";
 
 **Never use browser native alerts, prompts, or confirms. Always use `os.dialog.*`.**
 
+### Ports API - `os.ports`
+
+Named local ports for inter-app messaging (backed by `services/PortManager.js`):
+`register(port, handler, root)`, `unregister(port)`, `get(port)`, `isRegistered(port)`, `list()`
+
+### Tor API - `os.tor`
+
+Anonymized networking through Tor (backed by `tor/TorManager.js`):
+`isReady`, `running`, `fetch(url)`, `post(url, body)`, `request(method, url, headers, body, timeout)`,
+`createClient()`, `getStatus()`, `start(options)`, `stop()`, `getLogs()`, `getSnowflakeUrl()`,
+`setSnowflakeUrl(url)`, `getFetchCount()`, `reconnect()`
+
+### Tiling API - `os.tiling`
+
+Window tiling mode control (backed by `modes/tiling/TilingManager.js`):
+`enabled`, `setEnabled(enabled)`, `getEffectiveConfig()`, `updateConfig(changes)`, `applyBarSettings()`,
+`focusDirection(dir)`, `swapDirection(dir)`, `resizeDirection(dir)`, `cycleFocus(forward)`, `toggleFloating()`,
+`toggleFullscreenOnTiled()`, `toggleSplitType()`, `closeFocusedWindow()`
+
+### Modes API - `os.modes`
+
+Session modes: `isActive(id)`, `getActiveModes()`, `enter(id)`, `exit(id)`, `exitAll()`.
+`MODES` constant: `MODES.MAC`, `MODES.TILING`, `MODES.CHROME_OS`, `MODES.STEAMDECK`, `MODES["3D"]`
+
+### Achievements API - `os.achievements`
+
+`trigger(id)`, `unlock(key)`, `incrementAppLaunched()`, `incrementGameLaunched()`, `incrementScreenshotTaken()`,
+`incrementCalculationDone()`, `incrementPowerProfileChange()`, `incrementSession()`, `incrementWallpaper()`,
+`incrementTerminalCmd()`, `incrementFileUploaded()`, `triggerCommandExecution(command)`
+
+### Account API - `os.account`
+
+`client` (`signIn`, `signUp`, `signOut`, `getUser`), `signIn`, `signUp`, `signOut`, `isAccount()`, `isSynced()`,
+`getInfo()`, `updateInfo(user)`, `reauth()`, `onAccountChange`, `getSession`, `formatSize`, and
+`sync` (`enabled()`, `enable(on)`, `components()`, `toggleComponent(id, on)`, `getEnabledComponents()`,
+`buildBundle()`, `push()`, `pull()`)
+
+### Direct service references
+
+`os.windowManager`, `os.fileSystemManager`, `os.clipboardManager`, `os.desktopUI` expose raw services for advanced
+integrations.
+
 ---
 
 ## Shared Utilities - `src/shared/`
@@ -315,24 +403,44 @@ Always prefer these over reimplementing logic.
 
 ### `conflictDialog.js`
 
-| Function                                                       | Return                                                              |
-| -------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `showConflictDialog(fileName)`                                 | `Promise<{ action, applyToAll }>` - action: `replace`/`keep`/`skip` |
-| `resolveConflicts(items, existsCheck, getKey, applyToAllInit)` | `Promise<Array<{ item, action }>>`                                  |
+| Function                       | Return                                                              |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `showConflictDialog(fileName)` | `Promise<{ action, applyToAll }>` - action: `replace`/`keep`/`skip` |
 
 ### Other shared helpers
 
-| File               | Exports                                                                                         |
-| ------------------ | ----------------------------------------------------------------------------------------------- |
-| `contextMenu.js`   | `showContextMenu`, `showDynamicContextMenu`, `showStartStyleMenu`, `hideMenu`, `refreshIcons`   |
-| `assetResolver.js` | `resolveUrl`, `resolveYukiAsset`, `fetchHtmlAsBlobUrl`, `resolveIconUrl`, `resolveWallpaperUrl` |
-| `iframeUtils.js`   | `resolveUrl`, `fetchHtmlAsBlobUrl`, `looksLikeHtml`, `isCdnGhUrl`                               |
-| `cdnConfig.js`     | `CDN_CONFIG`, `getLibraryUrl`, `getRepoUrl`                                                     |
-| `iconUtils.js`     | `resolveDesktopIcon`                                                                            |
-| `platformUtils.js` | `detectOS`, `isMobile`, `getBrowser`                                                            |
-| `coreMap.js`       | `detectCore`, `coreLabel`, `ROM_EXTS`                                                           |
-| `weatherCodes.js`  | `WEATHER_CODES`, `getWeatherIcon`, `getWeatherInfo`                                             |
-| `iframeAttrs.js`   | `IFRAME_ATTRS`                                                                                  |
+| File                 | Exports                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `contextMenu.js`     | `showContextMenu`, `showDynamicContextMenu`, `showStartStyleMenu`, `positionMenu`, `bindDismissal`, `hideMenu`, `refreshIcons` |
+| `assetResolver.js`   | `resolveUrl`, `resolveYukiAsset`, `fetchHtmlAsBlobUrl`, `resolveIconUrl`, `resolveWallpaperUrl`, `resolveGhUrl`, `resolveNpmUrl`, `isCdnGhUrl`, `isCdnHostname`, `getCurrentCdnRepoBase`, `initializeMirrors`, `CDN_MIRRORS` |
+| `fileKindDetector.js`| `FileKind`, `fileKindFromName`, `getExt`, plus extension arrays: `IMAGE_EXTS`, `VIDEO_EXTS`, `AUDIO_EXTS`, `OFFICE_EXTS`, `CODE_EXTS`, `TEXT_EXTS`, `HTML_EXTS`, `MARKDOWN_EXTS`, `ZIP_EXTS`, `ISO_EXTS`, `EXE_EXTS`, `SWF_EXTS`, `EBOOK_EXTS`, `FONT_EXTS`, `DISK_EXTS`, `SHORTCUT_EXTS` |
+| `cdnConfig.js`       | `CDN_CONFIG`, `getLibraryUrl`, `getRepoUrl`                                                                     |
+| `iconUtils.js`       | `isFontAwesomeIcon`, `resolveIconHtml`, `resolveDesktopIcon`                                                    |
+| `platformUtils.js`   | `isMobile`, `isTouchDevice`                                                                                     |
+| `coreMap.js`         | `CORE_EXTENSIONS`, `EXT_TO_CORE`, `ROM_EXTS`                                                                    |
+| `weatherCodes.js`    | `WEATHER_CODES`, `getWeatherIcon`, `getWeatherInfo`                                                             |
+| `dialogs.js`         | `showAlert`, `showPrompt`, `showConfirm`, `customAlert`, `customPrompt`, `customConfirm`, `showCdnPrompt`       |
+| `dragUtils.js`       | `makeDraggable`, `makeResizable`                                                                                |
+| `selectMenu.js`      | `renderSelectMenu`, `getSelectMenuValue`, `setSelectMenuValue`, `bindSelectMenu`                                |
+| `rangeSlider.js`     | `renderRangeSlider`, `getRangeSliderValue`, `setRangeSliderValue`, `bindRangeSlider`                            |
+| `themeEngine.js`     | `getAllThemes`, `getBasicThemes`, `getSpecialThemes`, `getFeaturedThemes`, `getThemeByValue`, `getThemeColors`, `addCustomTheme`, `getCustomThemes` |
+| `themeContract.js`   | `buildThemeContract`, `themeToContract`, `contractToThemeData`, `themeShareCode`, `parseShareCode`, `sanitizeThemeContract` |
+| `themeEffects.js`    | `getStoredEffects`, `applyThemeEffects`, `clearThemeEffects`, `initThemeEffects`, `collectCurrentEffects`      |
+| `themeHubApi.js`     | `listThemes`, `getTheme`, `publishTheme`, `voteTheme`, `trackInstall`, `reportTheme`, `unpublishTheme`          |
+| `performanceManager.js` | `performanceManager`                                                                                          |
+| `wispConfig.js`      | `DEFAULT_WISP_URL`, `WISP_SERVERS`, `getWispUrl`                                                                |
+| `emulatorBase.js`    | `saveEmulatorFile`, `renderEmulatorFileList`, `handleEmulatorUpload`, `buildLoadingStateHTML`, `buildErrorHTML`, `setLog`, `normalizePath`, `fileNameToDisplayName` |
+| `functionUtils.js`   | `isFunction`, `hasMethod`, `callIfFunction`                                                                     |
+| `liveStats.js`       | `renderLiveStats`                                                                                               |
+| `fileTooltip.js`     | `scheduleFileTooltip`, `scheduleAppTooltip`, `hideFileTooltip`                                                  |
+| `virtualFsNet.js`    | `splitPath`, `joinPath`, `getMimeType`, `isDirEntry`, `isTextContentType`, `isVirtualFsInput`, `isLocalhostInput`, `parseLocalhostTarget`, `parseLocalTarget`, `readOsTheme`, `buildFsInterceptScript`, `buildDirectoryHtml` |
+| `aboutDialog.js`     | `showAboutDialog`                                                                                               |
+| `windowHeader.js`    | `buildWindowHeader`, `buildWindowIconHtml`                                                                      |
+| `chooseAppDialog.js` | `showChooseAppDialog`                                                                                           |
+| `customColorsDialog.js` | `openCustomColorsDialog`, `getStoredCustomColors`, `applyCustomColors`, `clearCustomColors`, `pickCustomColors` |
+| `desktopShortcuts.js`| `isAppOnDesktop`, `addAppToDesktop`, `launchAppFromDesktop`                                                      |
+| `appContextActions.js` | `isAppPinnedToTaskbar`, `toggleTaskbarPin`, `showAppProperties`, `isAppFavorite`, `toggleAppFavorite`          |
+| `calendarUtils.js`   | Calendar date helpers                                                                                           |
 
 ---
 
@@ -340,29 +448,37 @@ Always prefer these over reimplementing logic.
 
 ### AppLauncher - `appLauncher.js`
 
-Central dispatcher. `launch(appId, swf, extra)` is the main entry point. Routes to app instance or creates sandboxed
-iframe for games. Handles analytics, achievements, Steam stats. Integrates with installed apps registry for app
-management.
+Central dispatcher. `launch(appId, swf, extra)` is the main entry point. Routes to app instances, sandboxed iframes for
+games, or the Steam overlay. Handles analytics, achievements, Steam stats, and the installed apps registry.
 
-### gamesList - `gamesList.js`
+### gamesList - `games/gamesList.js`
 
-Registry of 2900+ games/apps. `appMap[appId]` contains `{ type, title, url, icon, action }`.
+Registry of games/apps. `appMap[appId]` contains `{ type, title, url, icon }`.
 
-- Types: `"system"`, `"game"`, `"html"`, `"remote"`
+- Types: `"game"`, `"swf"`, `"remote"`
 
-### gameDescriptions - `gameDescriptions.js`
+### gameDescriptions - `games/gameDescriptions.js`
 
-Rich metadata per app: title, description, genre, year, developer.
+Rich metadata per app: title, description, genre, year, developer (`descriptionMap`).
 
-### appCreator - `appCreator.js`
+### steam - `games/steam.js`
 
-UI to create custom shortcuts to external URLs. Auto-detects favicon, supports per-app CORS proxy. Saves to
-`/home/reeyuki/Apps/`.
+Yuki Steam storefront: `SteamSettings` persistence, game launch handling, playtime tracking.
 
-### installedApps - `installedApps.js`
+### appCreator - `apps/appCreator.js`
+
+UI to create custom shortcuts to external URLs. Auto-detects favicons, supports per-app CORS proxy. Saves custom apps to
+`FS_FOLDER` (`["Apps"]` in the user home) and restores them on startup.
+
+### installedApps - `apps/installedApps.js`
 
 App registry system for managing installed/uninstalled apps. Provides dynamic app metadata, disable/uninstall support,
 and custom naming. Integrates with AppLauncher for app management.
+
+### webApps - `apps/webApps.js`
+
+Factory for scramjet web apps. `getWebAppClass(serviceKey)` builds a `ScramjetWebApp` class from manifest `targetUrl`
+entries — no app class needed.
 
 ---
 
@@ -370,11 +486,115 @@ and custom naming. Integrates with AppLauncher for app management.
 
 ### File & Explorer
 
-| App              | File                  | Key Methods                                                                                                                                              |
-| ---------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ExplorerApp      | `explorer.js`         | `open(path)`, `navigateTo(path)`, `deleteFile(path)`, `renameFile(old, new)`, `openSaveDialog(defaultFileName, onSave)`, `openDirectoryDialog(onSelect)` |
-| fileDisplay      | `fileDisplay.js`      | Renders images, video, PDF, code, text, markdown                                                                                                         |
-| archiveExtractor | `archiveExtractor.js` | ZIP/7z extraction, list archive contents                                                                                                                 |
+| App              | File                   | Key Methods                                                                                                                                                  |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ExplorerApp      | `apps/explorer.js`     | `open(path)`, `openTrash()`, `createInstance()`, `getInstance()`, `openSaveDialog()`, `openDirectoryDialog()`, `pasteToCurrentPath()`                        |
+| fileDisplay      | `fileDisplay.js`       | Renders images, video, PDF, code, text, markdown                                                                                                             |
+| archiveExtractor | `archiveExtractor.js`  | ZIP/7z extraction, list archive contents                                                                                                                     |
+
+### Productivity
+
+| App              | File                     | Notes                                                                                        |
+| ---------------- | ------------------------ | -------------------------------------------------------------------------------------------- |
+| NotepadApp       | `apps/notepad.js`        | Text editor, file save/load                                                                  |
+| MarkdownApp      | `apps/markdown.js`       | Split-pane editor with live preview                                                          |
+| Yuki Code        | `apps/monaco.js`         | Monaco editor (VSCode engine) integration                                                    |
+| CalculatorApp    | `apps/calculator.js`     | Scientific calculator with memory                                                            |
+| OfficeAppProxy   | `office/officeLoader.js` | Office 365 viewer for .docx/.xlsx/.pptx                                                      |
+| Yuki Convert     | `apps/yukiConvert.js`    | Local file converter (image, audio, video, documents)                                        |
+| Data Editor      | `apps/dataEditor.js`     | IndexedDB storage inspector for debugging                                                    |
+
+### Media & Emulators
+
+| App              | File                     | Notes                                                                                        |
+| ---------------- | ------------------------ | -------------------------------------------------------------------------------------------- |
+| Camera           | `apps/camera.js`         | Webcam access, photo capture                                                                 |
+| YouTube          | `apps/youtube.js`        | YouTube integration                                                                          |
+| JsDos            | `apps/jsdos.js`          | DOS emulation                                                                                |
+| V86              | `apps/v86.js`            | x86-64 full system emulation                                                                 |
+| Yuki Emulator    | `apps/emulator.js`       | Multi-console ROM emulator (NES, SNES, GB, GBA, N64, PSX, etc.)                               |
+| Ruffle           | `apps/ruffle.js`         | Flash player for SWF content                                                                 |
+| Rhythms          | `apps/rhythms.js`        | System-wide audio visualizer                                                                 |
+| Wallpaper Engine | `apps/wallpaperEngine.js`| Static, video and animated wallpapers                                                        |
+| Discord          | `apps/discord.js`        | Discord client                                                                               |
+| Torrent Client   | `apps/torrentClient.js`  | Torrent downloads                                                                             |
+| Maps             | `apps/maps.js`           | Interactive map viewer                                                                        |
+
+### System Utilities
+
+| App                    | File                         | Notes                                                                                |
+| ---------------------- | ---------------------------- | ------------------------------------------------------------------------------------ |
+| TerminalApp            | `apps/terminal.js`           | Shell interpreter (ls, cd, mkdir, rm, cp, mv, cat, pwd, python http.server)          |
+| TaskManagerApp         | `apps/taskManager.js`        | Window/process list, close apps                                                      |
+| SettingsApp            | `settings/settings.js`       | Theme, wallpaper, taskbar, sound, DND, GUI scale, brightness, transparency           |
+| AchievementsApp        | `achievements.js`            | Tracks launches, playtime milestones                                                 |
+| AboutApp               | `apps/about.js`              | System info, version, credits                                                        |
+| What's New             | `apps/news.js`               | News aggregation with unread bubble                                                  |
+| WeatherApp             | `apps/weather.js`            | Current weather and forecast                                                         |
+| YukiOS Guide           | `apps/yukiOsGuide.js`        | Interactive guide and tutorial system                                                |
+| Clipboard Manager      | `apps/clipboardApp.js`       | Clipboard history and management                                                     |
+| Setup Wizard           | `apps/setupApp.js`           | First-run profile setup                                                              |
+| Intro Tour             | `apps/introTour.js`          | Replayable 60-second guided desktop tour                                             |
+| Shortcuts              | `apps/shortcuts.js`          | Keyboard shortcut manager (KeybindManager UI)                                        |
+| Yuki AI Assistant      | `apps/aiAssistant.js`        | Local, in-browser AI assistant (launch apps, manage files)                           |
+| Theme Hub              | `apps/themeHub.js`           | Community theme browser/installer                                                    |
+| Launchpad              | `apps/launchpad.js`          | macOS-style fullscreen app grid                                                      |
+| Emoji Selector         | `apps/emojiSelector.js`      | Emoji picker with categories                                                         |
+| Default Apps           | `apps/defaultApps.js`        | File association management                                                          |
+| Installed Apps         | `apps/installedApps.js`      | App registry: rename, disable, uninstall, custom names                               |
+| System Apps            | `apps/systemApps.js`         | Core system utilities hub                                                            |
+| App Creator            | `apps/appCreator.js`         | Custom web shortcuts to external URLs                                                |
+| Browser                | `apps/browser.js`            | CORS proxy browser with tabs, bookmarks, Tor mode                                    |
+| Tor Browser            | `apps/torBrowser.js`         | Anonymous browsing via Tor                                                           |
+| Clock                  | `apps/clock.js`              | Clock app                                                                            |
+| Screenshot             | `apps/screenshot.js`         | Full-screen / window screenshot capture                                              |
+| Color Picker           | `apps/colorPicker.js`        | Screen color picker                                                                  |
+| Eruda                  | `apps/eruda.js`              | Mobile-style dev tools                                                               |
+| Run                    | `apps/run.js`                | Quick command launcher                                                               |
+| BTop                   | `apps/btop.js`               | Live system monitor                                                                  |
+| CMatrix                | `apps/cmatrix.js`            | Matrix rain screensaver                                                              |
+| Magnifier              | `apps/magnifier.js`          | Screen magnifier                                                                     |
+| Lavat                  | `apps/lavat.js`              | Audio-reactive visualizer                                                            |
+| VM Manager             | `apps/virtualMachineManager.js` | Manage v86 virtual machines                                                      |
+| Remote Host            | `apps/RemoteHostApp.js`      | Remote desktop hosting with room codes                                                |
+| Display Performance    | `apps/displayPerformanceApp.js` | Display/performance monitoring                                                   |
+| Steam                  | `games/steam.js`             | Yuki Steam storefront and game launcher                                              |
+| Roblox                 | `apps/roblox.js`             | Roblox Studio / Roblox client                                                       |
+| Room 3D                | `apps/room3d.js`             | 3D room mode (system mode)                                                           |
+
+### System Services
+
+| Service                  | File                          | Role                                                                                |
+| ------------------------ | ----------------------------- | ----------------------------------------------------------------------------------- |
+| DesktopUI                | `desktopui/desktopui.js`      | Desktop background and icons                                                        |
+| startMenu                | `desktopui/startMenu.js`      | Start menu and app grid UI                                                          |
+| SystemUtilities          | `system.js`                   | Wallpaper loading and theme management                                              |
+| wallpaperList            | `wallpaperList.js`            | Wallpaper store (static/video/animated + custom)                                    |
+| SettingsApp              | `settings/settings.js`        | Preference storage and settings UI                                                  |
+| WindowManager            | `windowManager.js`            | Window facade — composes modules in `windowManager/`                                |
+| WM modules               | `windowManager/`              | `TaskbarSystem`, `WorkspaceManager`, `SnapSystem`, `LayoutManager`, `InputHandler`, `WindowStateManager`, `AppRestorationService`, `TilingLayoutEngine`, `AnimationSystem` |
+| FileSystemManager        | `fs.js`                       | Virtual filesystem facade                                                           |
+| FS modules               | `fs/`                         | `IndexedDBFS`, `BlobStorage`, `TrashManager`, `MountManager`, `ElectronFSAdapter`, `MetadataManager` |
+| EventBus                 | `core/EventBus.js`            | Event system + `BusEvents` constants                                                |
+| notificationCenter       | `notificationCenter.js`       | Notification system                                                                 |
+| trayManager              | `tray/tray.js`                | System tray                                                                         |
+| networkTray              | `tray/networkTray.js`         | Network status display in system tray                                               |
+| mediaTray                | `mediaTray.js`                | Media controls in system tray                                                       |
+| audioMixer               | `audioMixer.js`               | Global audio, per-app volume via `createAudioTrack(appId)`                           |
+| analytics                | `analytics.js`                | Usage tracking (launches, playtime, features)                                       |
+| clippy                   | `ai/clippy.js`                | Virtual assistant with contextual tips                                              |
+| SessionManager           | `SessionManager.js`           | Login, user sessions, session persistence                                           |
+| CommandPalette           | `commandPalette.js`           | Command palette overlay                                                             |
+| modeManager              | `modeManager.js`              | Session modes: `MODES.MAC`, `MODES.TILING`, `MODES.CHROME_OS`, `MODES.STEAMDECK`, `MODES["3D"]` |
+| modes/                   | `modes/`                      | `macos/`, `chromeos/`, `steamdeck/`, `tiling/` implementations                      |
+| PortManager              | `services/PortManager.js`     | Named port registry for inter-app messaging                                        |
+| ProcessManager           | `services/ProcessManager.js`  | Process tracking and termination                                                   |
+| BatteryPerformanceManager | `services/BatteryPerformanceManager.js` | Power/battery mode handling                                              |
+| GitManager               | `services/GitManager.js`      | Git operations for the virtual filesystem                                          |
+| PyodideManager           | `services/PyodideManager.js`  | Python runtime for the terminal                                                    |
+| WebContainerManager      | `services/WebContainerManager.js` | Node.js-in-browser runtime                                                    |
+| ScramjetBaseApp          | `core/ScramjetBaseApp.js`     | Base class for scramjet-proxied web apps                                            |
+| ScramjetWebAppFactory    | `core/ScramjetWebAppFactory.js` | Factory for `targetUrl` web apps from manifests                                  |
 
 ---
 
@@ -451,59 +671,6 @@ explorerApp.open(["Documents"], (selectedPath) => {
 - **Use `openSaveDialog`** when saving a file with a user-specified name
 - **Use `open` with callback** when you need the user to select an existing file
 - **Handle null/undefined returns** - callbacks may not be called if user cancels the dialog
-
-### Productivity
-
-| App            | File        | Notes                                     |
-| -------------- | ----------- | ----------------------------------------- |
-| NotepadApp     | -           | Text editor, file save/load               |
-| MarkdownApp    | -           | Split-pane editor with live preview       |
-| YukiCode       | `monaco.js` | Monaco editor (VSCode engine) integration |
-| CalculatorApp  | -           | Scientific calculator with memory         |
-| OfficeAppProxy | `office.js` | Office 365 viewer for .docx/.xlsx/.pptx   |
-
-### Media & Emulators
-
-| App        | File         | Notes                              |
-| ---------- | ------------ | ---------------------------------- |
-| Camera     | -            | Webcam access, photo capture       |
-| Model3DApp | `model3d.js` | Three.js viewer for OBJ, GLTF, GLB |
-| YouTubeApp | -            | YouTube integration                |
-| JsDosApp   | `jsdos.js`   | DOS emulation + Ruffle Flash       |
-| V86App     | `v86.js`     | x86-64 full system emulation       |
-
-### System Utilities
-
-| App                  | File                  | Notes                                                                                |
-| -------------------- | --------------------- | ------------------------------------------------------------------------------------ |
-| TerminalApp          | -                     | CLI: ls, cd, mkdir, rm, cp, mv, cat, pwd, etc.                                       |
-| TaskManagerApp       | -                     | Window/process list, close apps                                                      |
-| SettingsApp          | -                     | Theme, wallpaper, taskbar, sound, DND, language, GUI scale, brightness, transparency |
-| ProfileCustomizerApp | -                     | Username, profile picture, desktop colors                                            |
-| AchievementsApp      | -                     | Tracks launches, playtime milestones, friend stats                                   |
-| AboutApp             | -                     | System info, version, credits                                                        |
-| newsApp              | `news.js`             | News aggregation with categories, unread bubble                                      |
-| WeatherApp           | `weather.js`          | Current weather and forecast                                                         |
-| CategoriesApp        | `categories.js`       | Organize games by genre/tag                                                          |
-| GuideApp             | `yukiOsGuide.js`      | Interactive guide and tutorial system                                                |
-| ClipboardManagerApp  | `clipboardManager.js` | Clipboard history and management                                                     |
-
-### System Services
-
-| Service       | File               | Role                                                        |
-| ------------- | ------------------ | ----------------------------------------------------------- |
-| DesktopUI     | `desktopui.js`     | Desktop background, taskbar, start menu                     |
-| startMenu     | `startMenu.js`     | Start menu and app grid UI                                  |
-| system.js     | -                  | Wallpaper and theme management                              |
-| wallpapers.js | -                  | Wallpaper store (13 default + custom)                       |
-| settings.js   | -                  | Preference storage (localStorage wrapper)                   |
-| audioMixer.js | -                  | Global audio, per-app volume via `createAudioTrack(appId)`  |
-| analytics.js  | -                  | Usage tracking (launches, playtime, features, friend stats) |
-| clippy.js     | -                  | Virtual assistant with contextual tips                      |
-| BrowserApp    | -                  | Lightweight web browser with bookmarks                      |
-| installedApps | `installedApps.js` | App registry for installed/uninstalled apps management      |
-| networkTray   | `networkTray.js`   | Network status display in system tray                       |
-| powerTray     | `powerTray.js`     | Battery/power indicator in system tray                      |
 
 ---
 
@@ -628,20 +795,25 @@ export const APP_MANIFESTS = [
 ```
 
 **Manifest fields:**
-- `serviceKey` — Maps to the key in `APP_CLASS_MAP` in AppLoader.js
+- `serviceKey` — Maps to the key in `APP_CLASS_MAP` in AppLoader.js (omitted for `source`-based entries)
+- `enhanced` — Flag for enhanced app features
 - `type` — Always `"system"` for native apps
 - `title` — Display name
 - `icon` — Font Awesome class (e.g. `"fas fa-star"`) or CDN URL
-- `launchType` — `"instance"` for native apps, `"iframe"`/`"remote"` for web apps, `"steam"` for games
+- `launchType` — `"instance"`, `"steam"`, `"iframe"`, `"remote"`, or `"method"`
 - `windowIdPatterns` — Identifies window IDs for session restoration
-- `category` — Grouping: `"system"`, `"office"`, `"internet"`, `"games"`, `"graphics"`, `"development"`, `"media"`, `"help"`, `"utilities"`
+- `category` — `"system"`, `"office"`, `"internet"`, `"games"`, `"graphics"`, `"development"`, `"media"`, `"help"`, `"utilities"`
 - `clippy` (optional) — `{ message, animation }` for Clippy assistant
 - `description` (optional) — App description for the guide
-- `isHeavy` (optional) — Mark as resource-intensive
-- `targetUrl` (optional) — URL for web apps loaded in scramjet
+- `fileAssociations` (optional) — `{ extensions: [...] }` for default-app handling
+- `launchMethod` (optional) — Custom method name for `launchType: "method"`
+- `targetUrl` (optional) — URL for scramjet web apps, combined with `windowSize: ["90vw", "85vh"]`
+- `source` (optional) — URL for `iframe`/`remote` launch types
 - `trayOptions` (optional) — `{ contextMenuItems, onClick, onQuit }`
+- `isHeavy` (optional) — Mark as resource-intensive
 - `excludeFromInstalledApps` (optional) — Hide from Installed Apps list
 - `persistContentState` (optional) — Enable session content persistence
+- `onLoad` (optional) — Callback when the app instance loads
 
 ### 4. Add to AppLoader.js
 

@@ -6,7 +6,6 @@ import { os, MODES } from "./framework.js";
 import { isTaskbarTop } from "./utils/utils.js";
 import { getTrayPosition } from "./tray/tray.js";
 export const SystemAudio = Object.freeze({
-  START: "static/audio/start.opus",
   SHUTDOWN: "static/audio/shutdown.opus",
   ERROR: "static/audio/error.opus",
   WARNING: "static/audio/warning.opus",
@@ -144,6 +143,7 @@ class AudioMixer {
         gainNode.gain.value = effectiveVolume;
         gainNode.connect(ctx.destination);
 
+        if (!(iframe instanceof HTMLMediaElement)) return;
         const source = ctx.createMediaElementSource(iframe);
         source.connect(gainNode);
         this.gainNodes.set(key, gainNode);
@@ -719,7 +719,9 @@ class AudioMixer {
     const chromeShelf = $("#chromeos-shelf");
     const chromeShelfVisible = chromeShelf && getComputedStyle(chromeShelf).display !== "none";
     let atTop;
-    if (chromeShelfVisible && chromeShelf.dataset.shelfPos === "top") {
+    if (os.modes.isActive(MODES.STEAMDECK)) {
+      atTop = true;
+    } else if (chromeShelfVisible && chromeShelf.dataset.shelfPos === "top") {
       atTop = true;
     } else if (tilingActive) {
       const tilingBar = $("#tiling-bar");

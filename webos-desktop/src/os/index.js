@@ -28,7 +28,8 @@ const noopStorage = {
   set: NOOP,
   remove: NOOP,
   clear: NOOP,
-  has: () => false
+  has: () => false,
+  subscribe: () => NOOP
 };
 
 const noopEvents = {

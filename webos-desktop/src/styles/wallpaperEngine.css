@@ -26,35 +26,35 @@
 }
 
 .we-sidebar {
-  width: 208px;
-  min-width: 208px;
+  width: 240px;
+  min-width: 240px;
   background: var(--bg-secondary);
   border-right: 1px solid var(--we-border);
   display: flex;
   flex-direction: column;
-  padding: 14px 8px;
-  gap: 1px;
+  padding: 16px 10px;
+  gap: 2px;
   overflow-y: auto;
 }
 .we-sidebar-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-secondary);
-  padding: 16px 10px 6px;
+  padding: 18px 12px 8px;
   opacity: 0.5;
 }
 .we-sidebar-title:first-child {
-  padding-top: 4px;
+  padding-top: 6px;
 }
 .we-sidebar-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
+  gap: 12px;
+  padding: 11px 12px;
   margin: 0 2px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
@@ -73,27 +73,27 @@
 .we-sidebar-item.active::before {
   content: "";
   position: absolute;
-  left: -8px;
+  left: -10px;
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 14px;
+  height: 18px;
   border-radius: 3px;
   background: var(--brand);
 }
 .we-sidebar-item i {
-  width: 16px;
+  width: 18px;
   text-align: center;
-  font-size: 13px;
+  font-size: 15px;
   flex-shrink: 0;
   opacity: 0.9;
 }
 .we-sidebar-item .we-badge {
   margin-left: auto;
   background: rgba(255, 255, 255, 0.08);
-  padding: 1px 7px;
+  padding: 2px 8px;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
 }

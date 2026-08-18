@@ -757,9 +757,8 @@ html[data-theme] .setup-btn-secondary:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.6);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 4px;
-  border: 1px solid rgba(124, 58, 237, 0.4);
 }
 
 html[data-theme-mode="light"] .setup-wizard {
@@ -856,8 +855,7 @@ html[data-theme-mode="light"]::-webkit-scrollbar-track {
 }
 
 html[data-theme-mode="light"]::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.7);
-  border: 1px solid rgba(124, 58, 237, 0.5);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .shortcut-category {

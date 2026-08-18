@@ -148,10 +148,14 @@ export class TilingManager {
         try {
           const content = await os.fs.read(CONFIG_PATH);
           if (content && content !== this.configString) {
-            console.log("[Tiling] Config file changed externally, reloading");
             this.config = this.mergeDefaults(JSON.parse(content));
             this.configString = content;
             this.applyCssVars();
+            if (!this.enabled) {
+              poll();
+              return;
+            }
+            console.log("[Tiling] Config file changed externally, reloading");
             const stored = os.storage.get(StorageKeys.tilingEnabled);
             const configEnabled = this.config.enabled === true;
             const desiredEnabled = stored !== null ? stored === "true" : configEnabled;

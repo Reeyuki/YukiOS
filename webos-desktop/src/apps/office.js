@@ -5,8 +5,7 @@ import { ClippyAnimation, speak } from "../ai/clippy.js";
 import { FileKind, getExt } from "../shared/fileKindDetector.js";
 import { showAboutDialog } from "../shared/aboutDialog.js";
 import { escapeHtml } from "../utils/utils.js";
-
-import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os, brand } from "../framework.js";
+import { $, $$, bindEvent, toggleClass, setStyle, setHTML, createElement, BaseApp, os } from "../framework.js";
 import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { audioMixer } from "../audioMixer.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -51,12 +50,6 @@ class OfficeModuleLoader {
 
   async mammoth() {
     if (this.cache.has("mammoth")) return this.cache.get("mammoth");
-    if (__SINGLE_FILE__) {
-      const mod = await import("mammoth");
-      window.mammoth = mod;
-      this.cache.set("mammoth", mod);
-      return mod;
-    }
     await this.loadScript(getLibraryUrl("mammoth"));
     const mod = window.mammoth;
     this.cache.set("mammoth", mod);
@@ -65,12 +58,6 @@ class OfficeModuleLoader {
 
   async xlsx() {
     if (this.cache.has("xlsx")) return this.cache.get("xlsx");
-    if (__SINGLE_FILE__) {
-      const mod = await import("xlsx");
-      window.XLSX = mod;
-      this.cache.set("xlsx", mod);
-      return mod;
-    }
     await this.loadScript(getLibraryUrl("xlsx"));
     const mod = window.XLSX;
     this.cache.set("xlsx", mod);
@@ -79,13 +66,6 @@ class OfficeModuleLoader {
 
   async pdfjs() {
     if (this.cache.has("pdfjs")) return this.cache.get("pdfjs");
-    if (__SINGLE_FILE__) {
-      const pdfjs = await import("pdfjs-dist");
-      window.pdfjsLib = pdfjs;
-      pdfjs.GlobalWorkerOptions.workerSrc = "";
-      this.cache.set("pdfjs", pdfjs);
-      return pdfjs;
-    }
     await Promise.all([
       this.loadScript(getLibraryUrl("pdfjs", "js")),
       this.loadScript(getLibraryUrl("pdfjs", "viewer")),
@@ -107,12 +87,6 @@ class OfficeModuleLoader {
 
   async jszip() {
     if (this.cache.has("jszip")) return this.cache.get("jszip");
-    if (__SINGLE_FILE__) {
-      const mod = await import("jszip");
-      window.JSZip = mod;
-      this.cache.set("jszip", mod);
-      return mod;
-    }
     await this.loadScript(getLibraryUrl("jszip"));
     const mod = window.JSZip;
     this.cache.set("jszip", mod);
@@ -121,12 +95,6 @@ class OfficeModuleLoader {
 
   async docx() {
     if (this.cache.has("docx")) return this.cache.get("docx");
-    if (__SINGLE_FILE__) {
-      const mod = await import("docx");
-      window.docx = mod;
-      this.cache.set("docx", mod);
-      return mod;
-    }
     const url = getLibraryUrl("docx");
     if (url.includes("esm.sh")) {
       const mod = await import(url);
@@ -1893,7 +1861,7 @@ export class OfficeApp extends BaseApp {
     showAboutDialog({
       title: "Office",
       version: "1.0.0",
-      description: brand("YukiOS Office Suite for editing documents, spreadsheets, and presentations."),
+      description: "YukiOS Office Suite for editing documents, spreadsheets, and presentations.",
       icon: "static/icons/office.webp",
       iconType: "image"
     });

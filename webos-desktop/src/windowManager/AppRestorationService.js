@@ -55,6 +55,17 @@ export class AppRestorationService {
     return null;
   }
 
+  guessAppIdFromWinId(winId) {
+    if (!winId) return null;
+    const launcher = this.wm.appLauncher;
+    if (!launcher) return null;
+    const needle = winId.toLowerCase().replace(/[-_\s]/g, "");
+    for (const key of Object.keys(launcher)) {
+      if (needle.includes(key.toLowerCase())) return key;
+    }
+    return null;
+  }
+
   findAppId(windowState) {
     if (windowState.appId) {
       if (this.appRegistry.has(windowState.appId)) {

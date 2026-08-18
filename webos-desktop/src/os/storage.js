@@ -1,4 +1,24 @@
 export class StorageAPI {
+  constructor() {
+    this.changeListeners = new Map();
+  }
+
+  subscribe(key, callback) {
+    if (!this.changeListeners.has(key)) this.changeListeners.set(key, new Set());
+    this.changeListeners.get(key).add(callback);
+    return () => {
+      this.changeListeners.get(key)?.delete(callback);
+    };
+  }
+
+  notifyChange(key) {
+    this.changeListeners.get(key)?.forEach((callback) => {
+      try {
+        callback();
+      } catch {}
+    });
+  }
+
   get(key) {
     try {
       const raw = localStorage.getItem(key);
@@ -14,6 +34,7 @@ export class StorageAPI {
   set(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      this.notifyChange(key);
     } catch (e) {
       console.error(`[Storage API] Failed to set key "${key}":`, e);
     }
@@ -22,6 +43,7 @@ export class StorageAPI {
   remove(key) {
     try {
       localStorage.removeItem(key);
+      this.notifyChange(key);
     } catch (e) {
       console.error(`[Storage API] Failed to remove key "${key}":`, e);
     }

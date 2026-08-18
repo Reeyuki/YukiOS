@@ -1,5 +1,5 @@
 import "../styles/wallpaperEngine.css";
-import { BaseApp, os, StorageKeys, MODES, isYuri } from "../framework.js";
+import { BaseApp, os, StorageKeys, MODES } from "../framework.js";
 import { SystemUtilities } from "../system.js";
 import {
   WALLPAPER_NAME_URL_PAIRS,
@@ -7,42 +7,25 @@ import {
   CHROME_OS_WALLPAPER_NAME_URL_PAIRS
 } from "../wallpaperConfig.js";
 import { videos, videos2 } from "../wallpaperList.js";
-import { getYuriWallpapers } from "../yuriWallpapers.js";
 import { vantaPresets } from "../vantaPresets.js";
 import { resolveWallpaperUrl } from "../shared/assetResolver.js";
 import { FileKind, isVideoFile } from "../shared/fileKindDetector.js";
 
 import { $, $$, bindEvent, setText, setHTML, createElement } from "../shared/domUtils.js";
-import { renderRangeSlider, bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
+import { renderRangeSlider, bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
 import { renderSelectMenu, bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
-import { showContextMenu, hideMenu } from "../shared/contextMenu.js";
+import { showContextMenu } from "../shared/contextMenu.js";
 import { isBlobLike } from "../utils/utils.js";
 
 const WE_KEYS = {
   favorites: StorageKeys.wallpaperEngineFavorites,
   history: StorageKeys.wallpaperEngineHistory,
-  playlists: StorageKeys.wallpaperEnginePlaylists,
-  activePlaylist: StorageKeys.wallpaperEngineActivePlaylist,
   shuffleInterval: StorageKeys.wallpaperEngineShuffleInterval,
-
   viewMode: StorageKeys.wallpaperEngineViewMode,
-  searchHistory: StorageKeys.wallpaperEngineSearchHistory,
-  colorFilter: StorageKeys.wallpaperEngineColorFilter,
-  customVantaPresets: StorageKeys.wallpaperEngineCustomVantaPresets
+  colorFilter: StorageKeys.wallpaperEngineColorFilter
 };
 
 const DEFAULT_FILTER = { brightness: 100, contrast: 100, saturate: 100, blur: 0 };
-
-const VANTA_DEFAULTS = {
-  WAVES: { color: 0x1e1e1e, shininess: 50, waveHeight: 20, waveSpeed: 1, zoom: 0.75 },
-  BIRDS: { color1: 0x1e1e1e, color2: 0x4a00e0, birdSize: 1, speedLimit: 5 },
-  NET: { color: 0x1e1e1e, backgroundColor: 0x0a0a0a, points: 10, distance: 18, spacing: 18 },
-  DOTS: { color: 0x4a00e0, color2: 0x1e1e1e, size: 2.5, spacing: 40 },
-  GLOBE: { color: 0x4a00e0, color2: 0x1e1e1e, size: 1.2, deviation: 200 },
-  HALO: { color: 0x1e1e1e, backgroundColor: 0x0a0a0a, size: 1.5 },
-  FOG: { color: 0x1e1e1e, highlightColor: 0x4a00e0, speed: 1 },
-  CELLS: { color: 0x1e1e1e, color2: 0x4a00e0, size: 1.5, speed: 1 }
-};
 
 function toBlobUrl(content) {
   if (!content) return null;
@@ -99,15 +82,10 @@ export class WallpaperEngineApp extends BaseApp {
     this.wallpaperItems = [];
     this.favorites = loadJSON(WE_KEYS.favorites, []);
     this.history = loadJSON(WE_KEYS.history, []);
-    this.playlists = loadJSON(WE_KEYS.playlists, {});
-    this.activePlaylist = os.storage.get(WE_KEYS.activePlaylist) || null;
     this.colorFilter = loadJSON(WE_KEYS.colorFilter, DEFAULT_FILTER);
-    this.customVantaPresets = loadJSON(WE_KEYS.customVantaPresets, []);
     this.shuffleTimer = null;
     this.previewItem = null;
-    this.selectedItems = new Set();
     this.sortMode = "default";
-    this.tooltipTimer = null;
   }
 
   saveFavorites() {
@@ -115,9 +93,6 @@ export class WallpaperEngineApp extends BaseApp {
   }
   saveHistory() {
     saveJSON(WE_KEYS.history, this.history.slice(0, 50));
-  }
-  savePlaylists() {
-    saveJSON(WE_KEYS.playlists, this.playlists);
   }
   saveFilter() {
     saveJSON(WE_KEYS.colorFilter, this.colorFilter);
@@ -153,7 +128,6 @@ export class WallpaperEngineApp extends BaseApp {
       this.shuffleTimer = null;
     }
     os.tray.unregister("wallpaper-engine");
-    $$(".we-tooltip").forEach((el) => el.remove());
     $$(".we-fs-overlay").forEach((el) => el.remove());
     this.winId = null;
     this.win = null;
@@ -167,25 +141,7 @@ export class WallpaperEngineApp extends BaseApp {
       onClick: () => {
         os.app.launch("wallpaperEngineApp");
       },
-      contextMenuItems: [
-        { label: "Random Wallpaper", action: () => this.shuffleRandom(), icon: "fa-dice" },
-        {
-          label: "Open Wallpaper Engine",
-          action: () => os.app.launch("wallpaperEngineApp"),
-          icon: "fa-external-link-alt"
-        },
-        { type: "divider" },
-        {
-          label: "Cycle: " + (os.storage.get(StorageKeys.cycleWallpaper) !== "false" ? "On" : "Off"),
-          action: () => {
-            const current = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
-            os.storage.set(StorageKeys.cycleWallpaper, current ? "false" : "true");
-            this.initAutoCycle();
-            os.tray.updateContextMenuItems("wallpaper-engine", this.getTrayItems());
-          },
-          icon: "fa-sync"
-        }
-      ]
+      contextMenuItems: this.getTrayItems()
     });
   }
 
@@ -218,38 +174,6 @@ export class WallpaperEngineApp extends BaseApp {
     style.textContent = `#wallpaper-img, #wallpaper-video, #vanta-container { filter: brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%) blur(${f.blur}px) !important; }`;
     $("#we-color-filter-style")?.remove();
     document.head.appendChild(style);
-  }
-
-  saveCustomVantaPresets() {
-    saveJSON(WE_KEYS.customVantaPresets, this.customVantaPresets);
-  }
-
-  getNextCustomPresetId() {
-    const maxId = this.customVantaPresets.reduce((max, p) => Math.max(max, p.id || 0), 0);
-    return maxId + 1;
-  }
-
-  addCustomVantaPreset(preset) {
-    const id = this.getNextCustomPresetId();
-    const entry = { ...preset, id, isCustom: true };
-    this.customVantaPresets.push(entry);
-    this.saveCustomVantaPresets();
-    return entry;
-  }
-
-  deleteCustomVantaPreset(presetId) {
-    this.customVantaPresets = this.customVantaPresets.filter((p) => p.id !== presetId);
-    this.saveCustomVantaPresets();
-    this.wallpaperItems = this.wallpaperItems.filter((i) => i.id !== `vanta_custom_${presetId}`);
-    this.renderGrid();
-    this.updateStats();
-  }
-
-  updateCustomVantaPreset(presetId, updates) {
-    const idx = this.customVantaPresets.findIndex((p) => p.id === presetId);
-    if (idx === -1) return;
-    this.customVantaPresets[idx] = { ...this.customVantaPresets[idx], ...updates };
-    this.saveCustomVantaPresets();
   }
 
   updateFilter(key, val) {
@@ -286,16 +210,14 @@ export class WallpaperEngineApp extends BaseApp {
     const categories = [
       { id: "all", icon: "fas fa-th-large", label: "All" },
       { id: "static", icon: "fas fa-image", label: "Static" },
-      { id: "yuri", icon: "fas fa-heart", label: "Yuri" },
       { id: "mac", icon: "fab fa-apple", label: "macOS" },
       { id: "chromeos", icon: "fab fa-chrome", label: "ChromeOS" },
       { id: "video", icon: "fas fa-film", label: "Live Video" },
       { id: "vanta", icon: "fas fa-magic", label: "Animated" },
-      { id: "custom-presets", icon: "fas fa-palette", label: "Custom Presets" },
       { id: "uploaded", icon: "fas fa-cloud-upload-alt", label: "Your Uploads" },
       { id: "favorites", icon: "fas fa-star", label: "Favorites" },
       { id: "recent", icon: "fas fa-clock", label: "Recent" }
-    ].filter((c) => c.id !== "yuri" || isYuri());
+    ];
 
     setHTML(
       sidebar,
@@ -312,7 +234,6 @@ export class WallpaperEngineApp extends BaseApp {
         )
         .join("")}
       <div class="we-sidebar-title" style="margin-top:12px;">Tools</div>
-      <div class="we-sidebar-item" data-cat="__playlists"><i class="fas fa-list"></i><span>Playlists</span></div>
       <div class="we-sidebar-item" data-cat="__import"><i class="fas fa-link"></i><span>Import URL</span></div>
       <div class="we-sidebar-item" data-cat="__filters"><i class="fas fa-tint"></i><span>Color Filters</span></div>
     `
@@ -325,8 +246,7 @@ export class WallpaperEngineApp extends BaseApp {
       $$(".we-sidebar-item", sidebar).forEach((el) => el.classList.remove("active"));
       item.classList.add("active");
       this.currentCategory = cat;
-      if (cat === "__playlists") this.showPlaylistsView();
-      else if (cat === "__import") this.showImportView();
+      if (cat === "__import") this.showImportView();
       else if (cat === "__filters") this.showFiltersView();
       else this.renderGrid();
     });
@@ -336,7 +256,6 @@ export class WallpaperEngineApp extends BaseApp {
         e.preventDefault();
         e.stopPropagation();
         const cat = item.dataset.cat;
-        if (cat === "__playlists") return;
         if (cat === "__import" || cat === "__filters") {
           showContextMenu(e, [{ id: "s-open-" + cat, label: "Open", action: "open", icon: "fa-arrow-right" }], {
             open: () => {
@@ -471,21 +390,13 @@ export class WallpaperEngineApp extends BaseApp {
     if (!enabled) return;
     const interval = (parseInt(os.storage.get(WE_KEYS.shuffleInterval)) || 30) * 60 * 1000;
     this.shuffleTimer = setInterval(() => {
-      if (this.activePlaylist && this.playlists[this.activePlaylist]) {
-        const ids = this.playlists[this.activePlaylist];
-        const pick = ids[Math.floor(Math.random() * ids.length)];
-        const item = this.wallpaperItems.find((i) => i.id === pick);
-        if (item) this.setDesktop(item, true);
-      } else {
-        SystemUtilities.setSequentialWallpaper?.();
-      }
+      SystemUtilities.setSequentialWallpaper?.();
     }, interval);
   }
 
   async loadAllWallpapers() {
     const items = [];
     items.push(...this.getStaticWallpapers());
-    if (isYuri()) items.push(...this.getYuriWallpapers());
     items.push(...this.getMacWallpapers());
     items.push(...this.getChromeOsWallpapers());
     items.push(...this.getVideoWallpapers());
@@ -526,18 +437,6 @@ export class WallpaperEngineApp extends BaseApp {
     }));
   }
 
-  getYuriWallpapers() {
-    return getYuriWallpapers().map((wp, i) => ({
-      id: `yuri_${i}_${wp.name}`,
-      name: wp.name,
-      type: "yuri",
-      src: wp.url,
-      thumbnail: resolveWallpaperUrl(wp.url),
-      isVideo: false,
-      meta: { source: "Yuri" }
-    }));
-  }
-
   getChromeOsWallpapers() {
     return CHROME_OS_WALLPAPER_NAME_URL_PAIRS.map((wp) => ({
       id: `chromeos_${wp.filename || wp.name}`,
@@ -563,7 +462,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   getVantaWallpapers() {
-    const builtIn = vantaPresets.map((p) => ({
+    return vantaPresets.map((p) => ({
       id: `vanta_${p.id}`,
       name: p.name,
       type: "vanta",
@@ -571,21 +470,8 @@ export class WallpaperEngineApp extends BaseApp {
       thumbnail: null,
       vantaPreset: p,
       isVideo: false,
-      isCustom: false,
       meta: { source: "Vanta.js", effect: p.effect }
     }));
-    const custom = this.customVantaPresets.map((p) => ({
-      id: `vanta_custom_${p.id}`,
-      name: p.name,
-      type: "vanta",
-      src: `vanta:custom:${btoa(JSON.stringify({ effect: p.effect, options: p.options }))}`,
-      thumbnail: null,
-      vantaPreset: p,
-      isVideo: false,
-      isCustom: true,
-      meta: { source: "Custom", effect: p.effect }
-    }));
-    return [...builtIn, ...custom];
   }
 
   async getUserWallpapers() {
@@ -622,8 +508,7 @@ export class WallpaperEngineApp extends BaseApp {
   getFilteredItems() {
     let items = this.wallpaperItems;
     const cat = this.currentCategory;
-    if (cat === "custom-presets") items = items.filter((i) => i.isCustom);
-    else if (cat !== "all" && cat !== "favorites" && cat !== "recent") items = items.filter((i) => i.type === cat);
+    if (cat !== "all" && cat !== "favorites" && cat !== "recent") items = items.filter((i) => i.type === cat);
     else if (cat === "favorites") items = items.filter((i) => this.favorites.includes(i.id));
     else if (cat === "recent") {
       const ids = this.history;
@@ -647,19 +532,6 @@ export class WallpaperEngineApp extends BaseApp {
 
     let items = this.getFilteredItems();
 
-    if (this.currentCategory === "custom-presets") {
-      items = [
-        {
-          id: "__newpreset",
-          name: "Create New Preset",
-          type: "new-preset",
-          isNewPreset: true,
-          meta: { source: "" }
-        },
-        ...items
-      ];
-    }
-
     if (items.length === 0) {
       let msg = "No wallpapers found",
         icon = "fa-images";
@@ -678,26 +550,6 @@ export class WallpaperEngineApp extends BaseApp {
       }
       setHTML(content, `<div class="we-category-empty"><i class="fas ${icon}"></i><span>${msg}</span></div>`);
       this.hidePreview();
-      return;
-    }
-
-    if (items.length === 1 && items[0].isNewPreset) {
-      setHTML(
-        content,
-        `
-        <div class="we-category-empty" style="cursor:pointer" id="we-empty-create-preset">
-          <i class="fas fa-plus-circle" style="font-size:34px;opacity:0.3;color:var(--brand)"></i>
-          <span>No custom presets yet. Click here to create your first one!</span>
-        </div>
-      `
-      );
-      this.hidePreview();
-      const emptyEl = $("#we-empty-create-preset");
-      if (emptyEl) {
-        bindEvent(emptyEl, "click", () => {
-          this.showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
-        });
-      }
       return;
     }
 
@@ -743,19 +595,7 @@ export class WallpaperEngineApp extends BaseApp {
     if (!card || !item || !card.classList.contains("we-card-placeholder")) return;
     card.classList.remove("we-card-placeholder");
 
-    if (item.isNewPreset) {
-      card.classList.add("we-new-preset-card");
-      card.innerHTML = `
-        <div class="we-new-preset-inner">
-          <i class="fas fa-plus"></i>
-          <span>${item.name}</span>
-        </div>
-      `;
-      return;
-    }
-
     const isFav = this.favorites.includes(item.id);
-    const isSelected = this.selectedItems.has(item.id);
     const badge = item.isVideo ? "Video" : item.type === "vanta" ? "Vanta" : item.type === "static" ? "Static" : "";
     const thumb = item.thumbnail || (item.type === "vanta" ? "" : "");
 
@@ -767,7 +607,6 @@ export class WallpaperEngineApp extends BaseApp {
         ${badge ? `<span class="we-card-badge">${badge}</span>` : ""}
         ${item.isVideo ? `<div class="we-card-play-badge">\u25B6</div>` : ""}
         <button class="we-card-fav ${isFav ? "favorited" : ""}" data-fav="${item.id}"><i class="fas fa-star"></i></button>
-        ${isSelected ? '<div class="we-card-check"><i class="fas fa-check-circle"></i></div>' : ""}
       </div>
       <div class="we-card-name">${item.name}</div>
       <div class="we-card-actions">
@@ -776,7 +615,6 @@ export class WallpaperEngineApp extends BaseApp {
       </div>`;
 
     this.attachCardContextMenu(card);
-    this.attachCardTooltip(card);
   }
 
   bindGridEvents(content) {
@@ -802,19 +640,6 @@ export class WallpaperEngineApp extends BaseApp {
       }
       if (card) {
         const item = this.wallpaperItems.find((i) => i.id === card.dataset.id);
-        if (!item) return;
-        if (item.isNewPreset) {
-          this.showVantaCustomize({ id: -1, effect: "WAVES", options: { ...VANTA_DEFAULTS.WAVES } });
-          return;
-        }
-        if (e.ctrlKey || e.metaKey) {
-          const id = card.dataset.id;
-          if (this.selectedItems.has(id)) this.selectedItems.delete(id);
-          else this.selectedItems.add(id);
-          card.classList.toggle("selected");
-          this.renderBatchBar();
-          return;
-        }
         if (item) this.showPreview(item);
       }
     });
@@ -823,7 +648,7 @@ export class WallpaperEngineApp extends BaseApp {
       const card = e.target.closest(".we-card");
       if (!card) return;
       const item = this.wallpaperItems.find((i) => i.id === card.dataset.id);
-      if (item && !item.isNewPreset) this.showFullscreenPreview(item);
+      if (item) this.showFullscreenPreview(item);
     });
   }
 
@@ -906,7 +731,6 @@ export class WallpaperEngineApp extends BaseApp {
           <button class="we-preview-btn primary" id="we-preview-set"><i class="fas fa-desktop"></i> Set Desktop</button>
           <button class="we-preview-btn" id="we-preview-login"><i class="fas fa-lock"></i> Set Login</button>
           <button class="we-preview-btn fav" id="we-preview-fav"><i class="fas fa-star"></i> ${isFav ? "Favorited" : "Add to Favorites"}</button>
-          <button class="we-preview-btn" id="we-preview-add-playlist"><i class="fas fa-list"></i> Add to Playlist</button>
         </div>
       </div>
     `
@@ -916,7 +740,6 @@ export class WallpaperEngineApp extends BaseApp {
     bindEvent($("#we-preview-set", this.win), "click", () => this.setDesktop(item));
     bindEvent($("#we-preview-login", this.win), "click", () => this.setLogin(item));
     bindEvent($("#we-preview-fav", this.win), "click", () => this.toggleFavorite(item.id));
-    bindEvent($("#we-preview-add-playlist", this.win), "click", () => this.showAddToPlaylist(item));
 
     const customizeBtn = $("#we-preview-customize", this.win);
     if (customizeBtn && item.vantaPreset) {
@@ -937,41 +760,15 @@ export class WallpaperEngineApp extends BaseApp {
           action: "toggleFav",
           icon: "fa-star"
         },
-        { id: "pv-pl", label: "Add to Playlist", action: "addPlaylist", icon: "fa-list" },
         { id: "pv-fs", label: "Fullscreen Preview", action: "fullscreen", icon: "fa-expand" }
       ];
-      if (item.isCustom) {
-        pvItems.push("hr", {
-          id: "pv-edit-preset",
-          label: "Edit Preset",
-          action: "editPreset",
-          icon: "fa-sliders-h"
-        });
-        pvItems.push({
-          id: "pv-del-preset",
-          label: "Delete Preset",
-          action: "deletePreset",
-          icon: "fa-trash"
-        });
-      }
       pvItems.push("hr", { id: "pv-copy", label: "Copy Name", action: "copyName", icon: "fa-copy" });
       showContextMenu(e, pvItems, {
         setDesktop: () => this.setDesktop(item),
         setLogin: () => this.setLogin(item),
         toggleFav: () => this.toggleFavorite(item.id),
-        addPlaylist: () => this.showAddToPlaylist(item),
         fullscreen: () => this.showFullscreenPreview(item),
-        copyName: () => navigator.clipboard.writeText(item.name).then(() => this.notify("Name copied")),
-        editPreset: () => {
-          if (item.vantaPreset) this.showVantaCustomize(item.vantaPreset);
-        },
-        deletePreset: async () => {
-          const confirmed = await os.dialog.confirm("Delete Preset", `Delete "${item.name}"?`);
-          if (!confirmed) return;
-          this.deleteCustomVantaPreset(item.vantaPreset?.id);
-          this.hidePreview();
-          this.notify(`Preset "${item.name}" deleted`);
-        }
+        copyName: () => navigator.clipboard.writeText(item.name).then(() => this.notify("Name copied"))
       });
     });
   }
@@ -1010,47 +807,10 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   showVantaCustomize(preset) {
-    const isNew = preset.id < 0;
     const overlay = createElement("div", { className: "we-vanta-customize-dialog" });
-
-    const effectOptions = [
-      { label: "Waves", value: "WAVES" },
-      { label: "Birds", value: "BIRDS" },
-      { label: "Net", value: "NET" },
-      { label: "Dots", value: "DOTS" },
-      { label: "Globe", value: "GLOBE" },
-      { label: "Halo", value: "HALO" },
-      { label: "Fog", value: "FOG" },
-      { label: "Cells", value: "CELLS" }
-    ];
-
-    let currentEffect = preset.effect;
     let currentOptions = { ...preset.options };
 
-    const getControls = () => this.getVantaControls({ effect: currentEffect, options: currentOptions });
-
-    const rebuildControls = () => {
-      const container = $("#v-customize-content");
-      if (!container) return;
-      const controls = getControls();
-      setHTML(container, this.renderVantaControlsHtml(controls));
-      bindRangeSlider(overlay);
-      overlay.querySelectorAll(".we-control-color").forEach((input) => {
-        bindEvent(input, "input", () => {});
-      });
-      controls
-        .filter((c) => c.type === "range")
-        .forEach((c) => {
-          const slider = $(`#v_slider_${c.key}`, overlay);
-          if (slider) {
-            bindEvent(slider, "input", () => {
-              const val = getRangeSliderValue(`v_slider_${c.key}`, overlay);
-              const display = $(`#v_val_${c.key}`, overlay);
-              if (display) setText(display, val);
-            });
-          }
-        });
-    };
+    const getControls = () => this.getVantaControls({ effect: preset.effect, options: currentOptions });
 
     const readOptions = () => {
       const controls = getControls();
@@ -1066,57 +826,29 @@ export class WallpaperEngineApp extends BaseApp {
       return opts;
     };
 
-    const headerHtml = isNew
-      ? `
-        <div class="we-customize-title">New Preset</div>
-        <div style="flex:1;margin:0 12px;max-width:160px">
-          ${renderSelectMenu("v-effect-select", effectOptions, currentEffect)}
-        </div>
-        <button class="we-customize-close"><i class="fas fa-times"></i></button>
-      `
-      : `
-        <div class="we-customize-title">Customize ${preset.name}</div>
-        <button class="we-customize-close"><i class="fas fa-times"></i></button>
-      `;
-
     setHTML(
       overlay,
       `
       <div class="we-vanta-customize-inner">
-        <div class="we-customize-header">${headerHtml}</div>
+        <div class="we-customize-header">
+          <div class="we-customize-title">Customize ${preset.name}</div>
+          <button class="we-customize-close"><i class="fas fa-times"></i></button>
+        </div>
         <div class="we-customize-content" id="v-customize-content">${this.renderVantaControlsHtml(getControls())}</div>
         <div class="we-customize-footer">
           <button class="we-customize-btn we-customize-cancel">Cancel</button>
-          <button class="we-customize-btn" id="we-customize-save-preset"><i class="fas fa-save"></i> Save as Preset</button>
-          <button class="we-customize-btn we-customize-apply">Apply</button>
+          <button class="we-customize-btn we-customize-apply"><i class="fas fa-check"></i> Apply</button>
         </div>
       </div>
     `
     );
 
     document.body.appendChild(overlay);
-
-    if (isNew) {
-      bindSelectMenu(overlay);
-      const select = $("#v-effect-select");
-      if (select) {
-        bindEvent(select, "change", () => {
-          const newEffect = getSelectMenuValue("v-effect-select", overlay);
-          if (newEffect && newEffect !== currentEffect) {
-            currentEffect = newEffect;
-            currentOptions = { ...VANTA_DEFAULTS[newEffect] };
-            rebuildControls();
-          }
-        });
-      }
-    }
-
     bindRangeSlider(overlay);
     overlay.querySelectorAll(".we-control-color").forEach((input) => {
       bindEvent(input, "input", () => {});
     });
-    const controls = getControls();
-    controls
+    getControls()
       .filter((c) => c.type === "range")
       .forEach((c) => {
         const slider = $(`#v_slider_${c.key}`, overlay);
@@ -1133,45 +865,11 @@ export class WallpaperEngineApp extends BaseApp {
     overlay.querySelector(".we-customize-cancel").onclick = () => overlay.remove();
     overlay.querySelector(".we-customize-apply").onclick = () => {
       const customOptions = readOptions();
-      const customPreset = { effect: currentEffect, options: { ...currentOptions, ...customOptions } };
+      const customPreset = { effect: preset.effect, options: { ...currentOptions, ...customOptions } };
       SystemUtilities.setWallpaper(`vanta:custom:${btoa(JSON.stringify(customPreset))}`);
-      this.notify(isNew ? "Custom preset applied" : `Custom "${preset.name}" applied`);
+      this.notify(`Custom "${preset.name}" applied`);
       overlay.remove();
     };
-
-    const savePresetBtn = $("#we-customize-save-preset");
-    if (savePresetBtn) {
-      bindEvent(savePresetBtn, "click", async () => {
-        const customOptions = readOptions();
-        const suggestedName = isNew
-          ? currentEffect.charAt(0) + currentEffect.slice(1).toLowerCase() + " Custom"
-          : `${preset.name} Custom`;
-        const name = await os.dialog.prompt("Save Vanta Preset", "Enter a name for your custom preset:", suggestedName);
-        if (!name) return;
-        const newPreset = {
-          name,
-          effect: currentEffect,
-          options: { ...currentOptions, ...customOptions },
-          previewStyle: { background: "var(--bg-base)" }
-        };
-        const saved = this.addCustomVantaPreset(newPreset);
-        this.wallpaperItems.push({
-          id: `vanta_custom_${saved.id}`,
-          name: saved.name,
-          type: "vanta",
-          src: `vanta:custom:${btoa(JSON.stringify({ effect: saved.effect, options: saved.options }))}`,
-          thumbnail: null,
-          vantaPreset: saved,
-          isVideo: false,
-          isCustom: true,
-          meta: { source: "Custom", effect: saved.effect }
-        });
-        this.renderGrid();
-        this.updateStats();
-        this.notify(`Preset "${name}" saved`);
-        overlay.remove();
-      });
-    }
   }
 
   getVantaControls(preset) {
@@ -1222,10 +920,12 @@ export class WallpaperEngineApp extends BaseApp {
     return controls;
   }
 
-  shuffleRandom() {
+  async shuffleRandom() {
     const items = this.getFilteredItems();
     if (!items.length) return;
-    this.showPreview(items[Math.floor(Math.random() * items.length)]);
+    const item = items[Math.floor(Math.random() * items.length)];
+    await this.setDesktop(item);
+    if (this.win) this.showPreview(item);
   }
 
   attachCardContextMenu(card) {
@@ -1245,7 +945,6 @@ export class WallpaperEngineApp extends BaseApp {
           action: "toggleFav",
           icon: "fa-star"
         },
-        { id: "ctx-" + item.id + "-pl", label: "Add to Playlist", action: "addPlaylist", icon: "fa-list" },
         { id: "ctx-" + item.id + "-fs", label: "Fullscreen Preview", action: "fullscreen", icon: "fa-expand" },
         "hr",
         { id: "ctx-" + item.id + "-copy", label: "Copy Name", action: "copyName", icon: "fa-copy" }
@@ -1258,134 +957,17 @@ export class WallpaperEngineApp extends BaseApp {
           icon: "fa-trash"
         });
       }
-      if (item.isCustom) {
-        menuItems.push("hr", {
-          id: "ctx-" + item.id + "-edit-preset",
-          label: "Edit Preset",
-          action: "editPreset",
-          icon: "fa-sliders-h"
-        });
-        menuItems.push({
-          id: "ctx-" + item.id + "-del-preset",
-          label: "Delete Preset",
-          action: "deletePreset",
-          icon: "fa-trash"
-        });
-      }
       showContextMenu(e, menuItems, {
         setDesktop: () => this.setDesktop(item),
         setLogin: () => this.setLogin(item),
         toggleFav: () => this.toggleFavorite(item.id),
-        addPlaylist: () => this.showAddToPlaylist(item),
         fullscreen: () => this.showFullscreenPreview(item),
         copyName: () => navigator.clipboard.writeText(item.name).then(() => this.notify("Name copied")),
-        deletePaper: () => this.deleteUserWallpaper(item),
-        editPreset: () => {
-          if (item.vantaPreset) this.showVantaCustomize(item.vantaPreset);
-        },
-        deletePreset: async () => {
-          const confirmed = await os.dialog.confirm("Delete Preset", `Delete "${item.name}"?`);
-          if (!confirmed) return;
-          this.deleteCustomVantaPreset(item.vantaPreset?.id);
-          this.notify(`Preset "${item.name}" deleted`);
-        }
+        deletePaper: () => this.deleteUserWallpaper(item)
       });
     });
   }
 
-  attachCardTooltip(card) {
-    bindEvent(card, "mouseenter", () => {
-      clearTimeout(this.tooltipTimer);
-      this.tooltipTimer = setTimeout(() => {
-        const rect = card.getBoundingClientRect();
-        const id = card.dataset.id;
-        const item = this.wallpaperItems.find((i) => i.id === id);
-        if (!item) return;
-        const el = createElement("div", { className: "we-tooltip" });
-        el.dataset.weTooltipFor = id;
-        el.innerHTML = `
-          <div class="we-tooltip-name">${item.name}</div>
-          <div class="we-tooltip-row"><i class="fas fa-tag"></i> ${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</div>
-          <div class="we-tooltip-row"><i class="fas fa-globe"></i> ${item.meta?.source || "Unknown"}</div>
-          ${item.isVideo ? '<div class="we-tooltip-row"><i class="fas fa-video"></i> Video wallpaper</div>' : ""}
-          ${item.type === "vanta" && item.vantaPreset ? `<div class="we-tooltip-row"><i class="fas fa-cog"></i> ${item.vantaPreset.effect}</div>` : ""}
-        `;
-        el.style.position = "fixed";
-        el.style.left = Math.min(rect.left + rect.width / 2 - 120, window.innerWidth - 260) + "px";
-        el.style.top = rect.top - 10 + "px";
-        el.style.transform = "translateY(-100%)";
-        document.body.appendChild(el);
-      }, 600);
-    });
-
-    bindEvent(card, "mouseleave", () => {
-      clearTimeout(this.tooltipTimer);
-      $$(`[data-we-tooltip-for="${card.dataset.id}"]`).forEach((el) => el.remove());
-    });
-  }
-
-  /* ---------- Batch Bar ---------- */
-  renderBatchBar() {
-    const bar = $("#we-bottom-bar", this.win);
-    if (!bar) return;
-    const count = this.selectedItems.size;
-    const existing = bar.querySelector(".we-batch-actions");
-    if (existing) existing.remove();
-    if (count === 0) return;
-
-    const batch = createElement("div", { className: "we-batch-actions" });
-    setHTML(
-      batch,
-      `
-      <span class="we-batch-count">${count} selected</span>
-      <button class="we-toolbar-btn" data-batch="set"><i class="fas fa-desktop"></i> Set Desktop</button>
-      <button class="we-toolbar-btn" data-batch="fav"><i class="fas fa-star"></i> Favorite</button>
-      <button class="we-toolbar-btn" data-batch="playlist"><i class="fas fa-list"></i> Add to Playlist</button>
-      <button class="we-toolbar-btn we-toolbar-btn--danger" data-batch="delete"><i class="fas fa-trash"></i> Delete</button>
-      <button class="we-toolbar-btn" data-batch="clear"><i class="fas fa-times"></i> Clear</button>
-    `
-    );
-    bar.appendChild(batch);
-
-    const items = [...this.selectedItems].map((id) => this.wallpaperItems.find((i) => i.id === id)).filter(Boolean);
-
-    bindEvent(batch, "click", (e) => {
-      const btn = e.target.closest("[data-batch]");
-      if (!btn) return;
-      const action = btn.dataset.batch;
-      if (action === "clear") {
-        this.selectedItems.clear();
-        this.renderGrid();
-        this.renderBatchBar();
-        return;
-      }
-      if (action === "set") {
-        for (const item of items) {
-          this.setDesktop(item, true);
-          break;
-        }
-        this.notify("Desktop wallpaper set");
-      } else if (action === "fav") {
-        for (const item of items) {
-          if (!this.favorites.includes(item.id)) this.favorites.push(item.id);
-        }
-        this.saveFavorites();
-        this.notify(`Added ${items.length} to favorites`);
-      } else if (action === "playlist") {
-        if (items.length) this.showAddToPlaylist(items[0]);
-        return;
-      } else if (action === "delete") {
-        const uploads = items.filter((i) => i.isUserUpload);
-        if (uploads.length) for (const item of uploads) this.deleteUserWallpaper(item, true);
-        this.notify(`Deleted ${uploads.length} wallpaper(s)`);
-      }
-      this.selectedItems.clear();
-      this.renderGrid();
-      this.renderBatchBar();
-    });
-  }
-
-  /* ---------- Delete User Wallpaper ---------- */
   async deleteUserWallpaper(item, silent = false) {
     try {
       await this.fs.deleteItem(["Pictures", "Wallpapers"], item.userFileName);
@@ -1398,7 +980,6 @@ export class WallpaperEngineApp extends BaseApp {
     }
   }
 
-  /* ---------- Fullscreen Preview ---------- */
   async showFullscreenPreview(item) {
     const overlay = createElement("div", { className: "we-fs-overlay" });
     const isVideo = item.isVideo;
@@ -1484,24 +1065,7 @@ export class WallpaperEngineApp extends BaseApp {
       if (preset && window.VANTA) {
         const container = $("#we-fs-vanta", overlay);
         if (container) {
-          const effect =
-            window.VANTA[
-              preset.effect === "CELLS"
-                ? "CELLS"
-                : preset.effect === "NET"
-                  ? "NET"
-                  : preset.effect === "WAVES"
-                    ? "WAVES"
-                    : preset.effect === "BIRDS"
-                      ? "BIRDS"
-                      : preset.effect === "DOTS"
-                        ? "DOTS"
-                        : preset.effect === "GLOBE"
-                          ? "GLOBE"
-                          : preset.effect === "HALO"
-                            ? "HALO"
-                            : "FOG"
-            ];
+          const effect = window.VANTA[preset.effect];
           if (effect) effect({ el: container, ...preset.options });
         }
       }
@@ -1601,254 +1165,6 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  showPlaylistsView() {
-    const content = $("#we-content", this.win);
-    if (!content) return;
-    const names = Object.keys(this.playlists);
-    let listHtml = names.length
-      ? names
-          .map((n) => {
-            const count = this.playlists[n].length;
-            const active = this.activePlaylist === n;
-            return `<div class="we-playlist-item" data-name="${n}">
-        <div class="we-playlist-info">
-          <div class="we-playlist-name">${n}</div>
-          <div class="we-playlist-count">${count} wallpaper${count !== 1 ? "s" : ""}</div>
-        </div>
-        <div class="we-playlist-actions">
-          ${active ? '<span class="we-playlist-active-badge">Active</span>' : `<button class="we-card-action primary we-playlist-activate" data-name="${n}">Activate</button>`}
-          <button class="we-card-action we-playlist-edit" data-name="${n}"><i class="fas fa-edit"></i></button>
-          <button class="we-card-action we-card-action--danger we-playlist-delete" data-name="${n}"><i class="fas fa-trash"></i></button>
-        </div>
-      </div>`;
-          })
-          .join("")
-      : '<div class="we-category-empty"><i class="fas fa-list"></i><span>No playlists yet. Create one below!</span></div>';
-
-    setHTML(
-      content,
-      `
-      <div class="we-section-title"><i class="fas fa-list"></i> Wallpaper Playlists</div>
-      <div class="we-playlist-create">
-        <div class="we-import-input-wrap" style="flex:1">
-          <input class="we-text-input we-custom-input" id="we-playlist-name-input" type="text" placeholder="New playlist name..." />
-        </div>
-        <button class="we-toolbar-btn primary" id="we-playlist-create-btn"><i class="fas fa-plus"></i> Create</button>
-      </div>
-      <div class="we-playlist-list">${listHtml}</div>
-      <div id="we-playlist-detail"></div>
-    `
-    );
-
-    bindEvent($("#we-playlist-create-btn", this.win), "click", () => {
-      const name = $("#we-playlist-name-input", this.win)?.value.trim();
-      if (!name || this.playlists[name]) return;
-      this.playlists[name] = [];
-      this.savePlaylists();
-      this.showPlaylistsView();
-    });
-
-    bindEvent(content, "click", (e) => {
-      const activateBtn = e.target.closest(".we-playlist-activate");
-      const editBtn = e.target.closest(".we-playlist-edit");
-      const deleteBtn = e.target.closest(".we-playlist-delete");
-      if (activateBtn) {
-        this.activePlaylist = activateBtn.dataset.name;
-        os.storage.set(WE_KEYS.activePlaylist, this.activePlaylist);
-        this.notify(`Playlist "${this.activePlaylist}" activated`);
-        this.showPlaylistsView();
-      } else if (deleteBtn) {
-        const name = deleteBtn.dataset.name;
-        delete this.playlists[name];
-        if (this.activePlaylist === name) {
-          this.activePlaylist = null;
-          os.storage.remove(WE_KEYS.activePlaylist);
-        }
-        this.savePlaylists();
-        this.showPlaylistsView();
-      } else if (editBtn) {
-        this.showPlaylistDetail(editBtn.dataset.name);
-      }
-    });
-
-    content.querySelectorAll(".we-playlist-item").forEach((plItem) => {
-      bindEvent(plItem, "contextmenu", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const name = plItem.dataset.name;
-        const isActive = this.activePlaylist === name;
-        showContextMenu(
-          e,
-          [
-            { id: "pl-" + name + "-edit", label: "View Details", action: "edit", icon: "fa-edit" },
-            ...(isActive
-              ? []
-              : [{ id: "pl-" + name + "-act", label: "Activate", action: "activate", icon: "fa-play" }]),
-            "hr",
-            { id: "pl-" + name + "-ren", label: "Rename", action: "rename", icon: "fa-i-cursor" },
-            { id: "pl-" + name + "-del", label: "Delete", action: "deletePl", icon: "fa-trash" }
-          ],
-          {
-            edit: () => this.showPlaylistDetail(name),
-            activate: () => {
-              this.activePlaylist = name;
-              os.storage.set(WE_KEYS.activePlaylist, name);
-              this.notify(`Playlist "${name}" activated`);
-              this.showPlaylistsView();
-            },
-            rename: async () => {
-              const newName = await os.dialog.prompt("Rename Playlist", "Enter a new name:", name);
-              if (newName && newName !== name && !this.playlists[newName]) {
-                this.playlists[newName] = this.playlists[name];
-                delete this.playlists[name];
-                if (this.activePlaylist === name) {
-                  this.activePlaylist = newName;
-                  os.storage.set(WE_KEYS.activePlaylist, newName);
-                }
-                this.savePlaylists();
-                this.showPlaylistsView();
-              }
-            },
-            deletePl: () => {
-              delete this.playlists[name];
-              if (this.activePlaylist === name) {
-                this.activePlaylist = null;
-                os.storage.remove(WE_KEYS.activePlaylist);
-              }
-              this.savePlaylists();
-              this.showPlaylistsView();
-            }
-          }
-        );
-      });
-    });
-  }
-
-  showPlaylistDetail(name) {
-    const detail = $("#we-playlist-detail", this.win);
-    if (!detail) return;
-    const ids = this.playlists[name] || [];
-    const items = ids.map((id) => this.wallpaperItems.find((i) => i.id === id)).filter(Boolean);
-
-    setHTML(
-      detail,
-      `
-      <div class="we-section-title" style="margin-top:16px;">${name} <span style="font-weight:400;font-size:12px;color:var(--text-secondary)">(${items.length} wallpapers)</span></div>
-      ${
-        items.length
-          ? `<div class="we-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))">
-        ${items
-          .map(
-            (item) => `<div class="we-card" data-id="${item.id}">
-          <div class="we-card-thumb">
-            ${item.thumbnail ? `<img src="${item.thumbnail}" alt="${item.name}" loading="lazy" />` : '<div class="we-card-img-placeholder"><i class="fas fa-image"></i></div>'}
-          </div>
-          <div class="we-card-name">${item.name}</div>
-          <div class="we-card-actions">
-            <button class="we-card-action" style="color:#f87171" data-action="remove-from-playlist" data-playlist="${name}" data-id="${item.id}">Remove</button>
-          </div>
-        </div>`
-          )
-          .join("")}
-      </div>`
-          : '<div class="we-category-empty"><i class="fas fa-images"></i><span>No wallpapers in this playlist</span></div>'
-      }
-    `
-    );
-
-    bindEvent(detail, "click", (e) => {
-      const removeBtn = e.target.closest("[data-action='remove-from-playlist']");
-      if (!removeBtn) return;
-      const pName = removeBtn.dataset.playlist;
-      const id = removeBtn.dataset.id;
-      if (this.playlists[pName]) {
-        this.playlists[pName] = this.playlists[pName].filter((i) => i !== id);
-        this.savePlaylists();
-        this.showPlaylistDetail(pName);
-      }
-    });
-
-    detail.querySelectorAll(".we-card").forEach((dcard) => {
-      bindEvent(dcard, "contextmenu", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const id = dcard.dataset.id;
-        const item = this.wallpaperItems.find((i) => i.id === id);
-        if (!item) return;
-        const pName = dcard.querySelector("[data-playlist]")?.dataset.playlist || name;
-        const isFav = this.favorites.includes(id);
-        showContextMenu(
-          e,
-          [
-            { id: "pd-" + id + "-set", label: "Set Desktop", action: "setDesktop", icon: "fa-desktop" },
-            {
-              id: "pd-" + id + "-fav",
-              label: isFav ? "Remove from Favorites" : "Add to Favorites",
-              action: "toggleFav",
-              icon: "fa-star"
-            },
-            "hr",
-            { id: "pd-" + id + "-rem", label: "Remove from Playlist", action: "removePl", icon: "fa-minus-circle" }
-          ],
-          {
-            setDesktop: () => this.setDesktop(item),
-            toggleFav: () => this.toggleFavorite(item.id),
-            removePl: () => {
-              if (this.playlists[pName]) {
-                this.playlists[pName] = this.playlists[pName].filter((i) => i !== id);
-                this.savePlaylists();
-                this.showPlaylistDetail(pName);
-              }
-            }
-          }
-        );
-      });
-    });
-  }
-
-  showAddToPlaylist(item) {
-    const names = Object.keys(this.playlists);
-    if (!names.length) {
-      this.notify("No playlists. Create one in the sidebar first.");
-      return;
-    }
-    const options = names.map((n) => ({ label: n, value: n }));
-    const overlay = createElement("div", { className: "we-vanta-customize-dialog" });
-    setHTML(
-      overlay,
-      `
-      <div class="we-vanta-customize-inner" style="max-width:360px">
-        <div class="we-customize-header">
-          <div class="we-customize-title">Add to Playlist</div>
-          <button class="we-customize-close"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="we-customize-content">
-          ${renderSelectMenu("we-playlist-select", options, options[0].value)}
-        </div>
-        <div class="we-customize-footer">
-          <button class="we-customize-btn we-customize-cancel" id="we-p-cancel">Cancel</button>
-          <button class="we-customize-btn we-customize-apply" id="we-p-add">Add</button>
-        </div>
-      </div>
-    `
-    );
-    document.body.appendChild(overlay);
-    bindSelectMenu(overlay);
-    overlay.querySelector(".we-customize-close").onclick = () => overlay.remove();
-    $("#we-p-cancel", overlay).onclick = () => overlay.remove();
-    $("#we-p-add", overlay).onclick = () => {
-      const val = getSelectMenuValue("we-playlist-select", overlay);
-      if (val && this.playlists[val]) {
-        if (!this.playlists[val].includes(item.id)) {
-          this.playlists[val].push(item.id);
-          this.savePlaylists();
-          this.notify(`Added to "${val}"`);
-        } else this.notify("Already in this playlist");
-      }
-      overlay.remove();
-    };
-  }
-
   showFiltersView() {
     const content = $("#we-content", this.win);
     if (!content) return;
@@ -1911,19 +1227,7 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
-  notify(msg, type) {
-    type = type || "info";
-    const icons = { info: "fa-info-circle", success: "fa-check-circle", error: "fa-exclamation-triangle" };
-    const els = $$(".we-notification");
-    const offset = 60 + els.length * 48;
-    const el = createElement("div", { className: `we-notification we-notification--${type}` });
-    el.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${msg}</span>`;
-    el.style.bottom = offset + "px";
-    document.body.appendChild(el);
-    setTimeout(() => {
-      el.style.opacity = "0";
-      el.style.transition = "opacity 0.3s";
-      setTimeout(() => el.remove(), 300);
-    }, 3000);
+  notify(msg, type = "info") {
+    os.notify.send("Wallpaper Engine", msg, { type });
   }
 }

@@ -10,7 +10,6 @@ import { WeatherApp } from "./apps/weather.js";
 import { MarkdownApp } from "./apps/markdown.js";
 import { ShittifyApp } from "./apps/shittify.js";
 import { MonacoApp } from "./apps/monaco.js";
-import { Model3DApp } from "./apps/blender.js";
 import { EmulatorApp } from "./apps/emulator.js";
 import { AchievementsApp } from "./achievements.js";
 import { RuffleApp } from "./apps/ruffle.js";
@@ -20,7 +19,6 @@ import { YukiConvertApp } from "./apps/yukiConvert.js";
 import { SetupApp } from "./apps/setupApp.js";
 import { DataEditorApp } from "./apps/dataEditor.js";
 import { DefaultAppsApp } from "./apps/defaultApps.js";
-import { InstalledAppsApp } from "./apps/installedApps.js";
 import { YukiOsGuideApp } from "./apps/yukiOsGuide.js";
 import { ClipboardManagerApp } from "./apps/clipboardApp.js";
 import { AIAssistantApp } from "./apps/aiAssistant.js";
@@ -51,6 +49,7 @@ import { CmatrixApp } from "./apps/cmatrix.js";
 import { MagnifierApp } from "./apps/magnifier.js";
 import { RemoteHostApp } from "./apps/RemoteHostApp.js";
 import { IntroTourApp } from "./apps/introTour.js";
+import { ModeSwitcherApp } from "./apps/modeSwitcher.js";
 
 const APP_CLASS_MAP = {
   terminalApp: TerminalApp,
@@ -64,7 +63,6 @@ const APP_CLASS_MAP = {
   markdownApp: MarkdownApp,
   shittifyApp: ShittifyApp,
   monacoApp: MonacoApp,
-  model3dApp: Model3DApp,
   emulatorApp: EmulatorApp,
   achievementsApp: AchievementsApp,
   ruffleApp: RuffleApp,
@@ -73,7 +71,6 @@ const APP_CLASS_MAP = {
   setupApp: SetupApp,
   dataEditorApp: DataEditorApp,
   defaultApps: DefaultAppsApp,
-  installedAppsApp: InstalledAppsApp,
   yukiOsGuideApp: YukiOsGuideApp,
   introTourApp: IntroTourApp,
   clipboardManagerApp: ClipboardManagerApp,
@@ -99,6 +96,7 @@ const APP_CLASS_MAP = {
   wallpaperEngineApp: WallpaperEngineApp,
   runApp: RunApp,
   notepadApp: NotepadApp,
+  modeSwitcherApp: ModeSwitcherApp,
   lavatApp: LavatApp,
   btopApp: BtopApp,
   cmatrixApp: CmatrixApp,
@@ -149,9 +147,9 @@ export function loadApps(os, preloaded = {}) {
   const lazyRoom3D = {
     open: (...a) => ensureRoom3D().then((i) => i.open(...a)),
     launchSystemMode: (...a) => ensureRoom3D().then((i) => i.launchSystemMode(...a)),
-    exitSystemMode: (...a) => ensureRoom3D().then((i) => i.exitSystemMode(...a)),
-    closeRoom: (...a) => ensureRoom3D().then((i) => i.closeRoom(...a)),
-    onClose: (...a) => ensureRoom3D().then((i) => i.onClose(...a))
+    exitSystemMode: (...a) => (room3dInst ? room3dInst.exitSystemMode(...a) : undefined),
+    closeRoom: (...a) => (room3dInst ? room3dInst.closeRoom(...a) : undefined),
+    onClose: (...a) => (room3dInst ? room3dInst.onClose(...a) : undefined)
   };
   preloaded.room3dApp = lazyRoom3D;
   os.app.register("room3dApp", lazyRoom3D);

@@ -4,7 +4,7 @@ import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
 import { updateTransparency } from "./transparencyManager.js";
 import { getSetting } from "../utils/utils.js";
-import { os, MODES, yuriPageTitle } from "../framework.js";
+import { os, MODES } from "../framework.js";
 
 export class WindowManagerUtils {
   constructor(manager) {
@@ -113,7 +113,7 @@ export class WindowManagerUtils {
   }
 
   updatePageFavicon(iconValue, title) {
-    document.title = yuriPageTitle() || sanitizeTitle(title) || this.manager.initialTitle;
+    document.title = sanitizeTitle(title) || this.manager.initialTitle;
     const link = this.getFaviconLink();
     iconValue = resolveIconUrl(iconValue);
     const { isImage, isDataUrl } = this.resolveIconType(iconValue);
@@ -125,7 +125,7 @@ export class WindowManagerUtils {
   }
 
   resetToDefaultState() {
-    document.title = yuriPageTitle() || this.manager.initialTitle;
+    document.title = this.manager.initialTitle;
     const link = this.getFaviconLink();
     link.href = this.manager.initialFavicon || "";
   }
@@ -133,7 +133,7 @@ export class WindowManagerUtils {
   initVisibilityTracking() {
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
-        document.title = yuriPageTitle() || this.manager.initialTitle;
+        document.title = this.manager.initialTitle;
         this.getFaviconLink().href = this.manager.initialFavicon || "";
       } else {
         if (this.manager.openWindows.size === 0) {

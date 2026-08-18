@@ -9,7 +9,7 @@ html[data-theme] [id^="terminal-win"] .window-content.terminal-content {
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
   color: var(--text-primary, #c0c0c0);
   font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  font-size: 14px;
+  font-size: 16px;
   overflow-y: auto;
   height: calc(100% - 40px);
   cursor: text;
@@ -180,6 +180,7 @@ html[data-theme] .terminal-content ::selection {
 .terminal-tab {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 3px 10px;
   border-radius: 4px;
@@ -191,6 +192,14 @@ html[data-theme] .terminal-content ::selection {
     background 0.15s,
     color 0.15s;
   user-select: none;
+  overflow: hidden;
+}
+
+.terminal-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .terminal-tab:hover {

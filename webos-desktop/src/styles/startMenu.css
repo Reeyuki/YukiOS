@@ -155,8 +155,12 @@
   width: 4px;
 }
 
+.start-cat-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .start-cat-list::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--brand) 40%, transparent);
+  background: var(--glass-hover);
   border-radius: 4px;
 }
 
@@ -382,7 +386,7 @@
 }
 
 .start-page::-webkit-scrollbar-thumb {
-  background: var(--bg-secondary, #444);
+  background: var(--glass-hover);
   border-radius: 4px;
 }
 
@@ -404,11 +408,13 @@
   width: 10px;
 }
 
+.app-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .app-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, color-mix(in oklch, var(--brand) 28%, transparent), rgba(255, 255, 255, 0.14));
+  background: var(--glass-hover);
   border-radius: 25px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
 }
 
 .start-menu-item {
@@ -873,7 +879,7 @@
   width: 6px;
 }
 .recent-page::-webkit-scrollbar-thumb {
-  background: var(--bg-secondary, #444);
+  background: var(--glass-hover);
   border-radius: 4px;
 }
 .recent-page::-webkit-scrollbar-track {

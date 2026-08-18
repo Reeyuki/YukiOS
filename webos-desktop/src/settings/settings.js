@@ -80,7 +80,6 @@ export class SettingsApp extends BaseApp {
         taskbarAlignment: os.storage.get(StorageKeys.taskbarAlignment) || "left",
         cdnMirror: os.storage.get(StorageKeys.cdnMirror) || "jsdelivr",
         theme: os.storage.get(StorageKeys.theme) || "dark",
-        yuriMode: parseBool(os.storage.get(StorageKeys.yuriMode)),
         windowTransparency: Number.isFinite(rawTransparency) ? Math.max(0.2, Math.min(1, rawTransparency)) : 1,
         soundEnabled: parseBool(os.storage.get(StorageKeys.soundEnabled), true),
         masterVolume: Number.isFinite(rawMasterVol) ? Math.max(0, Math.min(1, rawMasterVol)) : 1,
@@ -186,7 +185,7 @@ export class SettingsApp extends BaseApp {
       return;
     }
 
-    const win = os.window.create(winId, "Settings", "805px", "600px", {
+    const win = os.window.create(winId, "Settings", "860px", "620px", {
       ...options,
       icon: "fas fa-cog"
     });
@@ -203,7 +202,16 @@ export class SettingsApp extends BaseApp {
 
   navigateToSection(win, section, target) {
     const navItem = win.querySelector(`.yuki-settings-nav li[data-target="${section}"]`);
-    if (navItem) navItem.click();
+    if (navItem) {
+      navItem.click();
+    } else {
+      const pane = win.querySelector(`#${section}`);
+      if (pane) {
+        win.querySelectorAll(".yuki-settings-nav li[data-target]").forEach((n) => n.classList.remove("active"));
+        win.querySelectorAll(".settings-category-pane").forEach((p) => p.classList.remove("active"));
+        pane.classList.add("active");
+      }
+    }
     if (target) {
       setTimeout(() => {
         const targetEl = win.querySelector(`#${target}`);
@@ -237,13 +245,6 @@ export class SettingsApp extends BaseApp {
   }
 
   deleteAllData = async () => deleteAllData();
-
-  resetModuleData = async () => {
-    const confirmed = await os.dialog.confirm("Confirm", "Reset all settings and reload? You can't undo this.");
-    if (!confirmed) return;
-    Object.values(StorageKeys).forEach((key) => os.storage.remove(key));
-    location.reload();
-  };
 
   buildSaveCallback(win) {
     return () => {

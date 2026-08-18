@@ -12,8 +12,7 @@ import { loadVantaEffect } from "./vanta/vantaLoader.js";
 import { parseBool, isBlobLike } from "./utils/utils.js";
 import { isFunction } from "./shared/functionUtils.js";
 
-import { StorageKeys, os, MODES, isYuri } from "./framework.js";
-import { getYuriWallpapers } from "./yuriWallpapers.js";
+import { StorageKeys, os, MODES } from "./framework.js";
 
 class WallpaperStore {
   static currentWallpaperBlobUrl = null;
@@ -624,16 +623,6 @@ class WallpaperManager {
       return;
     }
 
-    if (isYuri() && !isManual) {
-      const yuriWalls = getYuriWallpapers();
-      if (yuriWalls.length) {
-        const pick = yuriWalls[Math.floor(Math.random() * yuriWalls.length)];
-        os.storage.set(StorageKeys.wallpaperKey, pick.url);
-        this.applyWallpaper(pick.url);
-        return;
-      }
-    }
-
     if ((isManual && saved) || (!shouldCycle && saved)) {
       const normalized = this.normalizeWallpaperUrl(saved);
       if (normalized !== saved) os.storage.set(StorageKeys.wallpaperKey, normalized);
@@ -690,7 +679,18 @@ export class SystemUtilities {
   }
 
   static async startTaskbarWeather() {
-    if (os.modes.isActive(MODES.MAC)) return;
+    if (!SystemUtilities.weatherModeBound) {
+      SystemUtilities.weatherModeBound = true;
+      os.events.on(BusEvents.MODE_ENTERED, (data) => {
+        if (data && data.id === MODES.STEAMDECK) SystemUtilities.stopTaskbarWeather();
+      });
+      os.events.on(BusEvents.MODE_EXITED, (data) => {
+        if (data && data.id === MODES.STEAMDECK && os.storage.get(StorageKeys.weather) !== "false") {
+          SystemUtilities.startTaskbarWeather();
+        }
+      });
+    }
+    if (os.modes.isActive(MODES.MAC) || os.modes.isActive(MODES.STEAMDECK)) return;
     if (!SystemUtilities.weatherEventBound) {
       SystemUtilities.weatherEventBound = true;
       os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {

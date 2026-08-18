@@ -1,5 +1,5 @@
 import { FileKind } from "./shared/fileKindDetector.js";
-import { os, StorageKeys, $, brand, createElement } from "./framework.js";
+import { os, StorageKeys, $, createElement } from "./framework.js";
 import { ROM_EXTS } from "./shared/coreMap.js";
 import { getDefaultApp, isUnassociated } from "./fileAssociations.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
@@ -15,7 +15,6 @@ import {
   isISOFile,
   isExeFile,
   isSwfFile,
-  isModel3DFile,
   isEbookFile,
   isFontFile,
   isDiskFile,
@@ -31,7 +30,6 @@ import {
   ZIP_EXTS,
   EXE_EXTS,
   SWF_EXTS,
-  MODEL3D_EXTS,
   EBOOK_EXTS,
   FONT_EXTS,
   DISK_EXTS,
@@ -95,7 +93,6 @@ export function resolveFileIcon(name) {
   if (isAudioFile(name)) return resolveIconUrl("static/icons/spot.webp");
   if (isRomFile(name)) return "rom";
   if (isSwfFile(name)) return resolveIconUrl("static/icons/flash.webp");
-  if (isModel3DFile(name)) return resolveIconUrl("static/icons/3dmodel.webp");
   if (isZipFile(name)) return resolveIconUrl("static/icons/zip.webp");
   if (isExeFile(name)) return resolveIconUrl("static/icons/jsdos.webp");
   if (isOfficeFile(name)) return resolveIconUrl("static/icons/office.webp");
@@ -163,9 +160,6 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
   }
   if (isSwfFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/flash.webp")}" style="${s}object-fit:cover;">`;
-  }
-  if (isModel3DFile(name)) {
-    return `<img src="${resolveIconUrl("static/icons/3dmodel.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isZipFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/zip.webp")}" style="${s}object-fit:cover;">`;
@@ -420,6 +414,11 @@ export function openMediaViewer(name, src, kind) {
   requestAnimationFrame(() => (win.style.opacity = ""));
 
   if (isImage) setupImageViewer(win);
+
+  if (isVideo || isAudio) {
+    const mediaEl = $("video, audio", win);
+    if (mediaEl) mediaEl.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
 }
 
 function base64ToBlob(dataURL) {
@@ -445,42 +444,6 @@ async function confirmLargeFile(name, size) {
     "Continue",
     "Cancel"
   );
-}
-
-async function openModelFile(name, path) {
-  try {
-    const model3dApp = os.app.getInstance("model3dApp");
-    if (model3dApp) {
-      let arrayBuffer = null;
-      try {
-        const blob = await os.fs.readBinaryFile(path, name);
-        if (blob && blob.size > 0) {
-          arrayBuffer = await blob.arrayBuffer();
-        } else {
-          const content = await os.fs.getFileContent(path, name);
-          if (content instanceof Blob) {
-            arrayBuffer = await content.arrayBuffer();
-          } else if (content instanceof ArrayBuffer) {
-            arrayBuffer = content;
-          } else if (typeof content === "string") {
-            arrayBuffer = new TextEncoder().encode(content).buffer;
-          }
-        }
-      } catch (e) {
-        console.error("Error loading 3D file content:", e);
-      }
-      model3dApp.open({
-        title: name,
-        filePath: path,
-        fileName: name,
-        fileData: arrayBuffer
-      });
-    } else {
-      os.dialog.alert("Can't Open", brand("Yuki Blender isn't available right now."));
-    }
-  } catch (err) {
-    console.error("[FileDisplay] openModelFile error:", err);
-  }
 }
 
 async function openExecutable(name, path) {
@@ -751,7 +714,6 @@ export async function openFileWith({ name, path }) {
 
     console.log("Open file with: ", name, path);
 
-    if (isModel3DFile(name)) return openModelFile(name, path);
     if (
       isExeFile(name) ||
       name.toLowerCase().endsWith(".jsdos") ||
@@ -804,9 +766,6 @@ export async function openFileWithApp(appId, { name, path }) {
       }
       case "officeApp":
         await openOfficeFile(name, path);
-        return true;
-      case "model3dApp":
-        await openModelFile(name, path);
         return true;
       case "emulatorApp":
         await openRomFile(name, path);

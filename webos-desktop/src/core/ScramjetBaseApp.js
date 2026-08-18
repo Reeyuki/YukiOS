@@ -69,7 +69,7 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   getHTMLPath() {
-    return `/scramapps/scramjet-template.html`;
+    return `/sapps/set-template.html`;
   }
 
   async initScramjet(payload, vt, element, state) {
