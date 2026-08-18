@@ -4,6 +4,7 @@ import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
 import { animateWindowOpen } from "./AnimationSystem.js";
+import { enableTaskbarReorder } from "./taskbarReorder.js";
 import { parseBool } from "../utils/utils.js";
 
 import {
@@ -23,9 +24,14 @@ export class TaskbarSystem {
   constructor(manager) {
     this.manager = manager;
     this.contextMenuOpen = false;
+    this.taskbarDragging = false;
     setTimeout(() => this.initScrollHandling(), 0);
     this.onCloseBound = () => this.applyTaskbarLabels();
     os.events.on(BusEvents.WINDOW_CLOSED, this.onCloseBound);
+    this.syncPinnedBound = () => this.syncPinnedStates();
+    os.events.on(BusEvents.WINDOW_FOCUSED, this.syncPinnedBound);
+    os.events.on(BusEvents.WINDOW_CREATED, this.syncPinnedBound);
+    os.events.on(BusEvents.WINDOW_MINIMIZED, this.syncPinnedBound);
     this.audioIndicatorTimer = setInterval(() => this.updateAudioIndicators(), 600);
   }
 
@@ -215,46 +221,19 @@ export class TaskbarSystem {
       observer.observe(document.body, { childList: true });
     };
 
-    taskbarItem.draggable = true;
-
-    taskbarItem.addEventListener("dragstart", (e) => {
-      taskbarItem.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", winId);
-      this.hideTaskbarPreview();
-      if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
-      if (this.manager.taskbarPreviewHideTimer) clearTimeout(this.manager.taskbarPreviewHideTimer);
-    });
-
-    taskbarItem.addEventListener("dragend", () => {
-      taskbarItem.classList.remove("dragging");
-      this.saveTaskbarOrder();
-    });
-
-    taskbarItem.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      const draggingItem = $(".taskbar-item.dragging");
-      if (draggingItem && draggingItem !== taskbarItem) {
-        const taskbarWindows = $("#taskbar-windows");
-        const items = $$(".taskbar-item:not(.dragging)", taskbarWindows);
-        const nextItem = items.find((item) => {
-          const rect = item.getBoundingClientRect();
-          const midpoint = rect.left + rect.width / 2;
-          return e.clientX < midpoint;
-        });
-        if (nextItem) {
-          taskbarWindows.insertBefore(draggingItem, nextItem);
-        } else {
-          taskbarWindows.appendChild(draggingItem);
-        }
-      }
-    });
-
-    taskbarItem.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const draggedWinId = e.dataTransfer.getData("text/plain");
-      if (draggedWinId !== winId) {
+    enableTaskbarReorder(taskbarItem, {
+      getContainer: () => $("#taskbar-windows"),
+      getSiblings: () => $$(".taskbar-item", $("#taskbar-windows")),
+      onDragStart: () => {
+        this.taskbarDragging = true;
+        this.hideTaskbarPreview();
+        if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
+        if (this.manager.taskbarPreviewHideTimer) clearTimeout(this.manager.taskbarPreviewHideTimer);
+      },
+      onDragEnd: () => {
+        this.taskbarDragging = false;
+      },
+      onDrop: () => {
         this.saveTaskbarOrder();
       }
     });
@@ -294,7 +273,7 @@ export class TaskbarSystem {
     }
 
     taskbarItem.addEventListener("mouseenter", () => {
-      if (this.contextMenuOpen) return;
+      if (this.contextMenuOpen || this.taskbarDragging) return;
       if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
       this.manager.taskbarPreviewShowTimer = setTimeout(() => {
         if (!this.contextMenuOpen) {
@@ -309,6 +288,7 @@ export class TaskbarSystem {
     });
 
     $("#taskbar-windows").appendChild(taskbarItem);
+    this.applyTaskbarOrder();
 
     const taskbarWindows = $("#taskbar-windows");
     if (taskbarWindows) {
@@ -601,20 +581,20 @@ export class TaskbarSystem {
     const taskbarWindows = $("#taskbar-windows");
     if (!taskbarWindows) return;
 
-    const existingPinnedContainer = $("#taskbar-pinned-container");
-    if (existingPinnedContainer) existingPinnedContainer.remove();
+    const existingPinned = $$(".taskbar-item.pinned", taskbarWindows);
+    existingPinned.forEach((el) => el.remove());
 
     const pinnedItems = this.getPinnedItems();
     if (pinnedItems.length === 0) return;
 
-    const pinnedContainer = createElement("div", {
-      id: "taskbar-pinned-container",
-      className: "taskbar-pinned-container"
-    });
-
     pinnedItems.forEach((item) => {
-      const pinnedItem = createElement("div", { className: "taskbar-item pinned" });
+      const pinnedItem = createElement("div", {
+        id: `taskbar-pinned-${item.winId}`,
+        className: "taskbar-item pinned"
+      });
       pinnedItem.dataset.title = item.title;
+      pinnedItem.dataset.appId = item.appId;
+      pinnedItem.dataset.winId = item.winId;
       pinnedItem.appendChild(this.buildTaskbarIcon(item.iconValue, item.title, item.color));
 
       pinnedItem.onclick = () => {
@@ -650,65 +630,42 @@ export class TaskbarSystem {
         const observer = new MutationObserver(() => {
           if (!document.body.contains(menu)) {
             this.contextMenuOpen = false;
+            this.taskbarDragging = false;
             observer.disconnect();
           }
         });
         observer.observe(document.body, { childList: true });
       };
 
-      pinnedItem.draggable = true;
-
-      pinnedItem.addEventListener("dragstart", (e) => {
-        pinnedItem.classList.add("dragging");
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", `pinned-${item.winId}`);
-        this.hideTaskbarPreview();
-        if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
-        if (this.manager.taskbarPreviewHideTimer) clearTimeout(this.manager.taskbarPreviewHideTimer);
-      });
-
-      pinnedItem.addEventListener("dragend", () => {
-        pinnedItem.classList.remove("dragging");
-        this.savePinnedOrder();
-      });
-
-      pinnedItem.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-        const draggingItem = $(".taskbar-item.dragging");
-        if (draggingItem && draggingItem !== pinnedItem) {
-          const items = $$(".taskbar-item:not(.dragging)", pinnedContainer);
-          const nextItem = items.find((item) => {
-            const rect = item.getBoundingClientRect();
-            const midpoint = rect.left + rect.width / 2;
-            return e.clientX < midpoint;
-          });
-          if (nextItem) {
-            pinnedContainer.insertBefore(draggingItem, nextItem);
-          } else {
-            pinnedContainer.appendChild(draggingItem);
-          }
+      enableTaskbarReorder(pinnedItem, {
+        getContainer: () => $("#taskbar-windows"),
+        getSiblings: () => $$(".taskbar-item", $("#taskbar-windows")),
+        onDragStart: () => {
+          this.taskbarDragging = true;
+          this.hideTaskbarPreview();
+          if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
+          if (this.manager.taskbarPreviewHideTimer) clearTimeout(this.manager.taskbarPreviewHideTimer);
+        },
+        onDragEnd: () => {
+          this.taskbarDragging = false;
+        },
+        onDrop: () => {
+          this.saveTaskbarOrder();
         }
       });
 
-      pinnedItem.addEventListener("drop", (e) => {
-        e.preventDefault();
-        this.savePinnedOrder();
-      });
-
-      pinnedContainer.appendChild(pinnedItem);
+      taskbarWindows.appendChild(pinnedItem);
     });
 
-    if (pinnedContainer.children.length > 0) {
-      taskbarWindows.insertBefore(pinnedContainer, taskbarWindows.firstChild);
-    }
+    this.applyTaskbarOrder();
+    this.syncPinnedStates();
   }
 
   saveTaskbarOrder() {
     const taskbarWindows = $("#taskbar-windows");
     if (!taskbarWindows) return;
 
-    const items = $$(".taskbar-item:not(.pinned)", taskbarWindows);
+    const items = $$(".taskbar-item", taskbarWindows);
     const order = items.map((item) => item.id.replace("taskbar-", ""));
 
     try {
@@ -716,30 +673,53 @@ export class TaskbarSystem {
     } catch {}
   }
 
-  savePinnedOrder() {
-    const pinnedContainer = $("#taskbar-pinned-container");
-    if (!pinnedContainer) return;
+  applyTaskbarOrder() {
+    const taskbarWindows = $("#taskbar-windows");
+    if (!taskbarWindows) return;
 
-    const items = $$(".taskbar-item.pinned", pinnedContainer);
-    const pinnedItems = this.getPinnedItems();
+    const saved = os.storage.get(StorageKeys.taskbarOrder) || [];
+    if (!saved.length) return;
 
-    const newOrder = items.map((item) => {
-      const icon = $("img, i", item);
-      const iconSrc = icon?.src || icon?.className || "";
-      return (
-        pinnedItems.find((p) => {
-          const pIcon = this.buildTaskbarIcon(p.iconValue, p.title, p.color);
-          const pIconSrc = pIcon.src || pIcon.className || "";
-          return pIconSrc === iconSrc;
-        }) || pinnedItems[0]
-      );
+    const tiles = $$(".taskbar-item", taskbarWindows);
+    const byId = new Map(tiles.map((t) => [t.id.replace("taskbar-", ""), t]));
+
+    const ordered = [];
+    saved.forEach((id) => {
+      const t = byId.get(id);
+      if (t) {
+        ordered.push(t);
+        byId.delete(id);
+      }
     });
+    byId.forEach((t) => ordered.push(t));
 
-    this.savePinnedItems(newOrder);
+    ordered.forEach((t) => taskbarWindows.appendChild(t));
   }
 
   restorePinnedItems() {
     this.renderPinnedItems();
+  }
+
+  syncPinnedStates() {
+    const taskbarWindows = $("#taskbar-windows");
+    if (!taskbarWindows) return;
+    const openList = Array.from(this.manager.openWindows.entries());
+    $$(".taskbar-item.pinned", taskbarWindows).forEach((pinned) => {
+      const appId = pinned.dataset.appId;
+      const winId = pinned.dataset.winId;
+      let running = false;
+      let focused = false;
+      for (const [wId, entry] of openList) {
+        const winEl = document.getElementById(wId);
+        const wApp = winEl?.dataset?.appId;
+        if (wApp === appId || wId === winId) {
+          running = true;
+          if (entry.taskbarItem?.classList.contains("active")) focused = true;
+        }
+      }
+      pinned.classList.toggle("running", running);
+      pinned.classList.toggle("active", focused);
+    });
   }
 
   applyTaskbarLabels() {

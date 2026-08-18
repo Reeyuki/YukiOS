@@ -16,12 +16,137 @@ function getClientXY(e) {
 }
 
 export function windowMakeDraggable(win, wm) {
+  let drag = null;
+
+  const initDragState = (posX, posY) => {
+    const disableStretch = isDesktopStretchScrollDisabled();
+    if (disableStretch) {
+      if (getComputedStyle(win).position !== "fixed") {
+        const rect = win.getBoundingClientRect();
+        win.style.left = `${rect.left}px`;
+        win.style.top = `${rect.top}px`;
+        win.style.position = "fixed";
+      }
+    } else if (getComputedStyle(win).position === "fixed") {
+      const rect = win.getBoundingClientRect();
+      const desktopRect = desktop.getBoundingClientRect();
+      const left = rect.left - desktopRect.left + desktop.scrollLeft;
+      const top = rect.top - desktopRect.top + desktop.scrollTop;
+      win.style.left = `${left}px`;
+      win.style.top = `${top}px`;
+      win.style.position = "absolute";
+    }
+    const rect = win.getBoundingClientRect();
+    return {
+      offsetX: posX - rect.left,
+      offsetY: posY - rect.top,
+      isFixed: getComputedStyle(win).position === "fixed",
+      desktopRect: desktop.getBoundingClientRect(),
+      grabX: posX,
+      grabY: posY,
+      lastClientX: posX,
+      lastClientY: posY,
+      unsnapPending: !!win.dataset.snapZone,
+      tiling: !!win.dataset.tilingDrag,
+      tilingHovered: null,
+      snapBounds: getSnapBounds(),
+      activeZone: null,
+      newLeft: rect.left,
+      newTop: rect.top
+    };
+  };
+
+  const applyDragMove = (clientX, clientY) => {
+    if (!drag) return;
+    if (drag.unsnapPending) {
+      drag.unsnapPending = false;
+      wm.unsnap(win);
+      const r = win.getBoundingClientRect();
+      drag.offsetX = clientX - r.left;
+      drag.offsetY = clientY - r.top;
+      drag.grabX = clientX;
+      drag.grabY = clientY;
+      drag.lastClientX = clientX;
+      drag.lastClientY = clientY;
+    }
+
+    let newLeft = clientX - drag.offsetX;
+    let newTop = clientY - drag.offsetY;
+    if (!drag.isFixed) {
+      newLeft -= drag.desktopRect.left;
+      newTop -= drag.desktopRect.top;
+    }
+    drag.newLeft = newLeft;
+    drag.newTop = newTop;
+    win.style.left = `${newLeft}px`;
+    win.style.top = `${newTop}px`;
+
+    const dxm = clientX - drag.lastClientX;
+    const dym = clientY - drag.lastClientY;
+    drag.lastClientX = clientX;
+    drag.lastClientY = clientY;
+    wobbleMove(win, dxm, dym);
+
+    if (drag.tiling) {
+      wm.hideSnapGhost();
+      if (drag.tilingHovered) {
+        drag.tilingHovered.classList.remove("tile-drop-hover");
+        drag.tilingHovered = null;
+      }
+      const tiling = wm.tilingManager;
+      const targetWinId = tiling?.getWindowAtCursor();
+      if (targetWinId && targetWinId !== win.id) {
+        const targetWin = $("#" + targetWinId);
+        if (targetWin) {
+          targetWin.classList.add("tile-drop-hover");
+          drag.tilingHovered = targetWin;
+        }
+      }
+    } else {
+      const zone = getSnapZoneFromBounds(clientX, clientY, drag.snapBounds);
+      drag.activeZone = zone;
+      wm.activeSnapZone = zone;
+      if (zone) wm.showSnapGhost(zone);
+      else wm.hideSnapGhost();
+    }
+  };
+
+  const endDrag = () => {
+    if (!drag) return;
+    wm.isDraggingWindow = false;
+    document.body.classList.remove("is-dragging");
+    win.classList.remove("dragging");
+    win.style.left = `${drag.newLeft}px`;
+    win.style.top = `${drag.newTop}px`;
+
+    const entry = wm.openWindows.get(win.id);
+    if (entry?.record) entry.record.setGeometry(drag.newLeft, drag.newTop);
+
+    if (drag.tilingHovered) drag.tilingHovered.classList.remove("tile-drop-hover");
+    wobbleEnd(win);
+
+    if (drag.tiling) {
+      const tiling = wm.tilingManager;
+      if (tiling && tiling.enabled) {
+        const targetWinId = tiling.getWindowAtCursor();
+        if (targetWinId && targetWinId !== win.id) {
+          tiling.swapWindowWithTarget(win.id, targetWinId);
+        }
+      }
+    } else if (drag.activeZone) {
+      wm.applySnap(win, drag.activeZone);
+    }
+
+    wm.activeSnapZone = null;
+    wm.hideSnapGhost();
+    if (wm.triggerSessionSave) wm.triggerSessionSave();
+    drag = null;
+  };
+
   const initHeader = (h) => {
     if (h.dataset.dragReady) return;
     h.dataset.dragReady = "true";
-    let dragOffsetX, dragOffsetY;
 
-    let tilingDragTouched;
     makeDraggable(
       h,
       {
@@ -35,104 +160,24 @@ export function windowMakeDraggable(win, wm) {
           wm.isDraggingWindow = true;
           document.body.classList.add("is-dragging");
 
-          const disableStretch = isDesktopStretchScrollDisabled();
-
-          if (disableStretch) {
-            if (getComputedStyle(win).position !== "fixed") {
-              const rect = win.getBoundingClientRect();
-              win.style.left = `${rect.left}px`;
-              win.style.top = `${rect.top}px`;
-              win.style.position = "fixed";
-            }
-          } else if (getComputedStyle(win).position === "fixed") {
-            const rect = win.getBoundingClientRect();
-            const desktopRect = desktop.getBoundingClientRect();
-            const left = rect.left - desktopRect.left + desktop.scrollLeft;
-            const top = rect.top - desktopRect.top + desktop.scrollTop;
-            win.style.left = `${left}px`;
-            win.style.top = `${top}px`;
-            win.style.position = "absolute";
-          }
-
-          dragOffsetX = posX - win.getBoundingClientRect().left;
-          dragOffsetY = posY - win.getBoundingClientRect().top;
-
-          tilingDragTouched = wm.tilingManager;
+          const tilingDragTouched = wm.tilingManager;
           if (tilingDragTouched && tilingDragTouched.enabled && parseBool(win.dataset.tiled)) {
             win.dataset.tilingDrag = "true";
             wobbleStart(win);
-          } else if (win.dataset.snapZone) {
-            win.dataset.dragUnsnapPending = "true";
           } else {
             wobbleStart(win);
           }
+
+          drag = initDragState(posX, posY);
+          win.classList.add("dragging");
         },
 
         move(e, dx, dy, clientX, clientY) {
-          if (win.dataset.dragUnsnapPending) {
-            delete win.dataset.dragUnsnapPending;
-            wm.unsnap(win);
-            dragOffsetX = clientX - win.getBoundingClientRect().left;
-            dragOffsetY = clientY - win.getBoundingClientRect().top;
-            wobbleStart(win);
-          }
-
-          let newLeft = clientX - dragOffsetX;
-          let newTop = clientY - dragOffsetY;
-
-          if (getComputedStyle(win).position !== "fixed") {
-            const r = desktop.getBoundingClientRect();
-            newLeft -= r.left;
-            newTop -= r.top;
-          }
-
-          win.style.left = `${newLeft}px`;
-          win.style.top = `${newTop}px`;
-
-          const entry = wm.openWindows.get(win.id);
-          if (entry?.record) {
-            entry.record.setGeometry(newLeft, newTop);
-          }
-
-          wobbleMove(win, dx, dy);
-
-          if (win.dataset.tilingDrag) {
-            wm.hideSnapGhost();
-            $(".window.tile-drop-hover").forEach((el) => el.classList.remove("tile-drop-hover"));
-            const targetWinId = tilingDragTouched?.getWindowAtCursor();
-            if (targetWinId && targetWinId !== win.id) {
-              const targetWin = $("#" + targetWinId);
-              if (targetWin) targetWin.classList.add("tile-drop-hover");
-            }
-          } else {
-            const zone = wm.getSnapZone(clientX, clientY);
-            wm.activeSnapZone = zone;
-            if (zone) wm.showSnapGhost(zone);
-            else wm.hideSnapGhost();
-          }
+          applyDragMove(clientX, clientY);
         },
 
         end() {
-          wm.isDraggingWindow = false;
-          document.body.classList.remove("is-dragging");
-          delete win.dataset.dragUnsnapPending;
-          wobbleEnd(win);
-
-          if (win.dataset.tilingDrag) {
-            delete win.dataset.tilingDrag;
-            $(".window.tile-drop-hover").forEach((el) => el.classList.remove("tile-drop-hover"));
-            if (tilingDragTouched && tilingDragTouched.enabled) {
-              const targetWinId = tilingDragTouched.getWindowAtCursor();
-              if (targetWinId && targetWinId !== win.id) {
-                tilingDragTouched.swapWindowWithTarget(win.id, targetWinId);
-              }
-            }
-          } else if (wm.activeSnapZone) {
-            wm.applySnap(win, wm.activeSnapZone);
-            wm.activeSnapZone = null;
-            wm.hideSnapGhost();
-          }
-          if (wm.triggerSessionSave) wm.triggerSessionSave();
+          endDrag();
         }
       },
       {
@@ -246,64 +291,65 @@ export function windowMakeDraggable(win, wm) {
       win.style.position = "absolute";
     }
 
-    const { clientX: startX, clientY: startY } = getClientXY(e);
-    const rect = win.getBoundingClientRect();
-    const dragOffsetX = startX - rect.left;
-    const dragOffsetY = startY - rect.top;
-
     if (wasSnapped) wm.unsnap(win);
     wobbleStart(win);
 
-    const onMouseMove = (e) => {
-      const { clientX, clientY } = getClientXY(e);
-      let newLeft = clientX - dragOffsetX;
-      let newTop = clientY - dragOffsetY;
+    const { clientX: startX, clientY: startY } = getClientXY(e);
+    const rect = win.getBoundingClientRect();
+    drag = {
+      offsetX: startX - rect.left,
+      offsetY: startY - rect.top,
+      isFixed: getComputedStyle(win).position === "fixed",
+      desktopRect: desktop.getBoundingClientRect(),
+      grabX: startX,
+      grabY: startY,
+      lastClientX: startX,
+      lastClientY: startY,
+      unsnapPending: false,
+      tiling: !!win.dataset.tilingDrag,
+      tilingHovered: null,
+      snapBounds: getSnapBounds(),
+      activeZone: null,
+      newLeft: rect.left,
+      newTop: rect.top
+    };
+    win.classList.add("dragging");
 
-      if (getComputedStyle(win).position !== "fixed") {
-        const r = desktop.getBoundingClientRect();
-        newLeft -= r.left;
-        newTop -= r.top;
+    let pendingEvent = null;
+    let rafId = null;
+    const flush = () => {
+      rafId = null;
+      if (!pendingEvent) return;
+      const ev = pendingEvent;
+      pendingEvent = null;
+      applyDragMove(ev.clientX, ev.clientY);
+    };
+    const onMove = (ev) => {
+      pendingEvent = ev;
+      if (rafId == null) rafId = requestAnimationFrame(flush);
+    };
+    const onUp = () => {
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
-
-      win.style.left = `${newLeft}px`;
-      win.style.top = `${newTop}px`;
-
-      const entry = wm.openWindows.get(win.id);
-      if (entry?.record) {
-        entry.record.setGeometry(newLeft, newTop);
+      if (pendingEvent) {
+        applyDragMove(pendingEvent.clientX, pendingEvent.clientY);
+        pendingEvent = null;
       }
-
-      wobbleMove(win, clientX - startX, clientY - startY);
-
-      const zone = wm.getSnapZone(clientX, clientY);
-      wm.activeSnapZone = zone;
-      if (zone) wm.showSnapGhost(zone);
-      else wm.hideSnapGhost();
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onUp);
+      document.removeEventListener("touchcancel", onUp);
+      endDrag();
     };
 
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      document.removeEventListener("touchmove", onMouseMove);
-      document.removeEventListener("touchend", onMouseUp);
-      document.removeEventListener("touchcancel", onMouseUp);
-      wm.isDraggingWindow = false;
-      document.body.classList.remove("is-dragging");
-      wobbleEnd(win);
-
-      if (wm.activeSnapZone) {
-        wm.applySnap(win, wm.activeSnapZone);
-        wm.activeSnapZone = null;
-        wm.hideSnapGhost();
-      }
-      if (wm.triggerSessionSave) wm.triggerSessionSave();
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-    document.addEventListener("touchmove", onMouseMove, { passive: false });
-    document.addEventListener("touchend", onMouseUp);
-    document.addEventListener("touchcancel", onMouseUp);
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+    document.addEventListener("touchmove", onMove, { passive: false });
+    document.addEventListener("touchend", onUp);
+    document.addEventListener("touchcancel", onUp);
   };
 
   const existing = win.querySelectorAll(".window-header, .browser-tabbar, .app-menubar");
@@ -332,7 +378,7 @@ export function windowMakeDraggable(win, wm) {
   win.addEventListener("remove", () => observer.disconnect());
 }
 
-export function getSnapZone(wm, x, y) {
+export function getSnapBounds() {
   const margin = 20;
   const w = window.innerWidth;
   const h = window.innerHeight;
@@ -376,16 +422,24 @@ export function getSnapZone(wm, x, y) {
     bottomBoundary = h - taskbarHeight - margin;
   }
 
-  if (y < topBoundary && x < leftBoundary) return "top-left";
-  if (y < topBoundary && x > rightBoundary) return "top-right";
-  if (y > bottomBoundary && x < leftBoundary) return "bottom-left";
-  if (y > bottomBoundary && x > rightBoundary) return "bottom-right";
+  return { leftBoundary, rightBoundary, topBoundary, bottomBoundary };
+}
 
-  if (y < topBoundary) return "maximize";
-  if (x < leftBoundary) return "left";
-  if (x > rightBoundary) return "right";
+export function getSnapZoneFromBounds(x, y, bounds) {
+  if (y < bounds.topBoundary && x < bounds.leftBoundary) return "top-left";
+  if (y < bounds.topBoundary && x > bounds.rightBoundary) return "top-right";
+  if (y > bounds.bottomBoundary && x < bounds.leftBoundary) return "bottom-left";
+  if (y > bounds.bottomBoundary && x > bounds.rightBoundary) return "bottom-right";
+
+  if (y < bounds.topBoundary) return "maximize";
+  if (x < bounds.leftBoundary) return "left";
+  if (x > bounds.rightBoundary) return "right";
 
   return null;
+}
+
+export function getSnapZone(wm, x, y) {
+  return getSnapZoneFromBounds(x, y, getSnapBounds());
 }
 
 export function showSnapGhost(wm, zone) {

@@ -250,11 +250,12 @@
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-sm);
-  background: var(--glass);
+  background: var(--taskbar-open-bg);
   border-radius: var(--r-sm);
   cursor: pointer;
   white-space: nowrap;
   position: relative;
+  touch-action: none;
   transition:
     background 0.2s,
     transform 0.15s;
@@ -280,7 +281,7 @@
 }
 
 .taskbar-item.active {
-  background: color-mix(in srgb, var(--brand) 30%, transparent);
+  background: color-mix(in srgb, var(--brand) 42%, transparent);
 }
 
 .taskbar-item.active::after {
@@ -296,22 +297,34 @@
 
 .taskbar-item.minimized {
   opacity: 0.6;
-  background: var(--glass);
+  background: var(--taskbar-open-bg);
 }
 
 .taskbar-item.dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
+  opacity: 1;
+  cursor: grabbing;
+  user-select: none;
+  z-index: 10;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  background: color-mix(in srgb, var(--brand) 22%, var(--glass));
+  pointer-events: none;
 }
 
-.taskbar-pinned-container {
-  display: flex;
-  gap: var(--spacing-xs);
-  align-items: center;
+.taskbar-item.taskbar-reorder-anim {
+  transition: transform 0.18s ease;
+}
+
+.taskbar-item.drop-anim {
+  transition: transform 0.2s ease;
 }
 
 .taskbar-item.pinned {
   position: relative;
+}
+
+.taskbar-item.pinned:not(.running) {
+  background: transparent;
+  box-shadow: none;
 }
 
 .taskbar-item-label {

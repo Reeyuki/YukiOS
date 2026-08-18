@@ -32,10 +32,32 @@ export function makeDraggable(element, callbacks, options = {}) {
   let lastX = 0,
     lastY = 0;
   let current = { x: 0, y: 0 };
+  let pendingEvent = null;
+  let rafId = null;
 
   function matchesIgnore(target) {
     if (!ignoreFrom) return false;
     return !!target.closest(ignoreFrom);
+  }
+
+  function runFlush(e) {
+    const pos = getPos(e);
+    const dx = axis !== "y" ? pos.x - lastX : 0;
+    const dy = axis !== "x" ? pos.y - lastY : 0;
+    current.x += dx;
+    current.y += dy;
+    lastX = pos.x;
+    lastY = pos.y;
+    const pp = getPagePos(e);
+    callbacks.move(e, dx, dy, pos.x, pos.y, pp.x, pp.y, current.x, current.y);
+  }
+
+  function flush() {
+    rafId = null;
+    if (!isDragging || !pendingEvent) return;
+    const e = pendingEvent;
+    pendingEvent = null;
+    runFlush(e);
   }
 
   function onDown(e) {
@@ -59,22 +81,22 @@ export function makeDraggable(element, callbacks, options = {}) {
   function onMove(e) {
     if (!isDragging) return;
     e.preventDefault();
-    const pos = getPos(e);
-    const dx = axis !== "y" ? pos.x - lastX : 0;
-    const dy = axis !== "x" ? pos.y - lastY : 0;
-    current.x += dx;
-    current.y += dy;
-    lastX = pos.x;
-    lastY = pos.y;
-    if (callbacks.move) {
-      const pp = getPagePos(e);
-      callbacks.move(e, dx, dy, pos.x, pos.y, pp.x, pp.y, current.x, current.y);
-    }
+    pendingEvent = e;
+    if (rafId == null) rafId = requestAnimationFrame(flush);
   }
 
   function onUp(e) {
     if (!isDragging) return;
     isDragging = false;
+    if (rafId != null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    if (pendingEvent) {
+      const ev = pendingEvent;
+      pendingEvent = null;
+      runFlush(ev);
+    }
     removeDocListeners({ move: onMove, up: onUp });
     if (callbacks.end) callbacks.end(e, current.x, current.y);
   }
