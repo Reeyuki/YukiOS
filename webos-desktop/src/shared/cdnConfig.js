@@ -48,6 +48,10 @@ export const CDN_CONFIG = {
       version: "3.10.1",
       path: "jszip@3.10.1/dist/jszip.min.js"
     },
+    jspdf: {
+      version: "2.5.2",
+      js: "jspdf@2.5.2/dist/jspdf.umd.min.js"
+    },
     docx: {
       version: "8.5.0",
       path: "docx@8.5.0/build/index.js"

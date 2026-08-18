@@ -336,7 +336,7 @@ export class ArchiveExtractor {
     }
   }
 
-  async _7zipDecompress(bytes, fileName) {
+  async decompress7zip(bytes, fileName) {
     const sevenZip = await get7zip();
     const tempId = generateTempId();
     const tempFileName = `${tempId}_${fileName}`;

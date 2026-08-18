@@ -117,6 +117,33 @@ class OfficeModuleLoader {
     this.cache.set("docx", mod);
     return mod;
   }
+
+  async jsPDF() {
+    if (this.cache.has("jsPDF")) return this.cache.get("jsPDF");
+    await this.loadScript(getLibraryUrl("jspdf"));
+    const mod = window.jspdf && window.jspdf.jsPDF ? window.jspdf.jsPDF : window.jsPDF;
+    if (!mod) throw new Error("jsPDF failed to load");
+    this.cache.set("jsPDF", mod);
+    return mod;
+  }
+
+  async html2canvas() {
+    if (window.html2canvas) return window.html2canvas;
+    if (typeof __SINGLE_FILE__ !== "undefined" && __SINGLE_FILE__) {
+      const mod = await import("html2canvas-pro");
+      window.html2canvas = mod.default || mod;
+    } else {
+      const url = "https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.8/dist/html2canvas-pro.min.js";
+      await new Promise((resolve, reject) => {
+        const s = createElement("script", { attributes: { src: url } });
+        s.onload = resolve;
+        s.onerror = () => reject(new Error("html2canvas-pro failed to load"));
+        document.head.appendChild(s);
+      });
+      if (!window.html2canvas) throw new Error("html2canvas-pro failed to load");
+    }
+    return window.html2canvas;
+  }
 }
 const modules = new OfficeModuleLoader();
 
@@ -1052,8 +1079,8 @@ export class OfficeApp extends BaseApp {
   }
 
   get explorerApp() {
-    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
-    return this._explorerApp;
+    if (!this.explorerAppService) this.explorerAppService = this.getService(ServiceKeys.EXPLORER);
+    return this.explorerAppService;
   }
 
   open(titleOrOptions = "Untitled", content = null, filePath = null) {
@@ -2143,8 +2170,74 @@ export class OfficeApp extends BaseApp {
   }
 
   async exportToPDF(state) {
-    speak("PDF export requires jsPDF library. Downloading HTML instead.", ClippyAnimation.CheckingSomething);
-    await this.exportToHTML(state);
+    const readOnlyFormats = [".pdf", ".odp"];
+    if (readOnlyFormats.includes(state.ext) || !state.editor) {
+      os.notify.send("Export to PDF", "This format cannot be exported to PDF.", { type: "warning" });
+      return;
+    }
+
+    try {
+      os.notify.send("Export to PDF", "Generating PDF, please wait...");
+      const jsPDF = await modules.jsPDF();
+      const html2canvas = await modules.html2canvas();
+
+      const source = this.getExportSourceNode(state);
+      if (!source) {
+        os.notify.send("Export to PDF", "Nothing to export.", { type: "warning" });
+        return;
+      }
+
+      const clone = source.cloneNode(true);
+      const wrapper = createElement("div", { className: "office-pdf-export-source" });
+      setStyle(wrapper, {
+        position: "fixed",
+        left: "-10000px",
+        top: "0",
+        width: "794px",
+        background: "#ffffff",
+        color: "#000000",
+        padding: "32px",
+        boxSizing: "border-box",
+        fontFamily: "sans-serif",
+        fontSize: "14px",
+        lineHeight: "1.5",
+        zIndex: "-1"
+      });
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      const pdf = new jsPDF({ unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 24;
+      const contentWidth = pageWidth - margin * 2;
+
+      await pdf.html(wrapper, {
+        html2canvas: { scale: 2, backgroundColor: "#ffffff", useCORS: true, allowTaint: true },
+        x: margin,
+        y: margin,
+        width: contentWidth,
+        windowWidth: 794,
+        autoPaging: "slice",
+        callback: (doc) => {
+          doc.save(`${state.title}.pdf`);
+          wrapper.remove();
+          os.notify.send("Export to PDF", `Saved ${state.title}.pdf`);
+        }
+      });
+    } catch (e) {
+      console.error("PDF export error:", e);
+      os.notify.send("Export to PDF", "Failed to generate PDF.", { type: "error" });
+    }
+  }
+
+  getExportSourceNode(state) {
+    if (state.editorType === "contenteditable" && state.editor) return state.editor;
+    if (state.editorType === "odt-iframe" && state.editor && state.editor.contentDocument) {
+      return state.editor.contentDocument.body;
+    }
+    if (state.editorType === "spreadsheet" && state.editor) return state.editor;
+    if (state.editorType === "pdf" || state.editorType === "presentation") return null;
+    return state.editor || null;
   }
 
   async exportToHTML(state) {

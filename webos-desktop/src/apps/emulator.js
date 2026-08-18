@@ -100,8 +100,8 @@ export class EmulatorApp extends BaseApp {
   }
 
   get explorerApp() {
-    if (!this._explorerApp) this._explorerApp = this.getService(ServiceKeys.EXPLORER);
-    return this._explorerApp;
+    if (!this.explorerAppService) this.explorerAppService = this.getService(ServiceKeys.EXPLORER);
+    return this.explorerAppService;
   }
 
   open(opts) {
