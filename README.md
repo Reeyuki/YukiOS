@@ -428,6 +428,14 @@ pnpm run build        # Production build
 pnpm run preview      # Preview production build
 ```
 
+## Editing System Source
+
+The OS source is shown as a System folder inside explorer, so you can browse and edit it in place.
+
+- Open Files, go to This PC, and open System.
+- Open a file, edit it, and save. On the dev server ,app reloads and your change applies right away, meanwhile in
+  production build its read only.
+
 # 🤝 Contributing
 
 See the [Development Guide](DEVELOPMENT.md).

@@ -56,6 +56,50 @@ export {
   OFFICE_EXTS
 };
 
+const CODE_ICON_COLORS = {
+  js: "#f7df1e",
+  mjs: "#f7df1e",
+  cjs: "#f7df1e",
+  ts: "#3178c6",
+  tsx: "#61dafb",
+  jsx: "#61dafb",
+  py: "#ffd43b",
+  css: "#1572B6",
+  scss: "#cc6699",
+  sass: "#cc6699",
+  less: "#3b6ea5",
+  java: "#e76f00",
+  cs: "#2ea043",
+  c: "#a8b9cc",
+  h: "#a8b9cc",
+  cpp: "#f34b7d",
+  hpp: "#f34b7d",
+  go: "#00ADD8",
+  rs: "#e0a070",
+  php: "#777bb4",
+  rb: "#e5463e",
+  swift: "#ff7a5c",
+  kt: "#b794ff",
+  kts: "#b794ff",
+  dart: "#36d6c3",
+  sh: "#9ae66e",
+  bash: "#9ae66e",
+  zsh: "#9ae66e",
+  sql: "#ffa733",
+  vue: "#41b883",
+  svelte: "#ff5a36",
+  dockerfile: "#4aa3ff",
+  makefile: "#6bcb5a",
+  yaml: "#ff5a5a",
+  yml: "#ff5a5a",
+  lua: "#8a87e0",
+  scala: "#ff6b7d",
+  sc: "#ff6b7d",
+  zig: "#ffb347",
+  nim: "#ffd24d",
+  elm: "#7fd3e8"
+};
+
 const RECENT_FILES_MAX = 20;
 
 function trackRecentFile(name, path) {
@@ -87,7 +131,8 @@ export function isWallpaperPath(path) {
   );
 }
 
-export function resolveFileIcon(name) {
+export function resolveFileIcon(name, isFolder = false) {
+  if (isFolder) return resolveIconUrl("static/icons/file.webp");
   if (isImageFile(name)) return "@content";
   if (isVideoFile(name)) return resolveIconUrl("static/icons/obs.webp");
   if (isAudioFile(name)) return resolveIconUrl("static/icons/spot.webp");
@@ -102,7 +147,7 @@ export function resolveFileIcon(name) {
   if (isShortcutFile(name)) return resolveIconUrl("static/icons/notepad.webp");
   if (isHtmlFile(name)) return resolveIconUrl("static/icons/firefox.webp");
   if (isJsonFile(name)) return resolveIconUrl("static/icons/json.webp");
-  return resolveIconUrl("static/icons/notepad.webp");
+  return "fas fa-file";
 }
 
 export function readFileAsDataURL(file) {
@@ -123,8 +168,21 @@ export function readFileAsText(file) {
   });
 }
 
-export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius = 8, storedIcon = null } = {}) {
+export function buildFileIconHTML(
+  name,
+  { thumbnailSrc = null, size = 64, radius = 8, storedIcon = null, isFolder = false } = {}
+) {
   const s = `width:${size}px;height:${size}px;border-radius:${radius}px;`;
+
+  function faIconDiv(iconClass, { color = "var(--brand)", bg = "" } = {}) {
+    const bgStyle = bg ? `background:${bg};` : "";
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:50px;color:${color};${bgStyle}"><i class="${iconClass}"></i></div>`;
+  }
+
+  if (isFolder) {
+    return `<img src="${resolveIconUrl("static/icons/file.webp")}" style="${s}object-fit:cover;">`;
+  }
+
   let iconSource = thumbnailSrc || storedIcon;
 
   if (iconSource && typeof iconSource === "string") {
@@ -132,31 +190,21 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
       iconSource = "fas " + iconSource;
     }
     if (iconSource.startsWith("fa") || iconSource.includes(" fa-")) {
-      return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-        size * 0.44
-      )}px;color:var(--brand);background:var(--brand-dim);border:1px solid var(--glass-border);"><i class="${iconSource}"></i></div>`;
+      return faIconDiv(iconSource);
     }
   }
 
   if (isHtmlFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.5
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><img src="${resolveIconUrl("static/icons/firefox.webp")}" style="${s}object-fit:cover;"></div>`;
+    return `<div style="${s}display:flex;align-items:center;justify-content:center;background:var(--surface-1);"><img src="${resolveIconUrl("static/icons/firefox.webp")}" style="${s}object-fit:cover;"></div>`;
   }
   if (isMarkdownFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.5
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fab fa-markdown"></i></div>`;
+    return faIconDiv("fab fa-markdown", { color: "#6cb6ff", bg: "var(--surface-1)" });
   }
   if (isISOFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-compact-disc"></i></div>`;
+    return faIconDiv("fas fa-compact-disc", { color: "#c0cbd8", bg: "var(--surface-1)" });
   }
   if (isRomFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);"><i class="fas fa-gamepad"></i></div>`;
+    return faIconDiv("fas fa-gamepad", { color: "#a78bfa" });
   }
   if (isSwfFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/flash.webp")}" style="${s}object-fit:cover;">`;
@@ -174,45 +222,38 @@ export function buildFileIconHTML(name, { thumbnailSrc = null, size = 64, radius
     return `<img src="${resolveIconUrl("static/icons/notepad.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isCodeFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-code"></i></div>`;
+    const codeColor = CODE_ICON_COLORS[getExt(name)];
+    return faIconDiv(
+      "fas fa-code",
+      codeColor ? { color: codeColor, bg: "var(--surface-1)" } : { bg: "var(--surface-1)" }
+    );
   }
   if (isImageFile(name) && thumbnailSrc && thumbnailSrc !== "@content") {
     return `<img src="${thumbnailSrc}" style="${s}object-fit:cover;">`;
   }
   if (isVideoFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;background:var(--bg-primary);font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--text-muted);"><i class="fas fa-film"></i></div>`;
+    return faIconDiv("fas fa-film", { color: "#45d0c6", bg: "var(--bg-primary)" });
   }
   if (isOfficeFile(name)) {
     return `<img src="${resolveIconUrl("static/icons/office.webp")}" style="${s}object-fit:cover;">`;
   }
   if (isEbookFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--error);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-book"></i></div>`;
+    return faIconDiv("fas fa-book", { color: "var(--error)", bg: "var(--surface-1)" });
   }
   if (isFontFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-font"></i></div>`;
+    return faIconDiv("fas fa-font", { color: "#9d8cff", bg: "var(--surface-1)" });
   }
   if (isDiskFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-hdd"></i></div>`;
+    return faIconDiv("fas fa-hdd", { color: "#8fa3b8", bg: "var(--surface-1)" });
   }
   if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
     return `<img src="${resolveIconUrl(storedIcon)}" style="${s}object-fit:cover;">`;
   }
   if (isShortcutFile(name)) {
-    return `<div style="${s}display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      size * 0.44
-    )}px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);"><i class="fas fa-link"></i></div>`;
+    const isTorrent = getExt(name) === "torrent";
+    return faIconDiv("fas fa-link", { color: isTorrent ? "#6bcb5a" : "#58a6ff", bg: "var(--surface-1)" });
   }
-  return `<img src="${resolveIconUrl("static/icons/notepad.webp")}" style="${s}object-fit:cover;">`;
+  return faIconDiv("fas fa-file", { bg: "var(--surface-1)" });
 }
 
 function setupImageViewer(win) {
@@ -835,7 +876,7 @@ export async function showFileProperties(path, name, isFolder, onRename = null) 
     const displayLabel = isFolder ? name : stripext(name);
     let iconSrc;
     if (isFolder) {
-      iconSrc = resolveIconUrl("static/icons/file.webp");
+      iconSrc = "fas fa-folder";
     } else {
       const domIcon = resolveDesktopIconFromDOM(name);
       iconSrc =
@@ -924,7 +965,11 @@ export async function showFileProperties(path, name, isFolder, onRename = null) 
       </div>
       <div class="window-content" style="padding:20px;">
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
-          <img src="${iconSrc}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
+          ${
+            iconSrc.startsWith("fa")
+              ? `<i class="${iconSrc}" style="font-size:34px;color:var(--brand);width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--surface-1);border:1px solid var(--glass-border);border-radius:6px;"></i>`
+              : `<img src="${iconSrc}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">`
+          }
           <div style="flex:1;">
             <input id="props-rename-input" type="text" value="${displayLabel}" style="font-size:18px;font-weight:600;padding:4px;border-radius:6px;border:1px solid var(--glass-border);background:var(--glass);color:inherit;width:100%;">
             <div style="opacity:0.7;font-size:13px;margin-top:4px;">${type}</div>

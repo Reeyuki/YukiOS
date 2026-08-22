@@ -36,20 +36,29 @@ export function setupWindowControls(win, wm) {
 
   const header = win.querySelector(".window-header");
   if (header) {
-    header.addEventListener("dblclick", (e) => {
-      if (e.target.closest(".window-controls")) return;
-      const icon = header.querySelector("span > img, span > i, span > svg");
-      if (icon && (e.target === icon || icon.contains(e.target))) {
+    const isIcon = (target) => !target.closest(".window-controls") && target.matches("img, i, svg, .window-icon");
+    const isHeader = (target) => header.contains(target) && !target.closest(".window-controls") && !isIcon(target);
+    let lastPressTime = 0;
+    const handleDoublePress = (target) => {
+      const now = performance.now();
+      const isDouble = now - lastPressTime <= 500;
+      lastPressTime = isDouble ? 0 : now;
+      if (!isDouble) return;
+      if (isIcon(target)) {
         wm.closeWindow(win);
-        return;
+      } else if (isHeader(target)) {
+        const wasMaximized = win.dataset.snapZone === "maximize";
+        setTimeout(() => {
+          win.classList.add("snapping");
+          if (wasMaximized) {
+            wm.unsnap(win);
+          } else {
+            wm.applySnap(win, "maximize");
+          }
+        }, 0);
       }
-      win.classList.add("snapping");
-      if (win.dataset.snapZone === "maximize") {
-        wm.unsnap(win);
-      } else {
-        wm.applySnap(win, "maximize");
-      }
-    });
+    };
+    header.addEventListener("mousedown", (e) => handleDoublePress(e.target));
   }
 
   if (maxBtn) {

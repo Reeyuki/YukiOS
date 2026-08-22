@@ -9,6 +9,17 @@ import { BlobStorage } from "./fs/BlobStorage.js";
 import { TrashManager } from "./fs/TrashManager.js";
 import { MountManager } from "./fs/MountManager.js";
 import { StorageKeys, os } from "./framework.js";
+import {
+  aliasSystemDir,
+  fetchSystemFileContent,
+  isSystemPath,
+  listSystemFolder,
+  removeSystemOverride,
+  requireLibraryEntry,
+  syncSystemOverrideAfterWrite,
+  toSystemRelPath,
+  withRootSystemEntry
+} from "./fs/SystemLibrary.js";
 import { parseBool, isBlobLike } from "./utils/utils.js";
 import { ISOFileSystem } from "./isoFS.js";
 import { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } from "./wallpaperConfig.js";
@@ -916,6 +927,12 @@ export class FileSystemManager {
       return this.getMountsFolder();
     }
 
+    const aliasedDir = aliasSystemDir(dir, this.CONFIG.ROOT);
+
+    if (isSystemPath(aliasedDir, this.CONFIG.ROOT)) {
+      return listSystemFolder(this, aliasedDir);
+    }
+
     let entries;
     try {
       entries = await this.storage.readdir(dir);
@@ -1006,6 +1023,7 @@ export class FileSystemManager {
       }
     }
 
+    withRootSystemEntry(dir, this.CONFIG.ROOT, result);
     return result;
   }
 
@@ -1013,6 +1031,12 @@ export class FileSystemManager {
     await this.fsReady;
     const dir = this.paths.resolveUserPath(path);
     const fullPath = this.paths.join(dir, name);
+    if (isSystemPath(fullPath, this.CONFIG.ROOT)) {
+      const relPath = toSystemRelPath(fullPath, this.CONFIG.ROOT);
+      if (relPath && !(await this.exists(fullPath))) {
+        return await fetchSystemFileContent(relPath);
+      }
+    }
     if (this.isMounted(fullPath)) {
       const resolved = this.resolveMount(fullPath);
       if (resolved) {
@@ -1053,6 +1077,7 @@ export class FileSystemManager {
         return name;
       }
     }
+    requireLibraryEntry(this.paths.join(dir, name), this.CONFIG.ROOT);
     const uniqueName = await this.getUniqueFileName(path, name);
     const filePath2 = this.paths.join(dir, uniqueName);
     const fileKind = kind || this.inferKind(uniqueName);
@@ -1084,6 +1109,9 @@ export class FileSystemManager {
       await this.metadata.writeMeta(dir, uniqueName, { kind: fileKind, icon: fileIcon, faIcon, size: content.length });
     }
     await this.notifyDesktopChange(path);
+    if (isSystemPath(filePath2, this.CONFIG.ROOT)) {
+      await syncSystemOverrideAfterWrite(this, filePath2);
+    }
     return uniqueName;
   }
 
@@ -1100,6 +1128,9 @@ export class FileSystemManager {
     }
     const uniqueName = await this.getUniqueFileName(path, name);
     const target = this.paths.join(dir, uniqueName);
+    if (isSystemPath(target, this.CONFIG.ROOT)) {
+      throw new Error("Cannot create folders inside System libraries");
+    }
     await this.p("mkdir", target, { recursive: true });
     await this.notifyDesktopChange(path);
     return uniqueName;
@@ -1120,6 +1151,14 @@ export class FileSystemManager {
         }
         return;
       }
+    }
+    if (isSystemPath(target, this.CONFIG.ROOT)) {
+      const removedOverride = await removeSystemOverride(this, target);
+      if (!removedOverride) {
+        throw new Error("Protected system library file");
+      }
+      await this.notifyDesktopChange(path);
+      return;
     }
     const stat = await this.pStat(target);
     if (stat.isDirectory()) {
@@ -1156,6 +1195,10 @@ export class FileSystemManager {
     const dir = this.paths.resolveUserPath(path);
     const oldPath = this.paths.join(dir, oldName);
     const newPath = this.paths.join(dir, newName);
+
+    if (isSystemPath(oldPath, this.CONFIG.ROOT) || isSystemPath(newPath, this.CONFIG.ROOT)) {
+      throw new Error("Cannot rename system library files");
+    }
 
     if (this.isMounted(oldPath) || this.isMounted(newPath)) {
       const oldResolved = this.resolveMount(oldPath);
@@ -1217,10 +1260,16 @@ export class FileSystemManager {
       }
       await this.metadata.writeMeta(dir, name, { size: typedBlob.size });
       await this.notifyDesktopChange(path);
+      if (isSystemPath(filePath, this.CONFIG.ROOT)) {
+        await syncSystemOverrideAfterWrite(this, filePath);
+      }
     } else {
       await this.p("writeFile", filePath, content);
       await this.metadata.writeMeta(dir, name, { size: content.length });
       await this.notifyDesktopChange(path);
+      if (isSystemPath(filePath, this.CONFIG.ROOT)) {
+        await syncSystemOverrideAfterWrite(this, filePath);
+      }
     }
   }
 
@@ -1258,6 +1307,13 @@ export class FileSystemManager {
         }
         const text = await this.mountManager.readFile(resolved.mount, resolved.relativePath);
         return text;
+      }
+    }
+
+    if (isSystemPath(fullPath, this.CONFIG.ROOT)) {
+      const relPath = toSystemRelPath(fullPath, this.CONFIG.ROOT);
+      if (relPath && !(await this.exists(fullPath))) {
+        return await fetchSystemFileContent(relPath);
       }
     }
 
@@ -1446,6 +1502,9 @@ export class FileSystemManager {
         return name;
       }
     }
+    if (isSystemPath(fullPath, this.CONFIG.ROOT)) {
+      throw new Error("Cannot write binary files inside System libraries");
+    }
     const uniqueName = await this.getUniqueFileName(folderPath, name);
     const fullPath2 = this.paths.join(dir, uniqueName);
     const fileKind = kind || this.inferKind(name);
@@ -1519,6 +1578,10 @@ export class FileSystemManager {
     const dir = this.paths.resolveUserPath(folderPath);
     const oldPath = this.paths.join(dir, oldName);
     const newPath = this.paths.join(dir, newName);
+
+    if (isSystemPath(oldPath, this.CONFIG.ROOT) || isSystemPath(newPath, this.CONFIG.ROOT)) {
+      throw new Error("Cannot rename system library files");
+    }
 
     if (this.isMounted(oldPath)) {
       const oldResolved = this.resolveMount(oldPath);

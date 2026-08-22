@@ -796,6 +796,13 @@ export class GameUI {
           navigateTo(page);
         }
       });
+      container.addEventListener("click", (e) => {
+        const profileRow = e.target.closest(".steam-overview-friend[data-profile-user-id]");
+        if (!profileRow) return;
+        container.dispatchEvent(
+          new CustomEvent("steam-navigate", { detail: { page: "profile", userId: profileRow.dataset.profileUserId } })
+        );
+      });
       const reloadBtn = addressBar && addressBar.querySelector(".steam-address-reload");
       if (reloadBtn) {
         reloadBtn.addEventListener("click", async () => {

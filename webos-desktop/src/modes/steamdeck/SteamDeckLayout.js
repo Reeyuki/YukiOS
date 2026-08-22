@@ -475,6 +475,13 @@ export class SteamDeckLayout {
   }
 
   handleDetailClick(e) {
+    const profileRow = e.target.closest(".deck-overview-friend[data-profile-user-id]");
+    if (profileRow) {
+      steamDeckAudio.playSwitchNav();
+      return os.app
+        .launch("steamApp", { steamPage: "profile", steamUserId: profileRow.dataset.profileUserId })
+        .catch(() => {});
+    }
     const actionEl = e.target.closest("[data-action]");
     if (!actionEl) return;
     const appId = this.manager.detailAppId;

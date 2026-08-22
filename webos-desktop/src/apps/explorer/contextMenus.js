@@ -79,6 +79,10 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
   e.preventDefault();
   e.stopPropagation();
 
+  const folderData = inst.cachedFolder || {};
+  const itemData = folderData[itemName] || {};
+  const insideSystem = Array.isArray(inst.currentPath) && inst.currentPath[0] === "System";
+
   showDynamicContextMenu(e, (menu, item, hr, submenu) => {
     if (isFile) {
       const defaultApp = getDefaultApp(itemName);
@@ -112,6 +116,30 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
         )
       );
       menu.appendChild(hr());
+      if (insideSystem && itemData.overridden) {
+        menu.appendChild(
+          item(
+            "Restore Original",
+            () => {
+              showConfirmDialog({
+                title: "Restore Original",
+                message: `Discard your edits and restore "${itemName}" to its original version?`,
+                confirmText: "Restore",
+                onConfirm: async () => {
+                  try {
+                    await os.fs.delete(inst.currentPath, itemName);
+                    await explorer.renderInstance(inst);
+                    os.notify.send(`Restored original "${itemName}"`, { type: "success" });
+                  } catch {
+                    os.notify.send(`Could not restore "${itemName}"`);
+                  }
+                }
+              });
+            },
+            "fa-rotate-left"
+          )
+        );
+      }
     }
 
     if (isFile && itemName.toLowerCase().endsWith(".md")) {
@@ -206,7 +234,9 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
     }
 
     menu.appendChild(item("Copy", () => explorer.clipboardAction("copy", inst, itemName, isFile), "fa-copy"));
-    menu.appendChild(item("Cut", () => explorer.clipboardAction("cut", inst, itemName, isFile), "fa-cut"));
+    if (!insideSystem) {
+      menu.appendChild(item("Cut", () => explorer.clipboardAction("cut", inst, itemName, isFile), "fa-cut"));
+    }
 
     const cb = explorer.getClipboard();
     if (cb) {
@@ -243,64 +273,66 @@ export function showFileContextMenu(explorer, e, itemName, isFile, inst) {
     );
     menu.appendChild(hr());
 
-    menu.appendChild(
-      item(
-        "Move to Trash",
-        () => {
-          const effItems =
-            inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
-          for (const name of effItems) {
-            os.fs.trashFile(inst.currentPath, name);
-          }
-          explorer.renderInstance(inst);
-          os.notify.send(`${effItems.length} ${effItems.length > 1 ? "items" : "item"} moved to trash`);
-        },
-        "fa-trash-alt"
-      )
-    );
-
-    menu.appendChild(
-      item(
-        "Delete Permanently",
-        () => {
-          const effItems =
-            inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
-          const msg =
-            effItems.length > 1
-              ? `Permanently delete ${effItems.length} items? This cannot be undone.`
-              : `Permanently delete "${itemName}"? This cannot be undone.`;
-          showConfirmDialog({
-            title: "Delete Permanently",
-            message: msg,
-            confirmText: "Delete",
-            onConfirm: async () => {
-              for (const name of effItems) {
-                await os.fs.delete(inst.currentPath, name);
-              }
-              await explorer.renderInstance(inst);
-              os.notify.send(`${effItems.length} ${effItems.length > 1 ? "items" : "item"} permanently deleted`);
+    if (!insideSystem) {
+      menu.appendChild(
+        item(
+          "Move to Trash",
+          () => {
+            const effItems =
+              inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+            for (const name of effItems) {
+              os.fs.trashFile(inst.currentPath, name);
             }
-          });
-        },
-        "fa-times-circle"
-      )
-    );
+            explorer.renderInstance(inst);
+            os.notify.send(`${effItems.length} ${effItems.length > 1 ? "items" : "item"} moved to trash`);
+          },
+          "fa-trash-alt"
+        )
+      );
 
-    menu.appendChild(
-      item(
-        "Rename",
-        () => {
-          const win = $(`#${inst.winId}`);
-          const view = win && $(`#${inst.winId}-view`, win);
-          const itemEl =
-            view && $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === itemName);
-          if (itemEl) {
-            startInlineRename(explorer, itemEl, itemName, inst);
-          }
-        },
-        "fa-edit"
-      )
-    );
+      menu.appendChild(
+        item(
+          "Delete Permanently",
+          () => {
+            const effItems =
+              inst.selectedItems.size > 1 && inst.selectedItems.has(itemName) ? [...inst.selectedItems] : [itemName];
+            const msg =
+              effItems.length > 1
+                ? `Permanently delete ${effItems.length} items? This cannot be undone.`
+                : `Permanently delete "${itemName}"? This cannot be undone.`;
+            showConfirmDialog({
+              title: "Delete Permanently",
+              message: msg,
+              confirmText: "Delete",
+              onConfirm: async () => {
+                for (const name of effItems) {
+                  await os.fs.delete(inst.currentPath, name);
+                }
+                await explorer.renderInstance(inst);
+                os.notify.send(`${effItems.length} ${effItems.length > 1 ? "items" : "item"} permanently deleted`);
+              }
+            });
+          },
+          "fa-times-circle"
+        )
+      );
+
+      menu.appendChild(
+        item(
+          "Rename",
+          () => {
+            const win = $(`#${inst.winId}`);
+            const view = win && $(`#${inst.winId}-view`, win);
+            const itemEl =
+              view && $$(".file-item", view).find((el) => el.querySelector("span")?.textContent === itemName);
+            if (itemEl) {
+              startInlineRename(explorer, itemEl, itemName, inst);
+            }
+          },
+          "fa-edit"
+        )
+      );
+    }
 
     if (isFile && isImageFile(itemName)) {
       const getContent = async () => {
@@ -479,53 +511,56 @@ export function showBackgroundContextMenu(explorer, e, inst) {
   }
 
   showDynamicContextMenu(e, (menu, item, hr) => {
-    menu.appendChild(
-      item(
-        "Add file(s)",
-        () => {
-          triggerFileUpload(explorer, inst);
-        },
-        "fa-file-upload"
-      )
-    );
-    menu.appendChild(
-      item(
-        "Add Folder",
-        () => {
-          const input = createElement("input");
-          input.type = "file";
-          input.multiple = true;
-          input.setAttribute("webkitdirectory", "");
-          input.addEventListener("change", async () => {
-            const files = Array.from(input.files);
-            if (!files.length) return;
-            const win = $("#" + inst.winId);
-            await handleFileUpload(explorer, files, true, win, inst);
-          });
-          input.click();
-        },
-        "fa-folder-plus"
-      )
-    );
-    menu.appendChild(
-      item(
-        "New File",
-        () => {
-          spawnInlineItem(explorer, inst, true);
-        },
-        "fa-file-medical"
-      )
-    );
-    menu.appendChild(
-      item(
-        "New Folder",
-        () => {
-          spawnInlineItem(explorer, inst, false);
-        },
-        "fa-folder-plus"
-      )
-    );
-    if (hasClipboard) {
+    const insideSystem = Array.isArray(inst.currentPath) && inst.currentPath[0] === "System";
+    if (!insideSystem) {
+      menu.appendChild(
+        item(
+          "Add file(s)",
+          () => {
+            triggerFileUpload(explorer, inst);
+          },
+          "fa-file-upload"
+        )
+      );
+      menu.appendChild(
+        item(
+          "Add Folder",
+          () => {
+            const input = createElement("input");
+            input.type = "file";
+            input.multiple = true;
+            input.setAttribute("webkitdirectory", "");
+            input.addEventListener("change", async () => {
+              const files = Array.from(input.files);
+              if (!files.length) return;
+              const win = $("#" + inst.winId);
+              await handleFileUpload(explorer, files, true, win, inst);
+            });
+            input.click();
+          },
+          "fa-folder-plus"
+        )
+      );
+      menu.appendChild(
+        item(
+          "New File",
+          () => {
+            spawnInlineItem(explorer, inst, true);
+          },
+          "fa-file-medical"
+        )
+      );
+      menu.appendChild(
+        item(
+          "New Folder",
+          () => {
+            spawnInlineItem(explorer, inst, false);
+          },
+          "fa-folder-plus"
+        )
+      );
+    }
+    if (!insideSystem && hasClipboard) {
       menu.appendChild(hr());
       menu.appendChild(
         item(
@@ -537,32 +572,34 @@ export function showBackgroundContextMenu(explorer, e, inst) {
         )
       );
     }
-    menu.appendChild(hr());
-    menu.appendChild(
-      item(
-        "Mount Directory...",
-        async () => {
-          try {
-            const handle = await os.fs.pickDirectory();
-            const label = await os.dialog.prompt("Mount Directory", `Name for "${handle.name}":`, handle.name);
-            if (!label || !label.trim()) return;
-            os.fs.registerMount(handle, label.trim());
-            os.notify.send(`Mounted "${label.trim()}"`, { type: "success" });
-            const win = $(`#${inst.winId}`);
-            if (win) {
-              explorer.renderMountsInSidebar(win, inst);
+    if (!insideSystem) {
+      menu.appendChild(hr());
+      menu.appendChild(
+        item(
+          "Mount Directory...",
+          async () => {
+            try {
+              const handle = await os.fs.pickDirectory();
+              const label = await os.dialog.prompt("Mount Directory", `Name for "${handle.name}":`, handle.name);
+              if (!label || !label.trim()) return;
+              os.fs.registerMount(handle, label.trim());
+              os.notify.send(`Mounted "${label.trim()}"`, { type: "success" });
+              const win = $(`#${inst.winId}`);
+              if (win) {
+                explorer.renderMountsInSidebar(win, inst);
+              }
+              await explorer.renderInstance(inst);
+            } catch (err) {
+              if (err.name !== "AbortError" && err.name !== "SecurityError") {
+                os.dialog.alert("Mount Error", err.message || "Failed to mount directory");
+              }
             }
-            await explorer.renderInstance(inst);
-          } catch (err) {
-            if (err.name !== "AbortError" && err.name !== "SecurityError") {
-              os.dialog.alert("Mount Error", err.message || "Failed to mount directory");
-            }
-          }
-        },
-        "fa-hdd"
-      )
-    );
-    menu.appendChild(hr());
+          },
+          "fa-hdd"
+        )
+      );
+      menu.appendChild(hr());
+    }
     menu.appendChild(item("Sort by", () => showSortSubmenu(explorer, inst), "fa-sort"));
     menu.appendChild(
       item(

@@ -52,12 +52,14 @@ export function windowMakeDraggable(win, wm) {
       snapBounds: getSnapBounds(),
       activeZone: null,
       newLeft: rect.left,
-      newTop: rect.top
+      newTop: rect.top,
+      moved: false
     };
   };
 
   const applyDragMove = (clientX, clientY) => {
     if (!drag) return;
+    drag.moved = true;
     if (drag.unsnapPending) {
       drag.unsnapPending = false;
       wm.unsnap(win);
@@ -116,11 +118,6 @@ export function windowMakeDraggable(win, wm) {
     wm.isDraggingWindow = false;
     document.body.classList.remove("is-dragging");
     win.classList.remove("dragging");
-    win.style.left = `${drag.newLeft}px`;
-    win.style.top = `${drag.newTop}px`;
-
-    const entry = wm.openWindows.get(win.id);
-    if (entry?.record) entry.record.setGeometry(drag.newLeft, drag.newTop);
 
     if (drag.tilingHovered) drag.tilingHovered.classList.remove("tile-drop-hover");
     wobbleEnd(win);
@@ -135,6 +132,11 @@ export function windowMakeDraggable(win, wm) {
       }
     } else if (drag.activeZone) {
       wm.applySnap(win, drag.activeZone);
+    } else if (drag.moved) {
+      win.style.left = `${drag.newLeft}px`;
+      win.style.top = `${drag.newTop}px`;
+      const entry = wm.openWindows.get(win.id);
+      if (entry?.record) entry.record.setGeometry(drag.newLeft, drag.newTop);
     }
 
     wm.activeSnapZone = null;
@@ -311,7 +313,8 @@ export function windowMakeDraggable(win, wm) {
       snapBounds: getSnapBounds(),
       activeZone: null,
       newLeft: rect.left,
-      newTop: rect.top
+      newTop: rect.top,
+      moved: false
     };
     win.classList.add("dragging");
 

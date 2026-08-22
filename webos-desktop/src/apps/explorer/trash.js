@@ -99,7 +99,7 @@ export async function renderTrashView(explorer, inst, view, win) {
     item.dataset.isFile = entry.type === "file" ? "true" : "false";
 
     const iconName = entry.originalName;
-    const iconHtml = buildFileIconHTML(iconName, {});
+    const iconHtml = buildFileIconHTML(iconName, { isFolder: entry.type !== "file" });
     setHTML(item, `${iconHtml}<span>${entry.originalName}</span>`);
     bindTrashItemInteractions(explorer, item, entry, inst, win);
     view.appendChild(item);

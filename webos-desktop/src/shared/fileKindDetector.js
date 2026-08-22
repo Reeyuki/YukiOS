@@ -221,6 +221,10 @@ export function getExt(name) {
   return name.split(".").pop().toLowerCase();
 }
 
+export function hasExtension(name) {
+  return name.includes(".");
+}
+
 export function fileKindFromName(name) {
   const ext = getExt(name);
   if (IMAGE_EXTS.includes(ext)) return FileKind.IMAGE;
@@ -235,7 +239,7 @@ export function fileKindFromName(name) {
   if (SHORTCUT_EXTS.includes(ext)) return FileKind.OTHER;
   if (HTML_EXTS.includes(ext)) return FileKind.OTHER;
   if (MARKDOWN_EXTS.includes(ext)) return FileKind.TEXT;
-  if (TEXT_EXTS.includes(ext)) return FileKind.TEXT;
+  if (hasExtension(name) && TEXT_EXTS.includes(ext)) return FileKind.TEXT;
   return FileKind.OTHER;
 }
 
@@ -291,10 +295,10 @@ export function isMarkdownFile(name) {
   return MARKDOWN_EXTS.includes(getExt(name));
 }
 export function isCodeFile(name) {
-  return CODE_EXTS.includes(getExt(name));
+  return hasExtension(name) && CODE_EXTS.includes(getExt(name));
 }
 export function isJsonFile(name) {
-  return getExt(name) === "json";
+  return hasExtension(name) && getExt(name) === "json";
 }
 
 export const VIDEO_MIME_MAP = {
@@ -375,12 +379,11 @@ export function mimeFromName(name) {
 }
 
 export function isBinaryName(name) {
-  const ext = getExt(name);
-  return !ALL_TEXT_EXTS.has(ext);
+  return !isTextFile(name);
 }
 
 export function isTextFile(name) {
-  return ALL_TEXT_EXTS.has(getExt(name));
+  return hasExtension(name) && ALL_TEXT_EXTS.has(getExt(name));
 }
 
 export function mimeFromExt(ext) {

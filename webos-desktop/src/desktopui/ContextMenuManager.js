@@ -781,11 +781,11 @@ export class DesktopContextMenuManager {
 
   async spawnInlineDesktopItem(isFile) {
     const defaultName = isFile ? "New File.txt" : "New Folder";
-    const iconSrc = isFile ? "static/icons/notepad.webp" : "static/icons/file.webp";
+    const iconClass = isFile ? "fas fa-file" : "fas fa-folder";
 
     const icon = createElement("div");
     icon.className = "icon selectable is-renaming";
-    icon.innerHTML = `<img src="${iconSrc}"><div></div>`;
+    icon.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);border-radius:8px;"><i class="${iconClass}"></i></div><div></div>`;
     this.desktopUI.positionHelper.snap(icon);
     this.desktopUI.desktop.appendChild(icon);
 

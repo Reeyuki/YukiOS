@@ -28,7 +28,7 @@ import { PhotoFrameWidget } from "./widgets/photoFrameWidget.js";
 import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 
-let GRID_CONFIG = { width: 68, height: 82, gap: 1 };
+let GRID_CONFIG = { width: 68, height: 82, gap: 1, marginX: 24, marginY: 24 };
 
 export function updateGridConfig(iconSize) {
   const size = Math.max(32, Math.min(128, Number(iconSize) || 48));
@@ -54,16 +54,7 @@ export function relayoutDesktopIcons() {
   if (!allIcons.length) return;
   if (desktop.clientWidth === 0 || desktop.clientHeight === 0) return;
   const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
-  const systemIcons = [];
-  const regularIcons = [];
-  for (const icon of allIcons) {
-    const app = icon.dataset.app;
-    if (isRightAlignedSystemApp(os.app.getAllApps(), app)) {
-      systemIcons.push(icon);
-    } else {
-      regularIcons.push(icon);
-    }
-  }
+  const regularIcons = allIcons;
   allIcons.forEach((i) => {
     i.style.left = "";
     i.style.top = "";
@@ -76,7 +67,6 @@ export function relayoutDesktopIcons() {
         ? positionHelper.layoutSyncVertical(regularIcons, false, occupied)
         : positionHelper.layoutSync(regularIcons, false, occupied);
   }
-  if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
   const saved = {};
   allIcons.forEach((icon) => {
     const left = parseFloat(icon.style.left) || 0;
@@ -87,14 +77,6 @@ export function relayoutDesktopIcons() {
   PositionStore.save(saved);
 }
 
-function isRightAlignedSystemApp(appMap, app) {
-  if (app === "flash" || app === "steamApp") return false;
-  if (app === "robloxApp") return false;
-  if (app === "paint" || app === "photopea") return true;
-
-  const appMeta = appMap?.[app];
-  return !!(appMeta && appMeta.type === "system");
-}
 class PositionHelper {
   constructor(desktop, gridSize) {
     this.desktop = desktop;
@@ -102,16 +84,18 @@ class PositionHelper {
   }
 
   cellToPixels(col, row) {
-    const { width, height, gap } = this.gridSize;
-    return { left: gap + col * (width + gap), top: gap + row * (height + gap) };
+    const { width, height, gap, marginX, marginY } = this.gridSize;
+    return { left: marginX + col * (width + gap), top: marginY + row * (height + gap) };
   }
 
   pixelsToCell(leftPx, topPx) {
-    const { width, height, gap } = this.gridSize;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
-    const col = Math.round((leftPx - gap) / (width + gap));
-    const row = Math.round((topPx - gap) / (height + gap));
+    const { width, height, gap, marginX, marginY } = this.gridSize;
+    const cellW = width + gap,
+      cellH = height + gap;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
+    const col = Math.round((leftPx - marginX) / cellW);
+    const row = Math.round((topPx - marginY) / cellH);
     return {
       col: Math.max(0, Math.min(maxCols - 1, col)),
       row: Math.max(0, Math.min(maxRows - 1, row))
@@ -133,9 +117,11 @@ class PositionHelper {
   }
 
   nextFreeCell(col, row, exclude = null, occupied = null) {
-    const { width, height, gap } = this.gridSize;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
+    const { width, height, gap, marginX, marginY } = this.gridSize;
+    const cellW = width + gap,
+      cellH = height + gap;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
     if (!occupied) occupied = this.buildOccupancySet(exclude);
     const key = (c, r) => `${c},${r}`;
     const clampCol = (c) => Math.max(0, Math.min(maxCols - 1, c));
@@ -195,11 +181,11 @@ class PositionHelper {
 
   layoutSync(icons, isExplorerIcon = false, occupiedBefore = null) {
     const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
-    const { width, height } = this.gridSize;
+    const { width, height, marginX, marginY } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
     const occupied = occupiedBefore || this.buildOccupancySet();
     let col = 0,
       row = 0;
@@ -224,8 +210,8 @@ class PositionHelper {
         }
       }
       occupied.add(`${col},${row}`);
-      icon.style.left = `${gap + col * cellW}px`;
-      icon.style.top = `${gap + row * cellH}px`;
+      icon.style.left = `${marginX + col * cellW}px`;
+      icon.style.top = `${marginY + row * cellH}px`;
       row++;
       if (row >= maxRows) {
         row = 0;
@@ -235,52 +221,12 @@ class PositionHelper {
     return occupied;
   }
 
-  layoutRightSync(icons, occupiedBefore = null) {
-    const { width, height, gap } = this.gridSize;
-    const cellW = width + gap,
-      cellH = height + gap;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
-    const occupied = occupiedBefore || this.buildOccupancySet();
-    let col = maxCols - 1,
-      row = 0;
-    icons.forEach((icon) => {
-      while (occupied.has(`${col},${row}`)) {
-        row++;
-        if (row >= maxRows) {
-          row = 0;
-          col--;
-        }
-        if (col < 0) {
-          col = maxCols - 1;
-          row = 0;
-          break;
-        }
-      }
-      if (occupied.has(`${col},${row}`)) {
-        const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
-        if (free) {
-          col = free.col;
-          row = free.row;
-        }
-      }
-      occupied.add(`${col},${row}`);
-      icon.style.left = `${gap + col * cellW}px`;
-      icon.style.top = `${gap + row * cellH}px`;
-      row++;
-      if (row >= maxRows) {
-        row = 0;
-        col--;
-      }
-    });
-  }
-
   layoutMacVerticalSync(icons, occupiedBefore = null) {
-    const { width, height, gap } = this.gridSize;
+    const { width, height, gap, marginX, marginY } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
     const occupied = occupiedBefore || this.buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
@@ -305,8 +251,8 @@ class PositionHelper {
         }
       }
       occupied.add(`${col},${row}`);
-      icon.style.left = `${gap + col * cellW}px`;
-      icon.style.top = `${gap + row * cellH}px`;
+      icon.style.left = `${marginX + col * cellW}px`;
+      icon.style.top = `${marginY + row * cellH}px`;
       row++;
       if (row >= maxRows) {
         row = 0;
@@ -317,11 +263,11 @@ class PositionHelper {
 
   layout(icons, isExplorerIcon = false) {
     const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
-    const { width, height } = this.gridSize;
+    const { width, height, marginX, marginY } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
     const occupied = this.buildOccupancySet();
     let col = 0,
       row = 0;
@@ -347,8 +293,8 @@ class PositionHelper {
           }
         }
         occupied.add(`${col},${row}`);
-        icon.style.left = `${gap + col * cellW}px`;
-        icon.style.top = `${gap + row * cellH}px`;
+        icon.style.left = `${marginX + col * cellW}px`;
+        icon.style.top = `${marginY + row * cellH}px`;
         row++;
         if (row >= maxRows) {
           row = 0;
@@ -360,11 +306,11 @@ class PositionHelper {
 
   layoutSyncVertical(icons, isExplorerIcon = false, occupiedBefore = null) {
     const gap = isExplorerIcon ? this.gridSize.gap * 6 : this.gridSize.gap;
-    const { width, height } = this.gridSize;
+    const { width, height, marginX, marginY } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
     const occupied = occupiedBefore || this.buildOccupancySet();
     let col = 0,
       row = 0;
@@ -389,8 +335,8 @@ class PositionHelper {
         }
       }
       occupied.add(`${col},${row}`);
-      icon.style.left = `${gap + col * cellW}px`;
-      icon.style.top = `${gap + row * cellH}px`;
+      icon.style.left = `${marginX + col * cellW}px`;
+      icon.style.top = `${marginY + row * cellH}px`;
       col++;
       if (col >= maxCols) {
         col = 0;
@@ -401,11 +347,11 @@ class PositionHelper {
   }
 
   layoutRight(icons) {
-    const { width, height, gap } = this.gridSize;
+    const { width, height, gap, marginX, marginY } = this.gridSize;
     const cellW = width + gap,
       cellH = height + gap;
-    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / cellH));
-    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / cellW));
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
     const occupied = this.buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
@@ -431,8 +377,8 @@ class PositionHelper {
           }
         }
         occupied.add(`${col},${row}`);
-        icon.style.left = `${gap + col * cellW}px`;
-        icon.style.top = `${gap + row * cellH}px`;
+        icon.style.left = `${marginX + col * cellW}px`;
+        icon.style.top = `${marginY + row * cellH}px`;
         row++;
         if (row >= maxRows) {
           row = 0;
@@ -1091,7 +1037,7 @@ export class DesktopUI {
   }
 
   async initializeDesktopFiles() {
-    await this.iconManager.initializeDesktopFiles(os.app.getAllApps(), isRightAlignedSystemApp);
+    await this.iconManager.initializeDesktopFiles();
     this.widgetManager.init();
   }
 
@@ -1260,15 +1206,7 @@ export function sortDesktopIcons(mode) {
   });
 
   const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
-  const systemIcons = [];
-  const regularIcons = [];
-  withKey.forEach(({ icon }) => {
-    if (isRightAlignedSystemApp(os.app.getAllApps(), icon.dataset.app)) {
-      systemIcons.push(icon);
-    } else {
-      regularIcons.push(icon);
-    }
-  });
+  const regularIcons = withKey.map(({ icon }) => icon);
 
   allIcons.forEach((i) => {
     i.style.left = "";
@@ -1283,7 +1221,6 @@ export function sortDesktopIcons(mode) {
         ? positionHelper.layoutSyncVertical(regularIcons, false, occupied)
         : positionHelper.layoutSync(regularIcons, false, occupied);
   }
-  if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
 
   const saved = {};
   allIcons.forEach((icon) => {

@@ -290,5 +290,6 @@ export const StorageKeys = {
   settingsDisplayName: "settings:displayName",
   room3dStoragePrefix: "rm3d_",
   room3dAchievements: "rm3d_achievements",
-  room3dRoomLayout: "rm3d_roomLayout"
+  room3dRoomLayout: "rm3d_roomLayout",
+  systemOverridesIndex: "yukiOS_system_overrides_index"
 };

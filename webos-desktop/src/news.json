@@ -32,12 +32,7 @@
           [
             "fa-layer-group",
             "20+ Apps Go Single-Instance",
-            "System tools like Settings, Camera, Terminal utilities, and emulators now keep just one window."
-          ],
-          [
-            "fa-arrows-rotate",
-            "Smart Relaunch",
-            "Relaunching an open app now restores its minimized window and brings it into focus."
+            "System tools like Settings, Camera, Terminal utilities, and emulators now keep just one window and restores its minimized window and brings it into focus."
           ]
         ]
       },
@@ -54,17 +49,24 @@
           [
             "fa-hdd",
             "System Overview",
-            "Added storage usage and mounted-drive information alongside quick access to frequently used settings."
+            "Added storage usage and mounted-drive information, shortcuts alongside quick access to frequently used settings."
           ],
           [
             "fa-window-restore",
             "Window Animations",
-            "Window animations are smoother for minimization and restoration."
+            "Window animations move smarter in both ways for minimization and restoration."
           ],
           ["fa-notepad", "Notepad Menubar Fix", "The Notepad menubar now has better padding."],
           ["fa-keyboard", "Alt+Q Improvements", "Switching with Alt+Q now reveals minimized windows instantly."],
           ["fa-sort", "Desktop Icons", "Desktop icon positioning is more stable."],
           ["fa-layer-group", "Workspaces Fix", "Workspace creation now works reliably."]
+        ]
+      },
+      {
+        "icon": "fa-folder-tree",
+        "title": "System Library Folder",
+        "items": [
+          ["fa-file-code", "Browse OS Source", "Open the System folder in Files to explore every YukiOS source code!"]
         ]
       }
     ]

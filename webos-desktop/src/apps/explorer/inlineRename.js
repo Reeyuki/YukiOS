@@ -44,7 +44,6 @@ export async function startInlineRename(explorer, itemEl, currentName, inst) {
   itemEl.classList.add("is-renaming");
 
   const spanEl = itemEl.querySelector("span");
-  spanEl.style.display = "none";
 
   const { wrap, input, errorTip } = createInlineInput(currentName);
   itemEl.insertBefore(wrap, spanEl.nextSibling);
@@ -71,7 +70,6 @@ export async function startInlineRename(explorer, itemEl, currentName, inst) {
     committed = true;
     itemEl.classList.remove("is-renaming");
     wrap.remove();
-    spanEl.style.display = "";
   };
 
   const commit = async () => {
@@ -101,11 +99,11 @@ export async function spawnInlineItem(explorer, inst, isFile) {
   if (!view) return;
 
   const defaultName = isFile ? "New File.txt" : "New Folder";
-  const iconSrc = isFile ? resolveIconUrl("static/icons/notepad.webp") : resolveIconUrl("static/icons/file.webp");
+  const iconClass = isFile ? "fas fa-file" : "fas fa-folder";
 
   const item = createElement("div");
   item.className = "file-item is-renaming";
-  item.innerHTML = `<img src="${iconSrc}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">`;
+  item.innerHTML = `<div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--brand);background:var(--surface-1);border:1px solid var(--glass-border);border-radius:8px;"><i class="${iconClass}"></i></div>`;
 
   const { wrap, input, errorTip } = createInlineInput(defaultName);
   item.appendChild(wrap);

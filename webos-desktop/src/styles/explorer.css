@@ -954,11 +954,15 @@
   position: relative;
 }
 
+.file-item.is-renaming .file-item-name {
+  visibility: hidden;
+}
+
 .inline-rename-wrap {
   position: absolute;
   top: calc(100% - 30px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -966,8 +970,7 @@
 }
 
 .inline-rename-input {
-  width: 180px;
-  max-width: 90vw;
+  width: 100%;
   box-sizing: border-box;
   background: var(--glass);
   border: 1.5px solid var(--brand);
@@ -983,10 +986,15 @@
   position: static;
 }
 
+.explorer-view-list .file-item.is-renaming .file-item-name {
+  display: none;
+}
+
 .explorer-view-list .inline-rename-wrap {
   position: relative;
   top: auto;
   left: auto;
+  right: auto;
   transform: none;
   flex: 1;
   min-width: 0;

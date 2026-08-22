@@ -2,3 +2,4 @@ desktop/
 .env
 venv/
 *.pyc
+webos-desktop/src/generated

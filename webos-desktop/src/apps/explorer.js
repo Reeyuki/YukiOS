@@ -213,6 +213,8 @@ export class ExplorerApp extends BaseApp {
     html += '<div class="sidebar-section-body">';
     html +=
       '<div class="nav-item nav-item--disk" data-path="__disk__"><i class="fas fa-hdd"></i><span>Local Disk (C:)</span></div>';
+    html +=
+      '<div class="nav-item nav-item--system" data-path="System"><i class="fas fa-folder-tree"></i><span>System</span></div>';
     html += '<div class="explorer-storage-mounts"></div>';
     html += '<div class="explorer-iso-mounts"></div>';
     html += "</div></div>";
@@ -713,7 +715,13 @@ export class ExplorerApp extends BaseApp {
             contentMatch = content.toLowerCase().includes(query);
           }
           if (nameMatch || contentMatch) {
-            results.push({ name, path: fullPath, dirPath, contentMatch: contentMatch && !nameMatch });
+            results.push({
+              name,
+              path: fullPath,
+              dirPath,
+              contentMatch: contentMatch && !nameMatch,
+              isFolder: data.type !== "file"
+            });
           }
         }
       }
@@ -742,7 +750,7 @@ export class ExplorerApp extends BaseApp {
         const relPath = r.dirPath.length ? r.dirPath.join("/") + "/" : "";
         setHTML(
           item,
-          `${buildFileIconHTML(r.name)}<span class="file-item-name">${r.name}</span><span class="rec-search-path">${relPath}</span>`
+          `${buildFileIconHTML(r.name, { isFolder: r.isFolder })}<span class="file-item-name">${r.name}</span><span class="rec-search-path">${relPath}</span>`
         );
         if (r.contentMatch) item.classList.add("cs-match");
         item.addEventListener("click", () => {
@@ -1426,7 +1434,7 @@ export class ExplorerApp extends BaseApp {
           thumbnailCache: this.thumbnailCache
         });
       } catch {
-        iconEl = buildFileIconHTML(name, {});
+        iconEl = buildFileIconHTML(name, { isFolder: itemData?.type !== "file" });
       }
       const item = createElement("div", { className: "file-item" });
       item.dataset.isFile = String(isFile);
@@ -1452,14 +1460,20 @@ export class ExplorerApp extends BaseApp {
   }
 
   async buildItemIconHTML(name, isFile, itemData, inst) {
-    if (name.endsWith(".desktop")) {
-      const raw = await os.fs.getFileContent(inst.currentPath, name);
-      const iconSrc = resolveDesktopIcon(raw, name);
-      return buildFileIconHTML(name, { storedIcon: iconSrc });
+    const inSystem = inst?.currentPath?.[0] === "System";
+
+    if (name.endsWith(".desktop") && !inSystem) {
+      try {
+        const raw = await os.fs.getFileContent(inst.currentPath, name);
+        const iconSrc = resolveDesktopIcon(raw, name);
+        return buildFileIconHTML(name, { storedIcon: iconSrc });
+      } catch (e) {
+        console.error("Failed to load .desktop icon:", e);
+      }
     }
 
     let thumbnailSrc = null;
-    if (isImageFile(name)) {
+    if (isImageFile(name) && !inSystem) {
       const cacheKey = inst.currentPath.join("/") + "/" + name;
       const cached = this.thumbnailCache.get(cacheKey);
       if (cached) {
@@ -1476,7 +1490,7 @@ export class ExplorerApp extends BaseApp {
       }
     }
 
-    return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.faIcon || itemData.icon });
+    return buildFileIconHTML(name, { thumbnailSrc, storedIcon: itemData.faIcon || itemData.icon, isFolder: !isFile });
   }
 
   bindItemInteractions(item, name, isFile, inst, win) {
@@ -1916,10 +1930,11 @@ export class ExplorerApp extends BaseApp {
       const entries = await os.fs.readdir(inst.currentPath);
       for (const [name, entry] of Object.entries(entries)) {
         if (name === "system" && inst.currentPath.length === 0) continue;
+        const mtime = inst.cachedFolder?.[name]?.mtime ?? entry.mtime;
         if (entry.type === "file") {
-          stats[name] = { isFile: true, size: entry.size ?? 0, mtime: entry.mtime };
+          stats[name] = { isFile: true, size: entry.size ?? 0, mtime };
         } else {
-          stats[name] = { isFile: false, size: 0, mtime: entry.mtime };
+          stats[name] = { isFile: false, size: 0, mtime };
         }
       }
     } catch {}

@@ -529,19 +529,26 @@ export function animateWindowClose(win, onDone) {
 
   const duration = 220 * getAnimationSpeed();
 
-  win.getAnimations().forEach((anim) => anim.cancel());
+  win.getAnimations().forEach((existing) => existing.cancel());
 
   const keyframes = getCloseKeyframes(anim, win);
+
+  let finished = false;
+  const finishOnce = () => {
+    if (finished) return;
+    finished = true;
+    onDone?.();
+  };
 
   const animation = win.animate(keyframes, {
     duration: duration,
     easing: "cubic-bezier(0.22, 1, 0.36, 1)",
     fill: "forwards"
   });
-
-  animation.onfinish = () => {
-    onDone?.();
-  };
+  animation.id = "window-close";
+  animation.onfinish = finishOnce;
+  animation.oncancel = finishOnce;
+  setTimeout(finishOnce, duration + 150);
 }
 
 function getCloseKeyframes(animType, win) {

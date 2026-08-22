@@ -1958,6 +1958,18 @@ html[data-theme] .window-header.steam-popup-header,
   padding: 6px 0;
 }
 
+.steam-overview-friend[data-profile-user-id] {
+  cursor: pointer;
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.steam-overview-friend[data-profile-user-id]:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .steam-overview-friend-avatar {
   width: 36px;
   height: 36px;

@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteSingleFile } from "vite-plugin-singlefile";
+import { systemLibraryPlugin } from "./plugins/systemLibraryPlugin.js";
 import { execSync, spawnSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
@@ -317,7 +318,8 @@ const plugins = [
     protocolImports: true
   }),
   serveStaticDev(),
-  steamNewsData()
+  steamNewsData(),
+  systemLibraryPlugin()
 ];
 if (isSingleFile) {
   plugins.unshift(viteSingleFile());
@@ -352,6 +354,15 @@ plugins.push(staticCdnRewrite());
 plugins.push(removeCosmicFolder());
 plugins.push(pageGenerator());
 plugins.push(copyRemoteClient());
+
+const baseOutput = {
+  entryFileNames: "assets/[name].js",
+  chunkFileNames: "assets/[name].js",
+  assetFileNames: "assets/[name][extname]"
+};
+if (isSingleFile) {
+  baseOutput.inlineDynamicImports = true;
+}
 
 export default defineConfig({
   base: isSingleFile || isElectronBuild ? "./" : "/",
@@ -408,13 +419,7 @@ export default defineConfig({
     rollupOptions: {
       treeshake: !isDevBuild,
       external: isSingleFile ? ["7z-wasm", "archive-wasm", "clippyjs", /^clippyjs\/.*/] : [],
-      output: {
-        inlineDynamicImports: isSingleFile,
-        entryFileNames: "assets/[name].js",
-        chunkFileNames: "assets/[name].js",
-        assetFileNames: "assets/[name][extname]",
-        manualChunks: isSingleFile ? undefined : undefined
-      }
+      output: baseOutput
     }
   },
   esbuild: {

@@ -364,7 +364,6 @@ export class NotepadApp extends BaseApp {
       .write(filePath, content)
       .then(() => {
         this.onFileSaved(win, winId, instance.currentTitle, instance.currentPath);
-        os.notify.send(`File saved: ${instance.currentTitle}`);
         if (onSuccess) {
           onSuccess();
         }
@@ -387,7 +386,6 @@ export class NotepadApp extends BaseApp {
         .then(() => {
           this.onFileSaved(win, winId, fileName, path);
           const pathStr = path.length ? `/${path.join("/")}/${fileName}` : `/${fileName}`;
-          os.notify.send(`File saved: ${pathStr}`);
           if (onSuccess) {
             onSuccess();
           }

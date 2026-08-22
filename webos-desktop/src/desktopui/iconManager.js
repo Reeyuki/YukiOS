@@ -345,7 +345,7 @@ export class IconManager {
     input.click();
   }
 
-  async initializeDesktopFiles(appMap, isRightAlignedSystemApp) {
+  async initializeDesktopFiles() {
     const hideDesktopIcons = os.storage.get(StorageKeys.hideDesktopIcons) === "true";
     if (hideDesktopIcons) return;
 
@@ -354,7 +354,6 @@ export class IconManager {
 
     const fragment = document.createDocumentFragment();
     const regularIcons = [];
-    const systemIcons = [];
     const createdIcons = [];
 
     const isMacMode = os.modes.isActive(MODES.MAC);
@@ -380,8 +379,6 @@ export class IconManager {
       const key = this.positionStore.getKey(icon);
       if (saved[key]) {
         this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-      } else if (isRightAlignedSystemApp(appMap, def.app)) {
-        systemIcons.push(icon);
       } else {
         regularIcons.push(icon);
       }
@@ -398,8 +395,6 @@ export class IconManager {
         occupied = this.positionHelper.layoutSync(regularIcons, false, occupied);
       }
     }
-    if (systemIcons.length) this.positionHelper.layoutRightSync(systemIcons, occupied);
-
     this.desktop.appendChild(fragment);
     createdIcons.forEach((icon) => this.makeIconInteractable(icon));
 

@@ -40,29 +40,33 @@ export async function fetchActivityOverview() {
 
 export function buildPlayerRows(recentPlayers, playingNow, classes) {
   return recentPlayers
-    .map((u) => `
-      <div class="${classes.row}">
+    .map(
+      (u) => `
+      <div class="${classes.row}"${u.userId ? ` data-profile-user-id="${esc(u.userId)}"` : ""}>
         <img class="${classes.avatar}" src="${avatarSrcForIndex(u.avatarIndex)}" alt="">
         <div class="${classes.info}">
           <b>${esc(u.username || "Guest")}</b>
           <span>${playingNow.some((p) => p.userId && p.userId === u.userId) ? "Playing right now" : "Played recently"}</span>
         </div>
       </div>
-    `)
+    `
+    )
     .join("");
 }
 
 export function buildFriendCards(friends, count, classes) {
   return friends
-    .map((f) => `
-      <div class="${classes.row}">
+    .map(
+      (f) => `
+      <div class="${classes.row}"${f.userId ? ` data-profile-user-id="${esc(f.userId)}"` : ""}>
         <img class="${classes.avatar}" src="${avatarSrcForIndex(f.avatarIndex)}" alt="">
         <div class="${classes.info}">
           <b>${esc(f.username || "Friend")}</b>
           <span>${f.note ? esc(f.note) : count > 1 ? "Recently played together" : "On your friends list"}</span>
         </div>
       </div>
-    `)
+    `
+    )
     .join("");
 }
 

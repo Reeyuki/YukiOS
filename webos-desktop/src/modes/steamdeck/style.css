@@ -3090,6 +3090,18 @@ body:has(#steamdeck-qta.open) #context-menu {
   border-bottom: none;
 }
 
+.deck-overview-friend[data-profile-user-id] {
+  cursor: pointer;
+  margin-inline: -10px;
+  padding-inline: 10px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.deck-overview-friend[data-profile-user-id]:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .deck-overview-friend-avatar {
   width: 44px;
   height: 44px;
