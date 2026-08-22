@@ -15,6 +15,8 @@ import {
 const IMAGES_DIR = ["VMs"];
 
 export class V86App extends BaseApp {
+  singletonWindowIds = ["v86-win"];
+
   constructor(os) {
     super(os);
     this.v86LoadPromise = null;
@@ -25,7 +27,7 @@ export class V86App extends BaseApp {
     return this.explorerAppService;
   }
 
-  open(opts) {
+  async open(opts) {
     const systems = [
       { id: "freedos", name: "FreeDOS", icon: "fa-solid fa-terminal" },
       { id: "openbsd", name: "OpenBSD", icon: "fa-solid fa-fish" }

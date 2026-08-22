@@ -19,6 +19,23 @@
   flex-shrink: 0;
 }
 
+.notepad-window .app-menubar {
+  margin-bottom: 0;
+  padding: 0;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.notepad-window .app-menubar-item {
+  padding: 7px 12px;
+  font-size: 13px;
+  border-radius: var(--r-sm);
+}
+
+.notepad-window .app-menubar-item > span {
+  padding: 0 2px;
+}
+
 .notepad-dropdown {
   display: none;
   position: absolute;

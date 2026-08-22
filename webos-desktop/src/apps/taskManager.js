@@ -9,10 +9,16 @@ import {
   BusEvents,
   BaseApp,
   os,
-  StorageKeys,
   createElement
 } from "../framework.js";
 import { processManager } from "../services/ProcessManager.js";
+import {
+  loadStartupApps,
+  saveStartupApps,
+  toggleStartupApp,
+  getSystemApps,
+  renderToggle
+} from "../shared/startupApps.js";
 export class TaskManagerApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -35,22 +41,15 @@ export class TaskManagerApp extends BaseApp {
   }
 
   loadStartupApps() {
-    try {
-      return os.storage.get(StorageKeys.startupApps) || [];
-    } catch {
-      return [];
-    }
+    return loadStartupApps();
   }
 
   saveStartupApps() {
-    os.storage.set(StorageKeys.startupApps, this.startupApps);
+    saveStartupApps(this.startupApps);
   }
 
   toggleStartupApp(appId) {
-    const idx = this.startupApps.indexOf(appId);
-    if (idx >= 0) this.startupApps.splice(idx, 1);
-    else this.startupApps.push(appId);
-    this.saveStartupApps();
+    return toggleStartupApp(this.startupApps, appId);
   }
 
   startFrameMonitor() {
@@ -538,10 +537,7 @@ export class TaskManagerApp extends BaseApp {
   }
 
   getSystemApps() {
-    const allApps = os.app.getAllApps();
-    return Object.entries(allApps)
-      .filter(([, entry]) => entry.type === "system")
-      .map(([id, entry]) => ({ id, title: entry.title, icon: entry.icon }));
+    return getSystemApps();
   }
 
   renderStartupApps(win) {
@@ -585,10 +581,7 @@ export class TaskManagerApp extends BaseApp {
               <span class="tm-bar-content">${iconHtml}${app.title}</span>
             </td>
             <td class="tm-td tm-td-right">
-              <label class="tm-startup-toggle">
-                <input type="checkbox" class="tm-startup-cb" ${enabled ? "checked" : ""}>
-                <span class="tm-startup-slider"></span>
-              </label>
+              ${renderToggle(enabled, "tm-startup-cb")}
             </td>
           </tr>`;
         })
@@ -727,11 +720,7 @@ export class TaskManagerApp extends BaseApp {
     ];
 
     const sourceNote =
-      hasRealMem && hasLongTask
-        ? "Real heap + long-task data"
-        : hasRealMem
-          ? "Real heap · no long-task API"
-          : "Estimated (no memory API)";
+      hasRealMem && hasLongTask ? "Heap Data" : hasRealMem ? "No long-task API" : "Estimated (no memory API)";
 
     const el = $("#tm-sysinfo", win);
     if (el) {

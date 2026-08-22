@@ -1,11 +1,14 @@
-import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
-import { animateWindowOpen } from "../windowManager/AnimationSystem.js";
 import { sanitizeTitle } from "../utils/utils.js";
 import { $ } from "../shared/domUtils.js";
 
 export class WindowAPI {
   constructor(windowManager) {
     this.wm = windowManager;
+  }
+
+  resolveWindow(win) {
+    if (typeof win === "string") return $(`#${win}`);
+    return win || null;
   }
 
   waitFor(win, condition, callback, timeoutMs = 100) {
@@ -32,7 +35,6 @@ export class WindowAPI {
     const win = this.wm.createWindow(id, title, width, height, options.isGame || false, options);
 
     const autoMount = options.autoMount !== false;
-    const autoFocus = options.autoFocus !== false;
 
     if (autoMount && !options.skipHeader && options.icon) {
       const headerHtml = this.wm.utils.generateWindowHeader(
@@ -41,72 +43,31 @@ export class WindowAPI {
         options.iconColor,
         options.externalUrl
       );
-
-      let headerInjected = false;
-
       this.waitFor(
         win,
         () => !win.querySelector(".window-header") && win.innerHTML.trim() !== "",
         () => {
           win.insertAdjacentHTML("afterbegin", headerHtml);
-          headerInjected = true;
-          animateWindowOpen(win, false);
         },
         50
       );
-
-      setTimeout(() => {
-        if (!headerInjected) animateWindowOpen(win, false);
-      }, 70);
-    } else if (autoMount) {
-      requestAnimationFrame(() => {
-        animateWindowOpen(win, false);
-      });
     }
 
     if (autoMount) {
       const desktop = $("#desktop");
-      if (desktop) {
-        desktop.appendChild(win);
-      }
-    }
-
-    if (autoMount) {
-      if (options.icon) {
-        this.wm.addToTaskbar(win.id, title, options.icon, options.iconColor);
-      }
-      this.wm.onTilingWindowCreated(win.id);
-    }
-
-    if (autoMount && autoFocus) {
-      this.wm.bringToFront(win);
-    }
-
-    if (autoMount && !options.skipAutoSetup) {
-      this.waitFor(
-        win,
-        () => !!(win.querySelector(".window-header") || win.querySelector(".browser-tabbar")),
-        () => {
-          windowMakeDraggable(win, this.wm);
-          this.wm.makeResizable(win);
-          this.wm.setupWindowControls(win);
-        },
-        100
-      );
+      this.wm.mountWindow(win, win.id, title, options.icon, options.iconColor, {
+        mountTarget: desktop || document.body,
+        autoFocus: options.autoFocus !== false,
+        bindControls: !options.skipAutoSetup
+      });
     }
 
     return win;
   }
 
   close(win) {
-    if (typeof win === "string") {
-      const element = $(`#${win}`);
-      if (element) {
-        this.wm.closeWindow(element);
-      }
-    } else {
-      this.wm.closeWindow(win);
-    }
+    const target = this.resolveWindow(win);
+    if (target) this.wm.closeWindow(target);
   }
 
   closeAll() {
@@ -114,36 +75,18 @@ export class WindowAPI {
   }
 
   focus(win) {
-    if (typeof win === "string") {
-      const element = $(`#${win}`);
-      if (element) {
-        this.wm.bringToFront(element);
-      }
-    } else {
-      this.wm.bringToFront(win);
-    }
+    const target = this.resolveWindow(win);
+    if (target) this.wm.bringToFront(target);
   }
 
   minimize(win) {
-    if (typeof win === "string") {
-      const element = $(`#${win}`);
-      if (element) {
-        this.wm.minimizeWindow(element);
-      }
-    } else {
-      this.wm.minimizeWindow(win);
-    }
+    const target = this.resolveWindow(win);
+    if (target) this.wm.minimizeWindow(target);
   }
 
   maximize(win) {
-    if (typeof win === "string") {
-      const element = $(`#${win}`);
-      if (element) {
-        this.wm.toggleFullscreen(element);
-      }
-    } else {
-      this.wm.toggleFullscreen(win);
-    }
+    const target = this.resolveWindow(win);
+    if (target) this.wm.toggleFullscreen(target);
   }
 
   bringToFront(win) {
@@ -182,14 +125,8 @@ export class WindowAPI {
   }
 
   toggleFullscreen(win) {
-    if (typeof win === "string") {
-      const element = $(`#${win}`);
-      if (element) {
-        this.wm.toggleFullscreen(element);
-      }
-    } else {
-      this.wm.toggleFullscreen(win);
-    }
+    const target = this.resolveWindow(win);
+    if (target) this.wm.toggleFullscreen(target);
   }
 
   setupWindowControls(win) {
@@ -197,7 +134,7 @@ export class WindowAPI {
   }
 
   makeDraggable(win) {
-    windowMakeDraggable(win, this.wm);
+    this.wm.makeDraggable(win);
   }
 
   makeResizable(win) {

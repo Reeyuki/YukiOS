@@ -2,13 +2,15 @@ import "../styles/torBrowser.css";
 import { BaseApp, os, $, createElement } from "../framework.js";
 
 export class TorBrowserApp extends BaseApp {
+  singletonWindowIds = ["tor-browser"];
+
   constructor(services) {
     super(services);
     this.state = "stopped";
     this.unsubs = [];
   }
 
-  open() {
+  async open() {
     const win = os.window.create("tor-browser", "Tor Manager", "520px", "420px", {
       icon: "fas fa-shield-halved",
       appId: "torBrowserApp"

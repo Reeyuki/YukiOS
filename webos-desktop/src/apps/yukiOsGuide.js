@@ -14,7 +14,7 @@ const SHOWCASE = [
   {
     group: "Get productive",
     icon: "fas fa-folder-open",
-    title: "File Explorer",
+    title: "Explorer",
     desc: "A real filesystem lives in this tab. Drag, drop, edit, organize.",
     action: "explorerApp"
   },
@@ -91,6 +91,8 @@ const SHOWCASE = [
 ];
 
 export class YukiOsGuideApp extends BaseApp {
+  singletonWindowIds = ["yuki-os-guide"];
+
   constructor(services) {
     super(services);
     this.currentTab = "overview";
@@ -98,7 +100,7 @@ export class YukiOsGuideApp extends BaseApp {
     this.appRegistry = getAppRegistry();
   }
 
-  open(opts = {}) {
+  async open(opts = {}) {
     const win = os.window.create("yuki-os-guide", "YukiOS Guide", "980px", "720px", {
       icon: "fas fa-book-open",
       appId: "yuki-os-guide"

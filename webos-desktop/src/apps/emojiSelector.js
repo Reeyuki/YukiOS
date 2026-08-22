@@ -3,6 +3,8 @@ import { getLibraryUrl } from "../shared/cdnConfig.js";
 
 import { BaseApp, os, createElement } from "../framework.js";
 export class EmojiSelectorApp extends BaseApp {
+  singletonWindowIds = ["emoji-selector-window"];
+
   constructor(services) {
     super(services);
   }
@@ -109,7 +111,7 @@ export class EmojiSelectorApp extends BaseApp {
     }
   }
 
-  open() {
+  async open() {
     const win = os.window.create("emoji-selector-window", "Emoji Selector", "355px", "500px", {
       icon: "fas fa-face-smile",
       appId: "emojiSelectorApp"

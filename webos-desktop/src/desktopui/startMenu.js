@@ -2021,8 +2021,9 @@ function createAppItem(appId, appData) {
 
   item.addEventListener("click", () => {
     if (appId.startsWith("settings-")) {
-      const paneId = appId.replace("settings-", "");
-      launchSettingsPane(paneId);
+      const key = appId.replace("settings-", "");
+      const cat = SETTINGS_CATEGORIES.find((c) => c.id === key);
+      launchSettingsPane(cat ? cat.pane : key);
     } else {
       trackRecentlyUsed(appId);
       os.app.launch(appId);

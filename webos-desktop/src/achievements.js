@@ -51,6 +51,8 @@ export function getAchievementCatalog() {
 }
 
 export class AchievementsApp extends BaseApp {
+  singletonWindowIds = ["achievements-yukios"];
+
   constructor(services) {
     super(services);
     this.achievements = this.createAchievements();
@@ -93,12 +95,6 @@ export class AchievementsApp extends BaseApp {
   }
 
   open(opts = {}) {
-    const existing = $("#achievements-yukios");
-    if (existing) {
-      os.window.focus(existing);
-      return;
-    }
-
     const win = os.window.create("achievements-yukios", "Achievements", "800px", "40em", {
       icon: "fa fa-trophy",
       appId: "achievements-yukios"

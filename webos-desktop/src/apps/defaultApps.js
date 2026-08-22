@@ -13,6 +13,8 @@ import {
 import { showChooseAppDialog } from "../shared/chooseAppDialog.js";
 
 export class DefaultAppsApp extends BaseApp {
+  singletonWindowIds = ["default-apps"];
+
   constructor(services) {
     super(services);
     this.view = "apps";
@@ -22,15 +24,25 @@ export class DefaultAppsApp extends BaseApp {
   }
 
   async open(opts = {}) {
-    if (await this.isSingletonOpen("default-apps")) return;
-
     const win = os.window.create("default-apps", "Default Apps", "720px", "560px", { icon: "fas fa-th-large" });
 
-    this.view = "apps";
-    this.selectedAppId = null;
-    this.searchQuery = "";
+    this.mountInto(win);
+    this.host = win;
 
-    win.innerHTML = `
+    this.onAssociationsChanged = () => {
+      if (this.host && this.host.isConnected) this.render(this.host);
+    };
+    os.events.on(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+
+    win.addEventListener("remove", () => {
+      os.events.off(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+      this.onAssociationsChanged = null;
+      this.host = null;
+    });
+  }
+
+  buildShell() {
+    return `
       <div class="da-root">
         <div class="da-topbar">
           <div class="da-title-row">
@@ -49,38 +61,47 @@ export class DefaultAppsApp extends BaseApp {
         <div class="da-content"></div>
       </div>
     `;
+  }
 
-    this.onAssociationsChanged = () => {
-      this.render(win);
-    };
-    os.events.on(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+  mountInto(host) {
+    this.view = "apps";
+    this.selectedAppId = null;
+    this.searchQuery = "";
+    host.innerHTML = this.buildShell();
+    this.bindHandlers(host);
+    this.render(host);
+    this.host = host;
 
-    win.addEventListener("remove", () => {
-      os.events.off(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
-      this.onAssociationsChanged = null;
-    });
+    if (!this.onAssociationsChanged) {
+      this.onAssociationsChanged = () => {
+        if (this.host && this.host.isConnected) this.render(this.host);
+      };
+      os.events.on(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+    }
+  }
 
-    win.querySelector(".da-back").addEventListener("click", () => {
+  bindHandlers(host) {
+    host.querySelector(".da-back").addEventListener("click", () => {
       this.selectedAppId = null;
-      this.render(win);
+      this.render(host);
     });
 
-    win.querySelectorAll(".da-seg-btn").forEach((btn) => {
+    host.querySelectorAll(".da-seg-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         this.view = btn.dataset.view;
         this.selectedAppId = null;
         this.searchQuery = "";
-        win.querySelector(".da-search").value = "";
-        this.render(win);
+        host.querySelector(".da-search").value = "";
+        this.render(host);
       });
     });
 
-    win.querySelector(".da-search").addEventListener("input", (e) => {
+    host.querySelector(".da-search").addEventListener("input", (e) => {
       this.searchQuery = e.target.value;
-      this.render(win);
+      this.render(host);
     });
 
-    win.querySelector(".da-reset").addEventListener("click", async () => {
+    host.querySelector(".da-reset").addEventListener("click", async () => {
       const confirmed = await os.dialog.confirm(
         "Reset Defaults",
         "Reset every file type to the system default app? This cannot be undone."
@@ -89,14 +110,12 @@ export class DefaultAppsApp extends BaseApp {
       resetAllDefaults();
       os.notify.send("Default Apps", "All file type defaults have been reset.");
     });
-
-    this.render(win);
   }
 
-  render(win) {
-    const content = win.querySelector(".da-content");
-    const backBtn = win.querySelector(".da-back");
-    const title = win.querySelector(".da-title");
+  render(host) {
+    const content = host.querySelector(".da-content");
+    const backBtn = host.querySelector(".da-back");
+    const title = host.querySelector(".da-title");
     const isDetail = this.view === "apps" && this.selectedAppId;
 
     backBtn.hidden = !isDetail;
@@ -104,18 +123,18 @@ export class DefaultAppsApp extends BaseApp {
 
     if (this.view === "apps" && this.selectedAppId) {
       content.innerHTML = this.buildAppDetail(this.selectedAppId);
-      this.bindAppDetail(win, content);
+      this.bindAppDetail(host, content);
       return;
     }
 
     if (this.view === "apps") {
       content.innerHTML = this.buildAppList();
-      this.bindAppList(win, content);
+      this.bindAppList(host, content);
       return;
     }
 
     content.innerHTML = this.buildFileTypeList();
-    this.bindFileTypeList(win, content);
+    this.bindFileTypeList(host, content);
   }
 
   iconHtml(app, className) {

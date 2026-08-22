@@ -1,5 +1,75 @@
 [
   {
+    "date": "August 22, 2026",
+    "label": "Shortcuts & System Update (v3.0.3)",
+    "sections": [
+      {
+        "icon": "fa-keyboard",
+        "title": "Shortcuts Category",
+        "items": [
+          [
+            "fa-keyboard",
+            "Manage Shortcuts in Settings",
+            "Find a new Shortcuts category with the full keyboard shortcut manager built right in!"
+          ]
+        ]
+      },
+      {
+        "icon": "fa-window-close",
+        "title": "Windows Fall Apart",
+        "items": [
+          [
+            "fa-table-cells",
+            "New Close Effect",
+            "Pick Fall Apart in Settings and windows shatter into pieces when closed!"
+          ]
+        ]
+      },
+      {
+        "icon": "fa-window-restore",
+        "title": "One Window Per App",
+        "items": [
+          [
+            "fa-layer-group",
+            "20+ Apps Go Single-Instance",
+            "System tools like Settings, Camera, Terminal utilities, and emulators now keep just one window."
+          ],
+          [
+            "fa-arrows-rotate",
+            "Smart Relaunch",
+            "Relaunching an open app now restores its minimized window and brings it into focus."
+          ]
+        ]
+      },
+      {
+        "icon": "fa-sliders",
+        "title": "Settings Redesign & UI Improvements",
+        "items": [
+          [
+            "fa-layer-group",
+            "Reorganized Layout",
+            "Settings now use a cleaner grouped sidebar with connectivity, wallpapers, appearance, animation speed slider, sound, apps, desktop, system, accounts, and privacy controls."
+          ],
+          ["fa-power-off", "Autostart Manager", "Choose which system apps launch with YukiOS for quick management."],
+          [
+            "fa-hdd",
+            "System Overview",
+            "Added storage usage and mounted-drive information alongside quick access to frequently used settings."
+          ],
+          [
+            "fa-window-restore",
+            "Window Animations",
+            "Window animations are smoother for minimization and restoration."
+          ],
+          ["fa-notepad", "Notepad Menubar Fix", "The Notepad menubar now has better padding."],
+          ["fa-keyboard", "Alt+Q Improvements", "Switching with Alt+Q now reveals minimized windows instantly."],
+          ["fa-sort", "Desktop Icons", "Desktop icon positioning is more stable."],
+          ["fa-layer-group", "Workspaces Fix", "Workspace creation now works reliably."]
+        ]
+      }
+    ]
+  },
+  {
     "date": "August 18, 2026",
     "label": "YukiOS v3.0.0",
     "sections": [
@@ -1054,7 +1124,7 @@
       },
       {
         "icon": "fa-mouse-pointer",
-        "title": "File Explorer",
+        "title": "Explorer",
         "items": [
           [
             "fa-message",
@@ -1257,7 +1327,7 @@
       },
       {
         "icon": "fa-database",
-        "title": "File Explorer",
+        "title": "Explorer",
         "items": [
           ["fa-database", "Storage Indicator", "Shows total used space in Explorer sidebar."],
           [

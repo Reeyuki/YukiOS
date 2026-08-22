@@ -4,6 +4,8 @@ import { BaseApp, os } from "../framework.js";
 import { formatSize, downloadBlob } from "../utils/utils.js";
 
 export class DataEditorApp extends BaseApp {
+  singletonWindowIds = ["yukios-data-editor"];
+
   constructor(services) {
     super(services);
     this.cssLoaded = false;
@@ -17,7 +19,6 @@ export class DataEditorApp extends BaseApp {
 
   open() {
     const winId = "yukios-data-editor";
-    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Storage Editor", "1000px", "650px", {
       icon: "fas fa-database",

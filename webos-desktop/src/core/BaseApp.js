@@ -12,6 +12,8 @@ export const PersistenceTypes = {
 };
 
 export class BaseApp {
+  singletonWindowIds = [];
+
   constructor(param = {}) {
     if (param.kernel) {
       this.os = param;

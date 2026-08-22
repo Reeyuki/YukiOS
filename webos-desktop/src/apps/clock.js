@@ -197,6 +197,8 @@ function createWorker() {
 }
 
 export class ClockApp extends BaseApp {
+  singletonWindowIds = ["clock-app-window"];
+
   constructor(services) {
     super(services);
     this.win = null;
@@ -310,7 +312,6 @@ export class ClockApp extends BaseApp {
   }
 
   async open() {
-    if (await this.isSingletonOpen("clock-app-window")) return;
     const win = os.window.create("clock-app-window", "Clock", "720px", "560px", {
       icon: "fas fa-clock",
       appId: "clock"

@@ -72,11 +72,15 @@ function saveJSON(key, val) {
 }
 
 export class WallpaperEngineApp extends BaseApp {
+  singletonWindowIds = ["wallpaper-engine"];
+
   constructor(os) {
     super(os);
     this.fs = os.fs;
     this.winId = null;
     this.win = null;
+    this.host = null;
+    this.embedded = false;
     this.currentCategory = "static";
     this.searchQuery = "";
     this.wallpaperItems = [];
@@ -105,7 +109,6 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   async open(opts) {
-    if (await this.isSingletonOpen("wallpaper-engine")) return;
     if (!this.fs) return;
 
     const win = os.window.create("wallpaper-engine", "Wallpaper Engine", "960px", "640px", {
@@ -114,12 +117,18 @@ export class WallpaperEngineApp extends BaseApp {
 
     this.winId = "wallpaper-engine";
     this.win = win;
+    this.mountInto(win);
+    this.initTray();
+  }
 
+  mountInto(host) {
+    this.host = host;
+    this.embedded = host.id === "wallpaper-engine-host";
+    host.classList.add("we-host");
     this.applyColorFilter();
-    this.renderUI(win);
+    this.renderUI(host);
     this.loadAllWallpapers();
     this.initAutoCycle();
-    this.initTray();
   }
 
   onClose(winId) {
@@ -131,6 +140,8 @@ export class WallpaperEngineApp extends BaseApp {
     $$(".we-fs-overlay").forEach((el) => el.remove());
     this.winId = null;
     this.win = null;
+    const settingsHost = $("#wallpaper-engine-host");
+    if (settingsHost) this.mountInto(settingsHost);
   }
 
   initTray() {
@@ -186,10 +197,11 @@ export class WallpaperEngineApp extends BaseApp {
     setHTML(
       container,
       `
-      <div class="we-container">
+      <div class="we-container ${this.embedded ? "we-embedded" : ""}">
         <div class="we-sidebar" id="we-sidebar"></div>
         <div class="we-main">
           <div class="we-toolbar" id="we-toolbar"></div>
+          <div class="we-cat-bar" id="we-cat-bar"></div>
           <div class="we-content" id="we-content"></div>
           <div class="we-bottom-bar" id="we-bottom-bar"></div>
         </div>
@@ -204,8 +216,8 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   renderSidebar() {
-    const sidebar = $("#we-sidebar", this.win);
-    if (!sidebar) return;
+    const sidebar = $("#we-sidebar", this.host);
+    const catBar = $("#we-cat-bar", this.host);
 
     const categories = [
       { id: "all", icon: "fas fa-th-large", label: "All" },
@@ -219,39 +231,43 @@ export class WallpaperEngineApp extends BaseApp {
       { id: "recent", icon: "fas fa-clock", label: "Recent" }
     ];
 
-    setHTML(
-      sidebar,
-      `
-      <div class="we-sidebar-title">Categories</div>
-      ${categories
-        .map(
-          (c) => `
-        <div class="we-sidebar-item ${c.id === "static" ? "active" : ""}" data-cat="${c.id}">
-          <i class="${c.icon}"></i>
-          <span>${c.label}</span>
-        </div>
-      `
-        )
-        .join("")}
-      <div class="we-sidebar-title" style="margin-top:12px;">Tools</div>
-      <div class="we-sidebar-item" data-cat="__import"><i class="fas fa-link"></i><span>Import URL</span></div>
-      <div class="we-sidebar-item" data-cat="__filters"><i class="fas fa-tint"></i><span>Color Filters</span></div>
-    `
-    );
+    const tools = [
+      { id: "__import", icon: "fas fa-link", label: "Import URL" },
+      { id: "__filters", icon: "fas fa-tint", label: "Color Filters" }
+    ];
 
-    bindEvent(sidebar, "click", (e) => {
+    const itemHtml = (c, compact) => `
+      <div class="we-sidebar-item ${compact ? "we-cat-btn" : ""} ${c.id === "static" ? "active" : ""}" data-cat="${c.id}">
+        <i class="${c.icon}"></i><span>${c.label}</span>
+      </div>`;
+
+    if (sidebar) {
+      setHTML(
+        sidebar,
+        `
+        <div class="we-sidebar-title">Categories</div>
+        ${categories.map((c) => itemHtml(c, false)).join("")}
+        <div class="we-sidebar-title" style="margin-top:12px;">Tools</div>
+        ${tools.map((t) => itemHtml(t, false)).join("")}
+      `
+      );
+      this.bindCategoryClicks(sidebar);
+    }
+
+    if (catBar) {
+      setHTML(catBar, categories.map((c) => itemHtml(c, true)).join("") + tools.map((t) => itemHtml(t, true)).join(""));
+      this.bindCategoryClicks(catBar);
+    }
+  }
+
+  bindCategoryClicks(container) {
+    bindEvent(container, "click", (e) => {
       const item = e.target.closest(".we-sidebar-item");
       if (!item) return;
-      const cat = item.dataset.cat;
-      $$(".we-sidebar-item", sidebar).forEach((el) => el.classList.remove("active"));
-      item.classList.add("active");
-      this.currentCategory = cat;
-      if (cat === "__import") this.showImportView();
-      else if (cat === "__filters") this.showFiltersView();
-      else this.renderGrid();
+      this.selectCategory(item.dataset.cat);
     });
 
-    sidebar.querySelectorAll(".we-sidebar-item").forEach((item) => {
+    container.querySelectorAll(".we-sidebar-item").forEach((item) => {
       bindEvent(item, "contextmenu", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -286,8 +302,17 @@ export class WallpaperEngineApp extends BaseApp {
     });
   }
 
+  selectCategory(cat) {
+    $$(`.we-sidebar-item[data-cat="${cat}"]`, this.host).forEach((el) => el.classList.add("active"));
+    $$(`.we-sidebar-item:not([data-cat="${cat}"])`, this.host).forEach((el) => el.classList.remove("active"));
+    this.currentCategory = cat;
+    if (cat === "__import") this.showImportView();
+    else if (cat === "__filters") this.showFiltersView();
+    else this.renderGrid();
+  }
+
   renderToolbar() {
-    const toolbar = $("#we-toolbar", this.win);
+    const toolbar = $("#we-toolbar", this.host);
     if (!toolbar) return;
 
     const sortOpts = [
@@ -314,12 +339,12 @@ export class WallpaperEngineApp extends BaseApp {
     );
 
     bindSelectMenu(toolbar);
-    bindEvent($("#we-sort-select", this.win), "change", () => {
-      this.sortMode = getSelectMenuValue("we-sort-select", this.win);
+    bindEvent($("#we-sort-select", this.host), "change", () => {
+      this.sortMode = getSelectMenuValue("we-sort-select", this.host);
       if (!this.currentCategory.startsWith("__")) this.renderGrid();
     });
 
-    const search = $("#we-search", this.win);
+    const search = $("#we-search", this.host);
     if (search) {
       bindEvent(search, "input", () => {
         this.searchQuery = search.value.trim().toLowerCase();
@@ -327,22 +352,22 @@ export class WallpaperEngineApp extends BaseApp {
       });
     }
 
-    bindEvent($("#we-upload-btn", this.win), "click", () => {
-      $("#we-file-input", this.win)?.click();
+    bindEvent($("#we-upload-btn", this.host), "click", () => {
+      $("#we-file-input", this.host)?.click();
     });
 
-    bindEvent($("#we-file-input", this.win), "change", (e) => {
+    bindEvent($("#we-file-input", this.host), "change", (e) => {
       const files = e.target.files;
       if (!files?.length) return;
       this.handleUpload(files);
       e.target.value = "";
     });
 
-    bindEvent($("#we-random-btn", this.win), "click", () => this.shuffleRandom());
+    bindEvent($("#we-random-btn", this.host), "click", () => this.shuffleRandom());
   }
 
   renderBottomBar() {
-    const bar = $("#we-bottom-bar", this.win);
+    const bar = $("#we-bottom-bar", this.host);
     if (!bar) return;
 
     const isCycling = os.storage.get(StorageKeys.cycleWallpaper) !== "false";
@@ -368,14 +393,14 @@ export class WallpaperEngineApp extends BaseApp {
     `
     );
 
-    bindEvent($("#we-cycle-toggle", this.win), "change", () => {
-      const checked = $("#we-cycle-toggle", this.win).checked;
+    bindEvent($("#we-cycle-toggle", this.host), "change", () => {
+      const checked = $("#we-cycle-toggle", this.host).checked;
       os.storage.set(StorageKeys.cycleWallpaper, checked ? "true" : "false");
       this.initAutoCycle();
     });
 
-    bindEvent($("#we-shuffle-interval", this.win), "change", () => {
-      const val = parseInt($("#we-shuffle-interval", this.win).value) || 30;
+    bindEvent($("#we-shuffle-interval", this.host), "change", () => {
+      const val = parseInt($("#we-shuffle-interval", this.host).value) || 30;
       os.storage.set(WE_KEYS.shuffleInterval, String(val));
       this.initAutoCycle();
     });
@@ -408,7 +433,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   updateStats() {
-    const stats = $("#we-stats", this.win);
+    const stats = $("#we-stats", this.host);
     if (!stats) return;
     setText(stats, `${this.wallpaperItems.length} wallpapers`);
   }
@@ -526,7 +551,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   renderGrid() {
-    const content = $("#we-content", this.win);
+    const content = $("#we-content", this.host);
     if (!content) return;
     if (this.currentCategory.startsWith("__")) return;
 
@@ -704,7 +729,7 @@ export class WallpaperEngineApp extends BaseApp {
 
   showPreview(item) {
     this.previewItem = item;
-    const panel = $("#we-preview-panel", this.win);
+    const panel = $("#we-preview-panel", this.host);
     if (!panel) return;
     panel.classList.add("open");
 
@@ -736,12 +761,12 @@ export class WallpaperEngineApp extends BaseApp {
     `
     );
 
-    bindEvent($("#we-preview-close", this.win), "click", () => this.hidePreview());
-    bindEvent($("#we-preview-set", this.win), "click", () => this.setDesktop(item));
-    bindEvent($("#we-preview-login", this.win), "click", () => this.setLogin(item));
-    bindEvent($("#we-preview-fav", this.win), "click", () => this.toggleFavorite(item.id));
+    bindEvent($("#we-preview-close", this.host), "click", () => this.hidePreview());
+    bindEvent($("#we-preview-set", this.host), "click", () => this.setDesktop(item));
+    bindEvent($("#we-preview-login", this.host), "click", () => this.setLogin(item));
+    bindEvent($("#we-preview-fav", this.host), "click", () => this.toggleFavorite(item.id));
 
-    const customizeBtn = $("#we-preview-customize", this.win);
+    const customizeBtn = $("#we-preview-customize", this.host);
     if (customizeBtn && item.vantaPreset) {
       bindEvent(customizeBtn, "click", () => this.showVantaCustomize(item.vantaPreset));
     }
@@ -774,14 +799,14 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   updatePreviewFavBtn() {
-    const btn = $("#we-preview-fav", this.win);
+    const btn = $("#we-preview-fav", this.host);
     if (!btn || !this.previewItem) return;
     const isFav = this.favorites.includes(this.previewItem.id);
     setHTML(btn, `<i class="fas fa-star"></i> ${isFav ? "Favorited" : "Add to Favorites"}`);
   }
 
   hidePreview() {
-    const panel = $("#we-preview-panel", this.win);
+    const panel = $("#we-preview-panel", this.host);
     if (panel) panel.classList.remove("open");
     this.previewItem = null;
   }
@@ -925,7 +950,7 @@ export class WallpaperEngineApp extends BaseApp {
     if (!items.length) return;
     const item = items[Math.floor(Math.random() * items.length)];
     await this.setDesktop(item);
-    if (this.win) this.showPreview(item);
+    if (this.host) this.showPreview(item);
   }
 
   attachCardContextMenu(card) {
@@ -1073,7 +1098,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   setupDragDrop() {
-    const content = $("#we-content", this.win);
+    const content = $("#we-content", this.host);
     if (!content) return;
     content.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -1108,7 +1133,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   showImportView() {
-    const content = $("#we-content", this.win);
+    const content = $("#we-content", this.host);
     if (!content) return;
     setHTML(
       content,
@@ -1128,10 +1153,10 @@ export class WallpaperEngineApp extends BaseApp {
       </div>
     `
     );
-    bindEvent($("#we-import-go", this.win), "click", async () => {
-      const url = $("#we-import-url", this.win)?.value.trim();
+    bindEvent($("#we-import-go", this.host), "click", async () => {
+      const url = $("#we-import-url", this.host)?.value.trim();
       if (!url) return;
-      const status = $("#we-import-status", this.win);
+      const status = $("#we-import-status", this.host);
       if (status) setHTML(status, '<span style="color:var(--text-secondary)">Downloading...</span>');
       try {
         const resp = await fetch(url);
@@ -1166,7 +1191,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   showFiltersView() {
-    const content = $("#we-content", this.win);
+    const content = $("#we-content", this.host);
     if (!content) return;
     const f = this.colorFilter;
     setHTML(
@@ -1203,11 +1228,11 @@ export class WallpaperEngineApp extends BaseApp {
     bindRangeSlider(content);
 
     const bindFilter = (id, key, unit) => {
-      const slider = $(`#${id}`, this.win);
+      const slider = $(`#${id}`, this.host);
       if (slider) {
         bindEvent(slider, "input", () => {
-          const val = getRangeSliderValue(id, this.win);
-          const display = $(`#${id}-val`, this.win);
+          const val = getRangeSliderValue(id, this.host);
+          const display = $(`#${id}-val`, this.host);
           if (display) setText(display, val + unit);
           this.updateFilter(key, val);
         });
@@ -1219,7 +1244,7 @@ export class WallpaperEngineApp extends BaseApp {
     bindFilter("we-filter-saturate", "saturate", "%");
     bindFilter("we-filter-blur", "blur", "px");
 
-    bindEvent($("#we-filter-reset", this.win), "click", () => {
+    bindEvent($("#we-filter-reset", this.host), "click", () => {
       this.colorFilter = { ...DEFAULT_FILTER };
       this.saveFilter();
       this.showFiltersView();

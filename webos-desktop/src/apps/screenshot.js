@@ -5,6 +5,8 @@ import { downloadBlob } from "../utils/utils.js";
 import { KeybindManager } from "../keybindManager.js";
 
 export class ScreenshotApp extends BaseApp {
+  singletonWindowIds = ["screenshot"];
+
   constructor(services) {
     super(services);
     this.win = null;
@@ -41,11 +43,6 @@ export class ScreenshotApp extends BaseApp {
 
   open() {
     const winId = "screenshot";
-    if ($("#" + winId)) {
-      os.window.focus(winId);
-      return;
-    }
-
     const win = os.window.create(winId, "Screenshot", "600px", "480px", {
       icon: "fas fa-camera"
     });

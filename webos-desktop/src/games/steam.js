@@ -173,13 +173,13 @@ export function buildSteamShell(container, username, profilePic, hiddenGamesCoun
     <div class="steam-loading-screen" style="${showAnimation ? "" : "display:none !important; opacity:0; pointer-events:none;"}">
       <div class="steam-loading-logo">
         <div class="steam-spinner"></div>
-        <i class="fas fa-steam"></i>
+        <i class="fab fa-steam"></i>
       </div>
     </div>
 
     <div class="steam-main">
       <div class="steam-top-bar window-header">
-        <i class="fas fa-steam" style="font-size: 20px; margin-right: 8px;"></i>
+        <i class="fab fa-steam" style="font-size: 20px; margin-right: 8px;"></i>
         <div class="steam-menu-items">
           <div class="steam-dropdown">
             <span class="steam-menu-item steam-dropdown-trigger" data-dropdown="steam-menu">Yuki</span>

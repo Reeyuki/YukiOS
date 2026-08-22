@@ -10,6 +10,8 @@ import { BaseApp, StorageKeys, os, MODES } from "../framework.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
 
 export class AIAssistantApp extends BaseApp {
+  singletonWindowIds = ["ai-assistant-window"];
+
   constructor(services) {
     super(services);
     this.aiCore = new AICore();
@@ -27,7 +29,6 @@ export class AIAssistantApp extends BaseApp {
 
   async open(opts = {}) {
     const winId = this.winId;
-    if (await this.isSingletonOpen(winId)) return;
 
     if (this.enabled && !os.modes.isActive(MODES.MAC)) {
       await this.registerTray(this.winId, "fas fa-robot", "Yuki AI", {

@@ -288,8 +288,9 @@ export class Launcher {
 
     item.addEventListener("click", () => {
       if (appId.startsWith("settings-")) {
-        const catId = appId.replace("settings-", "");
-        launchSettingsPane(catId);
+        const key = appId.replace("settings-", "");
+        const cat = SETTINGS_CATEGORIES.find((c) => c.id === key);
+        launchSettingsPane(cat ? cat.pane : key);
       } else {
         os.app.launch(appId).catch(() => {});
       }
@@ -334,7 +335,9 @@ export class Launcher {
       showContextMenu(e, items, {
         open: () => {
           if (isSettings) {
-            launchSettingsPane(appId.replace("settings-", ""));
+            const key = appId.replace("settings-", "");
+            const cat = SETTINGS_CATEGORIES.find((c) => c.id === key);
+            launchSettingsPane(cat ? cat.pane : key);
           } else {
             os.app.launch(appId).catch(() => {});
           }

@@ -1216,3 +1216,64 @@
     opacity: 0.8;
   }
 }
+
+#wallpaper-engine-host {
+  height: 72vh;
+  min-height: 460px;
+  padding: 12px;
+}
+#wallpaper-engine-host .we-container {
+  border: 1px solid var(--we-border);
+  border-radius: var(--we-r-l);
+}
+
+.we-cat-bar {
+  display: none;
+}
+
+.we-embedded .we-sidebar {
+  display: none;
+}
+
+.we-embedded .we-cat-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--we-border);
+}
+
+.we-embedded .we-content {
+  padding: 12px;
+}
+
+.we-embedded .we-bottom-bar {
+  display: none;
+}
+
+.we-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--we-fill);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: var(--we-trans);
+}
+.we-cat-btn:hover {
+  background: var(--we-fill-hover);
+  color: var(--text-primary);
+}
+.we-cat-btn.active {
+  background: var(--brand-dim);
+  color: var(--brand);
+}
+.we-cat-btn i {
+  font-size: 12px;
+  opacity: 0.9;
+}

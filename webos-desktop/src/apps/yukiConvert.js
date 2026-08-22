@@ -2,11 +2,13 @@ import { openFileConverter } from "../utils/fileConverter.js";
 
 import { BaseApp, os } from "../framework.js";
 export class YukiConvertApp extends BaseApp {
+  singletonWindowIds = ["yuki-convert"];
+
   constructor(services) {
     super(services);
   }
 
-  open() {
+  async open() {
     const win = os.window.create("yuki-convert", "Yuki Convert", "540px", "420px", {
       icon: "fas fa-exchange-alt"
     });

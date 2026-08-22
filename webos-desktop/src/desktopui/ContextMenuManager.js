@@ -101,7 +101,7 @@ export class DesktopContextMenuManager {
         { id: "ctx-new", label: "New", action: "new", icon: "fa-plus" },
         "hr",
         { id: "ctx-add-files", label: "Add file(s)", action: "addFiles", icon: "fa-file-upload" },
-        { id: "ctx-open-explorer", label: "Open File Explorer", action: "openExplorer", icon: "fa-folder-open" },
+        { id: "ctx-open-explorer", label: "Open Explorer", action: "openExplorer", icon: "fa-folder-open" },
         { id: "ctx-start-recording", label: "Start Recording", action: "startRecording", icon: "fa-circle" },
         { id: "ctx-set-wallpaper", label: "Customize", action: "setWallpaper", icon: "fa-paint-brush" },
         { id: "ctx-background", label: "Background", action: "background", icon: "fa-image" },
@@ -459,7 +459,7 @@ export class DesktopContextMenuManager {
       menu.appendChild(hr());
 
       menu.appendChild(item("Add file(s)", () => this.desktopUI.addFiles(), "fa-file-upload"));
-      menu.appendChild(item("Open File Explorer", () => this.desktopUI.explorerApp.open(), "fa-folder-open"));
+      menu.appendChild(item("Open Explorer", () => this.desktopUI.explorerApp.open(), "fa-folder-open"));
       menu.appendChild(item("Start Recording", () => os.app.launch("cameraApp"), "fa-circle"));
       menu.appendChild(
         item(

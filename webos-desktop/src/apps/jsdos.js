@@ -14,6 +14,8 @@ import {
 const GAMES_DIR = ["Games"];
 
 export class JsDosApp extends BaseApp {
+  singletonWindowIds = ["jsdos-win"];
+
   constructor(os) {
     super(os);
   }
@@ -24,8 +26,6 @@ export class JsDosApp extends BaseApp {
   }
 
   async open() {
-    if (await this.isSingletonOpen("jsdos-win")) return;
-
     const win = os.window.create("jsdos-win", "JsDos", "600px", "560px", {
       icon: "static/icons/jsdos.webp"
     });

@@ -37,10 +37,16 @@ import {
   bindAppearanceCategory,
   bindDataCategory,
   bindNetworkCategory,
-  bindAudioCategory
+  bindAudioCategory,
+  bindQuickSettings,
+  bindAutostartCategory,
+  animateSettingsPane
 } from "./settingsBinders.js";
+import { bindDisks } from "./pane-disks.js";
+import { bindRecentFiles } from "./pane-recentFiles.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
 import { bindTilingCategory } from "./pane-tiling.js";
+import { bindShortcutsCategory } from "./pane-shortcuts.js";
 import { bindChromeOsCategory } from "../modes/chromeos/settings.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
@@ -112,6 +118,7 @@ export class SettingsApp extends BaseApp {
         mikuCursor: parseBool(os.storage.get(StorageKeys.mikuCursor), true),
         fontFamily: os.storage.get(StorageKeys.fontFamily) || "opensans",
         uiDensity: os.storage.get(StorageKeys.uiDensity) || "comfortable",
+        sidebarCompact: parseBool(os.storage.get(StorageKeys.sidebarCompact), true),
         wispServer: getWispUrl(),
         browserTransport: os.storage.get(StorageKeys.browserTransport) || "epoxy",
         virtualResolution: os.storage.get(StorageKeys.virtualResolution) || "native",
@@ -182,6 +189,7 @@ export class SettingsApp extends BaseApp {
       if (options && typeof options.section === "string") {
         this.navigateToSection(existing, options.section, options.target);
       }
+      this.focusSettingsSearch(existing);
       return;
     }
 
@@ -198,10 +206,24 @@ export class SettingsApp extends BaseApp {
     if (options && typeof options.section === "string") {
       this.navigateToSection(win, options.section, options.target);
     }
+    this.focusSettingsSearch(win);
+  }
+
+  focusSettingsSearch(win) {
+    setTimeout(() => {
+      const searchEl = win.querySelector("#settingsSearch");
+      if (searchEl) searchEl.focus();
+    }, 60);
   }
 
   navigateToSection(win, section, target) {
-    const navItem = win.querySelector(`.yuki-settings-nav li[data-target="${section}"]`);
+    let navItem = null;
+    if (target) {
+      navItem = win.querySelector(`.yuki-settings-nav li[data-target="${section}"][data-scroll="${target}"]`);
+    }
+    if (!navItem) {
+      navItem = win.querySelector(`.yuki-settings-nav li[data-target="${section}"]`);
+    }
     if (navItem) {
       navItem.click();
     } else {
@@ -210,17 +232,24 @@ export class SettingsApp extends BaseApp {
         win.querySelectorAll(".yuki-settings-nav li[data-target]").forEach((n) => n.classList.remove("active"));
         win.querySelectorAll(".settings-category-pane").forEach((p) => p.classList.remove("active"));
         pane.classList.add("active");
+        animateSettingsPane(pane, () => {
+          if (!target) {
+            const scroller = win.querySelector(".yuki-settings-content");
+            if (scroller) {
+              const prev = scroller.style.scrollBehavior;
+              scroller.style.scrollBehavior = "auto";
+              scroller.scrollTop = 0;
+              scroller.style.scrollBehavior = prev;
+            }
+            return;
+          }
+          const targetEl = win.querySelector(`#${target}`);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: "auto", block: "start" });
+            targetEl.setAttribute("tabindex", "-1");
+          }
+        });
       }
-    }
-    if (target) {
-      setTimeout(() => {
-        const targetEl = win.querySelector(`#${target}`);
-        if (targetEl) {
-          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
-          targetEl.setAttribute("tabindex", "-1");
-          targetEl.focus({ preventScroll: true });
-        }
-      }, 100);
     }
   }
 
@@ -253,6 +282,7 @@ export class SettingsApp extends BaseApp {
 
       const weather = !!gc("#settingsWeather");
       const cycleWallpaper = !!gc("#settingsCycleWallpaper");
+      const sidebarCompact = !!gc("#settingsSidebarCompact");
       const clippy = !!gc("#settingsClippy");
       const achievementsDisabled = !gc("#settingsAchievements");
       const analyticsDisabled = !gc("#settingsAnalytics");
@@ -294,6 +324,7 @@ export class SettingsApp extends BaseApp {
 
       os.storage.set(StorageKeys.weather, String(weather));
       os.storage.set(StorageKeys.cycleWallpaper, String(cycleWallpaper));
+      os.storage.set(StorageKeys.sidebarCompact, String(sidebarCompact));
       os.storage.set(StorageKeys.clippy, String(clippy));
       os.storage.set(StorageKeys.disableDesktopStretchScroll, String(disableDesktopStretchScroll));
       os.storage.set(StorageKeys.hideDesktopIcons, String(hideDesktopIcons));
@@ -344,6 +375,7 @@ export class SettingsApp extends BaseApp {
       Object.assign(this.settings, {
         weather,
         cycleWallpaper,
+        sidebarCompact,
         clippy,
         disableDesktopStretchScroll,
         hideDesktopIcons,
@@ -412,6 +444,11 @@ export class SettingsApp extends BaseApp {
     bindNavigation(win);
     bindSelectMenu(win);
     bindRangeSlider(win);
+    bindQuickSettings(win, this.settings, this.notificationCenter, showSaved);
+    bindDisks(win);
+    bindRecentFiles(win);
+    bindAutostartCategory(win);
+    bindShortcutsCategory(win);
 
     bindSystemCategory(win, save, this.settings, this.notificationCenter, showSaved);
 

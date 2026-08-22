@@ -33,6 +33,8 @@ const RAM_GB = navigator.deviceMemory || 4;
 const STORAGE_KEY = StorageKeys.VM_MANAGER_VMS;
 
 export class VirtualMachineManagerApp extends BaseApp {
+  singletonWindowIds = ["vm-app"];
+
   constructor(services) {
     super(services);
     this.vms = this.loadVMs();
@@ -51,7 +53,7 @@ export class VirtualMachineManagerApp extends BaseApp {
     os.storage.set(STORAGE_KEY, this.vms);
   }
 
-  open() {
+  async open() {
     const win = os.window.create("vm-app", "Virtual Machine Manager", "580px", "480px", {
       icon: "fas fa-server",
       appId: "virtualMachineManagerApp"

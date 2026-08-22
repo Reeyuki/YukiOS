@@ -315,9 +315,9 @@ var $scramjetController;
       a = r(355);
     let c = {
         prefix: "/~/sj/",
-        scramjetPath: "/scramjet/set.js",
+        scramjetPath: "/s/set.js",
         injectPath: "/controller/controller.inject.js",
-        wasmPath: "/scramjet/set.wasm",
+        wasmPath: "/s/set.wasm",
         virtualWasmPath: "set.wasm.js",
         codec: { encode: (e) => (e ? encodeURIComponent(e) : e), decode: (e) => (e ? decodeURIComponent(e) : e) }
       },

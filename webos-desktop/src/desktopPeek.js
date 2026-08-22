@@ -1,4 +1,4 @@
-import { animateWindowOpen } from "./windowManager/AnimationSystem.js";
+import { restoreWindowAnimated } from "./windowManager/AnimationSystem.js";
 import { $, createElement } from "./shared/domUtils.js";
 
 export class DesktopPeekManager {
@@ -78,7 +78,7 @@ export class DesktopPeekManager {
         if (entry.record) {
           entry.record.minimized = false;
         }
-        requestAnimationFrame(() => animateWindowOpen(win, true));
+        restoreWindowAnimated(win);
       }
     });
     this.windowStates.clear();

@@ -16,11 +16,13 @@ const LAYER_OPTIONS = [
 ];
 
 export class MapsApp extends BaseApp {
+  singletonWindowIds = ["maps-window"];
+
   constructor(services) {
     super(services);
   }
 
-  open() {
+  async open() {
     this.state = {
       source: "osm",
       osmLayer: "mapnik",

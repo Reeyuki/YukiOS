@@ -47,6 +47,8 @@ const FAKE_RATINGS = [4.2, 3.8, 4.5, 3.5, 4.8, 4.0, 3.2, 4.7, 3.9, 4.3, 3.6, 4.1
 const SETTINGS_KEY = StorageKeys.robloxSettings;
 
 export class RobloxApp extends BaseApp {
+  singletonWindowIds = ["roblox-win"];
+
   constructor(services) {
     super(services);
     this.searchQuery = "";
@@ -54,8 +56,6 @@ export class RobloxApp extends BaseApp {
   }
 
   async open() {
-    if (await this.isSingletonOpen("roblox-win")) return;
-
     const username = os.storage.get(StorageKeys.username) || "Guest";
     const avatar = resolveIconUrl(os.storage.get(StorageKeys.profilePicture) || "static/icons/guest.webp");
 

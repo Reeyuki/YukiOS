@@ -63,7 +63,8 @@
   color: var(--text-primary, #f5f5f5);
   text-shadow: 0 1px 3px var(--shadow-color, rgba(0, 0, 0, 0.9));
   word-break: break-word;
-  width: 60px;
+  width: 100%;
+  max-width: var(--icon-w);
 }
 
 .icon:hover {
@@ -1227,4 +1228,22 @@ html[data-theme="light"] .window {
 
 .mac-dock:not(.dock-magnify) .dock-icon-wrap {
   transition: none;
+}
+
+.wa-fall-apart-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  pointer-events: none;
+}
+
+.wa-fall-apart-layer .wa-shard {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+.wa-fall-apart-layer .wa-shard-content {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }

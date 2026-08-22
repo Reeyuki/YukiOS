@@ -12,8 +12,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
-  <script src="./set.js"></script>
-  <script src="./controller.api.js"></script>
+  <script src="/s/set.js"></script>
+  <script src="/s/controller.api.js"></script>
   <script type="module">
     import { default as EpoxyTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
     import { default as LibcurlTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs";
@@ -3889,9 +3889,9 @@
             scramjet = new Controller({
               config: {
                 prefix: basePath + "scramjet/",
-                wasmPath: basePath + "set.wasm",
-                scramjetPath: basePath + "set.js",
-                injectPath: basePath + "controller.inject.js"
+                wasmPath: "/s/set.wasm",
+                scramjetPath: "/s/set.js",
+                injectPath: "/s/controller.inject.js"
               },
               transport,
               serviceworker: sw
@@ -4292,8 +4292,7 @@
         "allow-forms",
         "allow-popups",
         "allow-top-navigation-by-user-activation",
-        "allow-modals",
-        "allow-fullscreen"
+        "allow-modals"
       ];
       const existing = (frame.element.getAttribute("sandbox") || "").split(/\s+/).filter(Boolean);
       const combined = [...new Set([...existing, ...requiredPerms])].join(" ");

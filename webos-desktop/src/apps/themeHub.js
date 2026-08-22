@@ -162,6 +162,8 @@ function windowPreviewHTML(colors, title = "Sample Window") {
 }
 
 export class ThemeHubApp extends BaseApp {
+  singletonWindowIds = ["theme-hub"];
+
   constructor(services) {
     super(services);
     this.openWindows = new Set();
@@ -169,7 +171,6 @@ export class ThemeHubApp extends BaseApp {
 
   open(opts = {}) {
     const winId = "theme-hub";
-    if (this.openWindows.has(winId)) return;
 
     const windowWidth = Math.min(940, Math.floor(window.innerWidth * 0.94));
     const windowHeight = Math.min(560, Math.floor(window.innerHeight * 0.86));

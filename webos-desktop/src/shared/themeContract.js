@@ -59,7 +59,8 @@ export const THEME_EFFECT_OPTIONS = {
     "slideDown",
     "burn",
     "shrinkToPoint",
-    "dissolveBlur"
+    "dissolveBlur",
+    "fallApart"
   ],
   minimize: [
     "instant",

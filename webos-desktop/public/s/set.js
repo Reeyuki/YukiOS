@@ -331,7 +331,7 @@
                   if (e.parent.window == e.window) return null;
                 } catch {}
                 try {
-                  for (; e.parent.window !== e.window && e.parent.window[n.p]; ) e = e.parent.window;
+                  for (; e.parent.window !== e.window && e.parent.window[n.p];) e = e.parent.window;
                 } catch {}
                 const t = e[n.p].descriptors.get("window.frameElement", e);
                 if (!t) return null;
@@ -841,7 +841,7 @@ return { apply, construct };
         }
         function g(e, t) {
           let r = t.parentElement;
-          for (; r; ) {
+          for (; r;) {
             let t = u(e, r);
             if ("html" !== t) return t;
             if (e.box.instanceof(r, "SVGForeignObjectElement")) break;
@@ -2294,7 +2294,7 @@ return { apply, construct };
                   body: t.args[0]
                 });
                 let A = performance.now();
-                for (; 0 === a.getUint8(0); ) if (performance.now() - A > 1e3) throw Error("xhr timeout");
+                for (; 0 === a.getUint8(0);) if (performance.now() - A > 1e3) throw Error("xhr timeout");
                 let l = a.getUint16(1),
                   c = a.getUint32(3),
                   h = new Uint8Array(c);
@@ -2419,11 +2419,11 @@ return { apply, construct };
                     u = e.box.sourcemaps[a];
                   if (!u) return (n.warn("failed to get rewrites for tag", a), t.return(r));
                   let g = 0;
-                  for (; g < u.length; )
+                  for (; g < u.length;)
                     if (u[g].start < c) g++;
                     else break;
                   let d = g;
-                  for (; d < u.length; )
+                  for (; d < u.length;)
                     if (
                       (function (e) {
                         if (0 === e.type) return e.start + e.size;
@@ -3278,7 +3278,7 @@ return { apply, construct };
               o = e.pathname,
               a = [],
               A = s;
-            for (; void 0 !== A; ) {
+            for (; void 0 !== A;) {
               let e = this.byDomain.get(A);
               if (e)
                 for (let i of e) {
@@ -3644,7 +3644,7 @@ return { apply, construct };
           return 9 === e || 10 === e || 12 === e || 13 === e || 32 === e;
         }
         function s(e, t) {
-          for (; t < e.length && n(e.charCodeAt(t)); ) t += 1;
+          for (; t < e.length && n(e.charCodeAt(t));) t += 1;
           return t;
         }
         function o(e) {
@@ -3657,11 +3657,11 @@ return { apply, construct };
           if (0 === e.length) return null;
           let t = 0,
             r = (t = s(e, 0));
-          for (; t < e.length && o(e.charCodeAt(t)); ) t += 1;
+          for (; t < e.length && o(e.charCodeAt(t));) t += 1;
           let A = e.slice(r, t);
           if (0 === A.length && 46 !== e.charCodeAt(t)) return null;
           let l = A.length > 0 ? (0, i.dE)(A, 10) : 0;
-          for (; t < e.length; ) {
+          for (; t < e.length;) {
             let r = e.charCodeAt(t);
             if (o(r) || 46 === r) {
               t += 1;
@@ -4731,11 +4731,11 @@ ${c}`;
           return 9 === e || 10 === e || 12 === e || 13 === e || 32 === e;
         }
         function A(e, t) {
-          for (; t.value < e.length && o(e[t.value]); ) t.value++;
+          for (; t.value < e.length && o(e[t.value]);) t.value++;
           if (t.value >= e.length || 62 === e[t.value]) return null;
           let r = "",
             n = "";
-          for (; t.value < e.length; ) {
+          for (; t.value < e.length;) {
             let n = e[t.value];
             if (61 === n && r.length > 0) {
               t.value++;
@@ -4745,7 +4745,7 @@ ${c}`;
               return (
                 t.value++,
                 (function () {
-                  for (; t.value < e.length && a(e[t.value]); ) t.value++;
+                  for (; t.value < e.length && a(e[t.value]);) t.value++;
                 })(),
                 t.value >= e.length ? null : 61 !== e[t.value] ? { name: r, value: "" } : (t.value++, s())
               );
@@ -4755,11 +4755,11 @@ ${c}`;
           if (t.value >= e.length) return null;
           return s();
           function s() {
-            for (; t.value < e.length && a(e[t.value]); ) t.value++;
+            for (; t.value < e.length && a(e[t.value]);) t.value++;
             if (t.value >= e.length) return null;
             let s = e[t.value];
             if (34 === s || 39 === s) {
-              for (t.value++; t.value < e.length; ) {
+              for (t.value++; t.value < e.length;) {
                 let o = e[t.value];
                 if (o === s) return (t.value++, { name: r, value: n });
                 (o >= 65 && o <= 90 ? (n += (0, i.j9)(o + 32)) : (n += (0, i.j9)(o)), t.value++);
@@ -4767,7 +4767,7 @@ ${c}`;
               return null;
             }
             if (62 === s) return { name: r, value: "" };
-            for (s >= 65 && s <= 90 ? (n += (0, i.j9)(s + 32)) : (n += (0, i.j9)(s)), t.value++; t.value < e.length; ) {
+            for (s >= 65 && s <= 90 ? (n += (0, i.j9)(s + 32)) : (n += (0, i.j9)(s)), t.value++; t.value < e.length;) {
               let r = e[t.value];
               if (a(r) || 62 === r) break;
               (r >= 65 && r <= 90 ? (n += (0, i.j9)(r + 32)) : (n += (0, i.j9)(r)), t.value++);
@@ -4793,7 +4793,7 @@ ${c}`;
               let t = e.indexOf(";");
               if (-1 === t) return null;
               let r = e.substring(t + 1);
-              for (; r.length > 0; ) {
+              for (; r.length > 0;) {
                 if ((r = r.replace(/^[\t\n\f\r ]+/, "")).toLowerCase().startsWith("charset")) {
                   let e = 7;
                   for (
@@ -4811,12 +4811,12 @@ ${c}`;
                     if ('"' === r[e]) {
                       e++;
                       let t = "";
-                      for (; e < r.length && '"' !== r[e]; )
+                      for (; e < r.length && '"' !== r[e];)
                         ("\\" === r[e] && e + 1 < r.length && e++, (t += r[e]), e++);
                       return s(t);
                     }
                     let t = "";
-                    for (; e < r.length && ";" !== r[e] && " " !== r[e] && "	" !== r[e]; ) ((t += r[e]), e++);
+                    for (; e < r.length && ";" !== r[e] && " " !== r[e] && "	" !== r[e];) ((t += r[e]), e++);
                     return s(t);
                   }
                 }
@@ -4835,7 +4835,7 @@ ${c}`;
               return "UTF-16LE";
             if (r >= 6 && 0 === e[0] && 60 === e[1] && 0 === e[2] && 63 === e[3] && 0 === e[4] && 120 === e[5])
               return "UTF-16BE";
-            for (; n.value < r; ) {
+            for (; n.value < r;) {
               let t = e[n.value];
               if (
                 60 === t &&
@@ -4844,7 +4844,7 @@ ${c}`;
                 45 === e[n.value + 2] &&
                 45 === e[n.value + 3]
               ) {
-                for (n.value += 4; n.value < r; ) {
+                for (n.value += 4; n.value < r;) {
                   if (62 === e[n.value] && n.value >= 2 && 45 === e[n.value - 1] && 45 === e[n.value - 2]) {
                     n.value++;
                     break;
@@ -4934,8 +4934,8 @@ ${c}`;
                 n.value + 1 < r &&
                 (l(e[n.value + 1]) || (47 === e[n.value + 1] && n.value + 2 < r && l(e[n.value + 2])))
               ) {
-                for (n.value++; n.value < r && !a(e[n.value]) && 62 !== e[n.value]; ) n.value++;
-                for (; n.value < r && A(e, n); );
+                for (n.value++; n.value < r && !a(e[n.value]) && 62 !== e[n.value];) n.value++;
+                for (; n.value < r && A(e, n););
                 continue;
               }
               if (
@@ -4943,7 +4943,7 @@ ${c}`;
                 n.value + 1 < r &&
                 (33 === e[n.value + 1] || 47 === e[n.value + 1] || 63 === e[n.value + 1])
               ) {
-                for (n.value += 2; n.value < r && 62 !== e[n.value]; ) n.value++;
+                for (n.value += 2; n.value < r && 62 !== e[n.value];) n.value++;
                 n.value < r && n.value++;
                 continue;
               }
@@ -4974,9 +4974,9 @@ ${c}`;
                 }
               }
               if (-1 === o) return null;
-              for (; o < r && n[o] <= 32; ) o++;
+              for (; o < r && n[o] <= 32;) o++;
               if (o >= r || 61 !== n[o]) return null;
-              for (o++; o < r && n[o] <= 32; ) o++;
+              for (o++; o < r && n[o] <= 32;) o++;
               if (o >= r) return null;
               let A = n[o];
               if (34 !== A && 39 !== A) return null;
@@ -5790,7 +5790,7 @@ ${c}`;
           }
           stateNumericHex(e, t) {
             let r = t;
-            for (; t < e.length; ) {
+            for (; t < e.length;) {
               var i;
               let n = e.charCodeAt(t);
               if (!d(n) && (!((i = n) >= a.UPPER_A) || !(i <= a.UPPER_F)) && (!(i >= a.LOWER_A) || !(i <= a.LOWER_F)))
@@ -5801,7 +5801,7 @@ ${c}`;
           }
           stateNumericDecimal(e, t) {
             let r = t;
-            for (; t < e.length; ) {
+            for (; t < e.length;) {
               let i = e.charCodeAt(t);
               if (!d(i)) return (this.addToNumericResult(e, r, t, 10), this.emitNumericEntity(i, 2));
               t += 1;
@@ -5839,7 +5839,7 @@ ${c}`;
                   }
                   let o = r,
                     a = o + n - 1;
-                  for (; o <= a; ) {
+                  for (; o <= a;) {
                     let t = (o + a) >>> 1,
                       r = e[t];
                     if (r < i) o = t + 1;
@@ -5916,7 +5916,7 @@ ${c}`;
           return function (e, i) {
             let n = 0,
               s = 0;
-            for (; (s = e.indexOf("&", s)) >= 0; ) {
+            for (; (s = e.indexOf("&", s)) >= 0;) {
               ((t += e.slice(n, s)), r.startEntity(i));
               let o = r.write(e, s + 1);
               if (o < 0) {
@@ -6004,7 +6004,7 @@ ${c}`;
           let t,
             r = "",
             o = 0;
-          for (; null !== (t = i.exec(e)); ) {
+          for (; null !== (t = i.exec(e));) {
             let a = t.index,
               A = e.charCodeAt(a),
               l = n.get(A);
@@ -6020,7 +6020,7 @@ ${c}`;
             let i,
               n = 0,
               s = "";
-            for (; (i = e.exec(r)); )
+            for (; (i = e.exec(r));)
               (n !== i.index && (s += r.substring(n, i.index)), (s += t.get(i[0].charCodeAt(0))), (n = i.index + 1));
             return s + r.substring(n);
           };
@@ -6190,7 +6190,7 @@ ${c}`;
                 : ((this.state = a.NumericDecimal), this.stateNumericDecimal(e, t));
           }
           stateNumericHex(e, t) {
-            for (; t < e.length; ) {
+            for (; t < e.length;) {
               var r;
               let i = e.charCodeAt(t);
               if (!h(i) && (!((r = i) >= o.UPPER_A) || !(r <= o.UPPER_F)) && (!(r >= o.LOWER_A) || !(r <= o.LOWER_F)))
@@ -6203,7 +6203,7 @@ ${c}`;
             return -1;
           }
           stateNumericDecimal(e, t) {
-            for (; t < e.length; ) {
+            for (; t < e.length;) {
               let r = e.charCodeAt(t);
               if (!h(r)) return this.emitNumericEntity(r, 2);
               ((this.result = 10 * this.result + (r - o.ZERO)), this.consumed++, t++);
@@ -6226,7 +6226,7 @@ ${c}`;
             let { decodeTree: r } = this,
               i = r[this.treeIndex],
               n = (i & c.x.VALUE_LENGTH) >> 14;
-            for (; t < e.length; ) {
+            for (; t < e.length;) {
               if (0 === n && (i & c.x.FLAG13) != 0) {
                 let s = (i & c.x.BRANCH_LENGTH) >> 7;
                 if (0 === this.runConsumed) {
@@ -6234,7 +6234,7 @@ ${c}`;
                   if (e.charCodeAt(t) !== r) return 0 === this.result ? 0 : this.emitNotTerminatedNamedEntity();
                   (t++, this.excess++, this.runConsumed++);
                 }
-                for (; this.runConsumed < s; ) {
+                for (; this.runConsumed < s;) {
                   if (t >= e.length) return -1;
                   let i = this.runConsumed - 1,
                     n = r[this.treeIndex + 1 + (i >> 1)],
@@ -6263,7 +6263,7 @@ ${c}`;
                   let o = (n + 1) >> 1,
                     a = 0,
                     A = n - 1;
-                  for (; a <= A; ) {
+                  for (; a <= A;) {
                     let t = (a + A) >>> 1,
                       n = (e[r + (t >> 1)] >> ((1 & t) * 8)) & 255;
                     if (n < i) a = t + 1;
@@ -6572,7 +6572,7 @@ ${c}`;
               return;
             }
             let t = this.htmlMode && g.get(e);
-            if (t) for (; this.stack.length > 0 && t.has(this.stack[0]); ) this.popElement(!0);
+            if (t) for (; this.stack.length > 0 && t.has(this.stack[0]);) this.popElement(!0);
             (!this.isVoidElement(e) &&
               (this.stack.unshift(e),
               this.htmlMode &&
@@ -6715,9 +6715,9 @@ ${c}`;
           }
           getSlice(e, t) {
             if (e === t) return "";
-            for (; e - this.bufferOffset >= this.buffers[0].length; ) this.shiftBuffer();
+            for (; e - this.bufferOffset >= this.buffers[0].length;) this.shiftBuffer();
             let r = this.buffers[0].slice(e - this.bufferOffset, t - this.bufferOffset);
-            for (; t - this.bufferOffset > this.buffers[0].length; )
+            for (; t - this.bufferOffset > this.buffers[0].length;)
               (this.shiftBuffer(), (r += this.buffers[0].slice(0, t - this.bufferOffset)));
             return r;
           }
@@ -6738,7 +6738,7 @@ ${c}`;
             this.tokenizer.pause();
           }
           resume() {
-            for (this.tokenizer.resume(); this.tokenizer.running && this.writeIndex < this.buffers.length; )
+            for (this.tokenizer.resume(); this.tokenizer.running && this.writeIndex < this.buffers.length;)
               this.tokenizer.write(this.buffers[this.writeIndex++]);
             this.ended && this.tokenizer.end();
           }
@@ -6944,7 +6944,7 @@ ${c}`;
                   : ((this.state = a.InSpecialComment), this.stateInSpecialComment(e)));
           }
           fastForwardTo(e) {
-            for (; ++this.index < this.buffer.length + this.offset; )
+            for (; ++this.index < this.buffer.length + this.offset;)
               if (this.buffer.charCodeAt(this.index - this.offset) === e) return !0;
             return ((this.index = this.buffer.length + this.offset - 1), !1);
           }
@@ -7220,7 +7220,7 @@ ${c}`;
             return this.index < this.buffer.length + this.offset && this.running;
           }
           parse() {
-            for (; this.shouldContinue(); ) {
+            for (; this.shouldContinue();) {
               let e = this.buffer.charCodeAt(this.index - this.offset);
               switch (this.state) {
                 case a.Text:

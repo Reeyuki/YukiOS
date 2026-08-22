@@ -43,11 +43,13 @@ export const updateNewsBadge = () => {
 };
 
 export class NewsApp extends BaseApp {
+  singletonWindowIds = ["news-yukios"];
+
   constructor(services) {
     super(services);
   }
 
-  open() {
+  async open() {
     const updates = NEWS_UPDATES;
 
     const renderSections = (sections) =>
@@ -133,7 +135,6 @@ export class NewsApp extends BaseApp {
   initNews() {
     os.storage.set(StorageKeys.newsReadSignatureKey, getNewsContentSignature());
     os.storage.set(StorageKeys.newsSeenKey, "true");
-    window.newsApp = this;
     updateNewsBadge();
   }
 }

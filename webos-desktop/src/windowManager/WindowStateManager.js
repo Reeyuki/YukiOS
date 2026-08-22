@@ -12,7 +12,9 @@ export class WindowStateManager {
   bringToFront(win) {
     if (!win) return;
 
-    win.getAnimations().forEach((a) => a.cancel());
+    win.getAnimations().forEach((a) => {
+      if (a.id !== "window-state") a.cancel();
+    });
     win.style.opacity = "";
     win.style.transform = "";
     win.style.filter = "";
@@ -56,11 +58,11 @@ export class WindowStateManager {
     const entry = this.manager.openWindows.get(win.id);
     if (entry?.record) entry.record.minimized = true;
     animateWindowMinimize(win, () => {
-      win.style.display = "none";
       win.style.pointerEvents = "";
       win.style.animation = "";
       win.style.transform = "";
       win.style.opacity = "";
+      if (entry?.record?.minimized) win.style.display = "none";
     });
     this.manager.triggerSessionSave();
   }
@@ -158,6 +160,7 @@ export class WindowStateManager {
       }
       this.manager.removeFromTaskbar(winId);
     }
+    this.manager.triggerSessionSave();
   }
 
   silenceWindow(win) {
@@ -182,14 +185,14 @@ export class WindowStateManager {
 
   animateAndRemove(win) {
     animateWindowClose(win, () => win.remove());
+    this.manager.triggerSessionSave();
   }
 
   registerCloseWindow(closeButton, winId) {
     closeButton.addEventListener("click", () => {
       const win = $("#" + winId);
       if (!win) return;
-      this.animateAndRemove(win);
-      this.manager.removeFromTaskbar(winId);
+      this.manager.closeWindow(win);
     });
   }
 }

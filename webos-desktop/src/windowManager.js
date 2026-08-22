@@ -366,17 +366,35 @@ export class WindowManager {
     this.tilingManager?.onWindowCreated(winId);
   }
 
-  mountWindow(win, winId, title, iconValue, color = null) {
+  mountWindow(win, winId, title, iconValue, color = null, opts = {}) {
+    const mountTarget = opts.mountTarget || document.body;
     if (!document.body.contains(win)) {
-      document.body.appendChild(win);
+      mountTarget.appendChild(win);
     }
     this.makeDraggable(win);
     this.makeResizable(win);
-    this.setupWindowControls(win);
-    this.addToTaskbar(winId, title, iconValue, color);
+    if (iconValue) this.addToTaskbar(winId, title, iconValue, color);
     this.onTilingWindowCreated(winId);
-    this.bringToFront(win);
-    animateWindowOpen(win);
+    if (opts.autoFocus !== false) this.bringToFront(win);
+    requestAnimationFrame(() => animateWindowOpen(win));
+    if (opts.bindControls !== false) this.bindWindowControlsWhenReady(win);
+    win.addEventListener("remove", () => this.removeFromTaskbar(win.id));
+  }
+
+  bindWindowControlsWhenReady(win) {
+    const hasControls = () => win.querySelector(".window-header, .browser-tabbar, .app-menubar");
+    if (hasControls()) {
+      this.setupWindowControls(win);
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (hasControls()) {
+        observer.disconnect();
+        this.setupWindowControls(win);
+      }
+    });
+    observer.observe(win, { childList: true, subtree: true });
+    win.addEventListener("remove", () => observer.disconnect());
   }
 
   nextWindowZIndex() {
@@ -416,6 +434,49 @@ export class WindowManager {
     }
   }
 
+  registerWindow(winId, entry) {
+    this.openWindows.set(winId, entry);
+    this.workspaceManager?.registerWindow(winId);
+    audioMixer().registerWindow(winId, entry.title, audioMixer().getIconHtmlForTaskbar(null, entry.iconValue));
+  }
+
+  unregisterWindow(winId) {
+    if (!this.openWindows.has(winId)) return;
+    const win = $("#" + winId);
+    const entry = this.openWindows.get(winId);
+
+    const taskbarItem = $("#taskbar-" + winId);
+    if (taskbarItem) taskbarItem.remove();
+
+    if (entry && entry.record) {
+      const appId = (win && win.dataset.appId) || this.guessAppIdFromWinId(winId);
+      if (appId) {
+        try {
+          const geom = win ? this.getWindowNormalGeometry(win) : entry.record;
+          os.storage.set(`${StorageKeys.geometryPrefix}${appId}`, {
+            x: geom.x,
+            y: geom.y,
+            width: geom.width,
+            height: geom.height
+          });
+        } catch (e) {}
+      }
+    }
+
+    this.openWindows.delete(winId);
+    this.workspaceManager?.unregisterWindow(winId);
+    audioMixer().unregisterWindow(winId);
+    os.events.emit(BusEvents.WINDOW_CLOSED, { winId });
+
+    if (this.openWindows.size === 0) {
+      this.utils.resetToDefaultState();
+    } else {
+      const lastWin = Array.from(this.openWindows.values()).pop();
+      if (lastWin) this.utils.updatePageFavicon(lastWin.iconValue, lastWin.title);
+    }
+    this.triggerSessionSave();
+  }
+
   scheduleHideTaskbarPreview() {
     this.taskbarSystem.scheduleHideTaskbarPreview();
   }
@@ -449,7 +510,7 @@ export class WindowManager {
   }
 
   removeFromTaskbar(winId) {
-    this.taskbarSystem.removeFromTaskbar(winId);
+    this.unregisterWindow(winId);
     this.macDock.removeItem(winId);
   }
 
@@ -570,6 +631,10 @@ export class WindowManager {
       win = $("#" + win);
     }
     if (!win) return;
+    if (os.tray.isRegistered(win.id)) {
+      os.tray.sendToTray(win.id);
+      return;
+    }
     this.silenceWindow(win);
     this.removeFromTaskbar(win.id);
     if (win.dataset.isGame === "true") {

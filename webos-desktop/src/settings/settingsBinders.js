@@ -27,34 +27,95 @@ import { bindSelectMenu, getSelectMenuValue, setSelectMenuValue } from "../share
 import { bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
 import { addCustomTheme } from "../shared/themeEngine.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
+import { bindDisks } from "./pane-disks.js";
+import { loadStartupApps, renderStartupAppList } from "../shared/startupApps.js";
 import { taskbarPositionManager } from "../desktopui/taskbarPositionManager.js";
 import { applyAnimationSettings } from "../windowManager/AnimationSystem.js";
 import { getResolutionLabel } from "../resolution/resolutionManager.js";
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);
-  const navItems = $$(".yuki-settings-nav li", win);
+  const navItems = $$(".yuki-settings-nav li[data-target]", win);
+  const groupHeaders = $$(".yuki-settings-nav-group", win);
+  const sublists = $$(".yuki-settings-sublist", win);
   const panes = $$(".settings-category-pane", win);
   const searchInput = $("#settingsSearch", win);
+  const compact = os.storage.get(StorageKeys.sidebarCompact) !== "false";
+
+  const setActiveNav = (item) => {
+    navItems.forEach((n) => n.classList.remove("active"));
+    groupHeaders.forEach((g) => g.classList.remove("active"));
+    if (compact) {
+      sublists.forEach((s) => s.classList.remove("expanded"));
+      groupHeaders.forEach((g) => g.classList.remove("expanded"));
+    }
+    if (item) {
+      item.classList.add("active");
+      const gk = item.dataset.group;
+      if (gk) {
+        const header = win.querySelector(`.yuki-settings-nav-group[data-group="${gk}"]`);
+        const sublist = win.querySelector(`.yuki-settings-sublist[data-group="${gk}"]`);
+        if (header) {
+          header.classList.add("active");
+          if (compact) header.classList.add("expanded");
+        }
+        if (sublist && compact) sublist.classList.add("expanded");
+      }
+    }
+  };
+
+  const activatePane = (item, scrollTarget) => {
+    setActiveNav(item);
+    panes.forEach((p) => p.classList.remove("active"));
+    const paneId = item?.dataset.target;
+    const target = paneId ? win.querySelector(`#${paneId}`) : null;
+    if (target) {
+      target.classList.add("active");
+      animateSettingsPane(target, () => {
+        if (scrollTarget) scrollToSection(win, scrollTarget);
+        else scrollSettingsToTop(win);
+      });
+    }
+  };
 
   navItems.forEach((item) => {
     bindEvent(item, "click", () => {
-      searchInput.value = "";
-      searchInput.dispatchEvent(new Event("input"));
-
-      navItems.forEach((n) => n.classList.remove("active"));
-      panes.forEach((p) => p.classList.remove("active"));
-      item.classList.add("active");
-      const target = $(`#${item.dataset.target}`, win);
-      if (target) {
-        target.classList.add("active");
-        target.animate(
-          [
-            { opacity: 0, transform: "scale(1.04)" },
-            { opacity: 1, transform: "scale(1)" }
-          ],
-          { duration: 250, easing: "ease" }
-        );
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event("input"));
       }
+      const launch = item.dataset.launch;
+      if (launch) {
+        if (launch === "defaultApps") {
+          activatePane(item, item.dataset.scroll);
+          mountDefaultApps(win, item.dataset.target);
+          return;
+        }
+        os.app.launch(launch).catch(() => {});
+        return;
+      }
+      activatePane(item, item.dataset.scroll);
+    });
+  });
+
+  groupHeaders.forEach((header) => {
+    bindEvent(header, "click", () => {
+      const gk = header.dataset.group;
+      const sublist = win.querySelector(`.yuki-settings-sublist[data-group="${gk}"]`);
+      const firstNav = sublist ? sublist.querySelector(".yuki-settings-nav-item:not([data-launch])") : null;
+      if (compact) {
+        if (header.classList.contains("expanded")) {
+          header.classList.remove("expanded", "active");
+          if (sublist) sublist.classList.remove("expanded");
+          if (sublist)
+            sublist.querySelectorAll(".yuki-settings-nav-item.active").forEach((el) => el.classList.remove("active"));
+          return;
+        }
+        sublists.forEach((s) => s.classList.remove("expanded"));
+        groupHeaders.forEach((g) => g.classList.remove("active"));
+        header.classList.add("expanded");
+        if (sublist) sublist.classList.add("expanded");
+      }
+      if (firstNav) firstNav.click();
     });
   });
 
@@ -63,6 +124,11 @@ export function bindNavigation(win) {
 
     if (!query) {
       layout.classList.remove("is-searching");
+      if (compact) {
+        sublists.forEach((s) => s.classList.remove("expanded"));
+      } else {
+        sublists.forEach((s) => s.classList.add("expanded"));
+      }
       $$(".settings-row", win).forEach((row) => row.classList.remove("hidden-by-search"));
       panes.forEach((p) => {
         p.classList.remove("active");
@@ -72,9 +138,19 @@ export function bindNavigation(win) {
         });
       });
       const activeNav = $(".yuki-settings-nav li.active", win);
-      if (activeNav) $(`#${activeNav.dataset.target}`, win)?.classList.add("active");
+      if (activeNav) {
+        const gk = activeNav.dataset.group;
+        if (gk) {
+          const header = win.querySelector(`.yuki-settings-nav-group[data-group="${gk}"]`);
+          const sublist = win.querySelector(`.yuki-settings-sublist[data-group="${gk}"]`);
+          if (header) header.classList.add("expanded");
+          if (sublist && compact) sublist.classList.add("expanded");
+        }
+        $(`#${activeNav.dataset.target}`, win)?.classList.add("active");
+      }
     } else {
       layout.classList.add("is-searching");
+      sublists.forEach((s) => s.classList.add("expanded"));
       $$(".settings-row", win).forEach((row) => {
         const title = $(".settings-label-title", row)?.textContent.toLowerCase() || "";
         const desc = $(".settings-label-desc", row)?.textContent.toLowerCase() || "";
@@ -101,8 +177,66 @@ export function bindNavigation(win) {
         }
       });
     }
+    if (query) {
+      sublists.forEach((s) => s.classList.add("expanded"));
+    }
   });
 }
+
+export function animateSettingsPane(paneEl, onDone) {
+  if (!paneEl || typeof paneEl.animate !== "function") {
+    onDone?.();
+    return;
+  }
+  const animation = paneEl.animate([{ transform: "translateY(12px)" }, { transform: "translateY(0)" }], {
+    duration: 200,
+    easing: "ease"
+  });
+  if (onDone) animation.onfinish = () => onDone();
+}
+
+function getSettingsScroller(win) {
+  return win.querySelector(".yuki-settings-content");
+}
+
+function scrollSettingsToTop(win) {
+  const scroller = getSettingsScroller(win);
+  if (!scroller) return;
+  const prev = scroller.style.scrollBehavior;
+  scroller.style.scrollBehavior = "auto";
+  scroller.scrollTop = 0;
+  scroller.style.scrollBehavior = prev;
+}
+
+function scrollToSection(win, scrollTarget) {
+  const el = win.querySelector(`#${scrollTarget}`);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "auto", block: "start" });
+  el.setAttribute("tabindex", "-1");
+}
+
+function mountDefaultApps(win, paneId) {
+  const app = os.app.getInstance("defaultApps");
+  if (!app) return;
+  const pane = win.querySelector(`#${paneId}`);
+  if (!pane) return;
+  let host = $(".da-pane-host", pane);
+  if (!host) {
+    pane.innerHTML = `<div class="da-pane-host"></div>`;
+    host = $(".da-pane-host", pane);
+  }
+  app.mountInto(host);
+}
+
+function mountWallpaperEngine(win) {
+  const host = $("#wallpaper-engine-host", win);
+  if (!host || host.dataset.mounted === "1") return;
+  const app = os.app.getInstance("wallpaperEngineApp");
+  if (!app) return;
+  host.dataset.mounted = "1";
+  app.mountInto(host);
+}
+
 export function bindSystemCategory(win, save, settings, notificationCenter, showSaved) {
   const systemSettings = [
     "#settingsWeather",
@@ -131,6 +265,13 @@ export function bindSystemCategory(win, save, settings, notificationCenter, show
       settings.dnd = enabled;
       os.storage.set(StorageKeys.dndKey, enabled ? "1" : "0");
       notificationCenter?.setDoNotDisturb(enabled);
+    });
+  }
+
+  const lockBtn = $("#settingsLockScreen", win);
+  if (lockBtn) {
+    bindEvent(lockBtn, "click", () => {
+      os.app.lockSession?.();
     });
   }
 
@@ -454,6 +595,7 @@ export function bindAppearanceCategory(
   showCustomColorsDialog
 ) {
   bindEvent($("#settingsCycleWallpaper", win), "change", save);
+  bindEvent($("#settingsSidebarCompact", win), "change", save);
 
   const resolutionSelect = $("#settingsResolution", win);
   if (resolutionSelect) {
@@ -751,6 +893,8 @@ export function bindAppearanceCategory(
     });
   }
 
+  mountWallpaperEngine(win);
+
   const themeHubBtn = $("#settingsOpenThemeHub", win);
   if (themeHubBtn) {
     bindEvent(themeHubBtn, "click", () => {
@@ -965,6 +1109,7 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
   bindEvent($("#btnResetSaved", win), "click", () => {
     $("#settingsWeather", win).checked = settings.weather;
     $("#settingsCycleWallpaper", win).checked = settings.cycleWallpaper;
+    $("#settingsSidebarCompact", win).checked = settings.sidebarCompact;
     $("#settingsClippy", win).checked = settings.clippy;
     $("#settingsAchievements", win).checked = !settings.achievementsDisabled;
     $("#settingsAnalytics", win).checked = !settings.analyticsDisabled;
@@ -987,6 +1132,7 @@ export function bindDataCategory(win, save, settings, fs, showStatus, showSaved)
 
     $("#settingsWeather", win).checked = true;
     $("#settingsCycleWallpaper", win).checked = true;
+    $("#settingsSidebarCompact", win).checked = true;
     $("#settingsClippy", win).checked = false;
     $("#settingsAchievements", win).checked = true;
     $("#settingsAnalytics", win).checked = true;
@@ -1252,4 +1398,133 @@ function showResolutionCountdown(win, resolutionLabel) {
       if (e.target === overlay) finish(false);
     });
   });
+}
+
+export function bindQuickSettings(win, settings, notificationCenter, showSaved) {
+  const ANIM_STEPS = 11;
+  const ANIM_DEFAULT_IDX = 5;
+  const ANIM_SLOW = 3.0;
+  const ANIM_DEFAULT = 1.0;
+  const ANIM_FAST = 0.05;
+  const speedFromIdx = (idx) => {
+    if (idx <= ANIM_DEFAULT_IDX) return ANIM_SLOW - (idx / ANIM_DEFAULT_IDX) * (ANIM_SLOW - ANIM_DEFAULT);
+    return ANIM_DEFAULT - ((idx - ANIM_DEFAULT_IDX) / (ANIM_STEPS - 1 - ANIM_DEFAULT_IDX)) * (ANIM_DEFAULT - ANIM_FAST);
+  };
+  const animSlider = $("#quickAnimationSpeed", win);
+  if (animSlider) {
+    bindEvent(animSlider, "change", () => {
+      const raw = Number(getRangeSliderValue("quickAnimationSpeed", win));
+      const idx = Number.isFinite(raw) ? raw : ANIM_DEFAULT_IDX;
+      const val = speedFromIdx(idx);
+      os.storage.set(StorageKeys.windowAnimationSpeed, val);
+      applyAnimationSettings({ animationSpeed: val });
+      showSaved?.();
+    });
+  }
+
+  const dndToggle = $("#settingsQuickDND", win);
+  if (dndToggle) {
+    bindEvent(dndToggle, "change", () => {
+      const enabled = dndToggle.checked;
+      settings.dnd = enabled;
+      os.storage.set(StorageKeys.dndKey, enabled ? "1" : "0");
+      notificationCenter?.setDoNotDisturb(enabled);
+      const other = $("#settingsDND", win);
+      if (other) other.checked = enabled;
+    });
+  }
+
+  const soundToggle = $("#settingsQuickSound", win);
+  if (soundToggle) {
+    bindEvent(soundToggle, "change", () => {
+      const enabled = soundToggle.checked;
+      settings.soundEnabled = enabled;
+      os.storage.set(StorageKeys.soundEnabled, String(enabled));
+      applySound(enabled, settings.masterVolume);
+      const other = $("#settingsSoundEnabled", win);
+      if (other) other.checked = enabled;
+    });
+  }
+
+  $$(".quick-link-btn, .quick-more-btn", win).forEach((btn) => {
+    bindEvent(btn, "click", () => {
+      const launch = btn.dataset.launch;
+      if (launch) {
+        if (launch === "defaultApps") {
+          const navItem = win.querySelector('.yuki-settings-nav li[data-target="default-applications"]');
+          if (navItem) {
+            navItem.click();
+            return;
+          }
+        }
+        os.app.launch(launch).catch(() => {});
+        return;
+      }
+      const navItem = win.querySelector(
+        `.yuki-settings-nav li[data-target="${btn.dataset.target}"]${btn.dataset.scroll ? `[data-scroll="${btn.dataset.scroll}"]` : ":not([data-scroll])"}`
+      );
+      if (navItem) {
+        navItem.click();
+      } else {
+        const target = win.querySelector(`#${btn.dataset.target}`);
+        if (target) {
+          win.querySelectorAll(".settings-category-pane").forEach((p) => p.classList.remove("active"));
+          target.classList.add("active");
+        }
+      }
+    });
+  });
+
+  const resetBtn = $("#settingsQuickReset", win);
+  if (resetBtn) {
+    bindEvent(resetBtn, "click", () => {
+      const defaultTheme = "dark";
+      const defaultAnim = 1.0;
+      os.storage.set(StorageKeys.theme, defaultTheme);
+      applyTheme(defaultTheme, () => getStoredCustomColors());
+      os.storage.set(StorageKeys.windowAnimationSpeed, defaultAnim);
+      applyAnimationSettings({ animationSpeed: defaultAnim });
+      os.storage.set(StorageKeys.dndKey, "0");
+      notificationCenter?.setDoNotDisturb(false);
+      os.storage.set(StorageKeys.soundEnabled, "true");
+      applySound(true, settings.masterVolume);
+
+      $$(".settings-btn[data-theme-val]", win).forEach((b) =>
+        toggleClass(b, "active", b.dataset.themeVal === defaultTheme)
+      );
+      if (animSlider) {
+        const normalIdx = ANIM_DEFAULT_IDX;
+        animSlider.dataset.value = String(normalIdx);
+        const fill = $(".range-slider__fill", animSlider);
+        if (fill) fill.style.width = `${(normalIdx / (ANIM_STEPS - 1)) * 100}%`;
+        const thumb = $(".range-slider__thumb", animSlider);
+        if (thumb) thumb.style.left = `${(normalIdx / (ANIM_STEPS - 1)) * 100}%`;
+      }
+      const dndEl = $("#settingsQuickDND", win);
+      if (dndEl) dndEl.checked = false;
+      const sndEl = $("#settingsQuickSound", win);
+      if (sndEl) sndEl.checked = true;
+      const otherDnd = $("#settingsDND", win);
+      if (otherDnd) otherDnd.checked = false;
+      const otherSnd = $("#settingsSoundEnabled", win);
+      if (otherSnd) otherSnd.checked = true;
+      showSaved?.();
+    });
+  }
+}
+
+export function bindAutostartCategory(win) {
+  const listEl = $("#autostart-list", win);
+  const searchEl = $("#autostart-search", win);
+  if (!listEl) return;
+
+  const state = { list: loadStartupApps(), filter: "" };
+  renderStartupAppList(listEl, state);
+
+  if (searchEl) {
+    bindEvent(searchEl, "input", (e) => {
+      state.filter = e.target.value.toLowerCase();
+      renderStartupAppList(listEl, state);
+    });
+  }
 }

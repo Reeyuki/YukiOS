@@ -52,6 +52,7 @@ export function relayoutDesktopIcons() {
     (icon) => icon.style.display !== "none"
   );
   if (!allIcons.length) return;
+  if (desktop.clientWidth === 0 || desktop.clientHeight === 0) return;
   const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
   const systemIcons = [];
   const regularIcons = [];
@@ -76,7 +77,14 @@ export function relayoutDesktopIcons() {
         : positionHelper.layoutSync(regularIcons, false, occupied);
   }
   if (systemIcons.length) positionHelper.layoutRightSync(systemIcons, occupied);
-  PositionStore.save({});
+  const saved = {};
+  allIcons.forEach((icon) => {
+    const left = parseFloat(icon.style.left) || 0;
+    const top = parseFloat(icon.style.top) || 0;
+    const { col, row } = positionHelper.pixelsToCell(left, top);
+    saved[PositionStore.getKey(icon)] = { col, row };
+  });
+  PositionStore.save(saved);
 }
 
 function isRightAlignedSystemApp(appMap, app) {
@@ -100,9 +108,13 @@ class PositionHelper {
 
   pixelsToCell(leftPx, topPx) {
     const { width, height, gap } = this.gridSize;
+    const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
+    const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
+    const col = Math.round((leftPx - gap) / (width + gap));
+    const row = Math.round((topPx - gap) / (height + gap));
     return {
-      col: Math.max(0, Math.round((leftPx - gap) / (width + gap))),
-      row: Math.max(0, Math.round((topPx - gap) / (height + gap)))
+      col: Math.max(0, Math.min(maxCols - 1, col)),
+      row: Math.max(0, Math.min(maxRows - 1, row))
     };
   }
 
@@ -125,9 +137,12 @@ class PositionHelper {
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - gap) / (height + gap)));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - gap) / (width + gap)));
     if (!occupied) occupied = this.buildOccupancySet(exclude);
-    let c = col,
-      r = row;
-    while (occupied.has(`${c},${r}`)) {
+    const key = (c, r) => `${c},${r}`;
+    const clampCol = (c) => Math.max(0, Math.min(maxCols - 1, c));
+    const clampRow = (r) => Math.max(0, Math.min(maxRows - 1, r));
+    let c = clampCol(col),
+      r = clampRow(row);
+    while (occupied.has(key(c, r))) {
       r++;
       if (r >= maxRows) {
         r = 0;
@@ -139,7 +154,21 @@ class PositionHelper {
         break;
       }
     }
+    c = clampCol(c);
+    r = clampRow(r);
+    if (!occupied.has(key(c, r))) return { col: c, row: r };
+    const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+    if (free) return free;
     return { col: c, row: r };
+  }
+
+  findAnyFreeCell(occupied, maxCols, maxRows) {
+    for (let r = 0; r < maxRows; r++) {
+      for (let c = 0; c < maxCols; c++) {
+        if (!occupied.has(`${c},${r}`)) return { col: c, row: r };
+      }
+    }
+    return null;
   }
 
   setPosition(icon, leftPx, topPx) {
@@ -187,6 +216,13 @@ class PositionHelper {
           break;
         }
       }
+      if (occupied.has(`${col},${row}`)) {
+        const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+        if (free) {
+          col = free.col;
+          row = free.row;
+        }
+      }
       occupied.add(`${col},${row}`);
       icon.style.left = `${gap + col * cellW}px`;
       icon.style.top = `${gap + row * cellH}px`;
@@ -221,6 +257,13 @@ class PositionHelper {
           break;
         }
       }
+      if (occupied.has(`${col},${row}`)) {
+        const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+        if (free) {
+          col = free.col;
+          row = free.row;
+        }
+      }
       occupied.add(`${col},${row}`);
       icon.style.left = `${gap + col * cellW}px`;
       icon.style.top = `${gap + row * cellH}px`;
@@ -252,6 +295,13 @@ class PositionHelper {
           col = maxCols - 1;
           row = 0;
           break;
+        }
+      }
+      if (occupied.has(`${col},${row}`)) {
+        const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+        if (free) {
+          col = free.col;
+          row = free.row;
         }
       }
       occupied.add(`${col},${row}`);
@@ -289,6 +339,13 @@ class PositionHelper {
             break;
           }
         }
+        if (occupied.has(`${col},${row}`)) {
+          const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+          if (free) {
+            col = free.col;
+            row = free.row;
+          }
+        }
         occupied.add(`${col},${row}`);
         icon.style.left = `${gap + col * cellW}px`;
         icon.style.top = `${gap + row * cellH}px`;
@@ -324,6 +381,13 @@ class PositionHelper {
           break;
         }
       }
+      if (occupied.has(`${col},${row}`)) {
+        const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+        if (free) {
+          col = free.col;
+          row = free.row;
+        }
+      }
       occupied.add(`${col},${row}`);
       icon.style.left = `${gap + col * cellW}px`;
       icon.style.top = `${gap + row * cellH}px`;
@@ -357,6 +421,13 @@ class PositionHelper {
             col = maxCols - 1;
             row = 0;
             break;
+          }
+        }
+        if (occupied.has(`${col},${row}`)) {
+          const free = this.findAnyFreeCell(occupied, maxCols, maxRows);
+          if (free) {
+            col = free.col;
+            row = free.row;
           }
         }
         occupied.add(`${col},${row}`);
@@ -1124,9 +1195,11 @@ window.addEventListener("resize", () => {
 });
 
 function resetIconDragState() {
+  const helper = new PositionHelper(desktop, GRID_CONFIG);
   $$(".icon.selectable").forEach((icon) => {
     const zIndex = parseInt(icon.style.zIndex);
     if (zIndex > 10 || icon.style.opacity === "0.7" || icon.style.cursor === "move") {
+      helper.snap(icon);
       setStyle(icon, { zIndex: "", opacity: "", cursor: "" });
     }
   });
@@ -1156,6 +1229,7 @@ export function sortDesktopIcons(mode) {
     (icon) => icon.style.display !== "none"
   );
   if (!allIcons.length) return;
+  if (desktop.clientWidth === 0 || desktop.clientHeight === 0) return;
 
   const withKey = allIcons.map((icon) => {
     const label = icon.querySelector("div")?.textContent?.trim() || "";

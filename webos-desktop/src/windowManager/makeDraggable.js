@@ -358,7 +358,7 @@ export function windowMakeDraggable(win, wm) {
   const observer = new MutationObserver((mutations) => {
     for (const m of mutations) {
       if (m.addedNodes.length) {
-        win.querySelectorAll(".app-menubar").forEach(initHeader);
+        win.querySelectorAll(".window-header, .browser-tabbar, .app-menubar").forEach(initHeader);
         break;
       }
     }

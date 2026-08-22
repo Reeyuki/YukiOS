@@ -45,6 +45,8 @@ export async function detectUserLocation() {
   return loc;
 }
 export class WeatherApp extends BaseApp {
+  singletonWindowIds = ["weather-win"];
+
   constructor(services) {
     super(services);
     this.unit = "metric";
@@ -53,7 +55,6 @@ export class WeatherApp extends BaseApp {
   }
 
   async open(opts) {
-    if (await this.isSingletonOpen("weather-win")) return;
     const win = os.window.create("weather-win", "Weather", "420px", "560px", {
       icon: "fas fa-cloud"
     });

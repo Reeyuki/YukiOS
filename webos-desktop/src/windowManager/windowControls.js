@@ -1,19 +1,5 @@
 import { os } from "../framework.js";
 
-function closeWindow(win, wm) {
-  if (os.tray.isRegistered(win.id)) {
-    os.tray.sendToTray(win.id);
-    return;
-  }
-  wm.silenceWindow(win);
-  wm.removeFromTaskbar(win.id);
-  if (win.dataset.isGame === "true") {
-    wm.gameWindowCount = Math.max(0, wm.gameWindowCount - 1);
-  }
-  wm.updateTransparency();
-  wm.animateAndRemove(win);
-}
-
 export function updateMaximizeControls(win) {
   const maxBtn = win.querySelector(".maximize-btn");
   if (!maxBtn) return;
@@ -45,7 +31,7 @@ export function setupWindowControls(win, wm) {
   });
 
   if (closeBtn) {
-    closeBtn.onclick = () => closeWindow(win, wm);
+    closeBtn.onclick = () => wm.closeWindow(win);
   }
 
   const header = win.querySelector(".window-header");
@@ -54,7 +40,7 @@ export function setupWindowControls(win, wm) {
       if (e.target.closest(".window-controls")) return;
       const icon = header.querySelector("span > img, span > i, span > svg");
       if (icon && (e.target === icon || icon.contains(e.target))) {
-        closeWindow(win, wm);
+        wm.closeWindow(win);
         return;
       }
       win.classList.add("snapping");

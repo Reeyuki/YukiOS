@@ -9,6 +9,13 @@ export class AppRestorationService {
     this.isRestoring = false;
     this.restoreLog = [];
     this.launchedApps = new Set();
+
+    const flush = () => this.flushSession();
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) this.flushSession();
+    });
   }
 
   registerApp(launcherPropertyName, appMetadata = {}) {
@@ -18,12 +25,6 @@ export class AppRestorationService {
       appTypeHint: appMetadata.appTypeHint,
       ...appMetadata
     });
-  }
-
-  appExists(appId) {
-    if (!this.wm.appLauncher) return false;
-    const serviceKey = SYSTEM_APPS[appId]?.serviceKey || appId;
-    return !!(this.wm.appLauncher.services?.[serviceKey] || this.wm.appLauncher.appMap?.[appId]);
   }
 
   buildRegistryFromConfig() {
@@ -38,21 +39,10 @@ export class AppRestorationService {
     }
   }
 
-  findWindowForApp(appId, originalWindowId) {
-    if (!appId || !this.wm) return null;
-
-    let win = $("#" + originalWindowId);
-    if (win) return win;
-
-    const allWindows = Array.from(this.wm.openWindows.entries());
-    for (const [winId, entry] of allWindows) {
-      const win = $("#" + winId);
-      if (win && !win.dataset.appId) {
-        return win;
-      }
-    }
-
-    return null;
+  appExists(appId) {
+    if (!this.wm.appLauncher) return false;
+    const serviceKey = SYSTEM_APPS[appId]?.serviceKey || appId;
+    return !!(this.wm.appLauncher.services?.[serviceKey] || this.wm.appLauncher.appMap?.[appId]);
   }
 
   guessAppIdFromWinId(winId) {
@@ -68,23 +58,15 @@ export class AppRestorationService {
 
   findAppId(windowState) {
     if (windowState.appId) {
-      if (this.appRegistry.has(windowState.appId)) {
-        return windowState.appId;
-      }
-      if (this.wm.appLauncher?.appMap?.[windowState.appId]) {
-        return windowState.appId;
-      }
+      if (this.appRegistry.has(windowState.appId)) return windowState.appId;
+      if (this.wm.appLauncher?.appMap?.[windowState.appId]) return windowState.appId;
     }
-
     const winId = (windowState.id || "").toLowerCase();
     for (const [propName, metadata] of this.appRegistry.entries()) {
       for (const pattern of metadata.windowIdPatterns) {
-        if (winId.includes(pattern.toLowerCase())) {
-          return propName;
-        }
+        if (winId.includes(pattern.toLowerCase())) return propName;
       }
     }
-
     return null;
   }
 
@@ -94,25 +76,59 @@ export class AppRestorationService {
     return this.wm.appLauncher.services?.[serviceKey] || null;
   }
 
-  async saveSession() {
-    if (!this.wm.fs || !this.wm.fs.sessionKey) return;
+  captureWindowState(win, entry) {
+    const record = entry.record;
+    const geom = this.wm.getWindowNormalGeometry(win);
+    record.x = geom.x;
+    record.y = geom.y;
+    record.width = geom.width;
+    record.height = geom.height;
+    record.zIndex = parseInt(win.style.zIndex) || 1000;
+    record.snapZone = win.dataset.snapZone || null;
+    record.fullscreen = win.dataset.fullscreen === "true" && win.dataset.appId !== "browserApp";
+    record.focused = win.classList.contains("active");
 
-    const sessionKey = this.wm.fs.sessionKey;
-    const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
-
-    const persistenceEnabled = parseBool(os.storage.get(StorageKeys.windowSessionPersistence), true);
-    if (!persistenceEnabled) {
-      try {
-        const exists = await this.wm.fs.exists(sessionPath);
-        if (exists) {
-          await this.wm.fs.unlink(sessionPath);
-        }
-      } catch (e) {
-        console.warn("Failed to clear session file:", e);
-      }
-      return;
+    const content = win.querySelector(".window-content");
+    if (content) {
+      record.scrollPosition = { x: content.scrollLeft, y: content.scrollTop };
     }
 
+    const appId = win.dataset.appId || this.findAppId({ id: win.id });
+    if (appId) {
+      record.appId = appId;
+      win.dataset.appId = appId;
+
+      const appMetadata = this.appRegistry.get(appId);
+      if (this.wm.appLauncher && (!appMetadata || appMetadata.persistContentState !== false)) {
+        const appInstance = this.getAppInstance(appId);
+        if (appInstance) {
+          try {
+            const snapshot = appInstance.getSnapshot(win.id);
+            if (snapshot && typeof snapshot.then !== "function") {
+              record.appStateSnapshot = snapshot;
+            }
+          } catch (e) {
+            console.warn(`Failed to get snapshot for ${appId}:`, e);
+          }
+        }
+      }
+    }
+
+    if (this.wm.workspaceManager) {
+      let wsId = 0;
+      for (const ws of this.wm.workspaceManager.workspaces) {
+        if (ws.windows.has(win.id)) {
+          wsId = ws.id;
+          break;
+        }
+      }
+      record.workspaceId = wsId;
+    }
+
+    return record.toJSON();
+  }
+
+  collectSession() {
     const windowStates = [];
     const sortedWindows = Array.from(this.wm.openWindows.keys())
       .map((id) => $("#" + id))
@@ -122,83 +138,69 @@ export class AppRestorationService {
     for (const win of sortedWindows) {
       const entry = this.wm.openWindows.get(win.id);
       if (!entry || !entry.record) continue;
-
-      const record = entry.record;
-
-      const geom = this.wm.getWindowNormalGeometry(win);
-      record.x = geom.x;
-      record.y = geom.y;
-      record.width = geom.width;
-      record.height = geom.height;
-      record.zIndex = parseInt(win.style.zIndex) || 1000;
-      record.snapZone = win.dataset.snapZone || null;
-      record.minimized = win.style.display === "none";
-      record.fullscreen = win.dataset.fullscreen === "true" && win.dataset.appId !== "browserApp";
-      record.focused = win.classList.contains("active");
-
-      const content = win.querySelector(".window-content");
-      if (content) {
-        record.scrollPosition = { x: content.scrollLeft, y: content.scrollTop };
-      }
-
-      const appId = win.dataset.appId || this.findAppId({ id: win.id });
-      if (appId) {
-        record.appId = appId;
-        win.dataset.appId = appId;
-
-        try {
-          os.storage.set(`${StorageKeys.geometryPrefix}${appId}`, {
-            x: record.x,
-            y: record.y,
-            width: record.width,
-            height: record.height
-          });
-        } catch (e) {
-          console.warn(`Failed to save geometry for ${appId}:`, e);
-        }
-
-        const appMetadata = this.appRegistry.get(appId);
-        if (this.wm.appLauncher && (!appMetadata || appMetadata.persistContentState !== false)) {
-          const appInstance = this.getAppInstance(appId);
-          if (appInstance) {
-            try {
-              record.appStateSnapshot = await appInstance.getSnapshot(win.id);
-            } catch (e) {
-              console.warn(`Failed to get snapshot for app ${appId}:`, e);
-            }
-          }
-        }
-      }
-
-      if (this.wm.workspaceManager) {
-        let wsId = 0;
-        for (const ws of this.wm.workspaceManager.workspaces) {
-          if (ws.windows.has(win.id)) {
-            wsId = ws.id;
-            break;
-          }
-        }
-        record.workspaceId = wsId;
-      }
-
-      windowStates.push(record.toJSON());
+      windowStates.push(this.captureWindowState(win, entry));
     }
 
-    try {
-      await this.wm.fs.ensureFolder(["system"]);
-      let sessionData = windowStates;
+    if (this.wm.workspaceManager) {
+      return {
+        windows: windowStates,
+        workspaces: this.wm.workspaceManager.workspaces.map((w) => ({ id: w.id, name: w.name })),
+        activeWorkspaceId: this.wm.workspaceManager.activeId
+      };
+    }
+    return windowStates;
+  }
 
-      if (this.wm.workspaceManager) {
-        sessionData = {
-          windows: windowStates,
-          workspaces: this.wm.workspaceManager.workspaces.map((w) => ({ id: w.id, name: w.name })),
-          activeWorkspaceId: this.wm.workspaceManager.activeId
-        };
+  saveSession() {
+    const persistenceEnabled = parseBool(os.storage.get(StorageKeys.windowSessionPersistence), true);
+    if (!persistenceEnabled) {
+      try {
+        os.storage.remove(StorageKeys.windowSession);
+        if (this.wm.fs) this.clearLegacySessionFile();
+      } catch (e) {
+        console.warn("Failed to clear session:", e);
       }
-
-      await this.wm.fs.safeWriteFile(sessionPath, JSON.stringify(sessionData));
+      return;
+    }
+    try {
+      os.storage.set(StorageKeys.windowSession, this.collectSession());
     } catch (e) {
       console.error("Failed to save window session:", e);
+    }
+  }
+
+  flushSession() {
+    if (this.isRestoring) return;
+    this.saveSession();
+  }
+
+  async clearLegacySessionFile() {
+    try {
+      const sessionKey = this.wm.fs.sessionKey;
+      const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
+      const exists = await this.wm.fs.exists(sessionPath);
+      if (exists) await this.wm.fs.unlink(sessionPath);
+    } catch (e) {}
+  }
+
+  async readPersistedSession() {
+    const stored = os.storage.get(StorageKeys.windowSession);
+    if (stored) return stored;
+
+    if (!this.wm.fs) return null;
+    const sessionKey = this.wm.fs.sessionKey;
+    const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
+    const exists = await this.wm.fs.exists(sessionPath);
+    if (!exists) return null;
+    try {
+      const data = await this.wm.fs.pRead("readFile", sessionPath, "utf8");
+      const parsed = JSON.parse(data);
+      os.storage.set(StorageKeys.windowSession, parsed);
+      await this.wm.fs.unlink(sessionPath);
+      return parsed;
+    } catch (e) {
+      console.warn("Failed to migrate legacy session file:", e);
+      return null;
     }
   }
 
@@ -214,54 +216,33 @@ export class AppRestorationService {
     this.launchedApps.clear();
 
     try {
-      const sessionKey = this.wm.fs.sessionKey;
-      const sessionPath = `/home/${sessionKey}/system/windowSession.json`;
+      const parsedData = await this.readPersistedSession();
+      if (!parsedData) return;
 
-      const exists = await this.wm.fs.exists(sessionPath);
-      if (!exists) {
-        return;
-      }
+      const windowStates = Array.isArray(parsedData) ? parsedData : parsedData.windows || [];
 
-      const data = await this.wm.fs.pRead("readFile", sessionPath, "utf8");
-      const parsedData = JSON.parse(data);
-
-      let windowStates = [];
-      if (Array.isArray(parsedData)) {
-        windowStates = parsedData;
-      } else if (parsedData && parsedData.windows) {
-        windowStates = parsedData.windows;
-
-        if (this.wm.workspaceManager && parsedData.workspaces) {
-          try {
-            this.wm.workspaceManager.workspaces = parsedData.workspaces.map((w) => ({
-              ...w,
-              windows: new Set()
-            }));
-            this.wm.workspaceManager.activeId = parsedData.activeWorkspaceId || 0;
-            this.wm.workspaceManager.render();
-          } catch (e) {
-            console.warn("Failed to restore workspaces:", e);
-          }
+      if (parsedData.windows && this.wm.workspaceManager && parsedData.workspaces) {
+        try {
+          this.wm.workspaceManager.workspaces = parsedData.workspaces.map((w) => ({ ...w, windows: new Set() }));
+          this.wm.workspaceManager.activeId = parsedData.activeWorkspaceId || 0;
+          this.wm.workspaceManager.render();
+        } catch (e) {
+          console.warn("Failed to restore workspaces:", e);
         }
       }
 
-      if (!Array.isArray(windowStates) || windowStates.length === 0) {
-        return;
-      }
+      if (windowStates.length === 0) return;
 
       for (const state of windowStates) {
         const appId = this.findAppId(state);
-
         if (!appId) {
           this.logRestore(`Skipped: Unknown app for window ${state.id}`);
           continue;
         }
-
         if (!this.appExists(appId)) {
-          this.logRestore(`Skipped: App '${appId}' not available in launcher for window ${state.id}`);
+          this.logRestore(`Skipped: App '${appId}' not available for window ${state.id}`);
           continue;
         }
-
         await this.restoreWindow(state, appId);
       }
 
@@ -388,10 +369,6 @@ export class AppRestorationService {
       this.logRestore(`Error: Failed to restore ${state.id}: ${e.message}`);
       console.error(`Failed to restore window ${state.id}:`, e);
     }
-  }
-
-  toCamelCase(str) {
-    return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   logRestore(message) {

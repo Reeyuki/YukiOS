@@ -95,6 +95,8 @@ const supportedExtensions = {
 };
 
 export class EmulatorApp extends BaseApp {
+  singletonWindowIds = ["emulator-win"];
+
   constructor(os) {
     super(os);
   }
@@ -104,7 +106,7 @@ export class EmulatorApp extends BaseApp {
     return this.explorerAppService;
   }
 
-  open(opts) {
+  async open(opts) {
     const allExtensions = new Set();
     Object.values(supportedExtensions).forEach((exts) => {
       exts.forEach((ext) => allExtensions.add(ext));

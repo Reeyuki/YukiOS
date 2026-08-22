@@ -206,7 +206,7 @@ export const FEATURE_DATA = {
       { id: "notepad", title: "Notepad", icon: "fas fa-file-alt" },
       { id: "terminal", title: "Terminal", icon: "fas fa-terminal" },
       { id: "browser", title: "Browser", icon: "static/icons/firefox.webp" },
-      { id: "explorer", title: "File Explorer", icon: "fas fa-folder" },
+      { id: "explorer", title: "Explorer", icon: "fas fa-folder" },
       { id: "settings", title: "Settings", icon: "fas fa-cog" },
       { id: "yukiOsGuide", title: "YukiOS Guide", icon: "fas fa-book-open" }
     ],
@@ -228,6 +228,8 @@ const FONT_LABELS = {
 };
 
 export class SetupApp extends BaseApp {
+  singletonWindowIds = ["setup-wizard"];
+
   constructor(services) {
     super(services);
     this.totalSetupSteps = 9;
@@ -259,8 +261,6 @@ export class SetupApp extends BaseApp {
 
   async open(options = {}) {
     const winId = "setup-wizard";
-    if (await this.isSingletonOpen(winId)) return;
-
     this.currentStep = 0;
     this.isTransitioning = false;
     if (this.stepTransitionTimer) {
@@ -272,7 +272,8 @@ export class SetupApp extends BaseApp {
 
     const win = os.window.create(winId, "Set Up YukiOS", "85vw", "75vh", {
       icon: "fas fa-rocket",
-      position: "center"
+      position: "center",
+      skipHeader: true
     });
     win.innerHTML = this.buildUI();
     os.window.applySnap(win, "maximize");

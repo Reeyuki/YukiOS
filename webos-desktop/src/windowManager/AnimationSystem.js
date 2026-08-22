@@ -1,5 +1,8 @@
 import { getRawSetting } from "../utils/utils.js";
 import { StorageKeys, os, $, createElement } from "../framework.js";
+import { playFallApartAnimation } from "./FallApartAnimation.js";
+
+let animToken = 0;
 export const OPEN_ANIMATIONS = {
   fade: "fade",
   scaleCenter: "scaleCenter",
@@ -25,7 +28,8 @@ export const CLOSE_ANIMATIONS = {
   instant: "instant",
   shrinkToPoint: "shrinkToPoint",
   dissolveBlur: "dissolveBlur",
-  zoomToDock: "zoomToDock"
+  zoomToDock: "zoomToDock",
+  fallApart: "fallApart"
 };
 
 export const MINIMIZE_ANIMATIONS = {
@@ -64,7 +68,10 @@ function getRestoreAnim() {
 }
 
 function getAnimationSpeed() {
-  const speed = getRawSetting(StorageKeys.windowAnimationSpeed, "normal");
+  const speed = getRawSetting(StorageKeys.windowAnimationSpeed, 1.0);
+  if (typeof speed === "number") return speed;
+  const num = Number(speed);
+  if (!isNaN(num)) return num;
   switch (speed) {
     case "slow":
       return 2.0;
@@ -197,6 +204,49 @@ function getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition) {
   return { dx, dy };
 }
 
+function captureCurrentVisual(win) {
+  const cs = getComputedStyle(win);
+  return {
+    transform: cs.transform !== "none" ? cs.transform : "translate(0px, 0px) scale(1)",
+    opacity: cs.opacity,
+    filter: cs.filter !== "none" ? cs.filter : "none",
+    clipPath: cs.clipPath !== "none" ? cs.clipPath : "none",
+    borderRadius: cs.borderRadius
+  };
+}
+
+function getOpenEndState() {
+  return {
+    transform: "translate(0px, 0px) scale(1)",
+    opacity: "1",
+    filter: "none",
+    clipPath: "none",
+    borderRadius: "0px"
+  };
+}
+
+function getMinimizeEndState(win) {
+  const taskbarItem = $(`#taskbar-${win.id}`);
+  if (taskbarItem) {
+    const winRect = win.getBoundingClientRect();
+    const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, getTaskbarPosition());
+    return {
+      transform: `translate(${dx}px, ${dy}px) scale(0.1)`,
+      opacity: "0",
+      filter: "none",
+      clipPath: "none",
+      borderRadius: "10px"
+    };
+  }
+  return {
+    transform: "translate(0px, 0px) scale(1)",
+    opacity: "0",
+    filter: "none",
+    clipPath: "none",
+    borderRadius: "0px"
+  };
+}
+
 export function animateWindowOpen(win, isRestoring = false) {
   if (isPerformanceMode()) return;
 
@@ -204,32 +254,108 @@ export function animateWindowOpen(win, isRestoring = false) {
 
   const wm = os.windowManager;
   const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
+
+  if (isSessionRestoring) return;
+
   const restoring = isRestoring || isSessionRestoring;
 
-  if (restoring) return;
+  playWindowAnimation(win, { mode: "open", isRestoring: restoring });
+}
 
-  const anim = restoring ? getRestoreAnim() : getOpenAnim();
-  if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
-
-  const duration = 420 * getAnimationSpeed();
-
-  win.getAnimations().forEach((a) => a.cancel());
-
-  const keyframes = restoring ? getRestoreKeyframes(anim, win) : getOpenKeyframes(anim, win, false);
-
-  const animation = win.animate(keyframes, {
-    duration: duration,
-    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-    fill: "forwards"
+export function restoreWindowAnimated(win) {
+  if (!win) return;
+  const token = ++animToken;
+  win._lastAnimToken = token;
+  requestAnimationFrame(() => {
+    if (win._lastAnimToken !== token) return;
+    animateWindowOpen(win, true);
   });
+}
 
-  animation.onfinish = () => {
-    win.style.opacity = "";
-    win.style.transform = "";
-    win.style.filter = "";
-    win.style.clipPath = "";
-    win.style.borderRadius = "";
-  };
+function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) {
+  win._lastAnimToken = ++animToken;
+
+  if (mode === "open" && win.style.display === "none") win.style.display = "";
+
+  const running = win.getAnimations().find((a) => a.id === "window-state" && a.playState === "running");
+  if (running) {
+    const from = captureCurrentVisual(win);
+    win.getAnimations().forEach((a) => a.cancel());
+
+    const to = mode === "open" ? getOpenEndState() : getMinimizeEndState(win);
+    const duration = (mode === "open" ? 340 : 360) * getAnimationSpeed();
+
+    win.style.pointerEvents = mode === "open" ? "" : "none";
+
+    const animation = win.animate([from, to], {
+      duration,
+      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      fill: "forwards"
+    });
+    animation.id = "window-state";
+
+    animation.onfinish = () => {
+      if (mode === "minimize") {
+        win.style.clipPath = "";
+        win.style.borderRadius = "";
+        onDone?.();
+      } else {
+        win.style.opacity = "";
+        win.style.transform = "";
+        win.style.filter = "";
+        win.style.clipPath = "";
+        win.style.borderRadius = "";
+      }
+    };
+    return;
+  }
+
+  if (mode === "open") {
+    const anim = isRestoring ? getRestoreAnim() : getOpenAnim();
+    if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
+    if (win.style.display === "none") win.style.display = "";
+
+    const duration = 420 * getAnimationSpeed();
+    win.getAnimations().forEach((a) => a.cancel());
+
+    const keyframes = isRestoring ? getRestoreKeyframes(anim, win) : getOpenKeyframes(anim, win, false);
+
+    const animation = win.animate(keyframes, {
+      duration,
+      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      fill: "forwards"
+    });
+    animation.id = "window-state";
+
+    animation.onfinish = () => {
+      win.style.opacity = "";
+      win.style.transform = "";
+      win.style.filter = "";
+      win.style.clipPath = "";
+      win.style.borderRadius = "";
+    };
+  } else {
+    const anim = getMinimizeAnim();
+    win.style.pointerEvents = "none";
+
+    const duration = 520 * getAnimationSpeed();
+    win.getAnimations().forEach((a) => a.cancel());
+
+    const keyframes = getMinimizeKeyframes(anim, win);
+
+    const animation = win.animate(keyframes, {
+      duration,
+      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      fill: "forwards"
+    });
+    animation.id = "window-state";
+
+    animation.onfinish = () => {
+      win.style.clipPath = "";
+      win.style.borderRadius = "";
+      onDone?.();
+    };
+  }
 }
 
 function getOpenKeyframes(animType, win, isRestoring = false) {
@@ -392,7 +518,13 @@ export function animateWindowClose(win, onDone) {
     onDone?.();
     return;
   }
-  const anim = getCloseAnim();
+  const selectedCloseAnim = getCloseAnim();
+  if (selectedCloseAnim === CLOSE_ANIMATIONS.fallApart) {
+    win.style.pointerEvents = "none";
+    playFallApartAnimation(win, onDone, getAnimationSpeed());
+    return;
+  }
+  const anim = selectedCloseAnim;
   win.style.pointerEvents = "none";
 
   const duration = 220 * getAnimationSpeed();
@@ -492,26 +624,7 @@ export function animateWindowMinimize(win, onDone) {
     onDone?.();
     return;
   }
-  const anim = getMinimizeAnim();
-  win.style.pointerEvents = "none";
-
-  const duration = 520 * getAnimationSpeed();
-
-  win.getAnimations().forEach((anim) => anim.cancel());
-
-  const keyframes = getMinimizeKeyframes(anim, win);
-
-  const animation = win.animate(keyframes, {
-    duration: duration,
-    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-    fill: "forwards"
-  });
-
-  animation.onfinish = () => {
-    win.style.clipPath = "";
-    win.style.borderRadius = "";
-    onDone?.();
-  };
+  playWindowAnimation(win, { mode: "minimize", onDone });
 }
 
 function getMinimizeKeyframes(animType, win) {
@@ -648,7 +761,9 @@ function handleClickBubble(e) {
 
 export function applyAnimationSettings(settings) {
   if (settings.openAnimation) os.storage.set(StorageKeys.windowOpenAnimation, settings.openAnimation);
-  if (settings.closeAnimation) os.storage.set(StorageKeys.windowCloseAnimation, settings.closeAnimation);
+  if (settings.closeAnimation) {
+    os.storage.set(StorageKeys.windowCloseAnimation, settings.closeAnimation);
+  }
   if (settings.minimizeAnimation) os.storage.set(StorageKeys.windowMinimizeAnimation, settings.minimizeAnimation);
   if (settings.restoreAnimation) os.storage.set(StorageKeys.windowRestoreAnimation, settings.restoreAnimation);
   if (settings.animationSpeed) os.storage.set(StorageKeys.windowAnimationSpeed, settings.animationSpeed);

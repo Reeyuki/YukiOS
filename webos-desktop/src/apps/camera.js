@@ -7,6 +7,8 @@ import { BaseApp, os } from "../framework.js";
 import { $, $$, setStyle, createElement } from "../framework.js";
 
 export class CameraApp extends BaseApp {
+  singletonWindowIds = ["camera-win"];
+
   constructor(services) {
     super(services);
     this.stream = null;
@@ -30,7 +32,6 @@ export class CameraApp extends BaseApp {
 
   open() {
     const winId = "camera-win";
-    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Camera", "800px", "600px", {
       icon: "static/icons/obs.webp",

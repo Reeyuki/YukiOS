@@ -3,6 +3,8 @@ import { ScramjetBaseApp } from "../core/ScramjetBaseApp.js";
 import { SYSTEM_APPS } from "../AppRegistryConfig.js";
 
 export class DiscordApp extends ScramjetBaseApp {
+  singletonWindowIds = ["discordApp-window"];
+
   constructor(services) {
     super(services);
     this.winId = null;
@@ -34,10 +36,6 @@ export class DiscordApp extends ScramjetBaseApp {
     const winId = `${this.getAppId()}-window`;
     this.winId = winId;
     const size = this.getWindowSize();
-
-    if (await this.isSingletonOpen(winId)) {
-      return;
-    }
 
     this.createSplash();
 

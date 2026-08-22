@@ -81,7 +81,8 @@ export class WorkspaceManager {
         if (e.target === btn) this.switchTo(ws.id);
       });
 
-      btn.addEventListener("dblclick", async () => {
+      btn.addEventListener("dblclick", async (e) => {
+        if (e.target !== btn) return;
         const newName = await os.dialog.prompt("Prompt", "Rename workspace:", ws.name);
         if (newName && newName.trim()) {
           ws.name = newName.trim();
@@ -111,6 +112,7 @@ export class WorkspaceManager {
           e.stopPropagation();
           this.removeWorkspace(ws.id);
         });
+        del.addEventListener("dblclick", (e) => e.stopPropagation());
         btn.appendChild(del);
       }
 
@@ -130,10 +132,10 @@ export class WorkspaceManager {
     this.workspaces.push({ id, name: name || `WS ${id + 1}`, windows: new Set() });
     this.render();
     if (this.overviewOpen) {
-      this.switchInstant(id);
+      this.switchInstant(id, { keepEmptyPrevious: true });
       this.renderOverview();
     } else {
-      this.switchInstant(id);
+      this.switchInstant(id, { keepEmptyPrevious: true });
     }
     os.events.emit(BusEvents.WORKSPACE_ADDED);
   }
@@ -179,7 +181,7 @@ export class WorkspaceManager {
     this.workspaces.forEach((ws) => ws.windows.delete(winId));
   }
 
-  switchInstant(id) {
+  switchInstant(id, { keepEmptyPrevious = false } = {}) {
     this.prevActiveId = this.activeId;
     this.activeId = id;
     this.applyVisibility();
@@ -187,7 +189,9 @@ export class WorkspaceManager {
     if (!this.overviewOpen) {
       this.closeOverview();
     }
-    this.removeEmptyWorkspace(this.prevActiveId);
+    if (!keepEmptyPrevious) {
+      this.removeEmptyWorkspace(this.prevActiveId);
+    }
     os.events.emit(BusEvents.WORKSPACE_SWITCHED);
   }
 

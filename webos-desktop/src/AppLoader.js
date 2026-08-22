@@ -128,9 +128,23 @@ const APP_DEFINITIONS = APP_MANIFESTS.map((manifest) => {
 }).filter(Boolean);
 
 export function loadApps(os, preloaded = {}) {
+  const applySingletonWrapper = (instance) => {
+    const singletonIds = instance.singletonWindowIds;
+    if (Array.isArray(singletonIds) && singletonIds.length > 0 && typeof instance.open === "function") {
+      const openAppInstance = instance.open.bind(instance);
+      instance.open = async (openOptions = {}) => {
+        for (const singletonWinId of singletonIds) {
+          if (await instance.isSingletonOpen(singletonWinId)) return;
+        }
+        return openAppInstance(openOptions);
+      };
+    }
+  };
+
   for (const { serviceKey, AppClass, onLoad } of APP_DEFINITIONS) {
     if (preloaded[serviceKey]) continue;
     const instance = new AppClass(os);
+    applySingletonWrapper(instance);
     preloaded[serviceKey] = instance;
     os.app.register(serviceKey, instance);
     if (onLoad) onLoad(instance, preloaded);
@@ -141,6 +155,7 @@ export function loadApps(os, preloaded = {}) {
     if (!room3dInst) {
       const { Room3DApp } = await import("./apps/room3d.js");
       room3dInst = new Room3DApp(os);
+      applySingletonWrapper(room3dInst);
     }
     return room3dInst;
   };

@@ -8,6 +8,8 @@ const RemoteHostCore = window.RemoteHostCore;
 const SIGNALING_BASE = "wss://yukios-remote-signaling.liventcord-a60.workers.dev";
 
 export class RemoteHostApp extends BaseApp {
+  singletonWindowIds = ["remote-host"];
+
   constructor(services) {
     super(services);
     this.hostStreaming = false;
@@ -19,7 +21,6 @@ export class RemoteHostApp extends BaseApp {
 
   async open(opts = {}) {
     const winId = "remote-host";
-    if (this.hasOpenWindow(winId)) return;
 
     const isElectron = typeof window.electronAPI !== "undefined";
 

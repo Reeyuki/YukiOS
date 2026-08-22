@@ -394,7 +394,7 @@ export class ExplorerApp extends BaseApp {
     const winId = options.forceId || (isSelector ? `explorer-selector-${Date.now()}` : `explorer-${Date.now()}`);
 
     const inst = this.createInstance(winId, callback, notepadRef, isSelector ? "select" : "browse");
-    const title = isSelector ? "Select File" : "File Explorer";
+    const title = isSelector ? "Select File" : "Explorer";
     const win = os.window.create(winId, title, options.width || "700px", options.height || "500px", {
       ...options,
       icon: "static/icons/file.webp"

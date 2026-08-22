@@ -16,12 +16,14 @@ const FLASH_DIR = ["Flash"];
 const DESKTOP_DIR = ["Desktop"];
 
 export class RuffleApp extends BaseApp {
+  singletonWindowIds = ["ruffle-win"];
+
   constructor(services) {
     super(services);
     this.ruffleLoadPromise = null;
   }
 
-  open(opts) {
+  async open(opts) {
     const win = os.window.create("ruffle-win", "Ruffle", "800px", "600px", {
       icon: "static/icons/ruffle.webp"
     });

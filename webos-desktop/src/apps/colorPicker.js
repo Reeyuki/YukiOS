@@ -5,6 +5,8 @@ import { Achievements } from "../achievements.js";
 import { KeybindManager } from "../keybindManager.js";
 
 export class ColorPickerApp extends BaseApp {
+  singletonWindowIds = ["color-picker"];
+
   constructor(services) {
     super(services);
     this.colors = [];
@@ -24,7 +26,6 @@ export class ColorPickerApp extends BaseApp {
 
   open() {
     const winId = "color-picker";
-    if (this.hasOpenWindow(winId)) return;
 
     const win = os.window.create(winId, "Color Picker", "360px", "480px", {
       icon: "fas fa-eye-dropper"

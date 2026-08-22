@@ -3,7 +3,7 @@ import { BusEvents } from "../core/EventBus.js";
 import { WindowRecord } from "../core/WindowRecord.js";
 import { audioMixer } from "../audioMixer.js";
 import { showStartStyleMenu } from "../shared/contextMenu.js";
-import { animateWindowOpen } from "./AnimationSystem.js";
+import { restoreWindowAnimated } from "./AnimationSystem.js";
 import { enableTaskbarReorder } from "./taskbarReorder.js";
 import { parseBool } from "../utils/utils.js";
 
@@ -183,13 +183,15 @@ export class TaskbarSystem {
       const winTask = $(`#${winId}`);
       if (!winTask) return;
       const entry = this.manager.openWindows.get(winId);
+      const record = entry?.record;
+      const isMinimized = record ? record.minimized : winTask.style.display === "none";
 
-      if (winTask.style.display === "none") {
-        winTask.style.display = "";
+      if (isMinimized) {
+        if (winTask.style.display === "none") winTask.style.display = "";
         taskbarItem.classList.remove("minimized");
-        if (entry?.record) entry.record.minimized = false;
+        if (record) record.minimized = false;
         if (!winTask.id || !winTask.id.startsWith("browser-app-")) {
-          requestAnimationFrame(() => animateWindowOpen(winTask, true));
+          restoreWindowAnimated(winTask);
         }
         this.manager.bringToFront(winTask);
       } else {
@@ -252,10 +254,7 @@ export class TaskbarSystem {
     }
 
     const record = new WindowRecord(winId, title, { ...geometry, iconValue, color });
-    this.manager.openWindows.set(winId, { taskbarItem, title, iconValue, color, record });
-    this.manager.workspaceManager?.registerWindow(winId);
-
-    audioMixer().registerWindow(winId, title, audioMixer().getIconHtmlForTaskbar(null, iconValue));
+    this.manager.registerWindow(winId, { taskbarItem, title, iconValue, color, record });
 
     if (win) {
       const headerSpan = $(".window-header > span", win);
@@ -440,7 +439,7 @@ export class TaskbarSystem {
         const taskbarItem = $(`#taskbar-${winId}`);
         if (taskbarItem) taskbarItem.classList.remove("minimized");
         if (!w.id || !w.id.startsWith("browser-app-")) {
-          requestAnimationFrame(() => animateWindowOpen(w, true));
+          restoreWindowAnimated(w);
         }
       }
 
@@ -453,39 +452,6 @@ export class TaskbarSystem {
       os.app.close(winId);
       this.hideTaskbarPreview();
     });
-  }
-
-  removeFromTaskbar(winId) {
-    const taskbarItem = $(`#taskbar-${winId}`);
-    if (taskbarItem) taskbarItem.remove();
-    const entry = this.manager.openWindows.get(winId);
-    if (entry && entry.record) {
-      const win = $(`#${winId}`);
-      const appId = (win && win.dataset.appId) || this.manager.guessAppIdFromWinId(winId);
-      if (appId) {
-        try {
-          const geom = win ? this.manager.getWindowNormalGeometry(win) : entry.record;
-          os.storage.set(`${StorageKeys.geometryPrefix}${appId}`, {
-            x: geom.x,
-            y: geom.y,
-            width: geom.width,
-            height: geom.height
-          });
-        } catch (e) {}
-      }
-    }
-    this.manager.openWindows.delete(winId);
-    this.manager.workspaceManager?.unregisterWindow(winId);
-    audioMixer().unregisterWindow(winId);
-    os.events.emit(BusEvents.WINDOW_CLOSED, { winId });
-
-    if (this.manager.openWindows.size === 0) {
-      this.manager.resetToDefaultState();
-    } else {
-      const lastWin = Array.from(this.manager.openWindows.values()).pop();
-      if (lastWin) this.manager.updatePageFavicon(lastWin.iconValue, lastWin.title);
-    }
-    this.manager.triggerSessionSave();
   }
 
   isWindowPinned(winId) {

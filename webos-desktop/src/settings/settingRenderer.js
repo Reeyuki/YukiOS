@@ -7,9 +7,13 @@ import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
 import { renderAccountsSettings } from "./accountsPanel.js";
 import { renderTilingSettings } from "./pane-tiling.js";
+import { renderShortcutsSettings } from "./pane-shortcuts.js";
 import { renderChromeOsSettings } from "../modes/chromeos/settings.js";
 import { RESOLUTION_PRESETS, getViewportLabel } from "../resolution/resolutionManager.js";
 import { WISP_SERVERS } from "../shared/wispConfig.js";
+import { SETTINGS_GROUPS, QUICK_SETTINGS_ID } from "./settingsNav.js";
+import { renderDisksPane } from "./pane-disks.js";
+import { renderRecentFilesPane } from "./pane-recentFiles.js";
 
 function getBrowserInfo() {
   const ua = navigator.userAgent;
@@ -224,38 +228,185 @@ export function buildSettingsHTML(settings, wm) {
         <div class="yuki-settings-search">
           <input type="text" id="settingsSearch" placeholder="Find a setting...">
         </div>
-        <ul class="yuki-settings-nav">
-          <li class="active" data-target="pane-system"><i class="fas fa-desktop"></i> System</li>
-          <li data-target="pane-desktop"><i class="fas fa-home"></i> Desktop</li>
-          <li data-target="pane-appearance"><i class="fas fa-paint-brush"></i> Appearance</li>
-          ${tilingActive ? '<li data-target="pane-tiling"><i class="fas fa-th-large"></i> Tiling</li>' : ""}
-          ${chromeOsActive ? '<li data-target="pane-chromeos"><i class="fab fa-chrome"></i> Chrome OS</li>' : ""}
-          <li data-target="pane-data"><i class="fas fa-database"></i> Data</li>
-          <li data-target="pane-network"><i class="fas fa-network-wired"></i> Network</li>
-          <li data-target="pane-audio"><i class="fas fa-volume-high"></i> Audio</li>
-          <li data-target="pane-accounts"><i class="fas fa-users"></i> Accounts</li>
-          <li data-target="pane-about"><i class="fas fa-circle-info"></i> About</li>
+        <ul class="yuki-settings-nav ${settings.sidebarCompact === false ? "flat" : ""}">
+          ${renderNavList(tilingActive, chromeOsActive, settings.sidebarCompact !== false)}
         </ul>
       </div>
-
-      <div class="yuki-settings-content">
-        ${renderSystemSettings(settings)}
-        ${renderDesktopSettings(settings)}
-        ${renderAppearanceSettings(settings)}
-        ${tilingActive ? renderTilingSettings() : ""}
-        ${chromeOsActive ? renderChromeOsSettings() : ""}
-        ${renderDataSettings()}
-        ${renderNetworkSettings(settings)}
-        ${renderAudioSettings(settings)}
-        ${renderAccountsSettings()}
-        ${renderAboutSettings()}
-      </div>
+        <div class="yuki-settings-content">
+          ${renderQuickSettings(settings)}
+          ${renderGeneralBehaviorSettings(settings)}
+          ${renderSystemSettings(settings)}
+          ${renderPrivacySettings(settings)}
+          ${renderNotificationsSettings(settings)}
+          ${renderDesktopSettings(settings)}
+          ${renderShortcutsSettings()}
+          ${renderAppearanceSettings(settings)}
+          ${renderDisksPane()}
+          ${tilingActive ? renderTilingSettings() : ""}
+          ${chromeOsActive ? renderChromeOsSettings() : ""}
+          ${renderDataSettings()}
+          ${renderAutostartSettings()}
+          ${renderNetworkSettings(settings)}
+          ${renderAudioSettings(settings)}
+          ${renderAccountsSettings()}
+          ${renderAboutSettings()}
+          <div id="default-applications" class="settings-category-pane"></div>
+          ${renderRecentFilesPane()}
+        </div>
+    </div>
   `;
 }
-export function renderSystemSettings(s) {
+
+function renderNavList(tilingActive, chromeOsActive, compact) {
+  let html = `<li class="active yuki-settings-quick" data-target="${QUICK_SETTINGS_ID}"><i class="fas fa-cog"></i><span>Quick Settings</span></li>`;
+  SETTINGS_GROUPS.forEach((group, gi) => {
+    const key = `g${gi}`;
+    html += `<li class="yuki-settings-nav-group ${compact ? "" : "expanded"}" data-group="${key}"><i class="${group.icon}"></i><span>${group.title}</span><i class="fas fa-chevron-right yuki-nav-group-chevron"></i></li>`;
+    html += `<ul class="yuki-settings-sublist" data-group="${key}">`;
+    for (const item of group.items) {
+      const ds = item.target ? ` data-scroll="${item.target}"` : "";
+      const dl = item.launch ? ` data-launch="${item.launch}"` : "";
+      html += `<li class="yuki-settings-nav-item" data-group="${key}" data-id="${item.id}" data-target="${item.pane}"${ds}${dl}><i class="${item.icon}"></i><span>${item.title}</span></li>`;
+    }
+    html += `</ul>`;
+  });
+  if (tilingActive) {
+    html += `<li class="yuki-settings-nav-group ${compact ? "" : "expanded"}" data-group="g-tiling"><i class="fas fa-th-large"></i><span>Window Management</span><i class="fas fa-chevron-right yuki-nav-group-chevron"></i></li>`;
+    html += `<ul class="yuki-settings-sublist" data-group="g-tiling"><li class="yuki-settings-nav-item" data-group="g-tiling" data-target="pane-tiling"><i class="fas fa-th-large"></i><span>Tiling</span></li></ul>`;
+  }
+  if (chromeOsActive) {
+    html += `<li class="yuki-settings-nav-group ${compact ? "" : "expanded"}" data-group="g-chromeos"><i class="fab fa-chrome"></i><span>Chrome OS</span><i class="fas fa-chevron-right yuki-nav-group-chevron"></i></li>`;
+    html += `<ul class="yuki-settings-sublist" data-group="g-chromeos"><li class="yuki-settings-nav-item" data-group="g-chromeos" data-target="pane-chromeos"><i class="fab fa-chrome"></i><span>Chrome OS</span></li></ul>`;
+  }
+  return html;
+}
+
+export function renderQuickSettings(s) {
+  const basicThemes = getBasicThemes();
+  const pick = (v) => basicThemes.find((t) => t.value === v);
+  const light = pick("light");
+  const dark = pick("dark");
+  const auto = pick("auto");
+  const currentTheme = s.theme || "dark";
+  const thumb = (theme, label) => {
+    if (!theme) return "";
+    const active = currentTheme === theme.value ? " active" : "";
+    return `<button class="settings-btn quick-theme-thumb${active}" data-theme-val="${theme.value}" style="background:${theme.preview || "#8b5cf6"};color:${theme.textColor || "#fff"};">
+      <span class="quick-theme-label">${label}</span>
+    </button>`;
+  };
+
+  const ANIM_STEPS = 11;
+  const ANIM_DEFAULT_IDX = 5;
+  const ANIM_SLOW = 3.0;
+  const ANIM_DEFAULT = 1.0;
+  const ANIM_FAST = 0.05;
+  const speedFromIdx = (idx) => {
+    if (idx <= ANIM_DEFAULT_IDX) return ANIM_SLOW - (idx / ANIM_DEFAULT_IDX) * (ANIM_SLOW - ANIM_DEFAULT);
+    return ANIM_DEFAULT - ((idx - ANIM_DEFAULT_IDX) / (ANIM_STEPS - 1 - ANIM_DEFAULT_IDX)) * (ANIM_DEFAULT - ANIM_FAST);
+  };
+  const idxFromSpeed = (speed) => {
+    if (speed >= ANIM_DEFAULT) return Math.round(((ANIM_SLOW - speed) / (ANIM_SLOW - ANIM_DEFAULT)) * ANIM_DEFAULT_IDX);
+    return (
+      ANIM_DEFAULT_IDX +
+      Math.round(((ANIM_DEFAULT - speed) / (ANIM_DEFAULT - ANIM_FAST)) * (ANIM_STEPS - 1 - ANIM_DEFAULT_IDX))
+    );
+  };
+  const animIdxFromStored = () => {
+    const v = os.storage.get(StorageKeys.windowAnimationSpeed);
+    const namedToSpeed = { slow: 3.0, normal: 1.0, fast: 0.4, very_fast: 0.05 };
+    const num = Number(v);
+    const speed = !isNaN(num) ? num : (namedToSpeed[v] ?? 1.0);
+    return Math.min(ANIM_STEPS - 1, Math.max(0, idxFromSpeed(speed)));
+  };
+  const animIndex = animIdxFromStored();
+
+  const quickLinks = [
+    { label: "Wallpaper", icon: "fas fa-images", launch: "wallpaperEngineApp" },
+    { label: "Global Theme", icon: "fas fa-palette", pane: "pane-appearance", target: "sc-style" },
+    { label: "Default Apps", icon: "fas fa-cubes", launch: "defaultApps" },
+    { label: "Keyboard", icon: "fas fa-keyboard", pane: "pane-shortcuts" },
+    { label: "Remote Desktop", icon: "fas fa-desktop", launch: "remoteHostApp" },
+    { label: "Notifications", icon: "fas fa-bell", pane: "pane-notifications" },
+    { label: "Window Management", icon: "fas fa-border-all", pane: "pane-desktop", target: "sc-layout" },
+    { label: "Display & Monitor", icon: "fas fa-desktop", pane: "pane-appearance", target: "sc-display" }
+  ];
+  const linkHtml = quickLinks
+    .map((l) => {
+      const ds = l.target ? ` data-scroll="${l.target}"` : "";
+      const dl = l.launch ? ` data-launch="${l.launch}"` : "";
+      return `<button class="quick-link-btn" data-target="${l.pane}"${ds}${dl}><i class="${l.icon}"></i><span>${l.label}</span></button>`;
+    })
+    .join("");
+
   return `
-    <div id="pane-system" class="settings-category-pane active">
-      <div class="settings-category-header">System</div>
+    <div id="${QUICK_SETTINGS_ID}" class="settings-category-pane active">
+      <div class="settings-category-header">Quick Settings</div>
+
+      <div class="settings-card">
+        <div class="settings-card-header"><i class="fas fa-palette"></i> Theme</div>
+        <div class="quick-theme-row">
+          ${thumb(light, "Breeze")}
+          ${thumb(dark, "Breeze Dark")}
+          ${thumb(auto, "Automatic")}
+        </div>
+      </div>
+
+      <div class="settings-card" style="margin-top: 12px;">
+        <div class="settings-card-header"><i class="fas fa-gauge-high"></i> System Behavior &amp; Animation</div>
+        <div class="settings-row settings-row--stacked">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Animation Speed</span>
+            <span class="settings-label-desc">How fast windows animate</span>
+          </div>
+          <div class="quick-slider-wrap">
+            <span class="quick-slider-end">Slow</span>
+            <div class="quick-slider-track">
+              ${renderRangeSlider("quickAnimationSpeed", 0, ANIM_STEPS - 1, 1, animIndex)}
+              <span class="quick-slider-default">Default</span>
+            </div>
+            <span class="quick-slider-end">Very Fast</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Do Not Disturb</span>
+            <span class="settings-label-desc">Silence all notifications</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsQuickDND" ${s.dnd ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Sound</span>
+            <span class="settings-label-desc">Enable system and app audio</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsQuickSound" ${s.soundEnabled ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-card" style="margin-top: 12px;">
+        <div class="settings-card-header"><i class="fas fa-star"></i> Most Used Pages</div>
+        <div class="quick-link-grid">
+          ${linkHtml}
+        </div>
+      </div>
+
+      <div class="quick-footer">
+        <button class="settings-btn" id="settingsQuickReset"><i class="fas fa-rotate-left"></i> Reset</button>
+      </div>
+    </div>
+  `;
+}
+export function renderGeneralBehaviorSettings(s) {
+  return `
+    <div id="pane-general" class="settings-category-pane">
+      <div class="settings-category-header">General Behavior</div>
 
       <div class="settings-card" id="sc-general">
         <div class="settings-card-header"><i class="fas fa-sliders-h"></i> General Behavior</div>
@@ -311,8 +462,16 @@ export function renderSystemSettings(s) {
           </div>
         </div>
       </div>
+    </div>
+  `;
+}
 
-      <div class="settings-card" style="margin-top: 16px;">
+export function renderSystemSettings(s) {
+  return `
+    <div id="pane-system" class="settings-category-pane active">
+      <div class="settings-category-header">System</div>
+
+      <div class="settings-card" id="sc-boot">
         <div class="settings-card-header"><i class="fas fa-power-off"></i> Boot &amp; Session</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -335,8 +494,16 @@ export function renderSystemSettings(s) {
           </label>
         </div>
       </div>
+    </div>
+  `;
+}
 
-      <div class="settings-card" style="margin-top: 16px;">
+export function renderPrivacySettings(s) {
+  return `
+    <div id="pane-privacy" class="settings-category-pane">
+      <div class="settings-category-header">Privacy &amp; Security</div>
+
+      <div class="settings-card" id="sc-privacy" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-shield-alt"></i> Privacy &amp; Analytics</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -381,6 +548,26 @@ export function renderSystemSettings(s) {
       </div>
 
       <div class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-lock"></i> Screen Locking</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Lock screen</span>
+            <span class="settings-label-desc">Immediately lock your session</span>
+          </div>
+          <button class="settings-btn" id="settingsLockScreen"><i class="fas fa-lock"></i> Lock now</button>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+export function renderNotificationsSettings(s) {
+  return `
+    <div id="pane-notifications" class="settings-category-pane">
+      <div class="settings-category-header">Notifications</div>
+
+      <div class="settings-card" id="sc-notifications">
         <div class="settings-card-header"><i class="fas fa-bell"></i> Notifications</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -534,7 +721,7 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-icons" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-icons"></i> Icons &amp; Taskbar</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -558,7 +745,7 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-startmenu" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-bars"></i> Start Menu</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -605,7 +792,7 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-tray" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-window-minimize"></i> System Tray</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -628,7 +815,7 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-switcher" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-exchange-alt"></i> Window Switcher (Alt+Q)</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -670,7 +857,7 @@ export function renderDesktopSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-dock" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fab fa-apple"></i> Dock</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -799,7 +986,21 @@ export function renderAppearanceSettings(s) {
     <div id="pane-appearance" class="settings-category-pane">
       <div class="settings-category-header">Appearance</div>
 
-      <div class="settings-card">
+      <div class="settings-card" id="sc-sidebar" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-bars"></i> Sidebar</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Compact Sidebar</span>
+            <span class="settings-label-desc">Collapse categories into a rail; turn off to show all sections at once</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsSidebarCompact" ${s.sidebarCompact ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-card" id="sc-display">
         <div class="settings-card-header"><i class="fas fa-display"></i> Display</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -810,8 +1011,13 @@ export function renderAppearanceSettings(s) {
         </div>
       </div>
 
-      <div id="settings-wallpaper-card" class="settings-card" style="margin-top: 16px;">
-        <div class="settings-card-header"><i class="fas fa-images"></i> Wallpaper</div>
+      <div id="sc-wallpaper" class="settings-card" style="margin-top: 16px;">
+        <div class="settings-card-header">
+          <i class="fas fa-images"></i> Wallpaper
+          <button class="settings-btn" id="settingsOpenWallpaperEngine" style="margin-left: auto;">
+            <i class="fas fa-external-link-alt"></i> Open in window
+          </button>
+        </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Cycle Wallpapers on Start</span>
@@ -822,15 +1028,7 @@ export function renderAppearanceSettings(s) {
             <span class="settings-track"><span class="settings-thumb"></span></span>
           </label>
         </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Wallpaper Engine</span>
-            <span class="settings-label-desc">Browse, preview, and manage all your wallpapers in the dedicated manager</span>
-          </div>
-          <button class="settings-btn" id="settingsOpenWallpaperEngine">
-            <i class="fas fa-paint-roller"></i> Open
-          </button>
-        </div>
+        <div id="wallpaper-engine-host" class="we-host"></div>
       </div>
 
       <div class="settings-card" id="sc-style" style="margin-top: 16px;">
@@ -935,7 +1133,7 @@ export function renderAppearanceSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-animations" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-wand-magic-sparkles"></i> Window Animations</div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -977,7 +1175,8 @@ export function renderAppearanceSettings(s) {
               { value: "slideDown", label: "Slide Down Exit" },
               { value: "burn", label: "Window Burn Close" },
               { value: "shrinkToPoint", label: "Shrink to Point" },
-              { value: "dissolveBlur", label: "Dissolve with Blur" }
+              { value: "dissolveBlur", label: "Dissolve with Blur" },
+              { value: "fallApart", label: "Fall Apart" }
             ],
             os.storage.get(StorageKeys.windowCloseAnimation) || "scaleDownCenter"
           )}
@@ -1027,12 +1226,13 @@ export function renderAppearanceSettings(s) {
           ${renderSelectMenu(
             "settingsAnimationSpeed",
             [
-              { value: "slow", label: "Slow (0.5x)" },
-              { value: "normal", label: "Normal (1x)" },
-              { value: "fast", label: "Fast (1.5x)" },
-              { value: "very_fast", label: "Very Fast (2x)" }
+              { value: 3.0, label: "Slowest" },
+              { value: 1.8, label: "Slow" },
+              { value: 1.0, label: "Normal" },
+              { value: 0.4, label: "Fast" },
+              { value: 0.1, label: "Very Fast" }
             ],
-            os.storage.get(StorageKeys.windowAnimationSpeed) || "normal"
+            os.storage.get(StorageKeys.windowAnimationSpeed) || 1.0
           )}
         </div>
         <div class="settings-row">
@@ -1109,7 +1309,7 @@ export function renderAppearanceSettings(s) {
         </div>
       </div>
 
-      <div class="settings-card" style="margin-top: 16px;">
+      <div class="settings-card" id="sc-cursor" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-mouse-pointer"></i> Custom Cursor</div>
         <div class="settings-row settings-row--stacked">
           <div class="settings-label-group">
@@ -1149,6 +1349,24 @@ export function renderAppearanceSettings(s) {
       </div>
 
 
+    </div>
+  `;
+}
+export function renderAutostartSettings() {
+  return `
+    <div id="pane-autostart" class="settings-category-pane">
+      <div class="settings-category-header">Autostart</div>
+      <div class="settings-card">
+        <div class="settings-card-header"><i class="fas fa-power-off"></i> Launch on Startup</div>
+        <p class="autostart-intro">Choose which system apps open automatically when YukiOS starts.</p>
+        <div class="autostart-toolbar">
+          <div class="autostart-search-wrap">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" id="autostart-search" class="settings-input" placeholder="Filter apps…">
+          </div>
+        </div>
+        <div id="autostart-list" class="autostart-list"></div>
+      </div>
     </div>
   `;
 }

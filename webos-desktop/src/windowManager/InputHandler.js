@@ -7,6 +7,7 @@ import { parseBool } from "../utils/utils.js";
 
 import { StorageKeys, os, $, createElement } from "../framework.js";
 import { MODES } from "../modeManager.js";
+import { restoreWindowAnimated } from "./AnimationSystem.js";
 export class InputHandler {
   constructor(manager) {
     this.manager = manager;
@@ -392,6 +393,7 @@ export class InputHandler {
       this.highlightTaskbarItem(this.windowSwitcherIndex);
     }
 
+    this.revealMinimizedWindow(this.windowSwitcherWindows[this.windowSwitcherIndex]);
     this.bringToFront(this.windowSwitcherWindows[this.windowSwitcherIndex]);
   }
 
@@ -411,7 +413,25 @@ export class InputHandler {
       this.highlightTaskbarItem(this.windowSwitcherIndex);
     }
 
+    this.revealMinimizedWindow(nextWindow);
     this.bringToFront(nextWindow);
+  }
+
+  revealMinimizedWindow(win) {
+    if (!win) return;
+    const entry = this.manager.openWindows.get(win.id);
+    const isMinimized = Boolean(entry?.record?.minimized) || win.style.display === "none";
+    if (!isMinimized) return;
+
+    win.getAnimations().forEach((animation) => {
+      if (animation.id === "window-state") animation.cancel();
+    });
+
+    win.style.display = "";
+    const taskbarItem = $(`#taskbar-${win.id}`);
+    if (taskbarItem) taskbarItem.classList.remove("minimized");
+    if (entry?.record) entry.record.minimized = false;
+    restoreWindowAnimated(win);
   }
 
   endWindowSwitcher() {
@@ -425,11 +445,7 @@ export class InputHandler {
     }
 
     if (selectedWindow) {
-      if (selectedWindow.style.display === "none") {
-        selectedWindow.style.display = "";
-        const taskbarItem = $(`#taskbar-${selectedWindow.id}`);
-        if (taskbarItem) taskbarItem.classList.remove("minimized");
-      }
+      this.revealMinimizedWindow(selectedWindow);
       this.bringToFront(selectedWindow);
     }
 

@@ -28,8 +28,8 @@
   </head>
   <body>
     <div id="app"></div>
-    <script src="./set.js"></script>
-    <script src="./controller.api.js"></script>
+    <script src="/s/set.js"></script>
+    <script src="/s/controller.api.js"></script>
     <script type="module">
       import { default as EpoxyTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
 
@@ -82,9 +82,9 @@
       const scramjet = new Controller({
         config: {
           prefix: basePath + "scramjet/",
-          wasmPath: basePath + "set.wasm",
-          scramjetPath: basePath + "set.js",
-          injectPath: basePath + "controller.inject.js"
+          wasmPath: "/s/set.wasm",
+          scramjetPath: "/s/set.js",
+          injectPath: "/s/controller.inject.js"
         },
         transport,
         serviceworker: sw

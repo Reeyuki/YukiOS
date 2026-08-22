@@ -41,6 +41,10 @@ const capabilities = [
 const privacyText = `
   YukiOS collects limited anonymous analytics to help improve stability and usage insights.
 
+  Analytics providers:
+  • Anonymous usage analytics
+  • Cloudflare Web Analytics for privacy-first traffic and performance insights
+
   Collected data:
   • App launches and feature usage
   • Session activity and timestamps
