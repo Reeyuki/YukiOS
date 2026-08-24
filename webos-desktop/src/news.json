@@ -1,5 +1,22 @@
 [
   {
+    "date": "August 24, 2026",
+    "label": "Window Header Styles",
+    "sections": [
+      {
+        "icon": "fa-window-maximize",
+        "title": "Window Header Styles",
+        "items": [
+          [
+            "fa-window-maximize",
+            "Pick Your Header Style",
+            "Choose Default, macOS, Windows 11, GNOME, or KDE Plasma headers in Settings!"
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "date": "August 22, 2026",
     "label": "Shortcuts & System Update (v3.0.3)",
     "sections": [

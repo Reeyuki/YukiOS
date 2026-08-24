@@ -67,6 +67,11 @@
   max-width: var(--icon-w);
 }
 
+.icon:not(.is-renaming) > div:last-child {
+  width: max-content;
+  max-width: calc(var(--icon-w) * 2);
+}
+
 .icon:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
@@ -990,13 +995,23 @@ html[data-theme="light"] .window {
 
 .window-header.mac-header {
   grid-template-columns: auto 1fr;
+  position: relative;
 }
 .window-header.mac-header > .window-controls {
   padding-left: 4px;
 }
 .window-header.mac-header > span {
-  order: 1;
-  text-align: left;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  max-width: 60%;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 :root {

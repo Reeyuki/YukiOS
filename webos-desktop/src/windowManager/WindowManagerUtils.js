@@ -4,7 +4,12 @@ import { sanitizeTitle } from "../utils/utils.js";
 import { isImageFile } from "../fileDisplay.js";
 import { updateTransparency } from "./transparencyManager.js";
 import { getSetting } from "../utils/utils.js";
-import { os, MODES } from "../framework.js";
+import {
+  buildControlsForStyle,
+  buildHeaderForStyle,
+  resolveHeaderStyleId,
+  getStoredHeaderStyleId
+} from "./headerStyles.js";
 
 export class WindowManagerUtils {
   constructor(manager) {
@@ -107,9 +112,11 @@ export class WindowManagerUtils {
   generateWindowHeader(title, iconValue, color = null, externalUrl = null, macStyle = null) {
     const iconHtml = this.getWindowIconHtml(iconValue, color);
     const controlsHtml = this.getWindowControls(externalUrl);
-    const isMac = macStyle !== null ? macStyle : os.modes.isActive(MODES.MAC);
-    const cls = isMac ? ' class="window-header mac-header"' : ' class="window-header"';
-    return `<div${cls}>${isMac ? "" : `<span>${iconHtml}${title}</span>`}${controlsHtml}</div>`;
+    let styleId;
+    if (macStyle === true) styleId = "mac";
+    else if (macStyle === false) styleId = getStoredHeaderStyleId() ?? "default";
+    else styleId = resolveHeaderStyleId();
+    return buildHeaderForStyle(title, iconHtml, controlsHtml, styleId);
   }
 
   updatePageFavicon(iconValue, title) {
@@ -214,36 +221,7 @@ export class WindowManagerUtils {
   }
 
   getWindowControls(externalUrl, showDownload = false) {
-    const externalBtn = externalUrl ? `<button class="external-btn" title="Open in External">↗</button>` : "";
-
-    const downloadBtn = showDownload
-      ? `<button class="download-btn" title="Download">
-      <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 7L1.5 3.5h2V0h3v3.5h2L5 7zM0 9h10v1H0z"/>
-      </svg>
-    </button>`
-      : "";
-
-    if (os.modes.isActive(MODES.MAC)) {
-      return `<div class="window-controls mac-controls">
-        <button class="close-btn mac-btn mac-close" title="Close"></button>
-        ${externalBtn}
-        <button class="minimize-btn mac-btn mac-minimize" title="Minimize"></button>
-        ${downloadBtn}
-        <button class="maximize-btn mac-btn mac-maximize" title="Maximize"></button>
-      </div>`;
-    }
-
-    return `<div class="window-controls">
-      <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
-      ${externalBtn}
-      ${downloadBtn}
-      <button class="maximize-btn" title="Maximize">
-        <svg class="maximize-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg>
-        <svg class="restore-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M3 3V0h7v7h-3v3H0V3h3zm6-1H4v4h5V2zM2 4v4h4V4H2z"></path></svg>
-      </button>
-      <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
-    </div>`;
+    return buildControlsForStyle(resolveHeaderStyleId(), externalUrl, showDownload);
   }
 
   findAppIdByWinId(winId) {

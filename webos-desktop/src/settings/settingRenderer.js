@@ -14,6 +14,7 @@ import { WISP_SERVERS } from "../shared/wispConfig.js";
 import { SETTINGS_GROUPS, QUICK_SETTINGS_ID } from "./settingsNav.js";
 import { renderDisksPane } from "./pane-disks.js";
 import { renderRecentFilesPane } from "./pane-recentFiles.js";
+import { getAvailableHeaderStyles, buildHeaderForStyle, buildControlsForStyle } from "../windowManager/headerStyles.js";
 
 function getBrowserInfo() {
   const ua = navigator.userAgent;
@@ -1129,6 +1130,30 @@ export function renderAppearanceSettings(s) {
             <button class="settings-btn ${s.uiDensity === "compact" ? "active" : ""}" data-ui-density="compact"><i class="fas fa-compress"></i> Compact</button>
             <button class="settings-btn ${s.uiDensity === "comfortable" ? "active" : ""}" data-ui-density="comfortable"><i class="fas fa-check"></i> Comfortable</button>
             <button class="settings-btn ${s.uiDensity === "spacious" ? "active" : ""}" data-ui-density="spacious"><i class="fas fa-expand"></i> Spacious</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card" id="sc-headers" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-window-maximize"></i> Window Headers</div>
+        <div class="settings-row header-style-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Window Header Style</span>
+            <span class="settings-label-desc">Click a preview to apply it instantly</span>
+          </div>
+          <div class="header-style-preview-grid">
+            ${getAvailableHeaderStyles()
+              .map(
+                (style) => `
+              <div class="header-style-preview ${s.headerStyle === style.id ? "active" : ""}" data-header-style="${style.id}">
+                <div class="header-style-preview-frame">
+                  ${buildHeaderForStyle(style.label, "", buildControlsForStyle(style.id), style.id)}
+                </div>
+                <span class="header-style-preview-name">${style.label}</span>
+              </div>
+            `
+              )
+              .join("")}
           </div>
         </div>
       </div>

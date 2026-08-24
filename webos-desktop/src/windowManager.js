@@ -17,6 +17,7 @@ import { AppRestorationService } from "./windowManager/AppRestorationService.js"
 import { WindowStateManager } from "./windowManager/WindowStateManager.js";
 import { ContextMenuManager } from "./windowManager/ContextMenuManager.js";
 import { WindowManagerUtils } from "./windowManager/WindowManagerUtils.js";
+import { HEADER_STYLES, resolveHeaderStyleId } from "./windowManager/headerStyles.js";
 import { TilingManager } from "./modes/tiling/TilingManager.js";
 import { StorageKeys, os, MODES } from "./framework.js";
 import { $, createElement } from "./shared/domUtils.js";
@@ -59,6 +60,7 @@ export class WindowManager {
     this.windowStateManager = new WindowStateManager(this);
     this.contextMenuManager = new ContextMenuManager(this);
     this.utils = new WindowManagerUtils(this);
+    this.appliedHeaderStyleId = resolveHeaderStyleId();
 
     this.tilingManager = new TilingManager(this);
 
@@ -86,7 +88,8 @@ export class WindowManager {
       } else if (nowActive && wasActive) {
         this.macDock.onSettingsChanged();
       }
-      if (wasActive !== nowActive) {
+      const headerStyleChanged = this.appliedHeaderStyleId !== resolveHeaderStyleId();
+      if (wasActive !== nowActive || headerStyleChanged) {
         this.updateWindowHeaderStyles();
       }
     });
@@ -523,7 +526,12 @@ export class WindowManager {
   }
 
   updateWindowHeaderStyles() {
-    const isMac = os.storage.get(StorageKeys.macOsControls) === "true";
+    const styleId = resolveHeaderStyleId();
+    this.appliedHeaderStyleId = styleId;
+    const nextHeaderClass = HEADER_STYLES[styleId].headerClass;
+    const allHeaderClasses = Object.values(HEADER_STYLES)
+      .map((style) => style.headerClass)
+      .filter(Boolean);
     this.openWindows.forEach((entry, winId) => {
       const win = $("#" + winId);
       if (!win) return;
@@ -533,7 +541,8 @@ export class WindowManager {
       if (!controls) return;
       const hasExternal = !!controls.querySelector(".external-btn");
       const showDownload = !!controls.querySelector(".download-btn");
-      header.classList.toggle("mac-header", isMac);
+      allHeaderClasses.forEach((cls) => header.classList.remove(cls));
+      if (nextHeaderClass) header.classList.add(nextHeaderClass);
       controls.outerHTML = this.utils.getWindowControls(hasExternal ? "external" : null, showDownload);
     });
     this.openWindows.forEach((entry, winId) => {

@@ -12,7 +12,7 @@ import { KeybindManager, KEYBIND_DEFINITIONS } from "../keybindManager.js";
 import { BaseApp, StorageKeys, os, ServiceKeys } from "../framework.js";
 import { startIntroTour } from "./introTour.js";
 import { modeManager, MODES } from "../modeManager.js";
-import { isTaskbarTop } from "../utils/utils.js";
+import { buildHeaderForStyle, resolveHeaderStyleId } from "../windowManager/headerStyles.js";
 export const FEATURE_DATA = {
   step2: [
     {
@@ -287,12 +287,9 @@ export class SetupApp extends BaseApp {
   }
 
   buildUI() {
-    const headerClass = isTaskbarTop() ? "window-header mac-header" : "window-header";
+    const headerHtml = buildHeaderForStyle("Set Up YukiOS", "", os.window.getWindowControls(), resolveHeaderStyleId());
     return `
-      <div class="${headerClass}">
-        <span>Set Up YukiOS</span>
-        ${os.window.getWindowControls()}
-      </div>
+      ${headerHtml}
       <div class="window-content setup-wizard">
         <div class="setup-progress">
           ${Array.from({ length: this.totalSetupSteps - 1 }, (_, idx) => idx + 1)

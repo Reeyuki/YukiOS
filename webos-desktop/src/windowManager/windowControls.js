@@ -7,7 +7,7 @@ export function updateMaximizeControls(win) {
   const maximizeGlyph = maxBtn.querySelector(".maximize-glyph");
   const restoreGlyph = maxBtn.querySelector(".restore-glyph");
   if (maximizeGlyph) maximizeGlyph.style.display = isMaximized ? "none" : "";
-  if (restoreGlyph) restoreGlyph.style.display = isMaximized ? "" : "none";
+  if (restoreGlyph) restoreGlyph.style.display = isMaximized ? "block" : "none";
   maxBtn.title = isMaximized ? "Restore" : "Maximize";
 }
 

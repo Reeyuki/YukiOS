@@ -1,7 +1,7 @@
 import { StorageKeys, os } from "../framework.js";
 import { Achievements } from "../achievements.js";
 import { modeManager, MODES } from "../modeManager.js";
-import { BusEvents } from "../core/EventBus.js";
+import { bus, BusEvents } from "../core/EventBus.js";
 import { updateGridConfig } from "../desktopui/desktopui.js";
 import { audioMixer, SystemAudio } from "../audioMixer.js";
 import { applyTrayEnabled } from "./settingsApply.js";
@@ -716,6 +716,19 @@ export function bindAppearanceCategory(
       showSaved();
     });
   }
+
+  $$(".header-style-preview", win).forEach((stylePreview) => {
+    bindEvent(stylePreview, "click", () => {
+      const headerStyleValue = stylePreview.dataset.headerStyle || "default";
+      settings.headerStyle = headerStyleValue;
+      os.storage.set(StorageKeys.windowHeaderStyle, headerStyleValue);
+      $$(".header-style-preview", win).forEach((preview) =>
+        preview.classList.toggle("active", preview === stylePreview)
+      );
+      bus.emit(BusEvents.SETTINGS_CHANGED, {});
+      showSaved();
+    });
+  });
 
   const guiScaleSlider = $("#settingsGuiScale", win);
   const guiScaleValue = $("#settingsGuiScaleValue", win);

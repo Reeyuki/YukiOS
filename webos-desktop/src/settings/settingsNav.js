@@ -12,6 +12,13 @@ export const SETTINGS_GROUPS = [
     title: "Appearance",
     icon: "fas fa-paint-brush",
     items: [
+      {
+        id: "display-monitor",
+        title: "Display & Monitor",
+        icon: "fas fa-desktop",
+        pane: "pane-appearance",
+        target: "sc-display"
+      },
       { id: "wallpaper", title: "Wallpaper", icon: "fas fa-images", pane: "pane-appearance", target: "sc-wallpaper" },
       {
         id: "colors-themes",
@@ -22,11 +29,11 @@ export const SETTINGS_GROUPS = [
       },
       { id: "text-fonts", title: "Text & Fonts", icon: "fas fa-font", pane: "pane-appearance", target: "sc-style" },
       {
-        id: "display-monitor",
-        title: "Display & Monitor",
-        icon: "fas fa-desktop",
+        id: "window-headers",
+        title: "Window Headers",
+        icon: "fas fa-window-maximize",
         pane: "pane-appearance",
-        target: "sc-display"
+        target: "sc-headers"
       },
       { id: "mouse-touchpad", title: "Mouse", icon: "fas fa-mouse", pane: "pane-appearance", target: "sc-cursor" },
       { id: "sidebar-style", title: "Sidebar", icon: "fas fa-bars", pane: "pane-appearance", target: "sc-sidebar" },

@@ -59,6 +59,7 @@ const componentDefs = [
       StorageKeys.loginClock24h,
       StorageKeys.weather,
       StorageKeys.macOsControls,
+      StorageKeys.windowHeaderStyle,
       StorageKeys.notificationsPosition,
       StorageKeys.notificationsEnabled
     ]

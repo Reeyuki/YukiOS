@@ -109,6 +109,7 @@ export class SettingsApp extends BaseApp {
         transparentUI: parseBool(os.storage.get(StorageKeys.transparentUI)),
         clipboardManagerEnabled: parseBool(os.storage.get(StorageKeys.clipboardManagerEnabled), true),
         guiScale: Number(os.storage.get(StorageKeys.guiScale)) || 100,
+        headerStyle: os.storage.get(StorageKeys.windowHeaderStyle) || "default",
         fontSize: Number(os.storage.get(StorageKeys.fontSize)) || 100,
         trayEnabled: parseBool(os.storage.get(StorageKeys.trayEnabled), true),
         trayAppVisibility: os.storage.get(StorageKeys.trayAppVisibility) || {},

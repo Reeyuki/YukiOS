@@ -58,6 +58,11 @@ html.is-mobile .icon div {
   font-size: 0.7rem;
 }
 
+html.is-mobile .icon > div:last-child {
+  width: 100%;
+  max-width: var(--icon-w);
+}
+
 @media (max-width: 768px) {
   .desktop {
     display: flex;
@@ -87,6 +92,11 @@ html.is-mobile .icon div {
 
   .icon div {
     font-size: 0.7rem;
+  }
+
+  .icon > div:last-child {
+    width: 100%;
+    max-width: var(--icon-w);
   }
 }
 

@@ -1,0 +1,379 @@
+.maximize-btn .restore-glyph {
+  display: none;
+}
+
+.window-header.win7-header {
+  height: 32px;
+  background: linear-gradient(
+    180deg,
+    rgba(235, 247, 255, 0.9) 0%,
+    rgba(198, 226, 252, 0.85) 48%,
+    rgba(148, 190, 238, 0.9) 52%,
+    rgba(178, 210, 248, 0.92) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(30, 70, 130, 0.35);
+}
+
+.window:has(> .win7-header) {
+  border-radius: 8px 8px 0 0;
+}
+
+.window-header.win7-header > span {
+  font-family: "Segoe UI", "Frutiger", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #fff;
+  text-shadow:
+    0 0 6px rgba(0, 10, 40, 0.95),
+    0 1px 2px rgba(0, 10, 40, 0.85);
+  padding-left: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.window-controls.win7-controls {
+  gap: 0;
+  padding: 0;
+  align-items: center;
+  height: 100%;
+  margin-left: auto;
+}
+
+.window-controls.win7-controls .external-btn,
+.window-controls.win7-controls .download-btn {
+  margin-right: 8px;
+}
+
+.win7-caption-group {
+  display: flex;
+  height: 17.6px;
+  margin-left: auto;
+  align-self: flex-start;
+  border-radius: 0 0 5px 5px;
+  overflow: visible;
+}
+
+.window-controls.win7-controls .win7-cap {
+  width: 29px;
+  height: 17.6px;
+  min-width: 29px;
+  border: none;
+  border-radius: 0;
+  background: linear-gradient(180deg, #b1b1b1 0%, #b1b1b1 50%, #4b4b4e 50%, #4b4b4e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: filter 0.15s ease;
+}
+
+.window-controls.win7-controls .win7-min {
+  border-radius: 0 0 0 5px;
+}
+
+.window-controls.win7-controls .win7-close {
+  width: 45px;
+  min-width: 45px;
+  border-radius: 0 0 5px 0;
+  background: linear-gradient(180deg, #f2a186 0%, #e07b5f 45%, #d5502f 50%, #ba3d20 100%);
+  box-shadow: inset 0 0 3px rgba(120, 20, 8, 0.55);
+}
+
+.window-controls.win7-controls .win7-cap svg {
+  width: 10px;
+  height: 10px;
+  fill: #ffffff;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+
+.window-controls.win7-controls .win7-close svg {
+  fill: #ffffff;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+
+.window-controls.win7-controls .win7-min:hover,
+.window-controls.win7-controls .win7-max:hover {
+  transform: none;
+  background:
+    linear-gradient(90deg, rgba(17, 100, 156, 0) 62%, rgba(17, 100, 156, 0.5) 100%),
+    linear-gradient(180deg, #eaf5fe 0%, #cfe7fa 45%, #a9d2f1 50%, #7fb5e4 100%);
+  box-shadow:
+    0 0 9px #3d95dd,
+    inset -2px 0 4px rgba(17, 100, 156, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.window-controls.win7-controls .win7-close:hover {
+  transform: none;
+  background: linear-gradient(180deg, #ffc0a8 0%, #f28b6c 45%, #e65e35 50%, #cd4722 100%);
+  box-shadow:
+    0 0 11px rgba(255, 86, 54, 0.95),
+    inset -2px 0 4px rgba(150, 35, 15, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.window-controls.win7-controls .win7-cap:active {
+  transform: none;
+  background: linear-gradient(180deg, #9a9a9a 0%, #9a9a9a 50%, #3a3a3d 50%, #3a3a3d 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.window-controls.win7-controls .win7-min:hover:active,
+.window-controls.win7-controls .win7-max:hover:active {
+  background:
+    linear-gradient(90deg, rgba(17, 100, 156, 0) 62%, rgba(17, 100, 156, 0.5) 100%),
+    linear-gradient(180deg, #d8ecfb 0%, #b7dbf5 45%, #8ec0ea 50%, #5f9cd6 100%);
+  box-shadow:
+    0 0 9px rgba(61, 149, 221, 0.75),
+    inset -2px 0 4px rgba(17, 100, 156, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.window-controls.win7-controls .win7-close:hover:active {
+  background: linear-gradient(180deg, #eb9377 0%, #d96b48 45%, #cc4c26 50%, #ad3a1b 100%);
+  box-shadow:
+    0 0 11px rgba(230, 60, 30, 0.8),
+    inset -2px 0 4px rgba(130, 25, 10, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.window-controls.win7-controls .win7-cap:hover svg {
+  fill: #ffffff;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+}
+
+.window-header.gnome-header {
+  position: relative;
+  grid-template-columns: 1fr auto;
+  height: 42px;
+  padding: 0 8px;
+  background: #303030;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.window-header.gnome-header > span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.window-header.gnome-header > span img,
+.window-header.gnome-header > span i {
+  position: absolute;
+  left: 8px;
+  pointer-events: auto;
+}
+
+.window-controls.gnome-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.window-controls.gnome-controls .gnome-btn {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.window-controls.gnome-controls .gnome-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.window-controls.gnome-controls .gnome-btn:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.window-controls.gnome-controls .gnome-btn:active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.window-controls.gnome-controls .gnome-btn:hover svg {
+  fill: none;
+  stroke: #fff;
+}
+
+.window-controls.gnome-controls .close-btn:hover {
+  background: rgba(196, 28, 40, 0.9);
+}
+
+.window-controls.gnome-controls .close-btn:active {
+  background: #c01c28;
+}
+
+.window:has(> .win11-header) {
+  border-radius: 10px;
+}
+
+.window-header.win11-header {
+  position: relative;
+  grid-template-columns: 1fr auto;
+  height: 38px;
+  padding: 0 6px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+html[data-theme] .window-header.win11-header {
+  background: var(--bg-secondary);
+}
+
+.window-header.win11-header > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.window-controls.win11-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  height: 100%;
+}
+
+.window-controls.win11-controls .win11-btn {
+  width: 40px;
+  height: 28px;
+  min-width: 40px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.window-controls.win11-controls .win11-btn svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1.2;
+}
+
+.window-controls.win11-controls .win11-btn:hover {
+  transform: none;
+  background: var(--surface-hover);
+}
+
+.window-controls.win11-controls .win11-btn:active {
+  transform: none;
+  background: color-mix(in srgb, var(--surface-hover) 70%, rgba(0, 0, 0, 0.25));
+}
+
+.window-controls.win11-controls .win11-btn.close-btn:hover,
+.window-controls.win11-controls .close-btn:hover {
+  background: #c42b1c;
+}
+
+.window-controls.win11-controls .close-btn:hover svg {
+  stroke: #fff;
+}
+
+html[data-theme] .window-header.win7-header {
+  background: linear-gradient(
+    180deg,
+    rgba(235, 247, 255, 0.9) 0%,
+    rgba(198, 226, 252, 0.85) 48%,
+    rgba(148, 190, 238, 0.9) 52%,
+    rgba(178, 210, 248, 0.92) 100%
+  );
+}
+
+html[data-theme] .window-header.gnome-header {
+  background: #303030;
+}
+
+.window-controls.kde-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.window-controls.kde-controls .kde-btn {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.window-controls.kde-controls .kde-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.window-controls.kde-controls .kde-btn:hover,
+.window-controls.kde-controls .kde-btn.minimize-btn:hover,
+.window-controls.kde-controls .kde-btn.maximize-btn:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.window-controls.kde-controls .kde-btn:hover svg {
+  fill: none;
+  stroke: #fff;
+}
+
+.window-controls.kde-controls .kde-btn:active {
+  transform: none;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.window-controls.kde-controls .close-btn:hover {
+  transform: none;
+  background: rgba(196, 28, 40, 0.9);
+}
+
+.window-controls.kde-controls .close-btn:active {
+  background: #c01c28;
+}

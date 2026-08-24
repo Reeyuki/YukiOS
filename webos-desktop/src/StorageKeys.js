@@ -15,6 +15,7 @@ export const StorageKeys = {
   cursorSizeKey: "yukiOS_customCursor_size",
   mikuCursor: "yukiOS_miku_cursor",
   macOsControls: "yukiOS_macOsControls",
+  windowHeaderStyle: "yukiOS_window_header_style",
   chromeOsMode: "yukiOS_chrome_os_mode",
   clippy: "yukiOS_clippy",
   disableDesktopStretchScroll: "yukiOS_disable_desktop_stretch_scroll",
