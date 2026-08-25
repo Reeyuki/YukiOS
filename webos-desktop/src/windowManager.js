@@ -449,7 +449,12 @@ export class WindowManager {
     const entry = this.openWindows.get(winId);
 
     const taskbarItem = $("#taskbar-" + winId);
-    if (taskbarItem) taskbarItem.remove();
+    if (taskbarItem) {
+      if (this.taskbarSystem?.keepPinnedOnClose?.(winId)) {
+      } else {
+        taskbarItem.remove();
+      }
+    }
 
     if (entry && entry.record) {
       const appId = (win && win.dataset.appId) || this.guessAppIdFromWinId(winId);

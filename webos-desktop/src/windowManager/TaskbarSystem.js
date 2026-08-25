@@ -32,6 +32,10 @@ export class TaskbarSystem {
     os.events.on(BusEvents.WINDOW_FOCUSED, this.syncPinnedBound);
     os.events.on(BusEvents.WINDOW_CREATED, this.syncPinnedBound);
     os.events.on(BusEvents.WINDOW_MINIMIZED, this.syncPinnedBound);
+    os.events.on(BusEvents.WINDOW_CLOSED, () => {
+      this.renderPinnedItems();
+      this.syncPinnedStates();
+    });
     this.audioIndicatorTimer = setInterval(() => this.updateAudioIndicators(), 600);
   }
 
@@ -165,6 +169,19 @@ export class TaskbarSystem {
       className: "taskbar-item"
     });
     taskbarItem.dataset.title = title;
+    const pinWinEl = $(`#${winId}`);
+    const pinAppId = pinWinEl?.dataset?.appId || this.manager.guessAppIdFromWinId(winId);
+    taskbarItem.dataset.appId = pinAppId;
+    taskbarItem.dataset.winId = winId;
+    taskbarItem.classList.add("running");
+    if (this.getPinnedItemByAppId(pinAppId)) {
+      taskbarItem.classList.add("pinned");
+      const stalePin = this.findPinnedElementByAppId(pinAppId);
+      if (stalePin) stalePin.remove();
+      $$(".taskbar-item.pinned", $("#taskbar-windows")).forEach((el) => {
+        if (el !== taskbarItem && el.dataset.appId === pinAppId) el.remove();
+      });
+    }
     taskbarItem.appendChild(this.buildTaskbarIcon(iconValue, title, color));
     if (parseBool(os.storage.get(StorageKeys.taskbarShowLabels))) {
       const label = createElement("span", { className: "taskbar-item-label", text: title });
@@ -179,30 +196,7 @@ export class TaskbarSystem {
     taskbarItem.appendChild(speakerIndicator);
     os.events.emit(BusEvents.WINDOW_CREATED, { winId });
 
-    taskbarItem.onclick = () => {
-      const winTask = $(`#${winId}`);
-      if (!winTask) return;
-      const entry = this.manager.openWindows.get(winId);
-      const record = entry?.record;
-      const isMinimized = record ? record.minimized : winTask.style.display === "none";
-
-      if (isMinimized) {
-        if (winTask.style.display === "none") winTask.style.display = "";
-        taskbarItem.classList.remove("minimized");
-        if (record) record.minimized = false;
-        if (!winTask.id || !winTask.id.startsWith("browser-app-")) {
-          restoreWindowAnimated(winTask);
-        }
-        this.manager.bringToFront(winTask);
-      } else {
-        const isFocused = parseInt(winTask.style.zIndex) === this.manager.zIndexCounter - 1;
-        if (isFocused) {
-          this.manager.minimizeWindow(winTask);
-        } else {
-          this.manager.bringToFront(winTask);
-        }
-      }
-    };
+    taskbarItem.onclick = () => this.handleRunningItemClick(winId);
 
     taskbarItem.oncontextmenu = (e) => {
       e.preventDefault();
@@ -320,7 +314,7 @@ export class TaskbarSystem {
     const intensityValues = audioMixer().intensityValues;
     if (!intensityValues) return;
     this.manager.openWindows.forEach((entry, winId) => {
-      const indicator = $(`#taskbar-${winId} .taskbar-speaker-indicator`);
+      const indicator = entry.taskbarItem ? $(".taskbar-speaker-indicator", entry.taskbarItem) : null;
       if (!indicator) return;
       const intensity = intensityValues.get(winId) || 0;
       const channel = audioMixer().channels.get(winId);
@@ -455,8 +449,28 @@ export class TaskbarSystem {
   }
 
   isWindowPinned(winId) {
-    const pinnedItems = this.getPinnedItems();
-    return pinnedItems.some((item) => item.winId === winId);
+    const win = $(`#${winId}`);
+    const appId = win?.dataset?.appId || this.manager.guessAppIdFromWinId(winId);
+    return !!this.getPinnedItemByAppId(appId);
+  }
+
+  getPinnedItemByAppId(appId) {
+    if (!appId) return null;
+    return this.getPinnedItems().find((item) => item.appId === appId) || null;
+  }
+
+  findOpenWindowIdByAppId(appId) {
+    if (!appId) return null;
+    for (const [wId] of this.manager.openWindows) {
+      const winEl = document.getElementById(wId);
+      if (winEl?.dataset?.appId === appId) return wId;
+    }
+    return null;
+  }
+
+  findPinnedElementByAppId(appId) {
+    const pin = this.getPinnedItemByAppId(appId);
+    return pin ? $(`#taskbar-pinned-${pin.winId}`) : null;
   }
 
   getPinnedItems() {
@@ -521,10 +535,10 @@ export class TaskbarSystem {
     const appId = win?.dataset?.appId || this.manager.guessAppIdFromWinId(winId);
 
     const pinnedItems = this.getPinnedItems();
-    if (pinnedItems.some((item) => item.winId === winId)) return;
+    if (pinnedItems.some((item) => item.appId === appId)) return;
 
     pinnedItems.push({
-      winId,
+      winId: `${appId}-pinned`,
       appId,
       title: entry.title,
       iconValue: entry.iconValue,
@@ -532,28 +546,138 @@ export class TaskbarSystem {
     });
 
     this.savePinnedItems(pinnedItems);
-    this.renderPinnedItems();
+
+    const openItem = $(`#taskbar-${winId}`);
+    if (openItem) openItem.classList.add("pinned");
+    const stalePin = this.findPinnedElementByAppId(appId);
+    if (stalePin) stalePin.remove();
+
+    this.syncPinnedStates();
     os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.PinCushion });
   }
 
   unpinFromTaskbar(winId) {
+    const win = $(`#${winId}`);
+    const appId = win?.dataset?.appId || this.manager.guessAppIdFromWinId(winId);
     const pinnedItems = this.getPinnedItems();
-    const filtered = pinnedItems.filter((item) => item.winId !== winId);
+    const target = pinnedItems.find((item) => item.appId === appId) || pinnedItems.find((item) => item.winId === winId);
+    if (!target) return;
+
+    const filtered = pinnedItems.filter((item) => item !== target);
     this.savePinnedItems(filtered);
-    this.renderPinnedItems();
+
+    $$(".taskbar-item.pinned", $("#taskbar-windows")).forEach((el) => {
+      if (el.dataset.appId !== appId) return;
+      const elWinId = el.id.replace("taskbar-", "");
+      if (this.manager.openWindows.has(elWinId)) {
+        el.classList.remove("pinned");
+      } else {
+        el.remove();
+      }
+    });
+
+    this.syncPinnedStates();
+  }
+
+  handleRunningItemClick(winId) {
+    const winTask = $(`#${winId}`);
+    if (!winTask) return;
+    const entry = this.manager.openWindows.get(winId);
+    const record = entry?.record;
+    const isMinimized = record ? record.minimized : winTask.style.display === "none";
+
+    if (isMinimized) {
+      if (winTask.style.display === "none") winTask.style.display = "";
+      winTask.classList.remove("minimized");
+      if (record) record.minimized = false;
+      if (!winTask.id || !winTask.id.startsWith("browser-app-")) {
+        restoreWindowAnimated(winTask);
+      }
+      this.manager.bringToFront(winTask);
+    } else {
+      const isFocused = parseInt(winTask.style.zIndex) === this.manager.zIndexCounter - 1;
+      if (isFocused) {
+        this.manager.minimizeWindow(winTask);
+      } else {
+        this.manager.bringToFront(winTask);
+      }
+    }
+  }
+
+  applyPinnedClickAndMenu(pinnedItem, appId, pinWinId) {
+    pinnedItem.onclick = () => {
+      const openWinId = this.findOpenWindowIdByAppId(appId);
+      if (openWinId) this.handleRunningItemClick(openWinId);
+      else if (appId) os.app.launch(appId);
+    };
+    pinnedItem.oncontextmenu = (e) => {
+      e.preventDefault();
+      this.hideTaskbarPreview();
+      if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
+      if (this.manager.taskbarPreviewHideTimer) clearTimeout(this.manager.taskbarPreviewHideTimer);
+      this.contextMenuOpen = true;
+      const menu = showStartStyleMenu(e, (addMenuItem, addSeparator) => {
+        const hasOpenWindow = this.findOpenWindowIdByAppId(appId);
+        if (hasOpenWindow) {
+          addMenuItem("New Window", () => os.app.launch(appId), "fa-plus-square");
+          addSeparator();
+        }
+        addMenuItem("Unpin from Taskbar", () => this.unpinFromTaskbar(pinWinId), "fa-thumbtack");
+        addSeparator();
+        addMenuItem(
+          "Launch App",
+          () => {
+            if (appId) os.app.launch(appId);
+          },
+          "fa-play"
+        );
+      });
+      const observer = new MutationObserver(() => {
+        if (!document.body.contains(menu)) {
+          this.contextMenuOpen = false;
+          this.taskbarDragging = false;
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true });
+    };
+  }
+
+  keepPinnedOnClose(winId) {
+    const taskbarItem = $(`#taskbar-${winId}`);
+    if (!taskbarItem || !taskbarItem.classList.contains("pinned")) return false;
+
+    taskbarItem.classList.remove("active", "running", "minimized");
+    const appId = taskbarItem.dataset.appId || this.manager.guessAppIdFromWinId(winId);
+    const pin = this.getPinnedItemByAppId(appId);
+    const pinWinId = pin ? pin.winId : `${appId}-pinned`;
+    this.applyPinnedClickAndMenu(taskbarItem, appId, pinWinId);
+    return true;
   }
 
   renderPinnedItems() {
     const taskbarWindows = $("#taskbar-windows");
     if (!taskbarWindows) return;
 
-    const existingPinned = $$(".taskbar-item.pinned", taskbarWindows);
+    const existingPinned = $$('.taskbar-item[id^="taskbar-pinned-"]', taskbarWindows);
     existingPinned.forEach((el) => el.remove());
 
     const pinnedItems = this.getPinnedItems();
     if (pinnedItems.length === 0) return;
 
     pinnedItems.forEach((item) => {
+      const openWinId = this.findOpenWindowIdByAppId(item.appId);
+      if (openWinId) {
+        const openItem = $(`#taskbar-${openWinId}`);
+        if (openItem) openItem.classList.add("pinned");
+        const stalePin = this.findPinnedElementByAppId(item.appId);
+        if (stalePin) stalePin.remove();
+        return;
+      }
+
+      const existingForApp = $$(".taskbar-item.pinned", taskbarWindows).find((el) => el.dataset.appId === item.appId);
+      if (existingForApp) return;
+
       const pinnedItem = createElement("div", {
         id: `taskbar-pinned-${item.winId}`,
         className: "taskbar-item pinned"
@@ -563,45 +687,7 @@ export class TaskbarSystem {
       pinnedItem.dataset.winId = item.winId;
       pinnedItem.appendChild(this.buildTaskbarIcon(item.iconValue, item.title, item.color));
 
-      pinnedItem.onclick = () => {
-        if (item.appId) {
-          os.app.launch(item.appId);
-        }
-      };
-
-      pinnedItem.oncontextmenu = (e) => {
-        e.preventDefault();
-        this.hideTaskbarPreview();
-        if (this.manager.taskbarPreviewShowTimer) clearTimeout(this.manager.taskbarPreviewShowTimer);
-        if (this.manager.taskbarPreviewHideTimer) clearTimeout(this.manager.taskbarPreviewHideTimer);
-        this.contextMenuOpen = true;
-        const menu = showStartStyleMenu(e, (addMenuItem, addSeparator) => {
-          const hasOpenWindow = this.manager.openWindows.has(item.winId);
-          if (hasOpenWindow && item.appId) {
-            addMenuItem("New Window", () => os.app.launch(item.appId), "fa-plus-square");
-            addSeparator();
-          }
-          addMenuItem("Unpin from Taskbar", () => this.unpinFromTaskbar(item.winId), "fa-thumbtack");
-          addSeparator();
-          addMenuItem(
-            "Launch App",
-            () => {
-              if (item.appId) {
-                os.app.launch(item.appId);
-              }
-            },
-            "fa-play"
-          );
-        });
-        const observer = new MutationObserver(() => {
-          if (!document.body.contains(menu)) {
-            this.contextMenuOpen = false;
-            this.taskbarDragging = false;
-            observer.disconnect();
-          }
-        });
-        observer.observe(document.body, { childList: true });
-      };
+      this.applyPinnedClickAndMenu(pinnedItem, item.appId, item.winId);
 
       enableTaskbarReorder(pinnedItem, {
         getContainer: () => $("#taskbar-windows"),
@@ -632,7 +718,7 @@ export class TaskbarSystem {
     if (!taskbarWindows) return;
 
     const items = $$(".taskbar-item", taskbarWindows);
-    const order = items.map((item) => item.id.replace("taskbar-", ""));
+    const order = items.map((item) => item.dataset.appId).filter(Boolean);
 
     try {
       os.storage.set(StorageKeys.taskbarOrder, order);
@@ -648,16 +734,28 @@ export class TaskbarSystem {
 
     const tiles = $$(".taskbar-item", taskbarWindows);
     const byId = new Map(tiles.map((t) => [t.id.replace("taskbar-", ""), t]));
+    const byApp = new Map(tiles.map((t) => [t.dataset.appId, t]));
+
+    const resolveAppId = (entry) => {
+      if (byApp.has(entry)) return entry;
+      const pin = this.getPinnedItems().find((p) => `pinned-${p.winId}` === entry);
+      return pin ? pin.appId : null;
+    };
 
     const ordered = [];
-    saved.forEach((id) => {
-      const t = byId.get(id);
+    saved.forEach((entry) => {
+      let t = byId.get(entry) || byApp.get(entry);
+      if (!t) {
+        const appId = resolveAppId(entry);
+        if (appId) t = byApp.get(appId);
+      }
       if (t) {
         ordered.push(t);
-        byId.delete(id);
+        byId.delete(t.id.replace("taskbar-", ""));
+        byApp.delete(t.dataset.appId);
       }
     });
-    byId.forEach((t) => ordered.push(t));
+    byApp.forEach((t) => ordered.push(t));
 
     ordered.forEach((t) => taskbarWindows.appendChild(t));
   }

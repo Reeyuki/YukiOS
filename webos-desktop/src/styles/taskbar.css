@@ -154,6 +154,10 @@
   transform: translateY(-50%) scaleY(1);
 }
 
+#taskbar.position-left .taskbar-item.running::after {
+  transform: translateY(-50%) scaleY(1);
+}
+
 #taskbar.position-right .taskbar-item::after {
   top: 50%;
   left: -1px;
@@ -164,6 +168,10 @@
 }
 
 #taskbar.position-right .taskbar-item.active::after {
+  transform: translateY(-50%) scaleY(1);
+}
+
+#taskbar.position-right .taskbar-item.running::after {
   transform: translateY(-50%) scaleY(1);
 }
 
@@ -288,6 +296,10 @@
   transform: translateX(-50%) scaleX(1);
 }
 
+.taskbar-item.running::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
 .taskbar-item img,
 .taskbar-item svg {
   width: 40px;
@@ -322,7 +334,7 @@
   position: relative;
 }
 
-.taskbar-item.pinned:not(.running) {
+.taskbar-item.pinned:not(.running):not(.active) {
   background: transparent;
   box-shadow: none;
 }
