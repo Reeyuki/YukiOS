@@ -1469,7 +1469,7 @@ html[data-theme] .lock-time {
 }
 
 html[data-theme] .start-menu {
-  background: var(--menu-bg);
+  background: var(--glass);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
