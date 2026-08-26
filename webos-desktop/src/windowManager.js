@@ -532,8 +532,9 @@ export class WindowManager {
 
   updateWindowHeaderStyles() {
     const styleId = resolveHeaderStyleId();
-    this.appliedHeaderStyleId = styleId;
-    const nextHeaderClass = HEADER_STYLES[styleId].headerClass;
+    const headerStyle = HEADER_STYLES[styleId] ?? HEADER_STYLES.default;
+    this.appliedHeaderStyleId = headerStyle.id;
+    const nextHeaderClass = headerStyle.headerClass;
     const allHeaderClasses = Object.values(HEADER_STYLES)
       .map((style) => style.headerClass)
       .filter(Boolean);

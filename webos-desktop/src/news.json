@@ -1,5 +1,23 @@
 [
   {
+    "date": "August 26, 2026",
+    "label": "Window Styles & Transparency",
+    "sections": [
+      {
+        "icon": "fa-window-maximize",
+        "title": "Fresh Look",
+        "items": [
+          ["fa-windows", "New Header Styles", "Grab XP, Vista, Windows 7, GNOME, or KDE Plasma title bars."],
+          [
+            "fa-layer-group",
+            "Granular Transparency",
+            "Toggle per-surface transparency and blur from the new Appearance panel!"
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "date": "August 24, 2026",
     "label": "Window Header Styles",
     "sections": [

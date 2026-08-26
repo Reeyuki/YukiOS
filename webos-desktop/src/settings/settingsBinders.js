@@ -9,6 +9,8 @@ import {
   applyTheme,
   applyWindowTransparency,
   applyTransparentUI,
+  applyTransparencyParts,
+  applyTransparencyBlur,
   applyGuiScale,
   applyFontSize,
   applyCursor,
@@ -716,6 +718,49 @@ export function bindAppearanceCategory(
       showSaved();
     });
   }
+
+  const transparencyPartToggles = [
+    ["#settingsTpTaskbar", "taskbar"],
+    ["#settingsTpWindowHeader", "windowHeader"],
+    ["#settingsTpWindowBody", "windowBody"],
+    ["#settingsTpStartMenu", "startMenu"],
+    ["#settingsTpContextMenus", "contextMenus"],
+    ["#settingsTpTray", "tray"]
+  ];
+  transparencyPartToggles.forEach(([selector, key]) => {
+    const toggle = $(selector, win);
+    if (!toggle) return;
+    bindEvent(toggle, "change", () => {
+      settings.transparencyParts = settings.transparencyParts || {};
+      settings.transparencyParts[key] = toggle.checked;
+      os.storage.set(StorageKeys.transparencyParts, JSON.stringify(settings.transparencyParts));
+      applyTransparencyParts(settings.transparencyParts);
+      showSaved();
+    });
+  });
+
+  const transparencyBlurSliders = [
+    ["settingsBlurWindow", "window"],
+    ["settingsBlurTaskbar", "taskbar"],
+    ["settingsBlurStartMenu", "startMenu"],
+    ["settingsBlurContext", "context"],
+    ["settingsBlurTray", "tray"]
+  ];
+  transparencyBlurSliders.forEach(([id, key]) => {
+    const slider = $(`#${id}`, win);
+    if (!slider) return;
+    const valueEl = $(`#${id}Value`, win);
+    bindEvent(slider, "input", () => {
+      if (valueEl) setText(valueEl, `${getRangeSliderValue(id, win)}px`);
+    });
+    bindEvent(slider, "change", () => {
+      settings.transparencyBlur = settings.transparencyBlur || {};
+      settings.transparencyBlur[key] = Number(getRangeSliderValue(id, win));
+      os.storage.set(StorageKeys.transparencyBlur, JSON.stringify(settings.transparencyBlur));
+      applyTransparencyBlur(settings.transparencyBlur);
+      showSaved();
+    });
+  });
 
   $$(".header-style-preview", win).forEach((stylePreview) => {
     bindEvent(stylePreview, "click", () => {

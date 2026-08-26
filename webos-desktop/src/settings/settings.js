@@ -6,12 +6,78 @@ import { appMap } from "../games/gamesList.js";
 import { performanceManager } from "../shared/performanceManager.js";
 import { parseBool } from "../utils/utils.js";
 
+function loadTransparencyParts() {
+  const stored = os.storage.get(StorageKeys.transparencyParts);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      return {
+        taskbar: !!parsed.taskbar,
+        windowHeader: !!parsed.windowHeader,
+        windowBody: !!parsed.windowBody,
+        startMenu: !!parsed.startMenu,
+        contextMenus: !!parsed.contextMenus,
+        tray: !!parsed.tray
+      };
+    } catch (e) {
+      /* fall through to migration */
+    }
+  }
+  const legacyStored = os.storage.get(StorageKeys.transparentUI);
+  if (legacyStored !== null && legacyStored !== undefined) {
+    const legacyTransparent = parseBool(legacyStored);
+    return {
+      taskbar: legacyTransparent,
+      windowHeader: legacyTransparent,
+      windowBody: legacyTransparent,
+      startMenu: legacyTransparent,
+      contextMenus: legacyTransparent,
+      tray: legacyTransparent
+    };
+  }
+  return {
+    taskbar: true,
+    windowHeader: true,
+    windowBody: false,
+    startMenu: false,
+    contextMenus: false,
+    tray: false
+  };
+}
+
+const DEFAULT_TRANSPARENCY_BLUR = {
+  window: 40,
+  taskbar: 32,
+  startMenu: 32,
+  context: 20,
+  tray: 32
+};
+
+function loadTransparencyBlur() {
+  const stored = os.storage.get(StorageKeys.transparencyBlur);
+  if (!stored) return { ...DEFAULT_TRANSPARENCY_BLUR };
+  try {
+    const parsed = JSON.parse(stored);
+    return {
+      window: typeof parsed.window === "number" ? parsed.window : DEFAULT_TRANSPARENCY_BLUR.window,
+      taskbar: typeof parsed.taskbar === "number" ? parsed.taskbar : DEFAULT_TRANSPARENCY_BLUR.taskbar,
+      startMenu: typeof parsed.startMenu === "number" ? parsed.startMenu : DEFAULT_TRANSPARENCY_BLUR.startMenu,
+      context: typeof parsed.context === "number" ? parsed.context : DEFAULT_TRANSPARENCY_BLUR.context,
+      tray: typeof parsed.tray === "number" ? parsed.tray : DEFAULT_TRANSPARENCY_BLUR.tray
+    };
+  } catch (e) {
+    return { ...DEFAULT_TRANSPARENCY_BLUR };
+  }
+}
+
 import { buildSettingsHTML } from "./settingRenderer.js";
 import { modeManager, MODES } from "../modeManager.js";
 import {
   applyTheme,
   applyWindowTransparency,
   applyTransparentUI,
+  applyTransparencyParts,
+  applyTransparencyBlur,
   applySound,
   applyGuiScale,
   applyFontSize,
@@ -106,7 +172,9 @@ export class SettingsApp extends BaseApp {
         notificationsOverFullscreen: parseBool(os.storage.get(StorageKeys.notificationsOverFullscreen)),
         notificationsDuration: Number(os.storage.get(StorageKeys.notificationsDuration)) || 5,
         notificationsPosition: os.storage.get(StorageKeys.notificationsPosition) || "bottom-right",
-        transparentUI: parseBool(os.storage.get(StorageKeys.transparentUI)),
+        transparentUI: parseBool(os.storage.get(StorageKeys.transparentUI), true),
+        transparencyParts: loadTransparencyParts(),
+        transparencyBlur: loadTransparencyBlur(),
         clipboardManagerEnabled: parseBool(os.storage.get(StorageKeys.clipboardManagerEnabled), true),
         guiScale: Number(os.storage.get(StorageKeys.guiScale)) || 100,
         headerStyle: os.storage.get(StorageKeys.windowHeaderStyle) || "default",
@@ -154,6 +222,8 @@ export class SettingsApp extends BaseApp {
       applyStartMenuSize(this.settings.startMenuWidth, this.settings.startMenuHeight);
       applyStartMenuCats(this.settings.startMenuCats);
       applyTransparentUI(this.settings.transparentUI);
+      applyTransparencyParts(this.settings.transparencyParts);
+      applyTransparencyBlur(this.settings.transparencyBlur);
       applyGuiScale(this.settings.guiScale);
       applyVirtualResolution(this.settings.virtualResolution, this.settings.guiScale);
       applyFontSize(this.settings.fontSize);
@@ -302,6 +372,21 @@ export class SettingsApp extends BaseApp {
       const notificationsDuration = Number(getRangeSliderValue("settingsNotificationsDuration", win)) || 5;
       const notificationsPosition = getSelectMenuValue("settingsNotificationsPosition", win) || "bottom-right";
       const transparentUI = !!gc("#settingsTransparentUI");
+      const transparencyParts = {
+        taskbar: !!gc("#settingsTpTaskbar"),
+        windowHeader: !!gc("#settingsTpWindowHeader"),
+        windowBody: !!gc("#settingsTpWindowBody"),
+        startMenu: !!gc("#settingsTpStartMenu"),
+        contextMenus: !!gc("#settingsTpContextMenus"),
+        tray: !!gc("#settingsTpTray")
+      };
+      const transparencyBlur = {
+        window: Number(getRangeSliderValue("settingsBlurWindow", win)) || DEFAULT_TRANSPARENCY_BLUR.window,
+        taskbar: Number(getRangeSliderValue("settingsBlurTaskbar", win)) || DEFAULT_TRANSPARENCY_BLUR.taskbar,
+        startMenu: Number(getRangeSliderValue("settingsBlurStartMenu", win)) || DEFAULT_TRANSPARENCY_BLUR.startMenu,
+        context: Number(getRangeSliderValue("settingsBlurContext", win)) || DEFAULT_TRANSPARENCY_BLUR.context,
+        tray: Number(getRangeSliderValue("settingsBlurTray", win)) || DEFAULT_TRANSPARENCY_BLUR.tray
+      };
       const disableBootScreen = !!gc("#settingsDisableBootScreen");
       const windowSessionPersistence = !!gc("#settingsWindowSessionPersistence");
       const selectedPerformanceMode =
@@ -343,6 +428,8 @@ export class SettingsApp extends BaseApp {
       os.storage.set(StorageKeys.notificationsDuration, String(notificationsDuration));
       os.storage.set(StorageKeys.notificationsPosition, notificationsPosition);
       os.storage.set(StorageKeys.transparentUI, String(transparentUI));
+      os.storage.set(StorageKeys.transparencyParts, JSON.stringify(transparencyParts));
+      os.storage.set(StorageKeys.transparencyBlur, JSON.stringify(transparencyBlur));
       os.storage.set(StorageKeys.disableBootScreen, String(disableBootScreen));
       os.storage.set(StorageKeys.windowSessionPersistence, String(windowSessionPersistence));
       os.storage.set(StorageKeys.performanceMode, selectedPerformanceMode);
@@ -400,6 +487,8 @@ export class SettingsApp extends BaseApp {
         notificationsDuration,
         notificationsPosition,
         transparentUI,
+        transparencyParts,
+        transparencyBlur,
         cursorEffectEnabled,
         wobblyWindows,
         wobbleSpringK,
@@ -426,6 +515,8 @@ export class SettingsApp extends BaseApp {
       applyStartMenuCats(startMenuCats);
       performanceManager.setMode(selectedPerformanceMode);
       applyTransparentUI(transparentUI);
+      applyTransparencyParts(transparencyParts);
+      applyTransparencyBlur(transparencyBlur);
       applyFontFamily(selectedFontFamily);
       applyDockIconSize(this.settings.dockIconSize);
       applyDockScale(this.settings.dockScale);

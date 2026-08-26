@@ -1083,26 +1083,6 @@ export function renderAppearanceSettings(s) {
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
-            <span class="settings-label-title">Window Transparency</span>
-            <span class="settings-label-desc">Adjust window opacity</span>
-          </div>
-          <div class="settings-range-group">
-            ${renderRangeSlider("settingsWindowTransparency", 20, 100, 1, Math.round(s.windowTransparency * 100))}
-            <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(s.windowTransparency * 100)}%</span>
-          </div>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Transparent OS UI</span>
-            <span class="settings-label-desc">Make taskbar and start menu fully transparent</span>
-          </div>
-          <label class="settings-toggle">
-            <input type="checkbox" id="settingsTransparentUI" ${s.transparentUI ? "checked" : ""}/>
-            <span class="settings-track"><span class="settings-thumb"></span></span>
-          </label>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
             <span class="settings-label-title">GUI Scale</span>
             <span class="settings-label-desc">Scale the entire interface</span>
           </div>
@@ -1374,7 +1354,138 @@ export function renderAppearanceSettings(s) {
       </div>
 
 
+      <div class="settings-card" id="sc-transparency">
+        <div class="settings-card-header"><i class="fas fa-layer-group"></i> Transparency</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Window Transparency</span>
+            <span class="settings-label-desc">Adjust window opacity</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsWindowTransparency", 20, 100, 1, Math.round(s.windowTransparency * 100))}
+            <span id="settingsWindowTransparencyValue" class="settings-range-value">${Math.round(s.windowTransparency * 100)}%</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Transparent UI</span>
+            <span class="settings-label-desc">Enable glassmorphism across surfaces</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsTransparentUI" ${s.transparentUI ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-subsection">
+          <div class="settings-subsection-title">Transparent surfaces</div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Taskbar</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTpTaskbar" ${s.transparencyParts.taskbar ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Window Header</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTpWindowHeader" ${s.transparencyParts.windowHeader ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Window Body</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTpWindowBody" ${s.transparencyParts.windowBody ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Start Menu</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTpStartMenu" ${s.transparencyParts.startMenu ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Context Menus</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTpContextMenus" ${s.transparencyParts.contextMenus ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Tray Panels</span>
+              <span class="settings-label-desc">Audio mixer, network, clipboard popups</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsTpTray" ${s.transparencyParts.tray ? "checked" : ""}/>
+              <span class="settings-track"><span class="settings-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-subsection">
+          <div class="settings-subsection-title">Surface Blur</div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Window</span>
+              <span class="settings-label-desc">Window body &amp; header blur</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsBlurWindow", 0, 60, 1, s.transparencyBlur.window)}
+              <span id="settingsBlurWindowValue" class="settings-range-value">${s.transparencyBlur.window}px</span>
+            </div>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Taskbar</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsBlurTaskbar", 0, 60, 1, s.transparencyBlur.taskbar)}
+              <span id="settingsBlurTaskbarValue" class="settings-range-value">${s.transparencyBlur.taskbar}px</span>
+            </div>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Start Menu</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsBlurStartMenu", 0, 60, 1, s.transparencyBlur.startMenu)}
+              <span id="settingsBlurStartMenuValue" class="settings-range-value">${s.transparencyBlur.startMenu}px</span>
+            </div>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Context Menus</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsBlurContext", 0, 60, 1, s.transparencyBlur.context)}
+              <span id="settingsBlurContextValue" class="settings-range-value">${s.transparencyBlur.context}px</span>
+            </div>
+          </div>
+          <div class="settings-row settings-row--inset">
+            <div class="settings-label-group">
+              <span class="settings-label-title">Tray Panels</span>
+            </div>
+            <div class="settings-range-group">
+              ${renderRangeSlider("settingsBlurTray", 0, 60, 1, s.transparencyBlur.tray)}
+              <span id="settingsBlurTrayValue" class="settings-range-value">${s.transparencyBlur.tray}px</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
   `;
 }
 export function renderAutostartSettings() {

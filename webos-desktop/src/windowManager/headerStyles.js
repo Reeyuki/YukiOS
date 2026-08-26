@@ -5,10 +5,12 @@ import { StorageKeys } from "../StorageKeys.js";
 export const HEADER_STYLES = {
   default: { id: "default", label: "Default", headerClass: "" },
   mac: { id: "mac", label: "macOS", headerClass: "mac-header" },
-  win7: { id: "win7", label: "Windows 7", headerClass: "win7-header", available: false },
+  win7: { id: "win7", label: "Windows 7", headerClass: "win7-header" },
   win11: { id: "win11", label: "Windows 11", headerClass: "win11-header" },
   gnome: { id: "gnome", label: "GNOME", headerClass: "gnome-header" },
-  kde: { id: "kde", label: "KDE Plasma", headerClass: "gnome-header" }
+  kde: { id: "kde", label: "KDE Plasma", headerClass: "gnome-header" },
+  winxp: { id: "winxp", label: "Windows XP", headerClass: "winxp-header" },
+  winvista: { id: "winvista", label: "Windows Vista", headerClass: "winvista-header", controls: "win7" }
 };
 
 const AVAILABLE_HEADER_STYLES = Object.values(HEADER_STYLES).filter((style) => style.available !== false);
@@ -88,10 +90,22 @@ function buildKdeControls(externalBtn, downloadBtn) {
       <button class="minimize-btn kde-btn" title="Minimize"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.25L8 9.75l3.5-3.5"></path></svg></button>
       <button class="maximize-btn kde-btn" title="Maximize">
         <svg class="maximize-glyph" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 9.75L8 6.25l3.5 3.5"></path></svg>
-        <svg class="restore-glyph" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M5.25 4.75L8 7.5l2.75-2.75M5.25 11.25L8 8.5l2.75 2.75"></path></svg>
+        <svg class="restore-glyph" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.25L8 9.75l3.5-3.5"></path></svg>
       </button>
       ${externalBtn}${downloadBtn}
       <button class="close-btn kde-btn" title="Close"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M4.75 4.75l6.5 6.5M11.25 4.75l-6.5 6.5"></path></svg></button>
+    </div>`;
+}
+
+function buildWinXpControls(externalBtn, downloadBtn) {
+  return `<div class="window-controls winxp-controls">
+      ${externalBtn}${downloadBtn}
+      <button class="minimize-btn winxp-btn winxp-min" title="Minimize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 4.5h10v1.5H0z"></path></svg></button>
+      <button class="maximize-btn winxp-btn winxp-max" title="Maximize">
+        <svg class="maximize-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 1v8h8V1H0zm1 1h6v6H1V2z"></path></svg>
+        <svg class="restore-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M2 0v6h6V0H2zm1 1h4v4H3V1zM0 3v6h6V3H0zm1 1h4v4H1V4z"></path></svg>
+      </button>
+      <button class="close-btn winxp-btn winxp-close" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10 1L9 0 5 4 1 0 0 1l4 4L0 9l1 1 4-4 4 4 1-1-4-4z"></path></svg></button>
     </div>`;
 }
 
@@ -101,12 +115,17 @@ const CONTROL_BUILDERS = {
   win7: buildWin7Controls,
   win11: buildWin11Controls,
   gnome: buildGnomeControls,
-  kde: buildKdeControls
+  kde: buildKdeControls,
+  winxp: buildWinXpControls
 };
 
 export function getStoredHeaderStyleId() {
   const storedStyleId = os.storage.get(StorageKeys.windowHeaderStyle);
-  return typeof storedStyleId === "string" && HEADER_STYLES[storedStyleId]?.available !== false ? storedStyleId : null;
+  return typeof storedStyleId === "string" &&
+    HEADER_STYLES[storedStyleId] &&
+    HEADER_STYLES[storedStyleId].available !== false
+    ? storedStyleId
+    : null;
 }
 
 export function resolveHeaderStyleId() {
@@ -118,7 +137,9 @@ export function getHeaderStyle(styleId) {
 }
 
 export function buildControlsForStyle(styleId, externalUrl = null, showDownload = false) {
-  const buildControls = CONTROL_BUILDERS[styleId] ?? buildDefaultControls;
+  const style = HEADER_STYLES[styleId] ?? HEADER_STYLES.default;
+  const builderKey = style.controls ?? styleId;
+  const buildControls = CONTROL_BUILDERS[builderKey] ?? buildDefaultControls;
   const externalBtn = externalUrl ? EXTERNAL_BUTTON_HTML : "";
   const downloadBtn = showDownload ? DOWNLOAD_BUTTON_HTML : "";
   return buildControls(externalBtn, downloadBtn);

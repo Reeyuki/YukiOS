@@ -3,19 +3,43 @@
 }
 
 .window-header.win7-header {
+  position: relative;
   height: 32px;
+  border-radius: 5px 5px 0 0;
   background: linear-gradient(
     180deg,
-    rgba(235, 247, 255, 0.9) 0%,
-    rgba(198, 226, 252, 0.85) 48%,
-    rgba(148, 190, 238, 0.9) 52%,
-    rgba(178, 210, 248, 0.92) 100%
+    rgba(150, 190, 235, 0.3) 0%,
+    rgba(130, 175, 225, 0.24) 48%,
+    rgba(110, 160, 215, 0.28) 52%,
+    rgba(140, 180, 225, 0.36) 100%
   );
-  backdrop-filter: blur(10px) saturate(1.35);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    inset 0 -1px 0 rgba(30, 70, 130, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(30, 70, 130, 0.2);
+}
+
+.window-header.win7-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.7);
+  opacity: 0.7;
+}
+
+.window.inactive .window-header.win7-header {
+  background: linear-gradient(180deg, #e2e5ea 0%, #d3d7dd 18%, #c7ccd4 55%, #b7bdc6 100%);
+  color: #4c4f56;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.window.inactive .window-header.win7-header::after {
+  background: #a4aab3;
+  opacity: 1;
 }
 
 .window:has(> .win7-header) {
@@ -23,13 +47,9 @@
 }
 
 .window-header.win7-header > span {
-  font-family: "Segoe UI", "Frutiger", sans-serif;
   font-size: 12px;
-  font-weight: 400;
-  color: #fff;
-  text-shadow:
-    0 0 6px rgba(0, 10, 40, 0.95),
-    0 1px 2px rgba(0, 10, 40, 0.85);
+  font-weight: 300;
+  color: black;
   padding-left: 6px;
   overflow: hidden;
   white-space: nowrap;
@@ -39,9 +59,10 @@
 .window-controls.win7-controls {
   gap: 0;
   padding: 0;
-  align-items: center;
+  align-items: flex-start;
   height: 100%;
   margin-left: auto;
+  align-self: flex-start;
 }
 
 .window-controls.win7-controls .external-btn,
@@ -51,78 +72,140 @@
 
 .win7-caption-group {
   display: flex;
-  height: 17.6px;
+  height: 20px;
   margin-left: auto;
   align-self: flex-start;
   border-radius: 0 0 5px 5px;
   overflow: visible;
+  border: 1px solid rgba(15, 20, 30, 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 1px 0 0 rgba(255, 255, 255, 0.35),
+    inset -1px 0 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .window-controls.win7-controls .win7-cap {
-  width: 29px;
-  height: 17.6px;
-  min-width: 29px;
-  border: none;
   border-radius: 0;
-  background: linear-gradient(180deg, #b1b1b1 0%, #b1b1b1 50%, #4b4b4e 50%, #4b4b4e 100%);
+  width: 30px;
+  min-width: 30px;
+  height: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(244, 244, 244, 0.6) 0%,
+    rgba(211, 211, 211, 0.4) 45%,
+    rgba(0, 0, 0, 0.2) 46%,
+    rgba(143, 150, 173, 0.3) 100%
+  );
+  backdrop-filter: blur(6px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    inset 1px 0 0 rgba(255, 255, 255, 0.4),
+    inset -1px 0 0 rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: default;
-  transition: filter 0.15s ease;
+  transition: background 0.15s ease;
+}
+
+.window.inactive .window-controls.win7-controls .win7-cap {
+  background: linear-gradient(
+    180deg,
+    rgba(220, 220, 220, 0.4) 0%,
+    rgba(190, 190, 190, 0.3) 45%,
+    rgba(0, 0, 0, 0.14) 46%,
+    rgba(120, 125, 140, 0.22) 100%
+  );
 }
 
 .window-controls.win7-controls .win7-min {
   border-radius: 0 0 0 5px;
 }
 
+.window-controls.win7-controls .win7-cap:first-child {
+  border-bottom-left-radius: 3px;
+}
+
+.window-controls.win7-controls .win7-cap + .win7-cap {
+  border-left: 1px solid rgba(0, 0, 0, 0.35);
+}
+
 .window-controls.win7-controls .win7-close {
-  width: 45px;
-  min-width: 45px;
+  border-left: 1px solid rgba(0, 0, 0, 0.35);
+}
+.window-controls.win7-controls .win7-close {
+  width: 48px;
+  min-width: 48px;
+  height: 20px;
   border-radius: 0 0 5px 0;
-  background: linear-gradient(180deg, #f2a186 0%, #e07b5f 45%, #d5502f 50%, #ba3d20 100%);
-  box-shadow: inset 0 0 3px rgba(120, 20, 8, 0.55);
+  background: linear-gradient(180deg, #d38d78 0%, #c45b42 45%, #9f1c07 46%, #ab4c3e 100%);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 0 1px #d6aea8,
+    0 0 9px #d6aea8;
 }
 
 .window-controls.win7-controls .win7-cap svg {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   fill: #ffffff;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
-}
-
-.window-controls.win7-controls .win7-close svg {
-  fill: #ffffff;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+  stroke: #000000;
+  stroke-width: 1px;
+  paint-order: stroke;
+  filter: none;
 }
 
 .window-controls.win7-controls .win7-min:hover,
 .window-controls.win7-controls .win7-max:hover {
   transform: none;
   background:
-    linear-gradient(90deg, rgba(17, 100, 156, 0) 62%, rgba(17, 100, 156, 0.5) 100%),
-    linear-gradient(180deg, #eaf5fe 0%, #cfe7fa 45%, #a9d2f1 50%, #7fb5e4 100%);
+    radial-gradient(circle at center bottom, rgba(0, 240, 255, 0.95) 0%, rgba(0, 240, 255, 0) 72%),
+    radial-gradient(circle at bottom left, #1f7aa8 0%, #1f7aa8 50%, rgba(31, 122, 168, 0) 78%),
+    radial-gradient(circle at bottom right, #1f7aa8 0%, #1f7aa8 50%, rgba(31, 122, 168, 0) 78%),
+    linear-gradient(
+      180deg,
+      rgba(234, 245, 254, 0.65) 0%,
+      rgba(207, 231, 250, 0.6) 45%,
+      rgba(120, 180, 230, 0.72) 46%,
+      rgba(127, 181, 228, 0.6) 100%
+    );
   box-shadow:
-    0 0 9px #3d95dd,
-    inset -2px 0 4px rgba(17, 100, 156, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    inset 1px 0 0 rgba(255, 255, 255, 0.8),
+    inset -1px 0 0 rgba(255, 255, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 14px rgba(0, 200, 255, 0.9);
 }
 
 .window-controls.win7-controls .win7-close:hover {
   transform: none;
-  background: linear-gradient(180deg, #ffc0a8 0%, #f28b6c 45%, #e65e35 50%, #cd4722 100%);
+  background: linear-gradient(180deg, #ffb8a3 0%, #ed7a5d 45%, #d13717 46%, #c83115 100%);
   box-shadow:
-    0 0 11px rgba(255, 86, 54, 0.95),
-    inset -2px 0 4px rgba(150, 35, 15, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    inset 1px 0 0 rgba(255, 255, 255, 0.6),
+    inset -1px 0 0 rgba(255, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 0 14px rgba(255, 70, 45, 0.95);
 }
 
+.window-controls.win7-controls .win7-close svg {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 1.8px;
+  paint-order: stroke;
+  filter: drop-shadow(0 0 1.2px #000) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
 .window-controls.win7-controls .win7-cap:active {
   transform: none;
-  background: linear-gradient(180deg, #9a9a9a 0%, #9a9a9a 50%, #3a3a3d 50%, #3a3a3d 100%);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 60, 120, 0.18) 0%,
+      rgba(20, 60, 120, 0.1) 50%,
+      rgba(10, 40, 90, 0.28) 52%,
+      rgba(10, 40, 90, 0.34) 100%
+    ),
+    rgba(150, 190, 230, 0.3);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -130,7 +213,7 @@
 .window-controls.win7-controls .win7-max:hover:active {
   background:
     linear-gradient(90deg, rgba(17, 100, 156, 0) 62%, rgba(17, 100, 156, 0.5) 100%),
-    linear-gradient(180deg, #d8ecfb 0%, #b7dbf5 45%, #8ec0ea 50%, #5f9cd6 100%);
+    linear-gradient(180deg, #a2c8e3 0%, #7bb2d9 48%, #5c9cc9 50%, #7db3da 100%);
   box-shadow:
     0 0 9px rgba(61, 149, 221, 0.75),
     inset -2px 0 4px rgba(17, 100, 156, 0.5),
@@ -147,7 +230,6 @@
 
 .window-controls.win7-controls .win7-cap:hover svg {
   fill: #ffffff;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
 }
 
 .window-header.gnome-header {
@@ -318,6 +400,20 @@ html[data-theme] .window-header.win7-header {
   );
 }
 
+html[data-theme="light"] .window-header.win7-header {
+  background: linear-gradient(180deg, #dbe6f5 0%, #aebfda 8%, #8aa0c4 45%, #6c83a8 100%);
+  color: #102;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+html[data-theme="light"] .window-header.win7-header > span {
+  color: #102;
+}
+
+html[data-theme="light"] .window.inactive .window-header.win7-header {
+  color: #4c4f56;
+}
+
 html[data-theme] .window-header.gnome-header {
   background: #303030;
 }
@@ -376,4 +472,106 @@ html[data-theme] .window-header.gnome-header {
 
 .window-controls.kde-controls .close-btn:active {
   background: #c01c28;
+}
+
+html[data-theme] .window-header.winxp-header {
+  height: 32px;
+  background: linear-gradient(180deg, #245edb 0%, #3f8cf3 8%, #245edb 40%, #1c54c0 88%, #13378f 100%);
+  border-bottom: 1px solid #0c2c7a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+html[data-theme] .window-header.winxp-header > span {
+  font-family: Tahoma, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  padding-left: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.window-controls.winxp-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 6px;
+  margin-left: auto;
+  height: 100%;
+}
+
+.window-controls.winxp-controls .winxp-btn {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border: 1px solid #0c3a9b;
+  border-radius: 4px;
+  background: radial-gradient(circle at 50% 30%, #6fa8ff, #245edb 70%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.window-controls.winxp-controls .winxp-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: #fff;
+}
+
+.window-controls.winxp-controls .winxp-close {
+  border-color: #7a0c0c;
+  background: radial-gradient(circle at 50% 30%, #ff8a8a, #d13b3b 70%);
+}
+
+.window-controls.winxp-controls .winxp-btn:hover {
+  filter: brightness(1.15);
+}
+
+.window-controls.winxp-controls .winxp-btn:active {
+  filter: brightness(0.9);
+}
+
+html[data-theme] .window-header.winvista-header {
+  height: 34px;
+  background: linear-gradient(
+    180deg,
+    rgba(180, 210, 255, 0.55) 0%,
+    rgba(120, 165, 230, 0.5) 50%,
+    rgba(90, 140, 210, 0.6) 100%
+  );
+  backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 1px 6px rgba(60, 110, 200, 0.4);
+}
+
+html[data-theme] .window-header.winvista-header > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0b2a66;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding-left: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.window-header.winvista-header .window-controls.win7-controls .win7-cap {
+  background: linear-gradient(180deg, #cfe0ff 0%, #9db8e8 50%, #6f93d6 50%, #5d80c4 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(20, 50, 110, 0.4);
+}
+
+.window-header.winvista-header .window-controls.win7-controls .win7-close {
+  background: linear-gradient(180deg, #f3a98f 0%, #e0724f 45%, #d5502f 50%, #b73a1f 100%);
+}
+
+.window-header.winvista-header .window-controls.win7-controls .win7-cap:hover {
+  background: linear-gradient(180deg, #e6f0ff 0%, #b7d0f5 45%, #8ec0ea 50%, #5f9cd6 100%);
 }

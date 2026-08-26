@@ -93,6 +93,8 @@ export const StorageKeys = {
   wobbleDragLag: "yukiOS_wobble_drag_lag",
   wobbleCoupleK: "yukiOS_wobble_couple_k",
   transparentUI: "yukiOS_transparent_ui",
+  transparencyParts: "yukiOS_transparency_parts",
+  transparencyBlur: "yukiOS_transparency_blur",
   clipboardManagerEnabled: "yukiOS_clipboard_manager_enabled",
   clipboardCurrent: "yukiOS_clipboard_current",
   clipboardHistory: "yukiOS_clipboard_history",

@@ -1838,7 +1838,7 @@
   flex-shrink: 0;
 }
 
-html.transparent-ui[data-theme] .window-header.steam-popup-header,
+html.transparent-ui.tp-window-header[data-theme] .window-header.steam-popup-header,
 html[data-theme] .window-header.steam-popup-header,
 .window-header.steam-popup-header {
   position: absolute;

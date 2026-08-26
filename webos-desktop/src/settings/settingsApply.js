@@ -84,6 +84,40 @@ export function applyTransparentUI(enabled) {
   document.documentElement.classList.toggle("transparent-ui", enabled);
 }
 
+const TRANSPARENCY_PART_CLASSES = {
+  taskbar: "tp-taskbar",
+  windowHeader: "tp-window-header",
+  windowBody: "tp-window-body",
+  startMenu: "tp-start-menu",
+  contextMenus: "tp-context",
+  tray: "tp-tray"
+};
+
+export function applyTransparencyParts(parts) {
+  if (!parts || typeof parts !== "object") return;
+  Object.entries(TRANSPARENCY_PART_CLASSES).forEach(([key, className]) => {
+    document.documentElement.classList.toggle(className, !!parts[key]);
+  });
+}
+
+const TRANSPARENCY_BLUR_VARS = {
+  window: "--tp-blur-window",
+  taskbar: "--tp-blur-taskbar",
+  startMenu: "--tp-blur-startmenu",
+  context: "--tp-blur-context",
+  tray: "--tp-blur-tray"
+};
+
+export function applyTransparencyBlur(blur) {
+  if (!blur || typeof blur !== "object") return;
+  Object.entries(TRANSPARENCY_BLUR_VARS).forEach(([key, varName]) => {
+    const value = blur[key];
+    if (typeof value === "number") {
+      document.documentElement.style.setProperty(varName, `${value}px`);
+    }
+  });
+}
+
 export function applySound(enabled, volume) {
   const vol = Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1;
   audioMixer().setMaster(enabled ? vol : 0);

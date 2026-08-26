@@ -66,6 +66,27 @@
   gap: var(--spacing-sm);
 }
 
+.settings-subsection {
+  margin: var(--spacing-sm) 0;
+  padding: var(--spacing-xs) 0;
+  border-left: 2px solid var(--brand);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.settings-subsection-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0 var(--spacing-md) var(--spacing-xs);
+}
+
+.settings-row--inset {
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-md);
+}
+
 .settings-label-group {
   display: flex;
   flex-direction: column;

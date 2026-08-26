@@ -43,6 +43,13 @@ export const SETTINGS_GROUPS = [
         icon: "fas fa-wand-magic-sparkles",
         pane: "pane-appearance",
         target: "sc-animations"
+      },
+      {
+        id: "transparency",
+        title: "Transparency",
+        icon: "fas fa-layer-group",
+        pane: "pane-appearance",
+        target: "sc-transparency"
       }
     ]
   },
