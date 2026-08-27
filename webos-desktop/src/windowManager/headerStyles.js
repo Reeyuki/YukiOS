@@ -54,12 +54,12 @@ function buildWin7Controls(externalBtn, downloadBtn) {
   return `<div class="window-controls win7-controls">
       ${externalBtn}${downloadBtn}
       <div class="win7-caption-group">
-        <button class="minimize-btn win7-cap win7-min" title="Minimize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 4h10v2H0z"></path></svg></button>
+        <button class="minimize-btn win7-cap win7-min" title="Minimize"></button>
         <button class="maximize-btn win7-cap win7-max" title="Maximize">
-          <svg class="maximize-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 2v7h10V2H0zm1.5 1.5h7v4h-7v-4z"></path></svg>
-          <svg class="restore-glyph" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 0v5.5H10V0H3.5zM5 1.5h3.5V4H5V1.5zM0 3.5V10h7.5V3.5H0zM1.5 5H6v3.5H1.5V5z"></path></svg>
+          <span class="maximize-glyph"></span>
+          <span class="restore-glyph"></span>
         </button>
-        <button class="close-btn win7-cap win7-close" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
+        <button class="close-btn win7-cap win7-close" title="Close"></button>
       </div>
     </div>`;
 }

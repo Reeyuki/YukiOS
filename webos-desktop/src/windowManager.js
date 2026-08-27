@@ -538,6 +538,7 @@ export class WindowManager {
     const allHeaderClasses = Object.values(HEADER_STYLES)
       .map((style) => style.headerClass)
       .filter(Boolean);
+    const isWin7Window = styleId === "win7" || styleId === "winvista";
     this.openWindows.forEach((entry, winId) => {
       const win = $("#" + winId);
       if (!win) return;
@@ -549,6 +550,7 @@ export class WindowManager {
       const showDownload = !!controls.querySelector(".download-btn");
       allHeaderClasses.forEach((cls) => header.classList.remove(cls));
       if (nextHeaderClass) header.classList.add(nextHeaderClass);
+      win.classList.toggle("win7-window", isWin7Window);
       controls.outerHTML = this.utils.getWindowControls(hasExternal ? "external" : null, showDownload);
     });
     this.openWindows.forEach((entry, winId) => {
