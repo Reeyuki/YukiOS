@@ -8,6 +8,21 @@ export const ADSTERRA_KEYS = {
   storeRect: "ee9dc67de90729e2804aa8aba6454ec8"
 };
 
+export function hardenAdEnvironment() {
+  if (window.__yukiAdHardened) return;
+  window.__yukiAdHardened = true;
+  const originalOpen = window.open ? window.open.bind(window) : null;
+  window.open = function (url, name, features) {
+    const activation = navigator.userActivation;
+    if (activation && !activation.isActive) {
+      return null;
+    }
+    return originalOpen ? originalOpen(url, name, features) : null;
+  };
+}
+
+hardenAdEnvironment();
+
 export function shouldEnableAds() {
   const hostname = window.location.hostname;
   if (hostname.includes("vercel")) {

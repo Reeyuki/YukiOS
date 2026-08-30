@@ -1081,10 +1081,21 @@ const AD_RECT_KEY = "914131b4a8e7414d1576d6d7c5a6c87f";
 const STORE_AD_KEY_1 = "f88fd46583493c3820f283948e5e5391";
 const STORE_AD_KEY_2 = "ee9dc67de90729e2804aa8aba6454ec8";
 
-const AD_ENGINE_SCRIPT = `function injectAdsterraAd(id,key,w,h,delay,fmt){
+const AD_ENGINE_SCRIPT = `function hardenAdEnv(){
+  if(window.__yukiAdHardened)return;
+  window.__yukiAdHardened=true;
+  var o=window.open?window.open.bind(window):null;
+  window.open=function(u,n,f){
+    var a=navigator.userActivation;
+    if(a&&!a.isActive)return null;
+    return o?o(u,n,f):null;
+  };
+}
+function injectAdsterraAd(id,key,w,h,delay,fmt){
   function doIt(){
     var slot=document.getElementById(id);
     if(!slot)return;
+    hardenAdEnv();
     var cfg=document.createElement('script');
     cfg.text="atOptions={'key':'"+key+"','format':'"+(fmt||'iframe')+"','height':"+h+",'width':"+w+",'params':{}};";
     slot.appendChild(cfg);

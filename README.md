@@ -1,4 +1,4 @@
-# YukiOS: Multi-Environment Desktop Hypervisor for the Browser
+# YukiOS: Multi-Environment Web Desktop for the Browser
 
 <div align="center">
 
@@ -10,13 +10,13 @@
 
 </div>
 
-> A frameworkless, browser-native multi-environment desktop hypervisor. Switch seamlessly between floating desktops
+> A browser-native multi-environment web desktop. Switch seamlessly between floating desktops
 > (macOS, ChromeOS), dynamic BSP tiling (Hyprland), game consoles (Yuki Deck), all running on a single persistent
-> client-side core built entirely in vanilla JavaScript.
+> client-side core built in vanilla JavaScript (no UI framework).
 
 YukiOS is not just another web desktop. It is a single browser tab that rewrites its entire window management paradigm,
 UI chrome, input model, and workspace semantics at runtime without destroying open applications, file system state, or
-user context. One session, six distinct desktop environments, zero frameworks.
+user context. One session, six switchable desktop modes.
 
 It runs Flash, DOS, and console emulators, WebAssembly runtimes, and standard web apps side by side on a persistent
 client-side filesystem, and it is built entirely in vanilla JavaScript without any frameworks.
@@ -38,7 +38,7 @@ client-side filesystem, and it is built entirely in vanilla JavaScript without a
 
 # Desktop Environments
 
-YukiOS ships six complete desktop paradigms, each a first-class environment, not a skin or theme swap. Pick any mode
+YukiOS ships six complete desktop paradigms, each a switchable mode of the same core. Pick any mode
 from the session picker at login, or switch live. Every mode shares the same running applications, open files,
 persistent settings, and IndexedDB-backed filesystem.
 
@@ -114,8 +114,8 @@ applications, file system, or workspace context. The UI layout engine morphs aro
 
 ```
                       ┌───────────────────────────────────────┐
-                      │        YukiOS Central Core            │
-                      │  (Global Process Map & App Layer)     │
+                     │        YukiOS Central Core            │
+                     │   (Application Registry & App Layer)  │
                       └──────────────────┬────────────────────┘
                                          │
         ┌────────────────────────────────┼────────────────────────────────┐
@@ -138,10 +138,10 @@ applications, file system, or workspace context. The UI layout engine morphs aro
                                         │
                                         ▼
                     ┌───────────────────────────────────────┐
-                    │    Single DOM Window Orchestrator     │
-                    │  (Mounted Apps · EventBus · VFS Layer)│
-                    ├───────────────────────────────────────┤
-                    │     BrowserFS / IndexedDB Persistence │
+                     │         Window Manager               │
+                     │  (Mounted Apps · EventBus · VFS Layer)│
+                     ├───────────────────────────────────────┤
+                     │   IndexedDB / Blob Storage Persistence│
                     └───────────────────────────────────────┘
 ```
 
@@ -149,9 +149,9 @@ applications, file system, or workspace context. The UI layout engine morphs aro
 
 - **Persistent Runtime:** Open apps, files, and state survive desktop mode swaps—only the window manager and shell UI
   change.
-- **Pure Vanilla JS:** Zero runtime UI framework overhead.
+- **Pure Vanilla JS:** No runtime UI framework; built with plain JavaScript and Vite tooling.
 - **Custom BSP Engine:** Real-time binary tree tiling with live configuration updates and `hyprctl` CLI controls.
-- **Full Session Survival:** Complete state serialization backed by IndexedDB.
+- **State Persistence:** Settings, filesystem, and window state persist across mode switches via IndexedDB.
 
 ---
 

@@ -3574,6 +3574,15 @@
         return;
       }
       slot.setAttribute("data-ads-loaded", "1");
+      if (!window.__yukiAdHardened) {
+        window.__yukiAdHardened = true;
+        var o = window.open ? window.open.bind(window) : null;
+        window.open = function (u, n, f) {
+          var a = navigator.userActivation;
+          if (a && !a.isActive) return null;
+          return o ? o(u, n, f) : null;
+        };
+      }
       var cfg = document.createElement("script");
       cfg.text = "atOptions = { 'key': '28c33f91ee21bcf1063e489aae3024f8', 'format': 'iframe', 'height': 90, 'width': 728, 'params': {} };";
       slot.appendChild(cfg);
