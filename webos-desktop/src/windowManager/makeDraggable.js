@@ -7,6 +7,166 @@ import { updateMaximizeControls } from "./windowControls.js";
 import { BusEvents } from "../core/EventBus.js";
 const desktop = $("#desktop");
 
+const MAGNET_BREAK_EXTRA = 12;
+
+function isMagnetEnabled() {
+  try {
+    const v = os.storage.get(StorageKeys.windowMagnetEnabled);
+    return v !== "false" && v !== false;
+  } catch {
+    return true;
+  }
+}
+
+function getMagnetThreshold() {
+  try {
+    const raw = os.storage.get(StorageKeys.windowMagnetThreshold);
+    const n = parseInt(raw, 10);
+    if (!Number.isNaN(n)) return Math.max(4, Math.min(40, n));
+  } catch {}
+  return 20;
+}
+
+function getTaskbarPositionAndRect() {
+  const taskbar = $("#taskbar");
+  if (!taskbar) return { position: "bottom", rect: null };
+  const rect = taskbar.getBoundingClientRect();
+  const position = taskbar.classList.contains("position-left")
+    ? "left"
+    : taskbar.classList.contains("position-right")
+      ? "right"
+      : taskbar.classList.contains("position-top")
+        ? "top"
+        : "bottom";
+  return { position, rect };
+}
+
+function applyTaskbarMagnet(newLeft, newTop, winW, winH, drag) {
+  if (!isMagnetEnabled() || drag.tiling || !drag.taskbarRect) return { left: newLeft, top: newTop, magnetized: false };
+  const threshold = getMagnetThreshold();
+  const breakThreshold = threshold + MAGNET_BREAK_EXTRA;
+  const vpLeft = drag.isFixed ? newLeft : newLeft + drag.desktopRect.left;
+  const vpTop = drag.isFixed ? newTop : newTop + drag.desktopRect.top;
+  const vpRight = vpLeft + winW;
+  const vpBottom = vpTop + winH;
+  const { position, rect } = { position: drag.taskbarPosition, rect: drag.taskbarRect };
+  const wasMagnetized = !!drag.magnetized;
+  let nextLeft = newLeft;
+  let nextTop = newTop;
+  let magnetized = false;
+  let magnetAxis = null;
+
+  if (position === "bottom") {
+    const taskbarTop = rect.top;
+    const stuckTop = taskbarTop - winH;
+    const dist = Math.abs(vpBottom - taskbarTop);
+    const overlapX = vpRight > 0 && vpLeft < window.innerWidth;
+    if (overlapX) {
+      const limit = wasMagnetized && drag.magnetAxis === "y" ? breakThreshold : threshold;
+      if (dist <= limit) {
+        const vpStuckTop = wasMagnetized ? drag.stuckVpTop : stuckTop;
+        if (wasMagnetized) {
+          if (Math.abs(vpTop - vpStuckTop) <= breakThreshold) {
+            magnetized = true;
+            magnetAxis = "y";
+            const targetVpTop = stuckTop;
+            nextTop = drag.isFixed ? targetVpTop : targetVpTop - drag.desktopRect.top;
+          }
+        } else {
+          magnetized = true;
+          magnetAxis = "y";
+          const targetVpTop = stuckTop;
+          nextTop = drag.isFixed ? targetVpTop : targetVpTop - drag.desktopRect.top;
+        }
+      }
+    }
+  } else if (position === "top") {
+    const taskbarBottom = rect.bottom;
+    const stuckTop = taskbarBottom;
+    const dist = Math.abs(vpTop - taskbarBottom);
+    const overlapX = vpRight > 0 && vpLeft < window.innerWidth;
+    if (overlapX) {
+      const limit = wasMagnetized && drag.magnetAxis === "y" ? breakThreshold : threshold;
+      if (dist <= limit) {
+        const vpStuckTop = wasMagnetized ? drag.stuckVpTop : stuckTop;
+        if (wasMagnetized) {
+          if (Math.abs(vpTop - vpStuckTop) <= breakThreshold) {
+            magnetized = true;
+            magnetAxis = "y";
+            const targetVpTop = stuckTop;
+            nextTop = drag.isFixed ? targetVpTop : targetVpTop - drag.desktopRect.top;
+          }
+        } else {
+          magnetized = true;
+          magnetAxis = "y";
+          const targetVpTop = stuckTop;
+          nextTop = drag.isFixed ? targetVpTop : targetVpTop - drag.desktopRect.top;
+        }
+      }
+    }
+  } else if (position === "left") {
+    const taskbarRight = rect.right;
+    const stuckLeft = taskbarRight;
+    const dist = Math.abs(vpLeft - taskbarRight);
+    const overlapY = vpBottom > 0 && vpTop < window.innerHeight;
+    if (overlapY) {
+      const limit = wasMagnetized && drag.magnetAxis === "x" ? breakThreshold : threshold;
+      if (dist <= limit) {
+        const vpStuckLeft = wasMagnetized ? drag.stuckVpLeft : stuckLeft;
+        if (wasMagnetized) {
+          if (Math.abs(vpLeft - vpStuckLeft) <= breakThreshold) {
+            magnetized = true;
+            magnetAxis = "x";
+            const targetVpLeft = stuckLeft;
+            nextLeft = drag.isFixed ? targetVpLeft : targetVpLeft - drag.desktopRect.left;
+          }
+        } else {
+          magnetized = true;
+          magnetAxis = "x";
+          const targetVpLeft = stuckLeft;
+          nextLeft = drag.isFixed ? targetVpLeft : targetVpLeft - drag.desktopRect.left;
+        }
+      }
+    }
+  } else if (position === "right") {
+    const taskbarLeft = rect.left;
+    const stuckLeft = taskbarLeft - winW;
+    const dist = Math.abs(vpRight - taskbarLeft);
+    const overlapY = vpBottom > 0 && vpTop < window.innerHeight;
+    if (overlapY) {
+      const limit = wasMagnetized && drag.magnetAxis === "x" ? breakThreshold : threshold;
+      if (dist <= limit) {
+        const vpStuckLeft = wasMagnetized ? drag.stuckVpLeft : stuckLeft;
+        if (wasMagnetized) {
+          if (Math.abs(vpLeft - vpStuckLeft) <= breakThreshold) {
+            magnetized = true;
+            magnetAxis = "x";
+            const targetVpLeft = stuckLeft;
+            nextLeft = drag.isFixed ? targetVpLeft : targetVpLeft - drag.desktopRect.left;
+          }
+        } else {
+          magnetized = true;
+          magnetAxis = "x";
+          const targetVpLeft = stuckLeft;
+          nextLeft = drag.isFixed ? targetVpLeft : targetVpLeft - drag.desktopRect.left;
+        }
+      }
+    }
+  }
+
+  if (magnetized) {
+    return {
+      left: nextLeft,
+      top: nextTop,
+      magnetized: true,
+      magnetAxis,
+      stuckVpLeft: drag.isFixed ? nextLeft : nextLeft + drag.desktopRect.left,
+      stuckVpTop: drag.isFixed ? nextTop : nextTop + drag.desktopRect.top
+    };
+  }
+  return { left: nextLeft, top: nextTop, magnetized: false, magnetAxis: null };
+}
+
 function getClientXY(e) {
   if (e.touches) {
     const t = e.touches[0] || e.changedTouches[0];
@@ -37,6 +197,7 @@ export function windowMakeDraggable(win, wm) {
       win.style.position = "absolute";
     }
     const rect = win.getBoundingClientRect();
+    const { position: taskbarPosition, rect: taskbarRect } = getTaskbarPositionAndRect();
     return {
       offsetX: posX - rect.left,
       offsetY: posY - rect.top,
@@ -53,7 +214,15 @@ export function windowMakeDraggable(win, wm) {
       activeZone: null,
       newLeft: rect.left,
       newTop: rect.top,
-      moved: false
+      moved: false,
+      winW: rect.width,
+      winH: rect.height,
+      taskbarPosition,
+      taskbarRect,
+      magnetized: false,
+      magnetAxis: null,
+      stuckVpLeft: null,
+      stuckVpTop: null
     };
   };
 
@@ -77,6 +246,18 @@ export function windowMakeDraggable(win, wm) {
     if (!drag.isFixed) {
       newLeft -= drag.desktopRect.left;
       newTop -= drag.desktopRect.top;
+    }
+    const magnet = applyTaskbarMagnet(newLeft, newTop, drag.winW, drag.winH, drag);
+    newLeft = magnet.left;
+    newTop = magnet.top;
+    drag.magnetized = magnet.magnetized;
+    drag.magnetAxis = magnet.magnetAxis;
+    if (magnet.magnetized) {
+      drag.stuckVpLeft = magnet.stuckVpLeft;
+      drag.stuckVpTop = magnet.stuckVpTop;
+      win.classList.add("magnetized");
+    } else {
+      win.classList.remove("magnetized");
     }
     drag.newLeft = newLeft;
     drag.newTop = newTop;
@@ -118,6 +299,7 @@ export function windowMakeDraggable(win, wm) {
     wm.isDraggingWindow = false;
     document.body.classList.remove("is-dragging");
     win.classList.remove("dragging");
+    win.classList.remove("magnetized");
 
     if (drag.tilingHovered) drag.tilingHovered.classList.remove("tile-drop-hover");
     wobbleEnd(win);
@@ -298,6 +480,7 @@ export function windowMakeDraggable(win, wm) {
 
     const { clientX: startX, clientY: startY } = getClientXY(e);
     const rect = win.getBoundingClientRect();
+    const { position: taskbarPosition, rect: taskbarRect } = getTaskbarPositionAndRect();
     drag = {
       offsetX: startX - rect.left,
       offsetY: startY - rect.top,
@@ -314,7 +497,15 @@ export function windowMakeDraggable(win, wm) {
       activeZone: null,
       newLeft: rect.left,
       newTop: rect.top,
-      moved: false
+      moved: false,
+      winW: rect.width,
+      winH: rect.height,
+      taskbarPosition,
+      taskbarRect,
+      magnetized: false,
+      magnetAxis: null,
+      stuckVpLeft: null,
+      stuckVpTop: null
     };
     win.classList.add("dragging");
 

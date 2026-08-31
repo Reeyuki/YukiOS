@@ -1,5 +1,22 @@
 [
   {
+    "date": "August 31, 2026",
+    "label": "Taskbar Magnet",
+    "sections": [
+      {
+        "icon": "fa-magnet",
+        "title": "KDE-Style Magnet",
+        "items": [
+          [
+            "fa-magnet",
+            "Taskbar Window Magnet",
+            "Drag windows near the taskbar and snap perfectly into place with magnet stick effect."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "date": "August 26, 2026",
     "label": "Window Styles & Transparency",
     "sections": [

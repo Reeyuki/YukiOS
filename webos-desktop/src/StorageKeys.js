@@ -294,5 +294,7 @@ export const StorageKeys = {
   room3dStoragePrefix: "rm3d_",
   room3dAchievements: "rm3d_achievements",
   room3dRoomLayout: "rm3d_roomLayout",
+  windowMagnetEnabled: "yukiOS_window_magnet_enabled",
+  windowMagnetThreshold: "yukiOS_window_magnet_threshold",
   systemOverridesIndex: "yukiOS_system_overrides_index"
 };

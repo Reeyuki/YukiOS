@@ -149,6 +149,12 @@
   pointer-events: none;
 }
 
+.window.magnetized {
+  box-shadow:
+    0 1.1em 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px color-mix(in oklch, var(--brand) 45%, transparent);
+}
+
 @keyframes wa-fade-in {
   from {
     opacity: 0;
