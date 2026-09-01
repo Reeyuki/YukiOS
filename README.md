@@ -10,9 +10,9 @@
 
 </div>
 
-> A browser-native multi-environment web desktop. Switch seamlessly between floating desktops
-> (macOS, ChromeOS), dynamic BSP tiling (Hyprland), game consoles (Yuki Deck), all running on a single persistent
-> client-side core built in vanilla JavaScript (no UI framework).
+> A browser-native multi-environment web desktop. Switch seamlessly between floating desktops (macOS, ChromeOS), dynamic
+> BSP tiling (Hyprland), game consoles (Yuki Deck), all running on a single persistent client-side core built in vanilla
+> JavaScript (no UI framework).
 
 YukiOS is not just another web desktop. It is a single browser tab that rewrites its entire window management paradigm,
 UI chrome, input model, and workspace semantics at runtime without destroying open applications, file system state, or
@@ -38,9 +38,9 @@ client-side filesystem, and it is built entirely in vanilla JavaScript without a
 
 # Desktop Environments
 
-YukiOS ships six complete desktop paradigms, each a switchable mode of the same core. Pick any mode
-from the session picker at login, or switch live. Every mode shares the same running applications, open files,
-persistent settings, and IndexedDB-backed filesystem.
+YukiOS ships six complete desktop paradigms, each a switchable mode of the same core. Pick any mode from the session
+picker at login, or switch live. Every mode shares the same running applications, open files, persistent settings, and
+IndexedDB-backed filesystem.
 
 ## 🍎 macOS Shell
 
@@ -278,6 +278,19 @@ applications, file system, or workspace context. The UI layout engine morphs aro
 
 </details>
 
+<details>
+<summary><strong>📂 Local Files & Dev Server (virtual, in-browser)</strong></summary>
+
+- `python -m http.server [port] [--directory DIR]` inside YukiOS Terminal serves the virtual filesystem at
+  `http://localhost:PORT` via the in-browser `PortManager` (`src/services/PortManager.js:1`,
+  `src/terminal/httpServer.js:80`). Press `Ctrl+C` to stop. This does not expose a host OS server
+- Viewable only in Yuki Browser, which handles `localhost`/`127.0.0.1`/`0.0.0.0:PORT`, `fs://`, `file://`, `/abs/path`
+  natively without proxy. Includes directory listings, HTML with relative asset rewrites, and media/text/download views
+- Entirely virtual with no real TCP. Unregistered ports show `ERR_CONNECTION_REFUSED` with dino minigame. Use it to
+  preview local sites and assets inside YukiOS
+
+</details>
+
 ---
 
 # 📦 Built-in Applications
@@ -298,6 +311,8 @@ applications, file system, or workspace context. The UI layout engine morphs aro
   - Pipeline (`|`), redirects (`>`/`>>`), command chaining (`&&`/`||`/`;`), Ctrl+R reverse search
   - `yuki` command for OS control (power mode, brightness, themes, wallpaper, workspaces, app management, DND,
     notifications)
+  - `python -m http.server [port]` (virtual, YukiOS only) serves VFS dir on `localhost:PORT` for preview in Yuki Browser
+    inside YukiOS
   - **[lavat](https://github.com/Reeyuki/lavat-web)**, a lava lamp simulation with customizable metaballs and gravity;
     Emscripten WASM port (by Reeyuki) of the original C program, runs fully client-side
   - **[cmatrix](https://github.com/Reeyuki/cmatrix/)**, a Matrix rain animation with color, speed, and character modes;
