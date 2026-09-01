@@ -13,6 +13,7 @@ import { showFileProperties } from "../fileDisplay.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { resolveFilePayload } from "../apps/explorer/upload.js";
 import { showConflictDialog } from "../shared/conflictDialog.js";
+import { FileKind } from "../shared/fileKindDetector.js";
 import { KeybindManager } from "../keybindManager.js";
 import { WidgetManager } from "./widgetManager.js";
 import { ClockWidget } from "./widgets/clockWidget.js";
@@ -27,6 +28,7 @@ import { ClipboardWidget } from "./widgets/clipboardWidget.js";
 import { PhotoFrameWidget } from "./widgets/photoFrameWidget.js";
 import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
+import { AquariumWidget } from "./widgets/aquariumWidget.js";
 
 let GRID_CONFIG = { width: 68, height: 82, gap: 1, marginX: 24, marginY: 24 };
 
@@ -554,6 +556,7 @@ export class DesktopUI {
     this.widgetManager.registerWidgetType("photoFrame", PhotoFrameWidget);
     this.widgetManager.registerWidgetType("timer", TimerWidget);
     this.widgetManager.registerWidgetType("youtube", YouTubeWidget);
+    this.widgetManager.registerWidgetType("aquarium", AquariumWidget);
     this.setupEventListeners();
     this.initializeDesktopFiles();
   }
@@ -865,34 +868,36 @@ export class DesktopUI {
       let uploadedCount = 0;
       for (const file of files) {
         try {
-          const { kind, content, icon } = await resolveFilePayload(file, file.name);
+          const { kind, content, icon, isBinary, isBinaryOffice } = await resolveFilePayload(file, file.name);
           const destExists = await os.fs.exists(["Desktop", file.name]);
 
           let finalName = file.name;
+          let action = "replace";
           if (destExists) {
             const result = await showConflictDialog(file.name);
             if (result.action === "skip") continue;
-            if (result.action === "keep") {
-              let counter = 1;
-              const dot = file.name.lastIndexOf(".");
-              const base = dot > 0 ? file.name.slice(0, dot) : file.name;
-              const ext = dot > 0 ? file.name.slice(dot) : "";
-              do {
-                finalName = `${base} (${counter})${ext}`;
-                counter++;
-              } while (await os.fs.exists(["Desktop", finalName]));
+            action = result.action;
+            if (action === "keep") {
+              finalName = await os.fs.getUniqueFileName(["Desktop"], file.name);
             }
           }
 
-          if (destExists) {
-            await os.fs.delete(["Desktop"], finalName).catch(() => {});
+          const isBinaryWrite = kind === FileKind.VIDEO || isBinaryOffice || isBinary;
+          if (destExists && action === "replace") {
+            if (isBinaryWrite) {
+              await os.fs.deleteBinaryFile(["Desktop"], file.name).catch(() => {});
+            } else {
+              await os.fs.delete(["Desktop"], file.name).catch(() => {});
+            }
           }
-          await os.fs.createFile(["Desktop"], finalName, content, kind, icon);
-
-          const itemData = { type: "file", kind, icon, content };
-          await this.createDesktopFileIcon(finalName, itemData);
+          if (isBinaryWrite) {
+            await os.fs.writeBinaryFile(["Desktop"], finalName, content, kind, icon);
+          } else {
+            await os.fs.createFile(["Desktop"], finalName, content, kind, icon);
+          }
           uploadedCount++;
-        } catch {
+        } catch (e) {
+          console.error(`[DesktopDrop] Could not save "${file.name}":`, e);
           os.notify.send(`Could not save "${file.name}"`);
         }
       }

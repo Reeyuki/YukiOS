@@ -41,6 +41,9 @@ export class IconManager {
     this.notepadApp = notepadApp;
     this.explorerApp = explorerApp;
     this.dragDropManager = dragDropManager;
+    this.thumbnailCache = new Map();
+    this.pendingIcons = new Set();
+    this.pendingFolders = new Set();
   }
 
   makeIconInteractable(icon, ignoreDrag = false) {
@@ -163,97 +166,108 @@ export class IconManager {
 
   async createFolderIcon(folderName) {
     if ($(`.folder-icon[data-folder-name="${CSS.escape(folderName)}"]`)) return;
-    const folderIcon = createElement("div", { className: "icon selectable folder-icon" });
-    folderIcon.dataset.folderName = folderName;
-    setHTML(folderIcon, `<img src="${resolveIconUrl("static/icons/file.webp")}"><div>${folderName}</div>`);
-    const saved = this.positionStore.load();
-    const key = this.positionStore.getKey(folderIcon);
-    if (saved[key]) this.positionHelper.placeAtCell(folderIcon, saved[key].col, saved[key].row, folderIcon);
-    else this.positionHelper.snap(folderIcon);
-    this.desktop.appendChild(folderIcon);
-    this.makeIconInteractable(folderIcon);
-    return folderIcon;
+    if (this.pendingFolders.has(folderName)) return;
+    this.pendingFolders.add(folderName);
+    try {
+      if ($(`.folder-icon[data-folder-name="${CSS.escape(folderName)}"]`)) return;
+      const folderIcon = createElement("div", { className: "icon selectable folder-icon" });
+      folderIcon.dataset.folderName = folderName;
+      setHTML(folderIcon, `<img src="${resolveIconUrl("static/icons/file.webp")}"><div>${folderName}</div>`);
+      const saved = this.positionStore.load();
+      const key = this.positionStore.getKey(folderIcon);
+      if (saved[key]) this.positionHelper.placeAtCell(folderIcon, saved[key].col, saved[key].row, folderIcon);
+      else this.positionHelper.snap(folderIcon);
+      this.desktop.appendChild(folderIcon);
+      this.makeIconInteractable(folderIcon);
+      return folderIcon;
+    } finally {
+      this.pendingFolders.delete(folderName);
+    }
   }
 
   async createDesktopFileIcon(fileName, itemData = null) {
     if ($(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
+    if (this.pendingIcons.has(fileName)) return;
+    this.pendingIcons.add(fileName);
+    try {
+      const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
 
-    const displayName = fileName.endsWith(".desktop") ? fileName.slice(0, -8) : fileName;
-    const placeholderIcon = resolveFileIcon(fileName);
-
-    const iconHTML = buildFileIconHTML(fileName, {
-      thumbnailSrc: placeholderIcon,
-      size: 64,
-      radius: 12,
-      storedIcon: placeholderIcon
-    });
-    const icon = createElement("div", { className: "icon selectable desktop-file-icon" });
-    icon.dataset.fileName = fileName;
-    icon.dataset.filePath = "Desktop";
-    setHTML(icon, `${iconHTML}<div>${displayName}</div>`);
-
-    const saved = this.positionStore.load();
-    const key = this.positionStore.getKey(icon);
-    if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
-    else this.positionHelper.snap(icon);
-    this.desktop.appendChild(icon);
-    this.makeIconInteractable(icon);
-
-    if (fileName.endsWith(".desktop")) {
-      this.fs.getFileContent(["Desktop"], fileName).then((raw) => {
+      if (!itemData || !itemData.type) {
         try {
+          const folder = await os.fs.readdir(["Desktop"]);
+          if (folder[fileName]) itemData = folder[fileName];
+        } catch {}
+      }
+
+      if (fileName.endsWith(".desktop")) {
+        let iconSrc = null;
+        try {
+          const raw = await this.fs.getFileContent(["Desktop"], fileName);
           const parsed = JSON.parse(raw);
+          iconSrc = resolveDesktopIcon(raw, fileName);
+          if ($(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
+          const iconHTML = buildFileIconHTML(fileName, { storedIcon: iconSrc, size: 64, radius: 12 });
+          const icon = createElement("div", { className: "icon selectable desktop-file-icon" });
+          icon.dataset.fileName = fileName;
+          icon.dataset.filePath = "Desktop";
           if (parsed && parsed.app) icon.dataset.app = parsed.app;
           if (parsed && parsed.steamGameId) icon.dataset.steamGameId = parsed.steamGameId;
-          const iconPath = resolveDesktopIcon(raw, fileName);
-          if (iconPath && iconPath !== placeholderIcon) {
-            const isFa = iconPath.startsWith("fa") || iconPath.includes(" fa-");
-            if (isFa) {
-              icon.firstElementChild?.replaceWith(
-                (() => {
-                  const el = createElement("div", {
-                    className: "desktop-file-icon--fa-wrapper",
-                    html: `<i class="${iconPath}"></i>`
-                  });
-                  return el;
-                })()
-              );
-            } else {
-              const imgElement = $("img", icon);
-              if (imgElement) imgElement.src = iconPath;
-            }
-          }
-        } catch (e) {}
-      });
-    } else {
-      const loadThumbnail = async () => {
-        let thumbnailSrc = itemData?.icon;
-        if (isImageFile(fileName)) {
+          setHTML(icon, `${iconHTML}<div>${displayName}</div>`);
+          const saved = this.positionStore.load();
+          const key = this.positionStore.getKey(icon);
+          if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
+          else this.positionHelper.snap(icon);
+          this.desktop.appendChild(icon);
+          this.makeIconInteractable(icon);
+          return icon;
+        } catch {}
+        return;
+      }
+
+      let thumbnailSrc = null;
+      if (isImageFile(fileName)) {
+        const cacheKey = "Desktop/" + fileName;
+        const cached = this.thumbnailCache.get(cacheKey);
+        if (cached) {
+          thumbnailSrc = cached;
+        } else {
           try {
-            const cacheKey = "Desktop/" + fileName;
-            thumbnailSrc = this.thumbnailCache?.get(cacheKey);
-            if (!thumbnailSrc) {
-              const content = await this.fs.getFileContent(["Desktop"], fileName);
-              if (!content) return;
+            const content = await this.fs.getFileContent(["Desktop"], fileName);
+            if (content) {
               const src = content instanceof Blob ? await readFileAsDataURL(content) : content;
               thumbnailSrc = await generateThumbnail(src);
-              if (thumbnailSrc) {
-                (this.thumbnailCache ??= new Map()).set(cacheKey, thumbnailSrc);
-              }
+              if (thumbnailSrc) this.thumbnailCache.set(cacheKey, thumbnailSrc);
             }
           } catch (e) {
             console.error("Failed to load image thumbnail:", e);
           }
         }
-        if (thumbnailSrc && thumbnailSrc !== placeholderIcon) {
-          const imgElement = $("img", icon);
-          if (imgElement) imgElement.src = thumbnailSrc;
-        }
-      };
-      loadThumbnail();
-    }
+      }
 
-    return icon;
+      if ($(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
+      const iconHTML = buildFileIconHTML(fileName, {
+        thumbnailSrc,
+        storedIcon: itemData?.faIcon || itemData?.icon,
+        isFolder: false,
+        size: 64,
+        radius: 12
+      });
+      const icon = createElement("div", { className: "icon selectable desktop-file-icon" });
+      icon.dataset.fileName = fileName;
+      icon.dataset.filePath = "Desktop";
+      setHTML(icon, `${iconHTML}<div>${displayName}</div>`);
+
+      const saved = this.positionStore.load();
+      const key = this.positionStore.getKey(icon);
+      if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
+      else this.positionHelper.snap(icon);
+      this.desktop.appendChild(icon);
+      this.makeIconInteractable(icon);
+
+      return icon;
+    } finally {
+      this.pendingIcons.delete(fileName);
+    }
   }
 
   async openDesktopFile(fileName) {

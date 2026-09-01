@@ -191,5 +191,11 @@ export const STEAM_NEWS_ITEMS = [
     "title": "Now Available on Steam - Resident Evil 3 Special Soundtrack",
     "description": "Resident Evil 3 Special Soundtrack is Now Available on Steam! 24 haunting tracks from Resident Evil 3 and 21 spine-chilling tracks from Resident Evil Resistance combine to make a soundtrack befitting of survival horror.",
     "date": "May 7, 2020"
+  },
+  {
+    "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/648800/header.jpg",
+    "title": "Now Available on Steam - Raft, 15% off!",
+    "description": "Raft is Now Available on Steam and is 15% off!* Raft throws you and your friends into an epic oceanic adventure! Alone or together, players battle to survive a perilous voyage across a vast sea! Gather debris, scavenge reefs and build your own floating home, but be wary of the man-eating sharks! *Offer ends June 27 at ",
+    "date": "June 20, 2022"
   }
 ];

@@ -631,7 +631,8 @@ export class DesktopContextMenuManager {
               { type: "clipboard", label: "Clipboard", icon: "fa-clipboard" },
               { type: "photoFrame", label: "Photo Frame", icon: "fa-image" },
               { type: "timer", label: "Timer", icon: "fa-stopwatch" },
-              { type: "youtube", label: "YouTube", icon: "fa-youtube" }
+              { type: "youtube", label: "YouTube", icon: "fa-youtube" },
+              { type: "aquarium", label: "Aquarium", icon: "fa-fish" }
             ];
             widgetTypes.forEach((wt) => {
               const disabled = existingTypes.has(wt.type);

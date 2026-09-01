@@ -1462,6 +1462,31 @@ export const APP_MANIFESTS = [
     description: "Stream your full desktop to any browser via WebRTC with remote input control."
   },
   {
+    serviceKey: "aquariumApp",
+    enhanced: true,
+    type: "system",
+    title: "Aquarium",
+    icon: "fas fa-fish",
+    launchType: "instance",
+    windowIdPatterns: ["aquarium"],
+    category: "media",
+    clippy: { message: "Relax and watch the fishes swim.", animation: ClippyAnimation.Show },
+    description: "Live 2D aquarium with swimming fishes, bubbles and feeding interaction.",
+    trayOptions: {
+      showInTray: true,
+      priority: 40,
+      contextMenuItems: [
+        { label: "Open Aquarium", action: () => os.app.get("aquariumApp").open(), icon: "fa-fish" },
+        { label: "Feed Fishes", action: () => os.app.get("aquariumApp").feed(), icon: "fa-cookie-bite" },
+        { label: "Add Random Fish", action: () => os.app.get("aquariumApp").addFish(), icon: "fa-plus" },
+        { label: "Open Catalog", action: () => os.app.get("aquariumApp").openCatalog(), icon: "fa-table-cells" },
+        { label: "Destroy All", action: () => os.app.get("aquariumApp").destroyAllFishes(), icon: "fa-skull" },
+        { type: "divider" },
+        { label: "Toggle Sound", action: () => os.app.get("aquariumApp").toggleSound(), icon: "fa-volume-high" }
+      ]
+    }
+  },
+  {
     serviceKey: "defaultApps",
     type: "system",
     title: "Default Apps",

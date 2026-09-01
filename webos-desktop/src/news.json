@@ -1,5 +1,19 @@
 [
   {
+    "date": "September 1, 2026",
+    "label": "Aquarium",
+    "sections": [
+      {
+        "icon": "fa-fish",
+        "title": "New App: Aquarium",
+        "items": [
+          ["fa-fish", "Live 2D Aquarium", "Watch 90+ colorful fishes swim, chase food with sound effects."],
+          ["fa-cookie-bite", "Feed Interaction", "Click water to drop pellets and see fishes hunt them."]
+        ]
+      }
+    ]
+  },
+  {
     "date": "August 31, 2026",
     "label": "Taskbar Magnet",
     "sections": [
