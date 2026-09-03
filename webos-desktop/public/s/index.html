@@ -3435,6 +3435,7 @@
     let sidebarWidth = 250;
     let commandPaletteOpen = false;
     let splitTabId = null;
+    let windowOpenInterceptEnabled = true;
 
     const faviconCache = new Map();
     function decodeUtf8Base64(b64) {
@@ -3467,7 +3468,8 @@
       TOR_ENABLED: "scramjet_tor_enabled",
       SIDEBAR_TABS: "scramjet_sidebar_tabs",
       SIDEBAR_COLLAPSED: "scramjet_sidebar_collapsed",
-      SIDEBAR_WIDTH: "scramjet_sidebar_width"
+      SIDEBAR_WIDTH: "scramjet_sidebar_width",
+      WINDOW_OPEN_NEWTAB: "scramjet_windowopen_newtab"
     };
 
     let isEmbedded = false;
@@ -3532,6 +3534,10 @@
         if (data.vars) applyTheme(data.vars);
         if (data.adsEnabled) enableBrowserAds();
         else disableBrowserAds();
+        if (typeof data.windowOpenInterceptEnabled === "boolean") {
+          windowOpenInterceptEnabled = data.windowOpenInterceptEnabled;
+          try { localStorage.setItem(STORAGE_KEYS.WINDOW_OPEN_NEWTAB, windowOpenInterceptEnabled ? "true" : "false"); } catch (e) {}
+        }
         if (isIncognito) return;
         if (Array.isArray(data.bookmarks)) {
           bookmarks = data.bookmarks;
@@ -3553,6 +3559,17 @@
         if (data.dinoGameHtml) {
           yukiDinoGameHtml = data.dinoGameHtml;
         }
+      }
+      if (data.type === "scram:windowOpenInterceptState") {
+        windowOpenInterceptEnabled = !!data.enabled;
+        try { localStorage.setItem(STORAGE_KEYS.WINDOW_OPEN_NEWTAB, windowOpenInterceptEnabled ? "true" : "false"); } catch (e) {}
+        tabs.forEach(function(t){ try{ patchWindowForWindowOpen(t.frame.element.contentWindow,t); }catch(e){} });
+        var tgl = document.getElementById("yuki-set-windowopen-newtab") || document.getElementById("set-windowopen-newtab");
+        if (tgl) tgl.checked = windowOpenInterceptEnabled;
+      }
+      if (data.type === "browser-create-tab") {
+        if (data.url) createTab(true, { url: String(data.url) });
+        else createTab(true);
       }
       if (data.type === "scram:torMode") {
         torEnabled = data.active;
@@ -3606,6 +3623,178 @@
       }
     }
 
+    function isWindowOpenInterceptEnabled() { return windowOpenInterceptEnabled !== false; }
+    function setWindowOpenInterceptEnabled(enabled) {
+      windowOpenInterceptEnabled = !!enabled;
+      try { localStorage.setItem(STORAGE_KEYS.WINDOW_OPEN_NEWTAB, windowOpenInterceptEnabled ? "true" : "false"); } catch (e) {}
+      if (isEmbedded) {
+        try { sendToParent({ type: "scram:setWindowOpenIntercept", enabled: windowOpenInterceptEnabled }); } catch (e) {}
+      } else {
+        try { savePrefs(); } catch (e) {}
+      }
+      tabs.forEach(function(t){ try{ patchWindowForWindowOpen(t.frame.element.contentWindow,t); }catch(e){} });
+      var t1 = document.getElementById("yuki-set-windowopen-newtab");
+      if (t1) t1.checked = windowOpenInterceptEnabled;
+      var t2 = document.getElementById("set-windowopen-newtab");
+      if (t2) t2.checked = windowOpenInterceptEnabled;
+    }
+    function patchWindowForWindowOpen(targetWin, tabRef) {
+      if (!targetWin) return;
+      try {
+        var current = targetWin.open;
+        if (!current) return;
+        if (current.__yukiIsHandler) return;
+        var orig = current;
+        var handler = function(url, name, specs) {
+          try {
+            var enabled = windowOpenInterceptEnabled;
+            if (enabled === undefined) enabled = true;
+            if (!enabled) return orig.apply(this, arguments);
+            if (name === "_self" || name === "_parent" || name === "_top") {
+              if (url) {
+                try { handleSubmit(String(url)); } catch (e2) { try { tabRef && tabRef.frame && tabRef.frame.go(String(url)); } catch (e3) {} }
+              }
+              return targetWin;
+            }
+            var raw = url != null ? String(url) : "";
+            var resolved = raw.trim();
+            if (resolved && !/^(about|javascript|data|blob|mailto):/i.test(resolved)) {
+              try {
+                var baseForResolve = (tabRef && tabRef.url && !tabRef.url.startsWith("yuki://") && !tabRef.url.includes("NT.html")) ? tabRef.url : (targetWin.location ? targetWin.location.href : location.href);
+                resolved = new URL(resolved, baseForResolve).href;
+              } catch (e) { resolved = raw; }
+            }
+            if (!resolved || resolved === "about:blank" || resolved === "" || resolved.startsWith("javascript:")) {
+              var nt = createTab(true);
+              try {
+                var cw = nt.frame.element.contentWindow;
+                if (cw) return cw;
+              } catch (e) {}
+              var fakeBlank = { closed: false, __yukiTabId: nt.id, focus: function(){ try{ switchTab(nt.id); }catch(e){} }, close: function(){ try{ closeTab(nt.id); }catch(e){} } };
+              try {
+                Object.defineProperty(fakeBlank, "location", {
+                  get: function(){ try{ return nt.frame.element.contentWindow.location; }catch(e){ return { href: "about:blank" }; } },
+                  set: function(v){ try{ var u = String(v); try{ u = new URL(u, nt.url || location.href).href; }catch(e){} nt.frame.go(u); }catch(e){ try{ handleSubmit(String(v)); }catch(e2){} } },
+                  configurable: true
+                });
+                Object.defineProperty(fakeBlank, "document", {
+                  get: function(){ try{ return nt.frame.element.contentWindow.document; }catch(e){ return null; } },
+                  configurable: true
+                });
+              } catch (e) {}
+              return fakeBlank;
+            }
+            var nt2 = createTab(true, { url: resolved });
+            setTimeout(function(){
+              try {
+                if (nt2 && nt2.frame && nt2.frame.go && nt2.url !== resolved && resolved !== "about:blank") {
+                  var cur = "";
+                  try { cur = nt2.frame.element.contentWindow.location.href; } catch(e){}
+                  if (!cur || cur === "about:blank" || cur.includes("NT.html") || nt2.url === "yuki://home") {
+                    nt2.frame.go(resolved);
+                  }
+                }
+              } catch (e) {
+                try { handleSubmit(resolved); } catch(e2){}
+              }
+            }, 60);
+            try {
+              var cw2 = nt2.frame.element.contentWindow;
+              if (cw2) return cw2;
+            } catch (e) {}
+            var fake = { closed: false, __yukiTabId: nt2.id, focus: function(){ try{ switchTab(nt2.id); }catch(e){} }, close: function(){ try{ closeTab(nt2.id); }catch(e){} } };
+            try {
+              Object.defineProperty(fake, "location", {
+                get: function(){ try{ return nt2.frame.element.contentWindow.location; }catch(e){ return { href: resolved }; } },
+                set: function(v){ try{ var u = String(v); try{ u = new URL(u, nt2.url || location.href).href; }catch(e){} nt2.frame.go(u); }catch(e){ try{ handleSubmit(String(v)); }catch(e2){} } },
+                configurable: true
+              });
+            } catch (e) {}
+            return fake;
+          } catch (e) {
+            try { return orig.apply(this, arguments); } catch (e2) { return null; }
+          }
+        };
+        handler.__yukiIsHandler = true;
+        handler.__yukiOriginal = orig;
+        targetWin.__yukiOriginalOpen = orig;
+        targetWin.__yukiWindowOpenPatched = true;
+        try { targetWin.open = handler; } catch (e) {}
+        try {
+          if (targetWin.Window && targetWin.Window.prototype) {
+            var proto = targetWin.Window.prototype;
+            if (proto.open && !proto.open.__yukiIsHandler) {
+              try { proto.open = handler; } catch (e) {}
+            }
+          }
+        } catch (e) {}
+        try {
+          var desc = Object.getOwnPropertyDescriptor(targetWin, "open");
+          if (desc && desc.configurable) {
+            try { Object.defineProperty(targetWin, "open", { value: handler, writable: true, configurable: true }); } catch (e) {}
+          }
+        } catch (e) {}
+      } catch (e) {}
+    }
+    function patchAllSubframes(win, tabRef) {
+      try {
+        for (var i = 0; i < win.frames.length; i++) {
+          try {
+            var f = win.frames[i];
+            patchWindowForWindowOpen(f, tabRef);
+            patchAllSubframes(f, tabRef);
+          } catch (e) {}
+        }
+      } catch (e) {}
+      try {
+        var docs = win.document ? win.document.querySelectorAll("iframe") : [];
+        for (var j = 0; j < docs.length; j++) {
+          try {
+            var w = docs[j].contentWindow;
+            if (w) {
+              patchWindowForWindowOpen(w, tabRef);
+              patchAllSubframes(w, tabRef);
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+    }
+    function installWindowOpenInterceptorForTab(tab) {
+      try {
+        if (!tab || !tab.frame || !tab.frame.element) return;
+        var cw = tab.frame.element.contentWindow;
+        if (!cw) return;
+        var attempts = 0;
+        var tryPatch = function() {
+          try { patchWindowForWindowOpen(cw, tab); } catch (e) {}
+          try { patchAllSubframes(cw, tab); } catch (e) {}
+          try { patchWindowForWindowOpen(window, null); } catch (e) {}
+        };
+        tryPatch();
+        var iv = setInterval(function() {
+          tryPatch();
+          attempts++;
+          if (attempts > 60) clearInterval(iv);
+        }, 100);
+        setTimeout(function() { try { clearInterval(iv); } catch (e) {} }, 6500);
+        try {
+          var doc = cw.document;
+          if (doc) {
+            var obs = new MutationObserver(function(){ tryPatch(); });
+            obs.observe(doc, { childList: true, subtree: true });
+            tab._yukiOpenObs = obs;
+          }
+        } catch (e) {}
+        try { cw.addEventListener && cw.addEventListener("load", tryPatch); } catch (e) {}
+      } catch (e) {}
+    }
+    window.patchWindowForWindowOpen = patchWindowForWindowOpen;
+    window.installWindowOpenInterceptorForTab = installWindowOpenInterceptorForTab;
+    window.isWindowOpenInterceptEnabled = isWindowOpenInterceptEnabled;
+    window.setWindowOpenInterceptEnabled = setWindowOpenInterceptEnabled;
+    try { patchWindowForWindowOpen(window, null); } catch (e) {}
+    window.addEventListener("yuki:windowOpenInterceptChanged", function(e){ windowOpenInterceptEnabled = !!(e.detail && e.detail.enabled); });
+
     function loadPrefs() {
       isIncognito = new URLSearchParams(window.location.search).get("incognito") === "true";
       isEmbedded = window.parent && window.parent !== window;
@@ -3634,9 +3823,17 @@
           sidebarCollapsed = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === "true";
           sidebarWidth = parseInt(localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH)) || 250;
           sidebarWidth = Math.min(500, Math.max(140, sidebarWidth));
+          var wv = localStorage.getItem(STORAGE_KEYS.WINDOW_OPEN_NEWTAB);
+          windowOpenInterceptEnabled = wv === null ? true : wv !== "false";
         } catch (e) {
           console.error("Failed to load prefs:", e);
         }
+      }
+      if (isEmbedded) {
+        try {
+          var wv2 = localStorage.getItem(STORAGE_KEYS.WINDOW_OPEN_NEWTAB);
+          if (wv2 !== null) windowOpenInterceptEnabled = wv2 !== "false";
+        } catch (e) {}
       }
     }
 
@@ -3712,6 +3909,7 @@
         localStorage.setItem(STORAGE_KEYS.SIDEBAR_TABS, String(tabSidebar));
         localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(sidebarCollapsed));
         localStorage.setItem(STORAGE_KEYS.SIDEBAR_WIDTH, String(sidebarWidth));
+        localStorage.setItem(STORAGE_KEYS.WINDOW_OPEN_NEWTAB, String(windowOpenInterceptEnabled));
       } catch (e) { }
     }
 
@@ -4455,6 +4653,7 @@
         if (tab.skipTimeout) clearTimeout(tab.skipTimeout);
         if (tab.id === activeTabId) showIframeLoading(false);
 
+        try { installWindowOpenInterceptorForTab(tab); } catch (e) {}
         injectAudioDetector(frame.element);
         if (autoplayBlock) injectAutoplayBlocker(frame.element);
         if (darkModeEnabled) applyDarkModeToTab(tab);
@@ -4521,6 +4720,10 @@
         tabs.push(tab);
       }
       document.getElementById("iframe-container").appendChild(frame.element);
+      try { installWindowOpenInterceptorForTab(tab); } catch (e) {}
+      try {
+        frame.element.contentWindow.addEventListener("load", function(){ try{ installWindowOpenInterceptorForTab(tab); }catch(e){} });
+      } catch (e) {}
       if (defaultZoom !== 1.0) applyZoomToTab(tab);
       if (makeActive) switchTab(tab.id);
       applySplitLayout();
@@ -4589,6 +4792,7 @@
         if (closedTabs.length > 20) closedTabs.shift();
       }
       if (closed.skipTimeout) clearTimeout(closed.skipTimeout);
+      try { if (closed._yukiOpenObs) closed._yukiOpenObs.disconnect(); } catch (e) {}
 
       const tabEl = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
       if (tabEl) {
@@ -6030,6 +6234,10 @@
         '<span class="settings-field-label">Block Auto-play Media</span>' +
         '<label class="toggle-switch"><input type="checkbox" id="yuki-set-autoplay-block" ' + (autoplayBlock ? "checked" : "") + ' /><span class="toggle-slider"></span></label>' +
         '</div>' +
+        '<div class="settings-field-row">' +
+        '<span class="settings-field-label">Open Popups in New Tab</span>' +
+        '<label class="toggle-switch"><input type="checkbox" id="yuki-set-windowopen-newtab" ' + (windowOpenInterceptEnabled ? "checked" : "") + ' /><span class="toggle-slider"></span></label>' +
+        '</div>' +
         renderLayoutPicker("yuki") +
         '</div>' +
 
@@ -6252,6 +6460,9 @@
       document.getElementById("yuki-set-autoplay-block")?.addEventListener("change", function () {
         autoplayBlock = this.checked;
         savePrefs();
+      });
+      document.getElementById("yuki-set-windowopen-newtab")?.addEventListener("change", function () {
+        setWindowOpenInterceptEnabled(this.checked);
       });
       document.getElementById("yuki-set-sidebar-collapsed")?.addEventListener("change", function () {
         sidebarCollapsed = this.checked;
@@ -6543,6 +6754,13 @@
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+              <div class="settings-field-row">
+                <span class="settings-field-label">Open Popups in New Tab</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="set-windowopen-newtab" ${windowOpenInterceptEnabled ? "checked" : ""} />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
               ${renderLayoutPicker("set")}
             </div>
 
@@ -6697,6 +6915,9 @@
         document.getElementById("set-autoplay-block")?.addEventListener("change", function () {
           autoplayBlock = this.checked;
           savePrefs();
+        });
+        document.getElementById("set-windowopen-newtab")?.addEventListener("change", function () {
+          setWindowOpenInterceptEnabled(this.checked);
         });
         document.getElementById("set-sidebar-collapsed")?.addEventListener("change", function () {
           sidebarCollapsed = this.checked;

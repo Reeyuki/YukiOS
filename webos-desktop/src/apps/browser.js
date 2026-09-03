@@ -20,6 +20,10 @@ import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.j
 import { escapeHtml } from "../utils/utils.js";
 import { getWispUrl } from "../shared/wispConfig.js";
 import { isFunction } from "../shared/functionUtils.js";
+import {
+  isPluginEnabled as isWindowOpenPluginEnabled,
+  setPluginEnabled as setWindowOpenPluginEnabled
+} from "./browser/plugins/windowOpenInNewTab.js";
 
 const THEME_VARS = [
   "--brand",
@@ -102,7 +106,8 @@ export class BrowserApp extends BaseApp {
     const win = os.window.create(winId, title, "1024px", "630px", {
       icon: "static/icons/firefox.webp",
       appId: "browserApp",
-      skipHeader: true
+      skipHeader: true,
+      position: "center"
     });
     win.dataset.browserOpenStart = String(openStart);
 
@@ -146,6 +151,7 @@ export class BrowserApp extends BaseApp {
     os.window.makeResizable(element);
 
     let dinoSent = false;
+    const getWindowOpenInterceptEnabled = () => isWindowOpenPluginEnabled(os.storage);
     const sendDataToIframe = (opts = {}) => {
       if (!iframe || !iframe.contentWindow) return;
       const vars = getCachedThemeVars();
@@ -164,7 +170,8 @@ export class BrowserApp extends BaseApp {
           wispUrl,
           transport,
           dinoGameHtml: includeDino ? buildDinoGameHtml() : "",
-          adsEnabled: shouldEnableAds()
+          adsEnabled: shouldEnableAds(),
+          windowOpenInterceptEnabled: getWindowOpenInterceptEnabled()
         },
         "*"
       );
@@ -233,6 +240,26 @@ export class BrowserApp extends BaseApp {
       } else if (data.type === "scram:proxyConfigChange") {
         if (data.wispUrl) os.storage.set(StorageKeys.wispServer, data.wispUrl);
         if (data.transport) os.storage.set(StorageKeys.browserTransport, data.transport);
+      } else if (data.type === "scram:windowOpenInterceptGet") {
+        try {
+          e.source?.postMessage(
+            { type: "scram:windowOpenInterceptState", enabled: getWindowOpenInterceptEnabled() },
+            "*"
+          );
+        } catch {}
+      } else if (data.type === "scram:setWindowOpenIntercept") {
+        const enabled = !!data.enabled;
+        setWindowOpenPluginEnabled(os.storage, enabled);
+        try {
+          iframe?.contentWindow?.postMessage({ type: "scram:windowOpenInterceptState", enabled }, "*");
+        } catch {}
+      } else if (data.type === "browser-window-open") {
+        const url = data.url;
+        if (url && iframe?.contentWindow) {
+          try {
+            iframe.contentWindow.postMessage({ type: "browser-create-tab", url: String(url) }, "*");
+          } catch {}
+        }
       } else if (data.type === "scram:localRequest") {
         this.handleLocalRequest(data.url).then((result) => {
           try {
@@ -462,10 +489,27 @@ export class BrowserApp extends BaseApp {
         wispUrl,
         transport,
         dinoGameHtml: "",
-        adsEnabled: shouldEnableAds()
+        adsEnabled: shouldEnableAds(),
+        windowOpenInterceptEnabled: isWindowOpenPluginEnabled(os.storage)
       },
       "*"
     );
+  }
+
+  isWindowOpenInterceptEnabled() {
+    return isWindowOpenPluginEnabled(os.storage);
+  }
+
+  setWindowOpenInterceptEnabled(enabled) {
+    setWindowOpenPluginEnabled(os.storage, !!enabled);
+    try {
+      this.iframe?.contentWindow?.postMessage({ type: "scram:windowOpenInterceptState", enabled: !!enabled }, "*");
+    } catch {}
+    return !!enabled;
+  }
+
+  getWindowOpenPluginStatus() {
+    return { id: "windowOpenInNewTab", enabled: this.isWindowOpenInterceptEnabled() };
   }
 
   cleanupScramjet() {

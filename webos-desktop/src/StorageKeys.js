@@ -298,5 +298,6 @@ export const StorageKeys = {
   windowMagnetThreshold: "yukiOS_window_magnet_threshold",
   systemOverridesIndex: "yukiOS_system_overrides_index",
   aquariumState: "yukiOS_aquarium_state",
-  aquariumSoundEnabled: "yukiOS_aquarium_sound"
+  aquariumSoundEnabled: "yukiOS_aquarium_sound",
+  browserWindowOpenInNewTab: "yukiOS_browser_window_open_newtab"
 };

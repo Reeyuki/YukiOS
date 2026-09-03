@@ -277,6 +277,11 @@ export class WindowManager {
             position = { left: saved.x, top: saved.y };
             if (saved.width) finalW = resolveToPx(saved.width, false);
             if (saved.height) finalH = resolveToPx(saved.height, true);
+            try {
+              const b = this.getScreenBounds();
+              position.left = Math.max(b.minX, Math.min(b.maxX - finalW, position.left));
+              position.top = Math.max(b.minY, Math.min(b.maxY - finalH, position.top));
+            } catch {}
           }
         }
       } catch (e) {}
