@@ -1496,5 +1496,35 @@ export const APP_MANIFESTS = [
     category: "system",
     clippy: { message: "Pick which app opens each file type.", animation: ClippyAnimation.Show },
     description: "Set the default app for every file type."
+  },
+  {
+    serviceKey: "moviesApp",
+    enhanced: true,
+    type: "system",
+    title: "Movies",
+    icon: "fas fa-film",
+    launchType: "instance",
+    windowIdPatterns: ["movies"],
+    category: "media",
+    persistContentState: false,
+    clippy: { message: "Stream movies and shows on Aether.", animation: ClippyAnimation.Show },
+    description: "Stream movies and TV shows instantly via Aether.",
+    targetUrl: "https://aether.ist/",
+    windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "tvStreamingApp",
+    enhanced: true,
+    type: "system",
+    title: "TV Streaming",
+    icon: "fas fa-tv",
+    launchType: "instance",
+    windowIdPatterns: ["tv-streaming", "tv"],
+    category: "media",
+    persistContentState: false,
+    clippy: { message: "Stream live TV on Famelack.", animation: ClippyAnimation.Show },
+    description: "Stream live TV channels instantly via Famelack.",
+    targetUrl: "https://famelack.com",
+    windowSize: ["90vw", "85vh"]
   }
 ];

@@ -475,46 +475,139 @@ export class TaskbarSystem {
 
   getPinnedItems() {
     try {
-      const pinnedData = os.storage.get(StorageKeys.pinnedTaskbarItems) || [];
-      const migrationKey = StorageKeys.defaultsCreatedPrefix + "pinnedTaskbarItems";
-
-      if (!os.storage.get(migrationKey)) {
-        const defaultApps = [
-          {
-            winId: "explorer-pinned",
-            appId: "explorerApp",
-            title: "Explorer",
-            iconValue: resolveIconUrl("static/icons/file.webp"),
-            color: null
-          },
-          {
-            winId: "browser-pinned",
-            appId: "browserApp",
-            title: "Yuki Browser",
-            iconValue: resolveIconUrl("static/icons/firefox.webp"),
-            color: null
-          },
-          {
-            winId: "discord-pinned",
-            appId: "discordApp",
-            title: "Discord",
-            iconValue: "fab fa-discord",
-            color: null
+      let pinnedData = os.storage.get(StorageKeys.pinnedTaskbarItems) || [];
+      const obsoleteIds = ["animesApp"];
+      const filteredPinned = pinnedData.filter((item) => !obsoleteIds.includes(item.appId));
+      if (filteredPinned.length !== pinnedData.length) {
+        pinnedData = filteredPinned;
+        os.storage.set(StorageKeys.pinnedTaskbarItems, pinnedData);
+        try {
+          const order = os.storage.get(StorageKeys.taskbarOrder) || [];
+          const cleanedOrder = order.filter((id) => !obsoleteIds.includes(id));
+          if (cleanedOrder.length !== order.length) os.storage.set(StorageKeys.taskbarOrder, cleanedOrder);
+        } catch {}
+      }
+      const tvPinnedWinId = "tv-streaming-pinned";
+      const hasTvDefaultPin = pinnedData.some((item) => item.winId === tvPinnedWinId);
+      if (hasTvDefaultPin) {
+        pinnedData = pinnedData.filter((item) => item.winId !== tvPinnedWinId);
+        os.storage.set(StorageKeys.pinnedTaskbarItems, pinnedData);
+        try {
+          const order = os.storage.get(StorageKeys.taskbarOrder) || [];
+          if (order.includes("tvStreamingApp")) {
+            os.storage.set(
+              StorageKeys.taskbarOrder,
+              order.filter((id) => id !== "tvStreamingApp")
+            );
           }
-        ];
-
-        const existingAppIds = pinnedData.map((item) => item.appId);
-        const missingDefaults = defaultApps.filter((app) => !existingAppIds.includes(app.appId));
-
-        if (missingDefaults.length > 0) {
-          const updatedPinnedItems = [...missingDefaults, ...pinnedData];
-          os.storage.set(StorageKeys.pinnedTaskbarItems, updatedPinnedItems);
+        } catch {}
+      }
+      const migrationKey = StorageKeys.defaultsCreatedPrefix + "pinnedTaskbarItems";
+      const defaultApps = [
+        {
+          winId: "explorer-pinned",
+          appId: "explorerApp",
+          title: "Explorer",
+          iconValue: resolveIconUrl("static/icons/file.webp"),
+          color: null
+        },
+        {
+          winId: "browser-pinned",
+          appId: "browserApp",
+          title: "Yuki Browser",
+          iconValue: resolveIconUrl("static/icons/firefox.webp"),
+          color: null
+        },
+        {
+          winId: "discord-pinned",
+          appId: "discordApp",
+          title: "Discord",
+          iconValue: "fab fa-discord",
+          color: null
+        },
+        {
+          winId: "movies-pinned",
+          appId: "moviesApp",
+          title: "Movies",
+          iconValue: "fas fa-film",
+          color: null
+        },
+        {
+          winId: "aniwatch-pinned",
+          appId: "aniwatchApp",
+          title: "Aniwatch Anime",
+          iconValue: "fas fa-play-circle",
+          color: null
         }
+      ];
 
-        os.storage.set(migrationKey, "true");
-        return os.storage.get(StorageKeys.pinnedTaskbarItems) || [];
+      const existingAppIds = pinnedData.map((item) => item.appId);
+      const missingDefaults = defaultApps.filter((app) => !existingAppIds.includes(app.appId));
+
+      if (missingDefaults.length > 0) {
+        let updatedPinnedItems;
+        if (pinnedData.length === 0) {
+          updatedPinnedItems = [...defaultApps];
+        } else {
+          updatedPinnedItems = [...pinnedData];
+          missingDefaults.forEach((app) => {
+            const defaultIdx = defaultApps.findIndex((d) => d.appId === app.appId);
+            let insertPos = updatedPinnedItems.length;
+            for (let i = defaultIdx - 1; i >= 0; i--) {
+              const predIdx = updatedPinnedItems.findIndex((item) => item.appId === defaultApps[i].appId);
+              if (predIdx !== -1) {
+                insertPos = predIdx + 1;
+                break;
+              }
+            }
+            if (insertPos === updatedPinnedItems.length) {
+              for (let i = defaultIdx + 1; i < defaultApps.length; i++) {
+                const succIdx = updatedPinnedItems.findIndex((item) => item.appId === defaultApps[i].appId);
+                if (succIdx !== -1) {
+                  insertPos = succIdx;
+                  break;
+                }
+              }
+            }
+            updatedPinnedItems.splice(insertPos, 0, app);
+          });
+        }
+        os.storage.set(StorageKeys.pinnedTaskbarItems, updatedPinnedItems);
+        try {
+          const order = os.storage.get(StorageKeys.taskbarOrder) || [];
+          if (order.length > 0) {
+            let orderChanged = false;
+            missingDefaults.forEach((app) => {
+              if (order.includes(app.appId)) return;
+              const defaultIdx = defaultApps.findIndex((d) => d.appId === app.appId);
+              let insertPos = order.length;
+              for (let i = defaultIdx - 1; i >= 0; i--) {
+                const predIdx = order.indexOf(defaultApps[i].appId);
+                if (predIdx !== -1) {
+                  insertPos = predIdx + 1;
+                  break;
+                }
+              }
+              if (insertPos === order.length) {
+                for (let i = defaultIdx + 1; i < defaultApps.length; i++) {
+                  const succIdx = order.indexOf(defaultApps[i].appId);
+                  if (succIdx !== -1) {
+                    insertPos = succIdx;
+                    break;
+                  }
+                }
+              }
+              order.splice(insertPos, 0, app.appId);
+              orderChanged = true;
+            });
+            if (orderChanged) os.storage.set(StorageKeys.taskbarOrder, order);
+          }
+        } catch {}
+        if (!os.storage.get(migrationKey)) os.storage.set(migrationKey, "true");
+        return updatedPinnedItems;
       }
 
+      if (!os.storage.get(migrationKey)) os.storage.set(migrationKey, "true");
       return pinnedData;
     } catch {
       return [];

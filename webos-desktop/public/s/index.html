@@ -3363,10 +3363,10 @@
     }
   </style>
   <script defer>
-    const DEFAULT_WISP = "wss://wisp.mercurywork.shop/";
+    const DEFAULT_WISP = "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
     const WISP_SERVERS = [
-      { name: "Mercury Wisp", url: "wss://wisp.mercurywork.shop/" },
       { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
+      { name: "Mercury Wisp", url: "wss://wisp.mercurywork.shop/" },
       { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
     ];
 
@@ -3849,10 +3849,6 @@
 
         if (TransportClass) {
           let savedWisp = localStorage.getItem("proxServer");
-          if (savedWisp === "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" || savedWisp === "wss://reeyukiwisp.onrender.com/") {
-            savedWisp = DEFAULT_WISP;
-            localStorage.setItem("proxServer", DEFAULT_WISP);
-          }
           const requestedWisp = sanitizeWispUrl(hostWispUrl || savedWisp || DEFAULT_WISP);
           const established = await establishTransport(TransportClass, requestedWisp);
           if (established) {

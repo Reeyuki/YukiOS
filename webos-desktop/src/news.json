@@ -1,5 +1,20 @@
 [
   {
+    "date": "September 3, 2026",
+    "label": "Media Apps",
+    "sections": [
+      {
+        "icon": "fa-film",
+        "title": "New Media Apps",
+        "items": [
+          ["fa-film", "Movies", "Stream movies and series via Aether."],
+          ["fa-play-circle", "Aniwatch", "Watch anime instantly via Aniwatch."],
+          ["fa-tv", "TV Streaming", "Stream live TV via Famelack."]
+        ]
+      }
+    ]
+  },
+  {
     "date": "September 1, 2026",
     "label": "Aquarium",
     "sections": [

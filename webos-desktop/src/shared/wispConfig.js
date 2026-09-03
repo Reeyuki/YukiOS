@@ -1,10 +1,10 @@
 import { os, StorageKeys } from "../framework.js";
 
-export const DEFAULT_WISP_URL = "wss://wisp.mercurywork.shop/";
+export const DEFAULT_WISP_URL = "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
 
 export const WISP_SERVERS = [
-  { name: "Mercury Wisp", url: DEFAULT_WISP_URL },
-  { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
+  { name: "Reeyuki Wisp", url: DEFAULT_WISP_URL },
+  { name: "Mercury Wisp", url: "wss://wisp.mercurywork.shop/" },
   { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
 ];
 
