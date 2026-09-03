@@ -6,14 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Browser</title>
   <link rel="icon" href="/s/dogfavi.png" type="image/png" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
-  <script src="/s/set.js"></script>
-  <script src="/s/controller.api.js"></script>
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'" />
+  <link rel="preload" as="fetch" crossorigin href="/s/set.wasm" />
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs" />
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs" />
+  <script src="/s/set.js" defer></script>
+  <script src="/s/controller.api.js" defer></script>
   <script type="module">
     import { default as EpoxyTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
     import { default as LibcurlTransport } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs";
@@ -3774,10 +3777,8 @@
 
     let lastProxyErrors = [];
 
-    const DEBUG = true;
-    function debugLog(...args) {
-      if (DEBUG) console.log("[scramjet-debug]", ...args);
-    }
+    const DEBUG = false;
+    function debugLog(...args) {}
 
     async function establishTransport(TransportClass, preferredWisp) {
       const candidates = [];
@@ -3796,7 +3797,8 @@
           const rawTransport = new TransportClass({ wisp: wispUrl });
           await rawTransport.init();
           debugLog("establishTransport init() ok for", wispUrl);
-          const probeResult = await probeTransportConnection(rawTransport, 10000);
+          const probeTimeout = location.hostname === "127.0.0.1" || location.hostname === "localhost" ? 2000 : 10000;
+          const probeResult = await probeTransportConnection(rawTransport, probeTimeout);
           debugLog("establishTransport probe", wispUrl, "=>", probeResult);
           if (probeResult.ok) {
             debugLog("establishTransport SUCCESS with", wispUrl);
@@ -3830,14 +3832,27 @@
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
+      const __perfStart = performance.now();
+      let __probeMs = 0;
+      let __waitMs = 0;
       let basePath = location.pathname.replace(/[^/]*$/, "");
       if (!basePath.endsWith("/")) basePath += "/";
 
-      if ("serviceWorker" in navigator) {
-        const reg = await navigator.serviceWorker.register(basePath + "sw.js", { scope: basePath });
-        await navigator.serviceWorker.ready;
-        const sw = reg.active || navigator.serviceWorker.controller;
+      const __shellStart = performance.now();
+      initializeBrowser();
+      const __shellMs = Math.round(performance.now() - __shellStart);
+      console.log(`[browser-perf-inner] shell ${__shellMs}ms`);
+      {
+        const shellTotal = Math.round(performance.now() - __perfStart);
+        try {
+          const wispUrl = localStorage.getItem("proxServer") || "";
+          window.parent.postMessage({ type: "browser-perf", ms: shellTotal, probeMs: 0, waitMs: 0, wispUrl, shellMs: __shellMs }, "*");
+        } catch {}
+      }
 
+      (async () => {
+      if ("serviceWorker" in navigator) {
+        const regPromise = navigator.serviceWorker.register(basePath + "sw.js", { scope: basePath });
         const transportType = hostTransport || localStorage.getItem("proxTransport") || DEFAULT_TRANSPORT;
 
         let TransportClass;
@@ -3847,13 +3862,21 @@
           TransportClass = EpoxyTransport;
         }
 
+        let established = null;
+        let requestedWisp = null;
+        let __probeStart = performance.now();
         if (TransportClass) {
           let savedWisp = localStorage.getItem("proxServer");
-          const requestedWisp = sanitizeWispUrl(hostWispUrl || savedWisp || DEFAULT_WISP);
-          const established = await establishTransport(TransportClass, requestedWisp);
-          if (established) {
+          requestedWisp = sanitizeWispUrl(hostWispUrl || savedWisp || DEFAULT_WISP);
+          established = await establishTransport(TransportClass, requestedWisp);
+        }
+        __probeMs = Math.round(performance.now() - __probeStart);
+        const reg = await regPromise;
+        await navigator.serviceWorker.ready;
+        const sw = reg.active || navigator.serviceWorker.controller;
+        if (established) {
             const { rawTransport, wispUrl } = established;
-            if (wispUrl !== requestedWisp) {
+            if (requestedWisp && wispUrl !== requestedWisp) {
               localStorage.setItem("proxServer", wispUrl);
             }
             const transport = {
@@ -3888,7 +3911,6 @@
               }
             };
             window.__scramjetTransport = transport;
-            debugLog("transport wrapper set on window.__scramjetTransport");
 
             const { Controller } = $scramjetController;
             scramjet = new Controller({
@@ -3901,9 +3923,9 @@
               transport,
               serviceworker: sw
             });
-            debugLog("Controller created, awaiting wait()...");
 
             let waitOutcome = "resolved";
+            const __waitStart = performance.now();
             await Promise.race([
               scramjet.wait(),
               new Promise((resolve) =>
@@ -3914,14 +3936,19 @@
                 }, 15000)
               )
             ]);
-            debugLog("scramjet.wait() outcome:", waitOutcome, "scramjet.ready:", scramjet ? scramjet.ready : "null");
+            __waitMs = Math.round(performance.now() - __waitStart);
+            console.log(`[browser-perf-inner] wisp ready probe ${__probeMs}ms wait ${__waitMs}ms ${waitOutcome}`);
+            try {
+              const wispUrl = localStorage.getItem("proxServer") || "";
+              window.parent.postMessage({ type: "browser-wisp-ready", probeMs: __probeMs, waitMs: __waitMs, wispUrl }, "*");
+            } catch {}
+            if (typeof window.__onWispReady === "function") try { window.__onWispReady(); } catch {}
           } else {
             scramjet = null;
+            console.log(`[browser-perf-inner] wisp failed probe ${__probeMs}ms`);
           }
-        }
       }
-
-      initializeBrowser();
+      })();
       if (new URLSearchParams(window.location.search).get("embed") === "1") {
         const observer = new MutationObserver(() => {
           const els = document.querySelectorAll(".flex.tabs, .flex.nav, .loading-bar-container, .tab-sidebar");
@@ -4068,10 +4095,8 @@
         </div>`;
 
       if (!scramjet) {
-        showProxyConnectionError();
-        return;
+        console.log("[browser-perf-inner] shell rendered without scramjet, wisp connecting in background");
       }
-      debugLog("initializeBrowser scramjet OK, binding UI");
 
       document.getElementById("back-btn").onclick = () => {
         if (_yukiActive) { closeYukiPage(); return; }
@@ -4285,8 +4310,44 @@
 
     function createTab(makeActive = true, opts = {}) {
       if (!scramjet) {
-        showProxyConnectionError();
-        return null;
+        const fallbackFrame = document.createElement("iframe");
+        fallbackFrame.style.cssText = "width:100%;height:100%;border:none;";
+        fallbackFrame.srcdoc = bundledNewTabHtml;
+        const tab = {
+          id: nextTabId++,
+          title: "Home",
+          url: "yuki://home",
+          frame: { element: fallbackFrame, go: (url) => { try { fallbackFrame.srcdoc = bundledNewTabHtml; } catch {} if (opts.url) {} }, reload: () => {} },
+          loading: false,
+          favicon: DEFAULT_FAVICON,
+          skipTimeout: null,
+          isPlayingAudio: false,
+          isPinned: false,
+          isMuted: false,
+          localStack: [],
+          localIndex: -1,
+          navStack: [],
+          navIndex: -1,
+          navSuppressed: false,
+          pending: true
+        };
+        _newTabId = tab.id;
+        tabs.push(tab);
+        document.getElementById("iframe-container").appendChild(fallbackFrame);
+        if (makeActive) switchTab(tab.id);
+        applySplitLayout();
+        saveTabState();
+        window.__onWispReady = () => {
+          if (tab.pending && scramjet) {
+            try { fallbackFrame.remove(); } catch {}
+            const idx = tabs.indexOf(tab);
+            if (idx >= 0) tabs.splice(idx, 1);
+            tab.pending = false;
+            window.__onWispReady = null;
+            createTab(makeActive, opts);
+          }
+        };
+        return tab;
       }
       debugLog("createTab", { makeActive, opts });
       const frame = scramjet.createFrame();

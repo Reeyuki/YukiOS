@@ -46,6 +46,21 @@ const THEME_VARS = [
 ];
 
 let scramjetInstanceCount = 0;
+let cachedThemeVars = null;
+let cachedThemeVarsAt = 0;
+
+function getCachedThemeVars() {
+  const now = Date.now();
+  if (cachedThemeVars && now - cachedThemeVarsAt < 500) return cachedThemeVars;
+  const computed = getComputedStyle(document.documentElement);
+  const vars = {};
+  THEME_VARS.forEach((name) => {
+    vars[name] = computed.getPropertyValue(name).trim();
+  });
+  cachedThemeVars = vars;
+  cachedThemeVarsAt = now;
+  return vars;
+}
 
 export class BrowserApp extends BaseApp {
   constructor(services) {
@@ -57,6 +72,20 @@ export class BrowserApp extends BaseApp {
     this.torClient = null;
     this.torIframe = null;
     this.torOverlay = null;
+    this.windowHandlers = new Map();
+  }
+
+  onClose(winId) {
+    const entry = this.windowHandlers.get(winId);
+    if (entry) {
+      window.removeEventListener("message", entry.msgHandler);
+      if (entry.settingsChangedHandler) os.events.off(BusEvents.SETTINGS_CHANGED, entry.settingsChangedHandler);
+      if (entry.observer) entry.observer.disconnect();
+      this.windowHandlers.delete(winId);
+    }
+    if (this.element && this.element.id === winId) {
+      this.cleanupScramjet();
+    }
   }
 
   open(opts = {}) {
@@ -64,6 +93,10 @@ export class BrowserApp extends BaseApp {
     const winId = "scramjet-window-" + instanceNum;
     const isIncognito = opts?.isIncognito || false;
     const openUrl = opts?.openUrl || null;
+    const openStart = performance.now();
+    try {
+      performance.mark(`browser:open:${winId}`);
+    } catch {}
 
     const title = isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser";
     const win = os.window.create(winId, title, "1024px", "630px", {
@@ -71,6 +104,7 @@ export class BrowserApp extends BaseApp {
       appId: "browserApp",
       skipHeader: true
     });
+    win.dataset.browserOpenStart = String(openStart);
 
     win.innerHTML = `
       <div class="scramjet-container" style="width:100%;height:100%;overflow:hidden;">
@@ -94,10 +128,12 @@ export class BrowserApp extends BaseApp {
     this.element = element;
     const iframe = element.querySelector(".scramjet-iframe");
     this.iframe = iframe;
+    const winId = element.id;
 
     const isIncognito = state.isIncognito || false;
     const incognitoParam = isIncognito ? "?incognito=true" : "";
     const transportType = os.storage.get(StorageKeys.browserTransport) || "epoxy";
+    const outerStart = Number(element.dataset.browserOpenStart) || performance.now();
     iframe.src =
       window.location.origin +
       "/s/index.html" +
@@ -106,27 +142,19 @@ export class BrowserApp extends BaseApp {
       "transport=" +
       transportType;
 
-    const header = element.querySelector(".window-header");
-    if (header) {
-      header.classList.add("scramjet-header");
-      const span = header.querySelector("span");
-      if (span) span.textContent = "";
-    }
-
     os.window.makeDraggable(element);
     os.window.makeResizable(element);
 
-    const sendDataToIframe = () => {
+    let dinoSent = false;
+    const sendDataToIframe = (opts = {}) => {
       if (!iframe || !iframe.contentWindow) return;
-      const computed = getComputedStyle(document.documentElement);
-      const vars = {};
-      THEME_VARS.forEach((name) => {
-        vars[name] = computed.getPropertyValue(name).trim();
-      });
+      const vars = getCachedThemeVars();
       const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
       const history = os.storage.get(StorageKeys.browserHistory) || [];
       const wispUrl = getWispUrl();
       const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
+      const includeDino = opts.includeDino ?? !dinoSent;
+      if (includeDino) dinoSent = true;
       iframe.contentWindow.postMessage(
         {
           type: "scram:init",
@@ -135,7 +163,7 @@ export class BrowserApp extends BaseApp {
           history,
           wispUrl,
           transport,
-          dinoGameHtml: buildDinoGameHtml(),
+          dinoGameHtml: includeDino ? buildDinoGameHtml() : "",
           adsEnabled: shouldEnableAds()
         },
         "*"
@@ -147,8 +175,23 @@ export class BrowserApp extends BaseApp {
       const data = e.data;
       if (!data || !data.type) return;
 
+      if (data.type === "browser-perf") {
+        const total = (performance.now() - outerStart).toFixed(0);
+        const inner =
+          data.ms != null ? ` inner ${data.ms}ms (probe ${data.probeMs ?? "-"}ms wait ${data.waitMs ?? "-"}ms)` : "";
+        try {
+          performance.mark(`browser:interactive:${winId}`);
+          performance.measure(
+            `browser:open→interactive:${winId}`,
+            `browser:open:${winId}`,
+            `browser:interactive:${winId}`
+          );
+        } catch {}
+        return;
+      }
+
       if (data.type === "scram:getBookmarks" || data.type === "scram:getHistory") {
-        sendDataToIframe();
+        sendDataToIframe({ includeDino: false });
       } else if (data.type === "scram:addBookmark") {
         let bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
         if (!bookmarks.some((b) => b.url === data.url)) {
@@ -202,17 +245,56 @@ export class BrowserApp extends BaseApp {
     };
     this.msgHandler = msgHandler;
     window.addEventListener("message", msgHandler);
+    element.addEventListener("remove", () => this.onClose(winId), { once: true });
 
     iframe.addEventListener("load", () => {
-      sendDataToIframe();
-      this.trySetupIframe(iframe, element);
+      const loadMs = (performance.now() - outerStart).toFixed(0);
+      try {
+        performance.mark(`browser:iframe-load:${winId}`);
+        performance.measure(`browser:open→load:${winId}`, `browser:open:${winId}`, `browser:iframe-load:${winId}`);
+      } catch {}
+      sendDataToIframe({ includeDino: true });
+      const didSetup = this.trySetupIframe(iframe, element);
+      if (didSetup) {
+        const interactiveMs = (performance.now() - outerStart).toFixed(0);
+        try {
+          performance.mark(`browser:interactive:${winId}`);
+        } catch {}
+      } else {
+        const pending = this.windowHandlers.get(winId);
+        const origObserver = pending?.observer;
+        if (origObserver) {
+          let logged = false;
+          const origDisconnect = origObserver.disconnect.bind(origObserver);
+          origObserver.disconnect = () => {
+            if (!logged) {
+              logged = true;
+              const interactiveMs = (performance.now() - outerStart).toFixed(0);
+              if (Number(interactiveMs) < 1500) {
+              }
+              try {
+                performance.mark(`browser:interactive:${winId}`);
+              } catch {}
+            }
+            origDisconnect();
+          };
+        }
+      }
       if (state.openUrl) this.navigateToUrl(iframe, state.openUrl);
     });
 
-    this.settingsChangedHandler = () => {
-      this.sendDataToIframe();
+    let settingsDebounce = null;
+    const settingsChangedHandler = () => {
+      if (settingsDebounce) return;
+      settingsDebounce = setTimeout(() => {
+        settingsDebounce = null;
+        cachedThemeVars = null;
+        if (iframe.contentWindow) sendDataToIframe({ includeDino: false });
+      }, 100);
     };
-    os.events.on(BusEvents.SETTINGS_CHANGED, this.settingsChangedHandler);
+    this.settingsChangedHandler = settingsChangedHandler;
+    os.events.on(BusEvents.SETTINGS_CHANGED, settingsChangedHandler);
+    this.windowHandlers.set(winId, { msgHandler, settingsChangedHandler, observer: null });
   }
 
   trySetupIframe(iframe, element) {
@@ -227,23 +309,29 @@ export class BrowserApp extends BaseApp {
         this.attachDragHandler(tabsContainer, iframe, element);
         return true;
       } catch (e) {
-        console.error("Failed to setup iframe drag:", e);
         return false;
       }
     };
-    if (!setup()) {
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        if (iframeDoc?.body) {
-          const obs = new MutationObserver(() => {
-            if (setup()) obs.disconnect();
-          });
-          obs.observe(iframeDoc.body, { childList: true, subtree: true });
+    if (setup()) return true;
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!iframeDoc?.body) return false;
+      const entry = this.windowHandlers.get(element.id);
+      const obs = new MutationObserver(() => {
+        if (setup()) {
+          obs.disconnect();
+          if (entry) entry.observer = null;
         }
-      } catch (e) {
-        console.error("Could not observe iframe for drag setup:", e);
-      }
-    }
+      });
+      obs.observe(iframeDoc.body, { childList: true, subtree: true });
+      if (entry) entry.observer = obs;
+      setTimeout(() => {
+        obs.disconnect();
+        if (entry && entry.observer === obs) entry.observer = null;
+      }, 3000);
+      return false;
+    } catch (e) {}
+    return false;
   }
 
   injectControls(iframeDoc, controlsSlot, element) {
@@ -360,18 +448,11 @@ export class BrowserApp extends BaseApp {
 
   sendDataToIframe() {
     if (!this.iframe || !this.iframe.contentWindow) return;
-
-    const computed = getComputedStyle(document.documentElement);
-    const vars = {};
-    THEME_VARS.forEach((name) => {
-      vars[name] = computed.getPropertyValue(name).trim();
-    });
-
+    const vars = getCachedThemeVars();
     const bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
     const history = os.storage.get(StorageKeys.browserHistory) || [];
     const wispUrl = getWispUrl();
     const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
-
     this.iframe.contentWindow.postMessage(
       {
         type: "scram:init",
@@ -380,7 +461,7 @@ export class BrowserApp extends BaseApp {
         history,
         wispUrl,
         transport,
-        dinoGameHtml: buildDinoGameHtml(),
+        dinoGameHtml: "",
         adsEnabled: shouldEnableAds()
       },
       "*"
@@ -431,13 +512,18 @@ export class BrowserApp extends BaseApp {
         return false;
       }
     };
-    if (!tryNav()) {
-      let n = 0;
-      const iv = setInterval(() => {
-        n++;
-        if (tryNav() || n > 30) clearInterval(iv);
-      }, 80);
-    }
+    if (tryNav()) return;
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!doc || !doc.body) return;
+      const obs = new MutationObserver(() => {
+        if (tryNav()) {
+          obs.disconnect();
+        }
+      });
+      obs.observe(doc.body, { childList: true, subtree: true });
+      setTimeout(() => obs.disconnect(), 2000);
+    } catch {}
   }
 
   async handleLocalRequest(url) {

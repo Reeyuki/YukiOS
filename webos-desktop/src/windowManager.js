@@ -228,7 +228,7 @@ export class WindowManager {
       win.dataset.dupId = id;
     }
     win.id = winId;
-    if (!id.startsWith("browser-app-") && id !== "games-app-win") {
+    if (!id.startsWith("browser-app-") && !id.startsWith("scramjet-window-") && id !== "games-app-win") {
       win.style.opacity = "0";
     }
     if (options.appId) win.dataset.appId = options.appId;
@@ -379,8 +379,10 @@ export class WindowManager {
     if (iconValue) this.addToTaskbar(winId, title, iconValue, color);
     this.onTilingWindowCreated(winId);
     if (opts.autoFocus !== false) this.bringToFront(win);
-    requestAnimationFrame(() => animateWindowOpen(win));
-    if (opts.bindControls !== false) this.bindWindowControlsWhenReady(win);
+    if (!win.id.startsWith("scramjet-window-")) {
+      requestAnimationFrame(() => animateWindowOpen(win));
+    }
+    if (opts.bindControls !== false && !win.id.startsWith("scramjet-window-")) this.bindWindowControlsWhenReady(win);
     win.addEventListener("remove", () => this.removeFromTaskbar(win.id));
   }
 

@@ -250,7 +250,7 @@ function getMinimizeEndState(win) {
 export function animateWindowOpen(win, isRestoring = false) {
   if (isPerformanceMode()) return;
 
-  if (win.id && win.id.startsWith("browser-app-")) return;
+  if (win.id && (win.id.startsWith("browser-app-") || win.id.startsWith("scramjet-window-"))) return;
 
   const wm = os.windowManager;
   const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
