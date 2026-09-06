@@ -1658,5 +1658,19 @@ export const appMap = {
     url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/454-f.html",
     icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/454.png",
     title: "Bloodmoney"
+  },
+  srb22: {
+    type: "game",
+    url: "https://srb2web.gvbvdxx.me/",
+    icon: "/static/icons/srb22.png",
+    title: "SRB2 2.2",
+    scramjetEnabled: true
+  },
+  srb2Kart: {
+    type: "game",
+    url: "https://kartweb.gvbvdxx.me/",
+    icon: "/static/icons/srb2kart.png",
+    title: "SRB2 Kart",
+    scramjetEnabled: true
   }
 };

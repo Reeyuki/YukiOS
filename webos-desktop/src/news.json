@@ -1,8 +1,16 @@
 [
   {
-    "date": "September 9, 2026",
+    "date": "September 6, 2026",
     "label": "YukiOS v4.0.0",
     "sections": [
+      {
+        "icon": "fa-gamepad",
+        "title": "SRB2 Web Ports",
+        "items": [
+          ["fa-gamepad", "SRB2 2.2", "Sonic Robo Blast 2"],
+          ["fa-flag-checkered", "SRB2 Kart", "Sonic Robo Blast 2 Kart"]
+        ]
+      },
       {
         "icon": "fa-gamepad",
         "title": "47 New Games",
