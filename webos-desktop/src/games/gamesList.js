@@ -212,12 +212,6 @@ export const appMap = {
     icon: "/static/icons/undertale.png",
     title: "Undertale"
   },
-  deltarune: {
-    type: "game",
-    url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/deltraveler.html",
-    icon: "/static/icons/deltarune.png",
-    title: "Deltarune"
-  },
   balatro: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/reeyuki/yukios-games@main/gnmath/balatro/balatro.html",
@@ -1568,12 +1562,6 @@ export const appMap = {
     url: "https://truffled.lol/games/C09RU/index.html",
     icon: "https://truffled.lol/png/games/reup.webp",
     title: "Class Of 09 Re-Up"
-  },
-  deltatraveler: {
-    type: "game",
-    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/560-f.html",
-    icon: "https://truffled.lol/png/games/deltatr.webp",
-    title: "Deltatraveler"
   },
   vex: {
     type: "game",
