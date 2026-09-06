@@ -295,7 +295,7 @@ class DisplayPerformanceApp extends BaseApp {
 
   openPopup() {
     if (this.popupVisible) return;
-
+    this.powerMode = performanceManager.getMode();
     const existingPopup = $("#" + this.popupId);
     if (existingPopup) {
       existingPopup.remove();

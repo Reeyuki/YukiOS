@@ -71,6 +71,7 @@ export const StorageKeys = {
   startMenuCategoryRenames: "yukiOS_startMenuCategoryRenames",
   startMenuCategoryDeleted: "yukiOS_startMenuCategoryDeleted",
   performanceMode: "yukiOS_performance_mode",
+  performancePrevWallpaper: "yukiOS_performance_prev_wallpaper",
   showWorkspace: "yukiOS_show_workspace",
   startMenuGridItems: "yukiOS_startMenuGridItems",
   lastLaunchTime: "yukiOS_lastLaunchTime",

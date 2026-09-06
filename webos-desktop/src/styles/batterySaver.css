@@ -1,33 +1,72 @@
-html.battery-saver * {
-  animation-duration: 0s !important;
-  transition-duration: 0s !important;
-}
-
 html.battery-saver .window,
 html.battery-saver .taskbar-preview,
 html.battery-saver .context-menu,
 html.battery-saver #tray-overflow-popup,
 html.battery-saver #display-performance-tray-popup,
 html.battery-saver #clipboard-tray-popup,
-html.battery-saver #audio-mixer-panel {
+html.battery-saver #audio-mixer-panel,
+html.battery-saver .start-menu,
+html.battery-saver #ntf-panel {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: var(--shadow-sm) !important;
 }
 
+html.battery-saver #vanta-container,
+html.battery-saver #wallpaper-video,
+html.battery-saver #wallpaper-canvas,
+html.battery-saver #wallpaper-engine-host,
+html.battery-saver .wallpaper-video {
+  display: none !important;
+}
+
+html.battery-saver #wallpaper-img {
+  display: block !important;
+  animation: none !important;
+}
+
+html.battery-saver .wallpaper-enter {
+  animation: none !important;
+}
+
+html.battery-saver .window {
+  animation-duration: 0.05s !important;
+  transition-duration: 0.05s !important;
+  animation-timing-function: ease-out !important;
+}
+
+html.battery-saver .window.dragging {
+  transition: none !important;
+  animation: none !important;
+}
+
+html.battery-saver #snap-ghost {
+  transition-duration: 0.05s !important;
+}
+
+html.battery-saver .start-menu,
+html.battery-saver .ntf-toast,
+html.battery-saver .context-menu,
+html.battery-saver #tray-overflow-popup,
+html.battery-saver #display-performance-tray-popup,
+html.battery-saver #clipboard-tray-popup,
+html.battery-saver #audio-mixer-panel {
+  animation-duration: 0.06s !important;
+  transition-duration: 0.05s !important;
+  animation-timing-function: ease-out !important;
+}
+
 html.battery-saver .window:hover,
-html.battery-saver .icon:hover img {
+html.battery-saver .icon:hover img,
+html.battery-saver .file-item:hover,
+html.battery-saver .taskbar-item:hover {
   transform: none !important;
 }
 
-html.battery-saver #vanta-container {
-  display: none !important;
-}
-
-html.battery-saver #wallpaper-video {
-  display: none !important;
-}
-
-html.battery-saver #vanta-container + #wallpaper-img {
-  display: block !important;
+html.battery-saver .wa-ripple,
+html.battery-saver .wa-focus-glow,
+html.battery-saver .wa-wobble-settle-anim,
+html.battery-saver .pulse-news-badge,
+html.battery-saver .speaker-pop {
+  animation: none !important;
 }

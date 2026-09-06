@@ -148,6 +148,17 @@
           ["fa-upload", "Upload Custom Image", "Drop your own image and apply instantly"],
           ["fa-pen", "Customize Any App", "Change icon and title for any Yuki app"]
         ]
+      },
+      {
+        "icon": "fa-bolt",
+        "title": "Performance Mode",
+        "items": [
+          [
+            "fa-bolt",
+            "Performance Mode",
+            "Disables animations and switches from animated wallpaper to static wallpaper"
+          ]
+        ]
       }
     ]
   },
