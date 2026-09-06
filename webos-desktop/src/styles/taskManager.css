@@ -9,7 +9,10 @@
 }
 
 .tm-sidebar {
-  width: 200px;
+  width: var(--tm-sidebar-w, 200px);
+  min-width: 140px;
+  max-width: 320px;
+  position: relative;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -17,6 +20,28 @@
   border-right: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   gap: 2px;
+}
+
+.tm-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+  margin-left: -2px;
+  margin-right: -2px;
+  z-index: 5;
+  transition: background 0.12s;
+  align-self: stretch;
+}
+
+.tm-resizer:hover,
+.tm-resizer.active {
+  background: color-mix(in oklch, var(--brand) 30%, transparent);
+}
+
+body.pane-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .tm-sidebar-title {

@@ -57,13 +57,6 @@ export class YukiConvertApp extends BaseApp {
       const closeBtn = win.querySelector(".close-btn");
       if (closeBtn) closeBtn.click();
       os.app.launch("explorerApp");
-      os.notify.send(
-        "Yuki Convert",
-        "Select one or more files, right-click, and choose 'Convert / Transform...'",
-        "info",
-        5000,
-        "fas fa-exchange-alt"
-      );
     });
 
     fileInput.addEventListener("change", async (e) => {

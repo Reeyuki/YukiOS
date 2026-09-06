@@ -412,7 +412,7 @@ export class SetupApp extends BaseApp {
     return `
       <div class="setup-step" data-step="5">
         <h2 class="step-title">
-          <i class="fas fa-paint-brush"></i> Personalize Your Experience
+          <i class="fas fa-paint-brush"></i> Choose a theme and wallpaper
         </h2>
 
         <div class="personalize-section">
@@ -634,7 +634,7 @@ export class SetupApp extends BaseApp {
             <i class="fas fa-rocket"></i>
           </div>
           <h2 class="complete-title">You're All Set!</h2>
-          <p class="complete-subtitle">Jump in and make it yours</p>
+          <p class="complete-subtitle">Your desktop is ready</p>
         </div>
 
         <div class="summary-grid">
@@ -892,7 +892,7 @@ export class SetupApp extends BaseApp {
     backBtn.style.display = this.currentStep > 0 ? "flex" : "none";
 
     if (this.currentStep === this.totalSetupSteps - 1) {
-      setHTML(nextBtn, 'Start Exploring <i class="fas fa-rocket"></i>');
+      setHTML(nextBtn, "Open desktop");
     } else {
       setHTML(nextBtn, 'Continue <i class="fas fa-arrow-right"></i>');
     }
@@ -973,7 +973,7 @@ export class SetupApp extends BaseApp {
         detail: { soundEnabled: this.userChoices.sound }
       })
     );
-    const welcomeContent = `All set, ${sm?.currentSession?.name || "Guest"}!
+    const welcomeContent = `Setup complete, ${sm?.currentSession?.name || "Guest"}!
 
 Here's what you picked:
 - Theme: ${this.userChoices.theme}
@@ -996,14 +996,10 @@ Have fun!`;
       console.error("Failed to create welcome file:", e);
     }
 
-    os.notify.send(
-      "You're all set!",
-      "Setup is done. Hit the Start Menu to jump in.",
-      "success",
-      8000,
-      "fas fa-rocket",
-      AppSource.SETUP
-    );
+    os.notify.send("Welcome to YukiOS", "", {
+      type: "success",
+      duration: 3000
+    });
 
     os.window.close(win);
     setTimeout(() => startIntroTour(), 600);

@@ -634,7 +634,6 @@ export class NotepadApp extends BaseApp {
           Math.abs(Math.round((textarea.value.length - newText.length) / (findText.length - replaceText.length))) || 0;
         textarea.value = newText;
         this.markModified(win, winId);
-        os.notify.send("Replace", `Replaced ${count} occurrence(s)`);
       },
       ".cancel-btn": () => dialog.remove()
     });

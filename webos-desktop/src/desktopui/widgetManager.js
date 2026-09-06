@@ -165,7 +165,6 @@ export class WidgetBase {
   onConfigure() {
     const fields = this.getConfigFields();
     if (fields.length === 0) {
-      os.notify.send(`${this.title}`, "No configuration options available");
       return;
     }
     const winId = `widget-config-${this.id}`;

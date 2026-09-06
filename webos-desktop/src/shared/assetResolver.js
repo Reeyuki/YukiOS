@@ -168,8 +168,17 @@ export function initializeMirrors(appMap) {
       });
     }
 
-    const logoUrl = resolveYukiAsset("static/icons/logo.png");
-    document.documentElement.style.setProperty("--start-logo-url", `url("${logoUrl}")`);
+    const customStartIcon = (() => {
+      try {
+        return os.storage.get(StorageKeys.startButtonIcon);
+      } catch {
+        return null;
+      }
+    })();
+    if (!customStartIcon) {
+      const logoUrl = resolveYukiAsset("static/icons/logo.png");
+      document.documentElement.style.setProperty("--start-logo-url", `url("${logoUrl}")`);
+    }
   } catch (err) {
     console.error("Failed to initialize mirrors:", err);
   }
@@ -343,7 +352,7 @@ export async function resolveUrl(url, isCdnGh = false) {
 }
 
 export async function fetchHtmlAsBlobUrl(url, options = {}) {
-  const { injectBannerHtml = "" } = options;
+  const { injectBannerHtml = "", skipRewrite = false } = options;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
   const html = await res.text();
@@ -391,7 +400,9 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
       rootBase = getCdnRepoBase(baseHrefFromDoc) || new URL("/", baseHrefFromDoc).href;
     } catch {}
   }
-  const isIgnored =
+  const lowerUrl = url.toLowerCase();
+  const isWasmAutoIgnored = lowerUrl.includes("/static/games/wasm/") || lowerUrl.includes("/static/apps/");
+  const legacyIgnored =
     [
       "angrybirds",
       "subway",
@@ -402,44 +413,28 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
       "catfish",
       "roblox",
       "gamesforaetheris",
-      "cat_fish",
-      "miside",
-      "BirthdayBash",
-      "boilNoodlesAtNight",
-      "cuphead",
-      "brotatoPawsNClaws",
-      "cheeseRolling",
-      "fez",
-      "theManFromTheWindow2",
-      "beatblock",
-      "happyRoom",
-      "agesOfConflict",
-      "whileTrueLearn",
-      "theAdventuresOfSirKicksalot",
-      "granny3",
-      "peakVeryWip",
-      "amongUs",
-      "gta3"
-    ].some((p) => url.toLowerCase().includes(p.toLowerCase())) || url.toLowerCase().includes("catgoesfishing.html");
+      "cat_fish"
+    ].some((p) => lowerUrl.includes(p.toLowerCase())) || lowerUrl.includes("catgoesfishing.html");
+  const isIgnored = skipRewrite || isWasmAutoIgnored || legacyIgnored;
 
   let rewritten = html;
   if (!isIgnored) {
     rewritten = html
       .replace(/\b(src|poster|data)=([\"'])\/next\/(?!\/)/gi, `$1=$2${assetDirBase}next/`)
       .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/next\/(?!\/)/gi, `<$1$2$3=$4${assetDirBase}next/`)
-      .replace(/\burl\(\s*([\"']?)\/next\/(?!\/)/gi, `url($1${assetDirBase}next/`)
+      .replace(/\burl\(\s*([\"']?)\/next\/(?!\/)/g, `url($1${assetDirBase}next/`)
       .replace(/\b(src|poster|data)=([\"'])\/static\/games\/(?!\/)/gi, `$1=$2${rootBase}`)
       .replace(/\b(src|poster|data)=([\"'])\/(?!\/)/gi, `$1=$2${rootBase}`)
       .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/static\/games\/(?!\/)/gi, `<$1$2$3=$4${rootBase}`)
       .replace(/<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])\/(?!\/)/gi, `<$1$2$3=$4${rootBase}`)
-      .replace(/\burl\(\s*([\"']?)\/static\/games\/(?!\/)/gi, `url($1${rootBase}`)
-      .replace(/\burl\(\s*([\"']?)\/(?!\/)/gi, `url($1${rootBase}`)
+      .replace(/\burl\(\s*([\"']?)\/static\/games\/(?!\/)/g, `url($1${rootBase}`)
+      .replace(/\burl\(\s*([\"']?)\/(?!\/)/g, `url($1${rootBase}`)
       .replace(/\b(src|poster|data)=([\"'])(?!https?:|data:|blob:|\/\/|#|\/)/gi, `$1=$2${assetDirBase}`)
       .replace(
         /<(link|a|form)\b([^>]*?)\b(href|action)=([\"'])(?!https?:|data:|blob:|\/\/|#|\/)/gi,
         `<$1$2$3=$4${assetDirBase}`
       )
-      .replace(/\burl\(\s*([\"']?)(?!https?:|data:|blob:|\/\/|#|\/)/gi, `url($1${assetDirBase}`);
+      .replace(/\burl\(\s*([\"']?)(?!https?:|data:|blob:|\/\/|#|\/)/g, `url($1${assetDirBase}`);
   }
 
   const looksLikeUnityWebgl =
@@ -460,6 +455,12 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
 
   const injectedScripts = `<script>
 (function() {
+  try {
+    const _rs = history.replaceState.bind(history);
+    const _ps = history.pushState.bind(history);
+    history.replaceState = function(s,t,u){ try{ return _rs(s,t,u);}catch(e){ if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:")) return; throw e; } };
+    history.pushState = function(s,t,u){ try{ return _ps(s,t,u);}catch(e){ if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:")) return; throw e; } };
+  } catch {}
   const ROOT_BASE = "${rootBase}";
   const ASSET_DIR_BASE = "${assetDirBase}";
   const JSDELIVR_GH_BASE = "https://cdn.jsdelivr.net/gh/";
@@ -552,10 +553,23 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     }
   }
 
+  const historyGuard = `<script>try{const _rs=history.replaceState.bind(history),_ps=history.pushState.bind(history);history.replaceState=function(s,t,u){try{return _rs(s,t,u);}catch(e){if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:"))return;throw e;}};history.pushState=function(s,t,u){try{return _ps(s,t,u);}catch(e){if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:"))return;throw e;}};}catch{}<\/script>`;
+  if (lowerUrl.includes("wasmdotrip") || lowerUrl.includes("peak-port")) {
+    rewritten = rewritten.replace(
+      /history\.replaceState\s*\(\s*null\s*,\s*""\s*,\s*u\.toString\(\)\s*\)\s*;/g,
+      'try{history.replaceState(null,"",u.toString());}catch(e){}'
+    );
+  }
   const hasBase = /<base\b[^>]*>/i.test(rewritten);
 
   if (isIgnored) {
-    withBase = rewritten;
+    if (hasBase) {
+      withBase = rewritten.replace(/<base\b[^>]*>/i, (m) => `${m}\n${historyGuard}`);
+    } else if (/<head\b[^>]*>/i.test(rewritten)) {
+      withBase = rewritten.replace(/<head\b[^>]*>/i, (m) => `${m}\n<base href="${baseHref}">\n${historyGuard}`);
+    } else {
+      withBase = `<base href="${baseHref}">\n${historyGuard}\n${rewritten}`;
+    }
   } else if (hasBase) {
     withBase = rewritten.replace(/<base\b[^>]*>/i, (m) => `${m}\n${injectedScripts}`);
   } else if (/<head\b[^>]*>/i.test(rewritten)) {

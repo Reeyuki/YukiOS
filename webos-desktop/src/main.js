@@ -45,6 +45,7 @@ import { bus } from "./core/EventBus.js";
 import { trayManager } from "./tray/tray.js";
 import { MacControlCenter } from "./modes/macos/ControlCenter.js";
 import { MenuBarManager } from "./modes/macos/MenuBarManager.js";
+import { applyStartButtonIcon } from "./desktopui/startButtonManager.js";
 
 registerPWA();
 
@@ -73,6 +74,8 @@ const os = initializeOSBridge({
   trayManager,
   portManager
 });
+
+notificationCenter.restorePersistedState();
 
 os.clipboardManager = clipboardManager;
 new MacControlCenter();
@@ -121,7 +124,6 @@ setGameLauncher(appLauncher);
 initSteamDataManagerCache();
 
 appLauncher.setEmulatorApp(os.app.getInstance(ServiceKeys.EMULATOR));
-appLauncher.overlayController = null;
 
 appCreatorApp.restoreInstalledApps();
 
@@ -165,9 +167,17 @@ async function start() {
   }
 
   await clipboardManager.init();
-  setTimeout(() => initializeMirrors(appMap), 100);
+  setTimeout(() => {
+    initializeMirrors(appMap);
+    try {
+      applyStartButtonIcon();
+    } catch {}
+  }, 100);
 
   document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
+  try {
+    applyStartButtonIcon();
+  } catch {}
 
   setTimeout(() => {
     const testImg = new Image();

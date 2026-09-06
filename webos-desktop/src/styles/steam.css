@@ -109,7 +109,7 @@
 
 .steam-menu-item {
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color var(--transition-base);
 }
 
 .steam-menu-item:hover {
@@ -142,8 +142,8 @@
   font-size: 13px;
   cursor: pointer;
   transition:
-    background 0.2s,
-    color 0.2s;
+    background var(--transition-base),
+    color var(--transition-base);
 }
 
 .steam-quick-nav-btn:hover {
@@ -178,7 +178,7 @@
   padding: 4px;
   cursor: pointer;
   margin-left: auto;
-  transition: color 0.15s;
+  transition: color var(--transition-fast);
 }
 
 .steam-disclaimer-close:hover {
@@ -193,7 +193,7 @@
   background: #272d37;
   padding: 4px 10px;
   border-radius: 4px;
-  transition: background 0.2s;
+  transition: background var(--transition-base);
 }
 
 .steam-user-profile:hover {
@@ -277,7 +277,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: background var(--transition-base);
 }
 
 .steam-nav-btn:hover {
@@ -296,7 +296,7 @@
 .steam-tab {
   cursor: pointer;
   position: relative;
-  transition: color 0.2s;
+  transition: color var(--transition-base);
 }
 
 .steam-tab.active {
@@ -463,7 +463,7 @@
   padding: 4px 12px;
   cursor: pointer;
   font-size: 11px;
-  transition: color 0.2s;
+  transition: color var(--transition-base);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -557,8 +557,8 @@
   border-radius: 4px;
   overflow: hidden;
   transition:
-    background 0.2s,
-    transform 0.2s;
+    background var(--transition-base),
+    transform var(--transition-base);
   cursor: pointer;
 }
 
@@ -613,7 +613,7 @@
   color: #fff;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: popover-fade 0.2s ease;
+  animation: popover-fade var(--transition-base) ease;
 }
 
 @keyframes popover-fade {
@@ -681,8 +681,8 @@
   opacity: 0;
   transition:
     opacity 0.3s,
-    transform 0.2s,
-    background 0.2s;
+    transform var(--transition-base),
+    background var(--transition-base);
   pointer-events: none;
   z-index: 100;
 }
@@ -848,7 +848,7 @@
   color: #b8b6b4;
   cursor: pointer;
   font-size: 14px;
-  transition: color 0.2s;
+  transition: color var(--transition-base);
 }
 
 .steam-sort-order-btn:hover {
@@ -866,7 +866,7 @@
   flex-direction: column;
   gap: 8px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform var(--transition-base);
 }
 
 .steam-game-card:hover {
@@ -1014,8 +1014,8 @@
   filter: brightness(1.1);
   transform: scale(1.02);
   transition:
-    transform 0.2s,
-    filter 0.2s;
+    transform var(--transition-base),
+    filter var(--transition-base);
 }
 
 .steam-play-btn:active {
@@ -1027,7 +1027,7 @@
 }
 
 .steam-section-header i {
-  transition: transform 0.2s;
+  transition: transform var(--transition-base);
 }
 
 .steam-game-overview .overview-banner img {
@@ -1060,7 +1060,7 @@
   height: 100%;
   cursor: ew-resize;
   z-index: 10;
-  transition: background 0.2s;
+  transition: background var(--transition-base);
 }
 
 .sidebar-resize-handle:hover {
@@ -1203,7 +1203,7 @@
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: var(--ls-wide);
-  transition: opacity 0.15s;
+  transition: opacity var(--transition-fast);
 }
 
 .store-play-btn:hover {
@@ -1258,8 +1258,8 @@
   flex-direction: column;
   cursor: pointer;
   transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .store-game-card:hover {
@@ -1310,7 +1310,7 @@
   align-self: flex-start;
   margin-top: 2px;
   text-transform: uppercase;
-  transition: background 0.15s;
+  transition: background var(--transition-fast);
 }
 
 .store-card-play-btn:hover {
@@ -1442,7 +1442,7 @@
   background: #3d4450;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-base);
   flex-shrink: 0;
 }
 
@@ -1458,7 +1458,7 @@
   height: 20px;
   background: #fff;
   border-radius: 50%;
-  transition: transform 0.2s;
+  transition: transform var(--transition-base);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -1634,8 +1634,8 @@
   color: #b8c6d1;
   cursor: pointer;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast);
   border-radius: 0;
   user-select: none;
 }
@@ -1680,11 +1680,11 @@
 }
 
 .steam-settings-panel--out.steam-settings-panel--down {
-  animation: steam-settings-panel-out-up 0.15s ease forwards;
+  animation: steam-settings-panel-out-up var(--transition-fast) ease forwards;
 }
 
 .steam-settings-panel--out.steam-settings-panel--up {
-  animation: steam-settings-panel-out-down 0.15s ease forwards;
+  animation: steam-settings-panel-out-down var(--transition-fast) ease forwards;
 }
 
 .steam-settings-panel--in.steam-settings-panel--down {
@@ -1756,8 +1756,8 @@
   font-size: 14px;
   cursor: pointer;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast);
   border-radius: 4px;
 }
 
@@ -1791,8 +1791,8 @@
   font-size: 12px;
   cursor: pointer;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast);
   border-radius: 4px;
 }
 
@@ -1892,8 +1892,8 @@ html[data-theme] .window-header.steam-popup-header,
   cursor: pointer;
   border-radius: 4px;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .steam-settings-window-btn:hover {
@@ -1963,7 +1963,7 @@ html[data-theme] .window-header.steam-popup-header,
   margin-inline: -8px;
   padding-inline: 8px;
   border-radius: 8px;
-  transition: background 0.15s ease;
+  transition: background var(--transition-fast) ease;
 }
 
 .steam-overview-friend[data-profile-user-id]:hover {

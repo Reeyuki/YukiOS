@@ -114,6 +114,8 @@ import { bindAccountsCategory } from "./accountsPanel.js";
 import { bindTilingCategory } from "./pane-tiling.js";
 import { bindShortcutsCategory } from "./pane-shortcuts.js";
 import { bindChromeOsCategory } from "../modes/chromeos/settings.js";
+import { bindRuffleCategory } from "./pane-ruffle.js";
+import { bindGamingCategory } from "./pane-gaming.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { bindSelectMenu, getSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue } from "../shared/rangeSlider.js";
@@ -564,6 +566,8 @@ export class SettingsApp extends BaseApp {
     bindNetworkCategory(win, save, this.settings, showSaved);
     bindAudioCategory(win, this.settings, showSaved);
     bindAccountsCategory(win);
+    bindRuffleCategory(win);
+    bindGamingCategory(win, this.wm);
     if (modeManager.isActive(MODES.TILING)) {
       bindTilingCategory(win, save, this.settings);
     }

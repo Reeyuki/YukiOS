@@ -981,7 +981,7 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" id="${winId}-progress-fill"></div>
           </div>
-          <span class="progress-text" id="${winId}-progress-text">Ready to transform...</span>
+          <span class="progress-text" id="${winId}-progress-text">Drop files to convert</span>
         </div>
 
         <div class="action-buttons">
@@ -1645,8 +1645,8 @@ export function openFileConverter(fileName, currentPath, os, onComplete = null) 
         });
 
         dom.progressFill.style.width = "100%";
-        dom.progressText.textContent = "Conversion Completed successfully!";
-        os.notify.send("File Converter", `Successfully converted to "${finalName}"`);
+        dom.progressText.textContent = "Conversion complete";
+        os.notify.send("File Converter", `Converted to "${finalName}"`, { type: "success", duration: 3000 });
         os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.Converter });
 
         updateHistoryUI();

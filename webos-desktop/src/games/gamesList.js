@@ -7,9 +7,10 @@ export const appMap = {
   },
   deltaruneCh5: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/deltarunefull.html",
+    url: "https://mollomm1.github.io/test",
     icon: "/static/icons/deltarune.png",
-    title: "Deltarune CH1-5"
+    title: "Deltarune CH1-5",
+    scramjetEnabled: true
   },
   slimeRancher: {
     type: "game",
@@ -183,7 +184,8 @@ export const appMap = {
     type: "game",
     url: "https://emupedia.net/emupedia-game-mario",
     icon: "/static/icons/mario.webp",
-    title: "Mario"
+    title: "Mario",
+    scramjetEnabled: true
   },
   pacman: {
     type: "game",
@@ -243,7 +245,7 @@ export const appMap = {
   },
   geometryDash: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/27-f.html",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/785-upd3.html",
     icon: "/static/icons/geometryDash.webp",
     title: "Geometry Dash"
   },
@@ -273,7 +275,7 @@ export const appMap = {
   },
   minusB: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/817-f.html?t=1778436600177",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/817-f.html?t=1788652715549",
     icon: "/static/icons/minusB.webp",
     title: "Minus B"
   },
@@ -305,7 +307,8 @@ export const appMap = {
     type: "game",
     url: "https://emupedia.net/emupedia-game-2048",
     icon: "/static/icons/2048.webp",
-    title: "2048"
+    title: "2048",
+    scramjetEnabled: true
   },
   flappyBird: {
     type: "game",
@@ -333,9 +336,21 @@ export const appMap = {
   },
   cutTheRope: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/85-f.html",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/212-f2.html",
     icon: "/static/icons/ctr2.webp",
     title: "Cut The Rope 2"
+  },
+  cutTheRopeTimeTravel: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/213-f2.html",
+    icon: "/static/icons/ctrtime.webp",
+    title: "Cut The Rope: Time Travel"
+  },
+  cutTheRopeHolidayGift: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/214-fi2.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/214.png",
+    title: "Cut The Rope: Holiday Gift"
   },
   happyWheels: {
     type: "game",
@@ -485,13 +500,15 @@ export const appMap = {
     type: "game",
     url: "https://emupedia.net/emupedia-game-jetpack-joyride",
     icon: "/static/icons/jetpack.webp",
-    title: "Jetpack Joyride"
+    title: "Jetpack Joyride",
+    scramjetEnabled: true
   },
   fruitNinja: {
     type: "game",
     url: "https://emupedia.net/emupedia-game-fruit-ninja",
     icon: "/static/icons/fruit.webp",
-    title: "Fruit Ninja"
+    title: "Fruit Ninja",
+    scramjetEnabled: true
   },
   raft: {
     type: "game",
@@ -619,6 +636,18 @@ export const appMap = {
     icon: "/static/icons/redball4.webp",
     title: "Red Ball 4"
   },
+  redBall4Vol2: {
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/243.html",
+    type: "game",
+    icon: "/static/icons/redballvol2.webp",
+    title: "Red Ball 4 Vol 2"
+  },
+  redBall4Vol3: {
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/244.html",
+    type: "game",
+    icon: "/static/icons/redballvol3.webp",
+    title: "Red Ball 4 Vol 2"
+  },
   fixItFelix: {
     type: "megadrive",
     url: "/static/games/emulator/felix.7z",
@@ -733,7 +762,8 @@ export const appMap = {
     type: "game",
     url: "https://emupedia.net/emupedia-game-binding-of-isaac",
     icon: "/static/icons/isaac.webp",
-    title: "Isaac"
+    title: "Isaac",
+    scramjetEnabled: true
   },
   isaacRebirth: {
     type: "remote",
@@ -1013,7 +1043,8 @@ export const appMap = {
     type: "game",
     url: "https://emupedia.net/emupedia-game-doom2",
     icon: "/static/icons/doom.webp",
-    title: "Doom 2"
+    title: "Doom 2",
+    scramjetEnabled: true
   },
   soultheraAscendant: {
     type: "game",
@@ -1369,12 +1400,6 @@ export const appMap = {
     icon: "/static/icons/granny3.jpg",
     title: "Granny 3"
   },
-  peakVeryWip: {
-    type: "game",
-    url: "/static/games/wasm/peakVeryWip/index.html",
-    icon: "/static/icons/peakVeryWip.jpg",
-    title: "PEAK (VERY wip)"
-  },
   amongUs: {
     type: "game",
     url: "/static/games/wasm/amongUs/index.html",
@@ -1386,5 +1411,264 @@ export const appMap = {
     url: "/static/games/wasm/gta3/index.html",
     icon: "/static/icons/gta3.png",
     title: "GTA 3"
+  },
+  peakPort: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/wasmdotrip/Peak-Port@main/index.html",
+    icon: "/static/icons/peakVeryWip.jpg",
+    title: "PEAK",
+    skipRewrite: true
+  },
+  ovo: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/1-fde.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/1.png",
+    title: "OvO"
+  },
+  vex7: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/52-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/52.png",
+    title: "Vex 7"
+  },
+  motoX3M: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/96.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/96.png",
+    title: "Moto X3M"
+  },
+  cookieClicker: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/82-a.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/82.png",
+    title: "Cookie Clicker"
+  },
+  fridayNightFunkin: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/8-wow2.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/8.png",
+    title: "Friday Night Funkin"
+  },
+  sprunki: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/9-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/9.png",
+    title: "Sprunki"
+  },
+  retroBowl: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/33-ff.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/33.png",
+    title: "Retro Bowl"
+  },
+  blockBlast: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/6-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/6.png",
+    title: "Block Blast"
+  },
+  polyTrack: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/123-win2.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/123.png",
+    title: "Poly Track"
+  },
+  driftHunters: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/173.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/173.png",
+    title: "Drift Hunters"
+  },
+  peoplePlayground: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/194-a.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/194-m.png",
+    title: "People Playground"
+  },
+  pizzaTower: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/267-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/267.png",
+    title: "Pizza Tower"
+  },
+  webFishing: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/423-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/423.png",
+    title: "WebFishing"
+  },
+  karlson: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/542-af.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/542.png",
+    title: "Karlson"
+  },
+  yourOnlyMoveIsHustle: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/776.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/776.png",
+    title: "Your Only Move Is HUSTLE"
+  },
+  untitledGooseGame: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/718.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/718.png",
+    title: "Untitled Goose Game"
+  },
+  justShapesAndBeats: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/826-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/826.png",
+    title: "Just Shapes & Beats"
+  },
+  antonblast: {
+    type: "game",
+    url: "https://truffled.lol/games/antonblast/runner.html",
+    icon: "https://truffled.lol/png/games/anton.webp",
+    title: "Antonblast"
+  },
+  antonblast64: {
+    type: "game",
+    url: "https://truffled.lol/games/antonblast64/index.html",
+    icon: "https://truffled.lol/png/games/an64.webp",
+    title: "Antonblast 64"
+  },
+  bitlife: {
+    type: "game",
+    url: "https://truffled.lol/games/bitlife/index.html",
+    icon: "https://truffled.lol/png/games/bit.webp",
+    title: "Bitlife"
+  },
+  adofai: {
+    type: "game",
+    url: "https://truffled.lol/games/a-dance-of-fire-and-ice/index.html",
+    icon: "https://truffled.lol/png/games/adofai.webp",
+    title: "A Dance of Fire and Ice"
+  },
+  aDifficultGameAboutClimbing: {
+    type: "game",
+    url: "https://truffled.lol/gamefile/adgac.html",
+    icon: "https://truffled.lol/png/games/adgac.webp",
+    title: "A Difficult Game About Climbing"
+  },
+  classOf09: {
+    type: "game",
+    url: "https://truffled.lol/games/C09/index.html",
+    icon: "https://truffled.lol/png/games/class.webp",
+    title: "Class Of 09"
+  },
+  classOf09Flipside: {
+    type: "game",
+    url: "https://truffled.lol/games/C09FS/index.html",
+    icon: "https://truffled.lol/png/games/flip.webp",
+    title: "Class Of 09 Flipside"
+  },
+  classOf09ReUp: {
+    type: "game",
+    url: "https://truffled.lol/games/C09RU/index.html",
+    icon: "https://truffled.lol/png/games/reup.webp",
+    title: "Class Of 09 Re-Up"
+  },
+  deltatraveler: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/560-f.html",
+    icon: "https://truffled.lol/png/games/deltatr.webp",
+    title: "Deltatraveler"
+  },
+  vex: {
+    type: "game",
+    url: "https://truffled.lol/games/vex/index.html",
+    icon: "https://truffled.lol/png/games/vex.webp",
+    title: "Vex"
+  },
+  vex2: {
+    type: "game",
+    url: "https://truffled.lol/gamefile/vex2.html",
+    icon: "https://truffled.lol/png/games/vex2.webp",
+    title: "Vex 2"
+  },
+  vex3: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/47-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/47.png",
+    title: "Vex 3"
+  },
+  vex3Xmas: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/48-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/48.png",
+    title: "Vex 3 XMAS"
+  },
+  vex4: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/49-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/49.png",
+    title: "Vex 4"
+  },
+  vex5: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/50-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/50.png",
+    title: "Vex 5"
+  },
+  vex6: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/51-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/51.png",
+    title: "Vex 6"
+  },
+  vex8: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/53-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/53.png",
+    title: "Vex 8"
+  },
+  vexChallenges: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/54-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/54.png",
+    title: "Vex Challenges"
+  },
+  vexX3m: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/55-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/55.png",
+    title: "Vex X3M"
+  },
+  vexX3m2: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/56-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/56.png",
+    title: "Vex X3M 2"
+  },
+  ovo2: {
+    type: "game",
+    url: "https://truffled.lol/games/OvO2/index.html",
+    icon: "https://truffled.lol/png/games/ovo2.webp",
+    title: "OvO 2"
+  },
+  ovoDimensions: {
+    type: "game",
+    url: "https://truffled.lol/games/OvoDimensions/index.html",
+    icon: "https://truffled.lol/png/games/ovodi.webp",
+    title: "OvO Dimensions"
+  },
+  granny2: {
+    type: "game",
+    url: "https://truffled.lol/gamefile/Granny%202.html",
+    icon: "https://truffled.lol/png/games/gran2.webp",
+    title: "Granny 2"
+  },
+  amandaTheAdventurer: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/450-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/450.png",
+    title: "Amanda the Adventurer"
+  },
+  bloodmoney: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/freebuisness/html@main/454-f.html",
+    icon: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main/454.png",
+    title: "Bloodmoney"
   }
 };

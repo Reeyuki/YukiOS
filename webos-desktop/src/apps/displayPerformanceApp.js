@@ -192,13 +192,10 @@ class DisplayPerformanceApp extends BaseApp {
   }
 
   adjustBrightness(delta) {
-    this.brightness = Math.max(20, Math.min(150, this.brightness + delta));
+    this.brightness = Math.max(20, Math.min(100, this.brightness + delta));
     this.applyDisplaySettings();
     this.saveSettings();
     this.updatePopupSliders();
-    if (!this.shouldSuppressNotification()) {
-      os.notify.send("Brightness", `${Math.round(this.brightness)}%`, { type: "info", duration: 1000, icon: "fa-sun" });
-    }
   }
 
   adjustTemperature(delta) {
@@ -206,13 +203,6 @@ class DisplayPerformanceApp extends BaseApp {
     this.applyDisplaySettings();
     this.saveSettings();
     this.updatePopupSliders();
-    if (!this.shouldSuppressNotification()) {
-      os.notify.send("Temperature", this.getTemperatureLabel(this.temperature), {
-        type: "info",
-        duration: 1000,
-        icon: "fa-temperature-half"
-      });
-    }
   }
 
   getTemperatureLabel(value) {

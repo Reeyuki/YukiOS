@@ -45,7 +45,7 @@ export class WindowAPI {
       );
       this.waitFor(
         win,
-        () => !win.querySelector(".window-header") && win.innerHTML.trim() !== "",
+        () => !win.querySelector(":scope > .window-header") && win.innerHTML.trim() !== "",
         () => {
           win.insertAdjacentHTML("afterbegin", headerHtml);
         },

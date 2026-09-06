@@ -1,5 +1,5 @@
 import "../styles/windowHeaderStyles.css";
-import { os, MODES } from "../framework.js";
+import { os } from "../framework.js";
 import { StorageKeys } from "../StorageKeys.js";
 
 export const HEADER_STYLES = {
@@ -129,7 +129,7 @@ export function getStoredHeaderStyleId() {
 }
 
 export function resolveHeaderStyleId() {
-  return getStoredHeaderStyleId() ?? (os.modes.isActive(MODES.MAC) ? "mac" : "default");
+  return getStoredHeaderStyleId() ?? "default";
 }
 
 export function getHeaderStyle(styleId) {

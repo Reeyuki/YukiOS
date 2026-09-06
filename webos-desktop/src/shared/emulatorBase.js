@@ -1,5 +1,6 @@
 import { BusEvents } from "../core/EventBus.js";
 import { os } from "../os/index.js";
+import { buildLoadingIndicator } from "./loadingIndicator.js";
 
 export function normalizePath(path) {
   if (Array.isArray(path)) return path;
@@ -8,14 +9,20 @@ export function normalizePath(path) {
 }
 
 export function fileNameToDisplayName(name) {
-  return name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function buildLoadingStateHTML({ winId, iconClass, wrapperClass, textClass, logClass, displayName }) {
+  const wc = wrapperClass || "yuki-loading-indicator emu-state emu-load-wrap";
+  const ic = iconClass || "fas fa-spinner fa-spin";
+  const indicator = buildLoadingIndicator({ label: `Starting <strong>${displayName}</strong>…`, iconClass: ic });
   return `
-    <div id="${winId}-inner" class="${wrapperClass || "emu-state emu-load-wrap"}">
-      <i class="${iconClass}"></i>
-      <div class="${textClass || "emu-state-text"} emu-state-text--accent">Starting <strong>${displayName}</strong>…</div>
+    <div id="${winId}-inner" class="${wc}">
+      ${indicator}
+      <div class="${textClass || "emu-state-text"} emu-state-text--accent" style="display:none">Starting <strong>${displayName}</strong>…</div>
       <div id="${winId}-log" class="${logClass || "emu-state-text--muted"}"></div>
     </div>`;
 }
@@ -85,7 +92,7 @@ export async function renderEmulatorFileList({
 }
 
 function defaultSpinner(count) {
-  return `<i class="fa-solid fa-spinner fa-spin emu-state-icon"></i><div class="emu-state-text">Saving ${count} file(s)…</div>`;
+  return `<div class="yuki-loading-indicator"><i class="fa-solid fa-spinner fa-spin emu-state-icon" style="animation-duration:1.4s;opacity:0.7"></i><div class="emu-state-text">Saving ${count} file(s)…</div></div>`;
 }
 
 function defaultSuccess(count) {

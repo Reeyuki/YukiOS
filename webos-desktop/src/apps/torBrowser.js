@@ -56,7 +56,7 @@ export class TorBrowserApp extends BaseApp {
             </div>
             <div class="tor-log" id="tor-log">
               <div class="tor-log-entry tor-log-info">
-                <span class="tor-log-time">—</span>
+                <span class="tor-log-time">-</span>
                 <span class="tor-log-msg">Ready. Click "Start Tor" to begin.</span>
               </div>
             </div>

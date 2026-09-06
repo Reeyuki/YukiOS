@@ -171,10 +171,7 @@ export class ColorPickerApp extends BaseApp {
       navigator.clipboard.writeText(hex).catch(() => {});
       this.addColor(hex);
       this.updatePreview(hex);
-      os.notify.send("Color Picker", `Copied ${hex} to clipboard`);
-    } catch {
-      /* user cancelled (ESC) */
-    }
+    } catch {}
   }
 
   async pickWithFallback() {
@@ -302,7 +299,6 @@ export class ColorPickerApp extends BaseApp {
         navigator.clipboard.writeText(hex).catch(() => {});
         this.addColor(hex);
         this.updatePreview(hex);
-        os.notify.send("Color Picker", `Copied ${hex} to clipboard`);
         this.removeOverlay();
       };
 

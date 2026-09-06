@@ -250,10 +250,6 @@ export class ClipboardManager {
         this.clipboard = null;
       }
     }
-
-    if (pastedCount > 0) {
-      os.notify.send(`${pastedCount} item${pastedCount !== 1 ? "s" : ""} pasted`);
-    }
   }
 
   async deleteSelectedIcons(selectedArray, selectionManager) {
@@ -286,7 +282,6 @@ export class ClipboardManager {
     }
 
     this.positionStore.save(saved);
-    os.notify.send(`${count} item${count !== 1 ? "s" : ""} moved to trash`);
   }
 
   async moveSelectedIconsToTrash(selectedArray, selectionManager) {
@@ -319,6 +314,5 @@ export class ClipboardManager {
     }
 
     this.positionStore.save(saved);
-    os.notify.send(`${count} item${count !== 1 ? "s" : ""} moved to trash`);
   }
 }

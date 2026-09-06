@@ -638,7 +638,6 @@ export class AppCreatorApp extends BaseApp {
 
     $("#ac-cancel-edit-btn", win).click();
     this.showStatus(statusEl, "success", `"${name}" updated successfully.`);
-    os.notify.send(`"${name}" updated successfully.`);
     this.refreshInstalledList(win);
   }
 
@@ -802,7 +801,7 @@ export class AppCreatorApp extends BaseApp {
     }
 
     this.showStatus(statusEl, "success", `"${name}" installed!`);
-    os.notify.send("", `"${name}" installed and added to desktop.`);
+    os.notify.send("Added to desktop", `"${name}"`, { type: "success", duration: 3000 });
     this.refreshInstalledList(win);
   }
 

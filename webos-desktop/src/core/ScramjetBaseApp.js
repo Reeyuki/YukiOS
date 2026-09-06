@@ -2,6 +2,7 @@ import { BaseApp } from "./BaseApp.js";
 
 import { os } from "../framework.js";
 import { getWispUrl } from "../shared/wispConfig.js";
+import { injectFileProtocolFallback, isFileProtocol } from "../shared/fileProtocolFallback.js";
 export class ScramjetBaseApp extends BaseApp {
   constructor(services) {
     super(services);
@@ -73,6 +74,12 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   async initScramjet(payload, vt, element, state) {
+    if (isFileProtocol()) {
+      const targetUrl = this.getTargetURL();
+      const container = element.querySelector(".scramjet-base-container");
+      if (container) injectFileProtocolFallback(container, this.getAppId(), targetUrl);
+      return;
+    }
     if (
       location.href.includes("jsdelivr") ||
       location.href.includes("esm.sh") ||

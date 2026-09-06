@@ -283,13 +283,13 @@ function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) 
     win.getAnimations().forEach((a) => a.cancel());
 
     const to = mode === "open" ? getOpenEndState() : getMinimizeEndState(win);
-    const duration = (mode === "open" ? 340 : 360) * getAnimationSpeed();
+    const duration = 180 * getAnimationSpeed();
 
     win.style.pointerEvents = mode === "open" ? "" : "none";
 
     const animation = win.animate([from, to], {
       duration,
-      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      easing: mode === "open" ? "cubic-bezier(0.16,1,0.3,1)" : "cubic-bezier(0.3,0,1,1)",
       fill: "forwards"
     });
     animation.id = "window-state";
@@ -315,14 +315,14 @@ function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) 
     if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
     if (win.style.display === "none") win.style.display = "";
 
-    const duration = 420 * getAnimationSpeed();
+    const duration = 220 * getAnimationSpeed();
     win.getAnimations().forEach((a) => a.cancel());
 
     const keyframes = isRestoring ? getRestoreKeyframes(anim, win) : getOpenKeyframes(anim, win, false);
 
     const animation = win.animate(keyframes, {
       duration,
-      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      easing: anim === OPEN_ANIMATIONS.elasticBounce ? "cubic-bezier(0.34,1.56,0.64,1)" : "cubic-bezier(0.16,1,0.3,1)",
       fill: "forwards"
     });
     animation.id = "window-state";
@@ -338,14 +338,15 @@ function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) 
     const anim = getMinimizeAnim();
     win.style.pointerEvents = "none";
 
-    const duration = 520 * getAnimationSpeed();
+    const duration = 200 * getAnimationSpeed();
     win.getAnimations().forEach((a) => a.cancel());
 
     const keyframes = getMinimizeKeyframes(anim, win);
 
     const animation = win.animate(keyframes, {
       duration,
-      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      easing:
+        anim === MINIMIZE_ANIMATIONS.elasticStretch ? "cubic-bezier(0.34,1.56,0.64,1)" : "cubic-bezier(0.3,0,1,1)",
       fill: "forwards"
     });
     animation.id = "window-state";
@@ -527,7 +528,7 @@ export function animateWindowClose(win, onDone) {
   const anim = selectedCloseAnim;
   win.style.pointerEvents = "none";
 
-  const duration = 220 * getAnimationSpeed();
+  const duration = 140 * getAnimationSpeed();
 
   win.getAnimations().forEach((existing) => existing.cancel());
 
@@ -542,7 +543,7 @@ export function animateWindowClose(win, onDone) {
 
   const animation = win.animate(keyframes, {
     duration: duration,
-    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    easing: "cubic-bezier(0.3,0,1,1)",
     fill: "forwards"
   });
   animation.id = "window-close";

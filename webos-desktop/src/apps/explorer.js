@@ -39,6 +39,7 @@ import { trigger as triggerCursorEffect } from "../cursorEffect.js";
 import { AppSource } from "../AppSource.js";
 import { showDynamicContextMenu } from "../shared/contextMenu.js";
 
+import { makePaneResizable } from "../shared/paneResizer.js";
 import { showConfirmDialog, showInputDialog, showArchiveDialog } from "./explorer/dialogs.js";
 import {
   showFileContextMenu,
@@ -228,6 +229,28 @@ export class ExplorerApp extends BaseApp {
     return html;
   }
 
+  attachPaneResizer(win) {
+    const container = win.querySelector(".explorer-container");
+    const sidebar = win.querySelector(".explorer-sidebar");
+    if (!container || !sidebar) return;
+    if (sidebar.querySelector(".explorer-resizer")) return;
+    if (win.querySelector(".explorer-resizer") && win.querySelector(".explorer-resizer").parentElement !== sidebar) {
+      const existing = win.querySelector(".explorer-resizer");
+      if (existing) existing.remove();
+    }
+    const resizer = createElement("div", { className: "explorer-resizer" });
+    const next = sidebar.nextSibling;
+    if (next) container.insertBefore(resizer, next);
+    else container.appendChild(resizer);
+    if (window.innerWidth <= 640) return;
+    makePaneResizable(container, sidebar, resizer, {
+      storageKey: StorageKeys.explorerSidebarWidth,
+      min: 140,
+      max: 320,
+      defaultWidth: 155
+    });
+  }
+
   sidebarRebuild(win, inst) {
     const sidebar = win.querySelector(".explorer-sidebar");
     if (!sidebar) return;
@@ -235,6 +258,7 @@ export class ExplorerApp extends BaseApp {
     this.bindSidebar(win, inst);
     this.renderMountsInSidebar(win, inst);
     this.updateActiveSidebar(inst);
+    this.attachPaneResizer(win);
   }
 
   bindSidebar(win, inst) {
@@ -581,6 +605,7 @@ export class ExplorerApp extends BaseApp {
     this.bindBackButton(win, inst);
     this.bindSidebar(win, inst);
     this.setupPathInput(win, inst);
+    this.attachPaneResizer(win);
     this.navigateInstance(inst, []);
   }
 
@@ -640,6 +665,7 @@ export class ExplorerApp extends BaseApp {
     this.bindBackButton(win, inst);
     this.bindSidebar(win, inst);
     this.setupPathInput(win, inst);
+    this.attachPaneResizer(win);
 
     const originalNavigate = this.navigateInstance.bind(this);
     this.navigateInstance = (i, path) => {
@@ -925,6 +951,7 @@ export class ExplorerApp extends BaseApp {
 
     this.setupSelectionBox(win, winId);
     this.setupDropZone(win, winId);
+    this.attachPaneResizer(win);
   }
 
   setupPathInput(win, inst) {

@@ -130,7 +130,7 @@ export class JsDosApp extends BaseApp {
       kind: "other",
       icon: "/static/icons/jsdos.webp",
       emitChanged: false,
-      spinnerHTML: `<i class="fa-solid fa-spinner fa-spin jsdos-loading-icon"></i><div class="jsdos-loading-text">Saving <strong>${file.name}</strong>…</div>`,
+      spinnerHTML: `<div class="yuki-loading-indicator"><i class="fa-solid fa-spinner fa-spin jsdos-loading-icon" style="animation-duration:1.4s;opacity:0.7"></i><div class="jsdos-loading-text">Saving <strong>${file.name}</strong>…</div></div>`,
       successHTML: `<i class="fa-solid fa-circle-check jsdos-success-icon"></i><div class="jsdos-success-text">Saved!</div>`,
       errorHTML: (msg) =>
         `<i class="fa-solid fa-triangle-exclamation jsdos-error-icon"></i><div class="jsdos-error-text">${msg}</div>`,
@@ -175,7 +175,7 @@ export class JsDosApp extends BaseApp {
       ${buildLoadingStateHTML({
         winId,
         iconClass: "fa-solid fa-compact-disc jsdos-loading-spinner emu-state-icon",
-        wrapperClass: "jsdos-loading emu-window-screen emu-load-wrap",
+        wrapperClass: "yuki-loading-indicator jsdos-loading emu-window-screen emu-load-wrap",
         textClass: "jsdos-game-loading-text emu-state-text",
         logClass: "jsdos-game-log emu-log",
         displayName
@@ -313,7 +313,7 @@ export class JsDosApp extends BaseApp {
       ${buildLoadingStateHTML({
         winId,
         iconClass: "fa-solid fa-compact-disc jsdos-loading-spinner",
-        wrapperClass: "jsdos-loading",
+        wrapperClass: "yuki-loading-indicator jsdos-loading",
         textClass: "jsdos-game-loading-text",
         logClass: "jsdos-game-log",
         displayName: name

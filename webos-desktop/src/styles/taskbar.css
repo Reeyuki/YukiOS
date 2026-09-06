@@ -225,7 +225,6 @@
   background: var(--start-logo-url, url("https://cdn.jsdelivr.net/gh/Reeyuki/yukios@main/static/icons/logo.png"))
     no-repeat center / 48px;
   cursor: pointer;
-  border-radius: var(--r-2xl);
   transition: filter var(--transition-base);
 }
 
@@ -777,7 +776,7 @@ html.mac-mode .desktop-peek-btn {
   z-index: 9999;
   min-width: 40px;
   max-width: 200px;
-  animation: trayPopupIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: trayPopupIn var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes trayPopupIn {

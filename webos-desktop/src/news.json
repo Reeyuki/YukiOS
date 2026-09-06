@@ -1,21 +1,109 @@
 [
   {
-    "date": "September 3, 2026",
-    "label": "Browser Plugin",
+    "date": "September 9, 2026",
+    "label": "YukiOS v4.0.0",
     "sections": [
+      {
+        "icon": "fa-gamepad",
+        "title": "47 New Games",
+        "items": [
+          [
+            "fa-gamepad",
+            "Added games",
+            "Vex, Vex 2, Vex 3, Vex 4, Vex 5, Vex 6, Vex 7, Vex 8, Vex 3 XMAS, Vex Challenges, Vex X3M, Vex X3M 2\nOvO, OvO 2, OvO Dimensions\nClass Of 09, Class Of 09 Flipside, Class Of 09 Re-Up\nAntonblast, Antonblast 64\nRed Ball 4 Vol 2, Red Ball 4 Vol 3\nGranny 2\nAmanda the Adventurer\nBloodmoney\nPEAK\nDeltatraveler\nFriday Night Funkin\nSprunki\nA Dance of Fire and Ice\nMoto X3M\nDrift Hunters\nPoly Track\nCookie Clicker\nBlock Blast\nRetro Bowl\nPizza Tower\nWebFishing\nPeople Playground\nKarlson\nYour Only Move Is HUSTLE\nUntitled Goose Game\nBitlife\nA Difficult Game About Climbing\nJust Shapes & Beats\nCut The Rope: Time Travel, Cut The Rope: Holiday Gift"
+          ]
+        ]
+      },
+      {
+        "icon": "fa-wrench",
+        "title": "Fixed Games",
+        "items": [
+          ["fa-gamepad", "Deltarune CH1-5", "Fixed scramjet launch for Deltarune chapters."],
+          ["fa-gamepad", "Mario + 2048 + Isaac + Doom 2", "Enabled scramjet for four classic titles."],
+          ["fa-gamepad", "Jetpack Joyride + Fruit Ninja", "Enabled scramjet for mobile arcade hits."],
+          ["fa-gamepad", "Geometry Dash + Minus B", "Updated Geometry Dash and Minus B URLs."],
+          ["fa-gamepad", "Cut The Rope 2", "Refreshed Cut The Rope 2 source link."],
+          ["fa-mountain", "PEAK Update", "Swapped PEAK WIP for stable PEAK port."]
+        ]
+      },
+      {
+        "icon": "fa-steam",
+        "title": "Steam Overlay Fix",
+        "items": [
+          ["fa-steam", "Overlay Button Fixed", "Click the Steam button in game windows to open overlay instantly."]
+        ]
+      },
+      {
+        "icon": "fa-globe",
+        "title": "File Protocol Fallback",
+        "items": [["fa-triangle-exclamation", "File Protocol Warning", "on file:///, add warning fallback for proxy"]]
+      },
+      {
+        "icon": "fa-terminal",
+        "title": "Terminal Upgrades",
+        "items": [
+          ["fa-user-shield", "Sudo Support", "Prefix any command with sudo."],
+          ["fa-desktop", "More Fetch Aliases", "Run fastfetch, hyfetch, archey, pfetch and five."]
+        ]
+      },
+      {
+        "icon": "fa-columns",
+        "title": "Explorer Changes",
+        "items": [["fa-arrows-left-right", "Drag to Resize", "Drag Explorer sidebars to change width."]]
+      },
+      {
+        "icon": "fa-window-maximize",
+        "title": "Fluid Windows",
+        "items": [
+          ["fa-bolt", "Faster Animations", "Windows open and minimize twice as fast with smoother easing."],
+          ["fa-magnet", "Sharper Magnet", "Drag near any screen edge or taskbar to snap perfectly into place."],
+          ["fa-palette", "Theme Matched Headers", "Windows 7 and Vista headers now tint with your theme colors."]
+        ]
+      },
+      {
+        "icon": "fa-search",
+        "title": "Command Palette",
+        "items": [
+          ["fa-wand-magic-sparkles", "Height Grows Smoothly", "Palette height animates smoothly when results change."]
+        ]
+      },
+      {
+        "icon": "fa-gamepad",
+        "title": "Ruffle and Gaming",
+        "items": [
+          ["fa-film", "Tweak Flash Player", "Tune letterbox, scale, and background for Flash in Ruffle settings."],
+          ["fa-trophy", "New Gaming Pane", "Explore new Gaming settings for ruffle and steam"]
+        ]
+      },
+      {
+        "icon": "fa-share-nodes",
+        "title": "Themes United",
+        "items": [
+          [
+            "fa-palette",
+            "Theme Hub Merged",
+            "Theme app is removed, create and manage themes directly inside Settings appearance."
+          ],
+          ["fa-star", "Featured Themes", "Apply curated themes from the new featured grid."]
+        ]
+      },
+      {
+        "icon": "fa-broom",
+        "title": "Cleanup and Polish",
+        "items": [
+          ["fa-bell-slash", "Quieter Alerts", "Duplicate popups collapse and excess Notification disappear."],
+          ["fa-sun", "Capped Brightness", "Brightness now caps at 100 percent when you press ctrl+alt+up arrow"],
+          ["fa-bars", "Sleeker Scrollbars", "Scrollbars look thinner and better across the system."],
+          ["fa-spinner", "Unified Loaders", "Emulator loaders share a cleaner style across apps."]
+        ]
+      },
       {
         "icon": "fa-window-restore",
         "title": "Popup to Tab Plugin For Browser",
         "items": [
           ["fa-external-link", "Window.open in New Tab", "Sites in Popups now open as in-browser tabs automatically."]
         ]
-      }
-    ]
-  },
-  {
-    "date": "September 3, 2026",
-    "label": "Media Apps",
-    "sections": [
+      },
       {
         "icon": "fa-film",
         "title": "New Media Apps",
@@ -24,13 +112,7 @@
           ["fa-play-circle", "Aniwatch", "Watch anime instantly via Aniwatch."],
           ["fa-tv", "TV Streaming", "Stream live TV via Famelack."]
         ]
-      }
-    ]
-  },
-  {
-    "date": "September 1, 2026",
-    "label": "Aquarium",
-    "sections": [
+      },
       {
         "icon": "fa-fish",
         "title": "New App: Aquarium",
@@ -38,22 +120,25 @@
           ["fa-fish", "Live 2D Aquarium", "Watch 90+ colorful fishes swim, chase food with sound effects."],
           ["fa-cookie-bite", "Feed Interaction", "Click water to drop pellets and see fishes hunt them."]
         ]
-      }
-    ]
-  },
-  {
-    "date": "August 31, 2026",
-    "label": "Taskbar Magnet",
-    "sections": [
+      },
       {
         "icon": "fa-magnet",
         "title": "KDE-Style Magnet",
         "items": [
           [
             "fa-magnet",
-            "Taskbar Window Magnet",
-            "Drag windows near the taskbar and snap perfectly into place with magnet stick effect."
+            "Window Magnet",
+            "Drag windows near the taskbar or any screen edge to snap perfectly into place."
           ]
+        ]
+      },
+      {
+        "icon": "fa-star",
+        "title": "Customization",
+        "items": [
+          ["fa-palette", "Customize Start Icon", "Right-click Start to pick registry icon or upload"],
+          ["fa-upload", "Upload Custom Image", "Drop your own image and apply instantly"],
+          ["fa-pen", "Customize Any App", "Change icon and title for any Yuki app"]
         ]
       }
     ]
@@ -991,7 +1076,7 @@
           [
             "fa-sliders-h",
             "Full Tiling Settings Panel",
-            "Tweak every tiling setting from Settings → Tiling: gaps, borders, animations, bar elements, rofi width, and more with no manual config editing needed."
+            "Tweak every tiling setting from Settings \u2192 Tiling: gaps, borders, animations, bar elements, rofi width, and more with no manual config editing needed."
           ]
         ]
       },
@@ -1714,7 +1799,7 @@
           [
             "fa-arrow-pointer",
             "Miku Cursor Toggle",
-            "Toggle the Hatsune Miku cursor on or off from Settings → Appearance → Custom Cursor."
+            "Toggle the Hatsune Miku cursor on or off from Settings \u2192 Appearance \u2192 Custom Cursor."
           ]
         ]
       }

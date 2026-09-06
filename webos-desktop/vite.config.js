@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { systemLibraryPlugin } from "./plugins/systemLibraryPlugin.js";
+import { iconRegistryPlugin } from "./plugins/iconRegistryPlugin.js";
 import { execSync, spawnSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
@@ -319,7 +320,8 @@ const plugins = [
   }),
   serveStaticDev(),
   steamNewsData(),
-  systemLibraryPlugin()
+  systemLibraryPlugin(),
+  iconRegistryPlugin()
 ];
 if (isSingleFile) {
   plugins.unshift(viteSingleFile());

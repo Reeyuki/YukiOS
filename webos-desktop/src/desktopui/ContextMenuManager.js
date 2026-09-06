@@ -51,6 +51,7 @@ export class DesktopContextMenuManager {
         "hr",
         { id: "ctx-delete", label: "Move to Trash", action: "delete", icon: "fa-trash-alt" },
         { id: "ctx-rename", label: "Rename", action: "rename", icon: "fa-edit" },
+        { id: "ctx-customize", label: "Customize Icon & Title", action: "customize", icon: "fa-palette" },
         { id: "ctx-properties", label: "Properties", action: "properties", icon: "fa-info-circle" }
       ],
       folderContextMenu: [
@@ -355,7 +356,6 @@ export class DesktopContextMenuManager {
               try {
                 const dataUrl = await readAsDataUrl();
                 await SystemUtilities.setWallpaper(dataUrl);
-                os.notify.send(`Wallpaper set to "${fileName}"`);
               } catch (err) {
                 console.error("Set wallpaper error:", err);
                 os.dialog.alert("Error", "Could not set wallpaper");
@@ -371,7 +371,6 @@ export class DesktopContextMenuManager {
               try {
                 const dataUrl = await readAsDataUrl();
                 await this.desktopUI.saveToWallpapers(fileName, dataUrl, FileKind.IMAGE, "@content");
-                os.notify.send(`"${fileName}" saved to wallpapers`);
               } catch (err) {
                 console.error("Save wallpaper error:", err);
                 os.dialog.alert("Error", "Could not save wallpaper");
@@ -420,6 +419,15 @@ export class DesktopContextMenuManager {
       },
       delete: buildDeleteAction(selectedArray, this.desktopUI),
       rename: () => this.startInlineDesktopRename(last),
+      customize: () => {
+        import("../shared/appCustomizer.js").then((m) =>
+          m.showAppCustomizer(
+            last.dataset.app,
+            this.IconDataHelper.getIconName(last),
+            last.querySelector("img")?.src || last.querySelector("i")?.className || ""
+          )
+        );
+      },
       properties: buildPropertiesAction(last, this.desktopUI)
     });
   }
@@ -533,7 +541,6 @@ export class DesktopContextMenuManager {
                   const next = currentAlignment === "vertical" ? "horizontal" : "vertical";
                   os.storage.set(StorageKeys.desktopIconAlignment, next);
                   relayoutDesktopIcons();
-                  os.notify.send(`Icons aligned ${next}ly`);
                 },
                 alignIcon
               )
@@ -553,7 +560,6 @@ export class DesktopContextMenuManager {
                   $$("#desktop > .icon").forEach((icon) => {
                     icon.style.display = next ? "none" : "";
                   });
-                  os.notify.send(next ? "Desktop icons hidden" : "Desktop icons shown");
                 },
                 hideIcon
               )
@@ -599,7 +605,6 @@ export class DesktopContextMenuManager {
                 if (next && currentSort && currentSort !== "none") {
                   sortDesktopIcons(currentSort);
                 }
-                os.notify.send(`Auto sort ${next ? "enabled" : "disabled"}`);
               },
               autoIcon
             );
@@ -642,7 +647,6 @@ export class DesktopContextMenuManager {
                   ? null
                   : () => {
                       wm.addWidget(wt.type, wt.label);
-                      os.notify.send(`${wt.label} widget added`);
                     },
                 wt.icon
               );
@@ -664,7 +668,6 @@ export class DesktopContextMenuManager {
                 "Remove All Widgets",
                 () => {
                   existing.forEach((w) => wm.removeWidget(w.id));
-                  os.notify.send("All widgets removed");
                 },
                 "fa-trash-alt"
               );

@@ -288,9 +288,6 @@ class ClipboardManagerApp extends BaseApp {
           if (newData !== null && newData !== item.data) {
             this.clipboardManager.updateItem(index, newData);
             this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-            if (!this.shouldSuppressNotification()) {
-              os.notify.send("Updated", "Clipboard item updated", "success", 2000, "fa-pen");
-            }
           }
         }
       });
@@ -302,9 +299,6 @@ class ClipboardManagerApp extends BaseApp {
         const index = parseInt(btn.dataset.index);
         this.clipboardManager.removeFromHistory(index);
         this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-        if (!this.shouldSuppressNotification()) {
-          os.notify.send("Removed", "Item removed from history", "info", 2000, "fa-trash");
-        }
       });
     });
 
@@ -314,17 +308,8 @@ class ClipboardManagerApp extends BaseApp {
         const index = parseInt(btn.dataset.index);
         const item = history[index];
         if (item) {
-          const isStarred = this.clipboardManager.toggleStar(item.id);
+          this.clipboardManager.toggleStar(item.id);
           this.renderHistory(currentPopup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-          if (!this.shouldSuppressNotification()) {
-            os.notify.send(
-              isStarred ? "Starred" : "Unstarred",
-              isStarred ? "Item starred" : "Item unstarred",
-              "success",
-              2000,
-              "fa-star"
-            );
-          }
         }
       });
     });
@@ -368,9 +353,6 @@ class ClipboardManagerApp extends BaseApp {
       clearBtn.addEventListener("click", () => {
         this.clipboardManager.clear();
         this.renderHistory(popup, this.clipboardManager.getHistory(), this.clipboardManager.get());
-        if (!this.shouldSuppressNotification()) {
-          os.notify.send("Cleared", "Clipboard cleared", { type: "info", duration: 2000, icon: "fa-trash" });
-        }
       });
     }
 

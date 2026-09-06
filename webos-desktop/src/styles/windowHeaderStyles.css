@@ -6,13 +6,17 @@
   position: relative;
   height: 32px;
   border-radius: 6px 6px 0 0;
-  background-color: #4580c4;
-  background-image: linear-gradient(90deg, #ffffff66, #0000001a, #ffffff33);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--brand) 14%, var(--bg-elev-1)),
+    color-mix(in oklch, var(--brand) 8%, var(--bg-elev-2))
+  );
+  border-bottom: 1px solid var(--glass-border);
   padding: 0 6px 6px;
   box-shadow:
-    inset 0 1px 0 #fffd,
-    inset 1px 0 0 #fffd,
-    inset -1px 0 0 #fffd;
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04),
+    inset -1px 0 0 rgba(255, 255, 255, 0.04);
 }
 
 .window-header.win7-header::after {
@@ -22,14 +26,14 @@
   right: 0;
   bottom: -1px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.7);
-  opacity: 0.7;
+  background: var(--glass-border);
+  opacity: 0.6;
 }
 
 .window.inactive .window-header.win7-header {
-  background: linear-gradient(180deg, #e2e5ea 0%, #d3d7dd 18%, #c7ccd4 55%, #b7bdc6 100%);
-  color: #4c4f56;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: color-mix(in oklch, var(--bg-elev-1) 92%, transparent);
+  color: var(--text-secondary);
+  text-shadow: none;
 }
 
 .window.inactive .window-header.win7-header::after {
@@ -39,36 +43,28 @@
 
 .window:has(> .win7-header),
 .window.win7-window {
-  border: 1px solid #000000b3;
+  border: 1px solid var(--glass-border);
   border-radius: 6px;
-  background: #f0f0f0;
+  background: var(--window-bg);
   box-shadow:
-    2px 2px 10px 1px #000000b3,
-    inset 0 0 0 1px #fffa;
+    0 10px 32px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .window:has(> .win7-header) .window-content,
 .window.win7-window .window-content {
-  background: #f0f0f0;
+  background: var(--surface-2);
 }
 
 .window-header.win7-header > span {
   font-size: 12px;
   font-weight: 400;
-  color: #000;
+  color: var(--text-primary);
   letter-spacing: 0;
   line-height: 15px;
   padding-left: 6px;
   padding-top: 6px;
-  text-shadow:
-    0 0 10px #fff,
-    0 0 10px #fff,
-    0 0 10px #fff,
-    0 0 10px #fff,
-    0 0 10px #fff,
-    0 0 10px #fff,
-    0 0 10px #fff,
-    0 0 10px #fff;
+  text-shadow: none;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -188,6 +184,18 @@
 
 .window-controls.win7-controls .win7-max .restore-glyph {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACVSURBVHgBlVDLCoMwENwU/7ClvRYK7b2lCIJHEQQ/QEHwqujfBXJIQMnihg34iHPJ7GNm2AhYcL2/JwhAxIuhq3aXb48PiFBna2YFERVHzoQLnAQmSCmxeL5+3rBtSsdpBwVKKTcY+1rY197G+8RRoLVejed94igwxrgB/zXeJ+4Jijz2Erjg+8/WE7ZAt6EgSUsIxQwaJEWv7G6SSgAAAABJRU5ErkJggg==");
+}
+
+.window-controls.win7-controls .win7-max .restore-glyph {
+  display: none;
+}
+
+.window[data-snapZone="maximize"] .window-controls.win7-controls .win7-max .maximize-glyph {
+  display: none;
+}
+
+.window[data-snapZone="maximize"] .window-controls.win7-controls .win7-max .restore-glyph {
+  display: block;
 }
 
 .window-controls.win7-controls .win7-close::before {
@@ -425,10 +433,8 @@ html[data-theme] .window-header.win11-header {
 html[data-theme] .window-header.win7-header {
   background: linear-gradient(
     180deg,
-    rgba(235, 247, 255, 0.9) 0%,
-    rgba(198, 226, 252, 0.85) 48%,
-    rgba(148, 190, 238, 0.9) 52%,
-    rgba(178, 210, 248, 0.92) 100%
+    color-mix(in oklch, var(--brand) 10%, var(--bg-elev-1)),
+    color-mix(in oklch, var(--brand) 6%, var(--bg-elev-2))
   );
 }
 
@@ -571,22 +577,21 @@ html[data-theme] .window-header.winvista-header {
   height: 34px;
   background: linear-gradient(
     180deg,
-    rgba(180, 210, 255, 0.55) 0%,
-    rgba(120, 165, 230, 0.5) 50%,
-    rgba(90, 140, 210, 0.6) 100%
+    color-mix(in oklch, var(--brand) 10%, var(--bg-elev-1) / 0.92),
+    color-mix(in oklch, var(--brand) 6%, var(--bg-elev-2) / 0.9)
   );
-  backdrop-filter: blur(18px) saturate(1.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px) saturate(1.15);
+  border-bottom: 1px solid var(--glass-border);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 1px 6px rgba(60, 110, 200, 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 6px var(--shadow-color);
 }
 
 html[data-theme] .window-header.winvista-header > span {
   font-size: 13px;
   font-weight: 600;
-  color: #0b2a66;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: var(--text-primary);
+  text-shadow: none;
   padding-left: 8px;
   overflow: hidden;
   white-space: nowrap;

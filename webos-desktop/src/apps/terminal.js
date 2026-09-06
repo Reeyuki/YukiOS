@@ -1369,8 +1369,21 @@ export class TerminalApp extends BaseApp {
     }
 
     for (let i = 0; i < pipeline.length; i++) {
-      const { command, args, flags } = pipeline[i];
+      let { command, args, flags } = pipeline[i];
       if (!command) continue;
+      if (command === "sudo") {
+        const ok = await this.ensureSudoAuth();
+        if (!ok) return;
+      }
+      while (command === "sudo") {
+        const unwrapped = this.unwrapSudoSegment({ command, args, flags });
+        if (!unwrapped || !unwrapped.command) break;
+        command = unwrapped.command;
+        args = unwrapped.args;
+        flags = unwrapped.flags;
+        pipeline[i] = { command, args, flags };
+      }
+      if (command === "sudo" || !command) continue;
       const expandedArgs = await this.expandGlobsInArgs(args, state.currentPath);
       const isPiped = output !== null;
 
@@ -1433,6 +1446,87 @@ export class TerminalApp extends BaseApp {
     return capturedLines.join("\n");
   }
 
+  unwrapSudoSegment(segment) {
+    let { command, args, flags } = segment;
+    if (command !== "sudo") return segment;
+    const sudoFlagsNoValue = new Set([
+      "-A",
+      "-b",
+      "-E",
+      "-H",
+      "-k",
+      "-K",
+      "-l",
+      "-n",
+      "-S",
+      "-s",
+      "-v",
+      "-V",
+      "-h",
+      "--help",
+      "--list",
+      "--validate",
+      "--remove-timestamp",
+      "--non-interactive",
+      "--stdin",
+      "--shell",
+      "--version"
+    ]);
+    const sudoFlagsWithValue = new Set([
+      "-u",
+      "-g",
+      "-p",
+      "-C",
+      "-U",
+      "-r",
+      "-t",
+      "--user",
+      "--group",
+      "--prompt",
+      "--chdir",
+      "--other-user"
+    ]);
+    let argsQueue = [...args];
+    const innerFlags = [];
+    for (const flag of [...flags]) {
+      if (flag === "--") continue;
+      if (sudoFlagsNoValue.has(flag)) continue;
+      if (sudoFlagsWithValue.has(flag)) {
+        argsQueue.shift();
+        continue;
+      }
+      if (flag.startsWith("-") && flag.length > 2 && !flag.startsWith("--")) {
+        const chars = flag.slice(1).split("");
+        const isSudoCombined = chars.every((c) =>
+          ["A", "b", "E", "H", "k", "K", "l", "n", "S", "s", "v", "V", "h"].includes(c)
+        );
+        if (isSudoCombined) continue;
+      }
+      innerFlags.push(flag);
+    }
+    while (argsQueue.length && sudoFlagsWithValue.has(innerFlags[0])) {
+      innerFlags.shift();
+      argsQueue.shift();
+    }
+    if (!argsQueue.length) return { command: null, args: [], flags: [] };
+    const innerName = argsQueue.shift();
+    return { command: innerName, args: argsQueue, flags: innerFlags };
+  }
+
+  async ensureSudoAuth() {
+    const now = Date.now();
+    const last = Number(os.storage.get(StorageKeys.sudoAuth) || 0);
+    if (now - last < 5 * 60 * 1000) return true;
+    const pwd = await os.dialog.prompt("Sudo", `[sudo] password for ${this.displayName}:`, "");
+    if (pwd === null) {
+      await this.print("sudo: authentication failed");
+      if (this.activeState) this.activeState.lastExitCode = 1;
+      return false;
+    }
+    os.storage.set(StorageKeys.sudoAuth, String(now));
+    return true;
+  }
+
   async executeCommand(commandStr) {
     const state = this.activeState;
     if (!state) return;
@@ -1450,6 +1544,13 @@ export class TerminalApp extends BaseApp {
     if (commandStr.trim() === "sudo rm -rf /" || commandStr.trim() === "sudo rm -rf /*") {
       await this.cmdNukeSystem();
       return;
+    }
+
+    const preChain = this.parseCommand(commandStr);
+    const needsSudo = preChain.some((seg) => seg.pipeline.some((p) => p.command === "sudo"));
+    if (needsSudo) {
+      const ok = await this.ensureSudoAuth();
+      if (!ok) return;
     }
 
     if (
@@ -1691,6 +1792,38 @@ export class TerminalApp extends BaseApp {
     this.registerCommand("ping", (args) => this.cmdPing(args));
     this.registerCommand("curl", (args) => this.cmdCurl(args));
     this.registerCommand("neofetch", () => this.cmdNeofetch());
+    this.registerCommand("screenfetch", () => this.cmdNeofetch());
+    for (const fetchAlias of [
+      "fastfetch",
+      "hyfetch",
+      "neowofetch",
+      "archey",
+      "archey4",
+      "pfetch",
+      "ufetch",
+      "afetch",
+      "nerdfetch"
+    ]) {
+      this.registerCommand(fetchAlias, () => this.cmdNeofetch());
+    }
+    this.registerCommand("sudo", async (args, flags) => {
+      const ok = await this.ensureSudoAuth();
+      if (!ok) return;
+      if (!args.length && !flags.length) return;
+      const unwrapped = this.unwrapSudoSegment({ command: "sudo", args, flags });
+      if (!unwrapped || !unwrapped.command) return;
+      const handler =
+        this.commands[unwrapped.command] ||
+        (this.commandRegistry.has(unwrapped.command)
+          ? (a, f) => this.commandRegistry.execute(unwrapped.command, a, this.buildCommandContext())
+          : null);
+      if (!handler) {
+        await this.print(`bash: ${unwrapped.command}: command not found`);
+        if (this.activeState) this.activeState.lastExitCode = 127;
+        return;
+      }
+      await handler(unwrapped.args, unwrapped.flags);
+    });
     this.registerCommand("ps", (args) => this.cmdPs(args));
     this.registerCommand("kill", (args) => this.cmdKill(args));
     this.registerCommand("grep", (args) => this.cmdGrep(args));
@@ -1898,6 +2031,17 @@ export class TerminalApp extends BaseApp {
         ps: "report process status",
         kill: "terminate processes",
         neofetch: "display system information",
+        screenfetch: "display system information",
+        fastfetch: "display system information",
+        hyfetch: "display system information",
+        neowofetch: "display system information",
+        archey: "display system information",
+        archey4: "display system information",
+        pfetch: "display system information",
+        ufetch: "display system information",
+        afetch: "display system information",
+        nerdfetch: "display system information",
+        sudo: "run command with elevated privileges (no-op)",
         ping: "send ICMP echo requests",
         uname: "print system information",
         tree: "display directory tree",
@@ -3849,7 +3993,17 @@ export class TerminalApp extends BaseApp {
       ["python", "Run Python code or enter interactive REPL"],
       ["python3", "Alias for python"],
       ["python -m http.server", "Serve the current directory over localhost"],
-      ["node", "Run JS code or enter Node.js REPL"]
+      ["node", "Run JS code or enter Node.js REPL"],
+      ["sudo", "Run command as superuser (no-op passthrough)"],
+      ["screenfetch", "Alias for neofetch"],
+      ["fastfetch", "Alias for neofetch"],
+      ["hyfetch", "Alias for neofetch"],
+      ["neowofetch", "Alias for neofetch"],
+      ["archey/archey4", "Alias for neofetch"],
+      ["pfetch", "Alias for neofetch"],
+      ["ufetch", "Alias for neofetch"],
+      ["afetch", "Alias for neofetch"],
+      ["nerdfetch", "Alias for neofetch"]
     ];
     await this.print("Available commands:");
     for (const [cmd, desc] of cmds) {

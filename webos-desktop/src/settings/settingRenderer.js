@@ -1,7 +1,7 @@
 import { CDN_MIRRORS, resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 import { audioMixer } from "../audioMixer.js";
 import { YUKIOS_VERSION } from "../apps/about.js";
-import { getBasicThemes, getCustomThemes } from "../shared/themeEngine.js";
+import { getBasicThemes, getCustomThemes, getSpecialThemes } from "../shared/themeEngine.js";
 import { StorageKeys, os, MODES, createElement } from "../framework.js";
 import { renderSelectMenu } from "../shared/selectMenu.js";
 import { renderRangeSlider } from "../shared/rangeSlider.js";
@@ -14,6 +14,8 @@ import { WISP_SERVERS } from "../shared/wispConfig.js";
 import { SETTINGS_GROUPS, QUICK_SETTINGS_ID } from "./settingsNav.js";
 import { renderDisksPane } from "./pane-disks.js";
 import { renderRecentFilesPane } from "./pane-recentFiles.js";
+import { renderRuffleSettings } from "./pane-ruffle.js";
+import { renderGamingSettings } from "./pane-gaming.js";
 import { getAvailableHeaderStyles, buildHeaderForStyle, buildControlsForStyle } from "../windowManager/headerStyles.js";
 
 function getBrowserInfo() {
@@ -249,6 +251,8 @@ export function buildSettingsHTML(settings, wm) {
           ${renderAutostartSettings()}
           ${renderNetworkSettings(settings)}
           ${renderAudioSettings(settings)}
+          ${renderRuffleSettings()}
+          ${renderGamingSettings()}
           ${renderAccountsSettings()}
           ${renderAboutSettings()}
           <div id="default-applications" class="settings-category-pane"></div>
@@ -973,10 +977,18 @@ export function renderAppearanceSettings(s) {
   const customThemeButtons = customThemes
     .map(
       (theme) => `
-      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
+      <button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-theme-val="${theme.value}" data-custom-theme="${theme.value}" style="height: 56px; background: ${theme.preview || "#8b5cf6"}; color: ${theme.textColor || "#fff"};">
         <span>${theme.label}</span>
       </button>
     `
+    )
+    .join("");
+
+  const specialThemes = getSpecialThemes();
+  const featuredButtons = specialThemes
+    .map(
+      (theme) =>
+        `<button class="settings-btn theme-preview-btn ${s.theme === theme.value ? "active" : ""}" data-featured-theme="${theme.value}" style="height:56px;background:${theme.preview};color:${theme.textColor || "#fff"};"><span>${theme.label}</span></button>`
     )
     .join("");
 
@@ -1049,10 +1061,16 @@ export function renderAppearanceSettings(s) {
             <span class="settings-label-title">Custom Themes</span>
             <span class="settings-label-desc">Your saved themes</span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
+          <div id="settingsCustomGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
             ${customThemeButtons}
-            ${customThemes.length === 0 ? '<span style="grid-column: 1/-1; color: var(--text-secondary); font-size: 12px; text-align: center; padding: 8px;">No custom themes yet. Click "Save Theme" to make one</span>' : ""}
+            ${customThemes.length === 0 ? '<span style="grid-column: 1/-1; color: var(--text-secondary); font-size: 12px; text-align: center; padding: 8px;">No custom themes yet. Click "Create Theme" to make one</span>' : ""}
           </div>
+          <div id="settingsCustomThemesList" style="margin-top:10px;"></div>
+        </div>
+        <div class="settings-row" id="settingsMyThemesActions" style="display:flex;gap:8px;margin-top:8px;">
+          <button class="settings-btn" id="settingsCreateThemeBtn"><i class="fas fa-plus"></i> Create Theme</button>
+          <button class="settings-btn" id="settingsImportThemeBtn"><i class="fas fa-file-import"></i> Import .yukiotheme</button>
+          <input type="file" id="settingsImportThemeInput" accept=".yukiotheme,.json" style="display:none"/>
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -1061,15 +1079,6 @@ export function renderAppearanceSettings(s) {
           </div>
           <button class="settings-btn" id="settingsCustomColorsBtn">
             <i class="fas fa-palette"></i> Customize
-          </button>
-        </div>
-        <div class="settings-row">
-          <div class="settings-label-group">
-            <span class="settings-label-title">Theme Hub</span>
-            <span class="settings-label-desc">Browse, share, and install community themes</span>
-          </div>
-          <button class="settings-btn" id="settingsOpenThemeHub">
-            <i class="fas fa-share-nodes"></i> Open
           </button>
         </div>
         <div class="settings-row">
@@ -1111,6 +1120,13 @@ export function renderAppearanceSettings(s) {
             <button class="settings-btn ${s.uiDensity === "comfortable" ? "active" : ""}" data-ui-density="comfortable"><i class="fas fa-check"></i> Comfortable</button>
             <button class="settings-btn ${s.uiDensity === "spacious" ? "active" : ""}" data-ui-density="spacious"><i class="fas fa-expand"></i> Spacious</button>
           </div>
+        </div>
+      </div>
+      <div class="settings-card" style="margin-top:16px;">
+        <div class="settings-card-header"><i class="fas fa-star"></i> Featured Themes</div>
+        <div class="settings-row settings-row--stacked">
+          <div class="settings-label-group"><span class="settings-label-title">Featured</span><span class="settings-label-desc">Curated themes ready to apply in one click</span></div>
+          <div id="settingsFeaturedGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;">${featuredButtons}</div>
         </div>
       </div>
 

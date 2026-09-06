@@ -148,20 +148,45 @@
 .start-cat-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  scrollbar-gutter: stable;
 }
 
 .start-cat-list::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
+  height: 8px;
 }
 
 .start-cat-list::-webkit-scrollbar-track {
   background: transparent;
+  margin: 6px 0;
+  border-radius: 999px;
 }
 
 .start-cat-list::-webkit-scrollbar-thumb {
-  background: var(--glass-hover);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.start-cat-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.start-cat-list::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.start-cat-list::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .start-footer-actions {

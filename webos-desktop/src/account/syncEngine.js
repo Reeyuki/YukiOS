@@ -99,7 +99,10 @@ const componentDefs = [
       StorageKeys.startMenuWidth,
       StorageKeys.startMenuHeight,
       StorageKeys.startMenuCats,
-      StorageKeys.startMenuGridItems
+      StorageKeys.startMenuGridItems,
+      StorageKeys.startButtonIcon,
+      StorageKeys.appCustomIcons,
+      StorageKeys.appCustomTitles
     ]
   },
   {

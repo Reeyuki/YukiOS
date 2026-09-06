@@ -1,4 +1,5 @@
 import { NodeType } from "./shellAST.js";
+import { StorageKeys } from "../StorageKeys.js";
 import { Stream } from "./stream.js";
 
 export class ShellInterpreter {
@@ -117,6 +118,101 @@ export class ShellInterpreter {
         }
       }
       return { exitCode: 0 };
+    }
+
+    const unwrapSudoNode = (n) => {
+      const sudoFlagsNoValue = new Set([
+        "-A",
+        "-b",
+        "-E",
+        "-H",
+        "-k",
+        "-K",
+        "-l",
+        "-n",
+        "-S",
+        "-s",
+        "-v",
+        "-V",
+        "-h",
+        "--help",
+        "--list",
+        "--validate",
+        "--remove-timestamp",
+        "--non-interactive",
+        "--stdin",
+        "--shell",
+        "--version"
+      ]);
+      const sudoFlagsWithValue = new Set([
+        "-u",
+        "-g",
+        "-p",
+        "-C",
+        "-U",
+        "-r",
+        "-t",
+        "--user",
+        "--group",
+        "--prompt",
+        "--chdir",
+        "--other-user"
+      ]);
+      let queue = [...n.args];
+      const passthrough = [];
+      for (let i = 0; i < queue.length;) {
+        const tok = queue[i];
+        if (tok.startsWith("-")) {
+          if (tok === "--") {
+            queue.splice(i, 1);
+            break;
+          }
+          if (sudoFlagsNoValue.has(tok)) {
+            queue.splice(i, 1);
+            continue;
+          }
+          if (sudoFlagsWithValue.has(tok)) {
+            queue.splice(i, 1);
+            if (queue[i] !== undefined) queue.splice(i, 1);
+            continue;
+          }
+          if (tok.length > 2 && !tok.startsWith("--")) {
+            const chars = tok.slice(1).split("");
+            if (chars.every((c) => ["A", "b", "E", "H", "k", "K", "l", "n", "S", "s", "v", "V", "h"].includes(c))) {
+              queue.splice(i, 1);
+              continue;
+            }
+          }
+        }
+        i++;
+      }
+      const innerName = queue.shift();
+      return { name: innerName, args: queue };
+    };
+
+    while (node.name === "sudo") {
+      if (!node.args.length) return { exitCode: 0 };
+      const now = Date.now();
+      try {
+        const last = Number(os.storage.get(StorageKeys.sudoAuth) || 0);
+        if (now - last >= 5 * 60 * 1000) {
+          const { os: osBridge } = await import("../framework.js");
+          const pwd = await osBridge.dialog.prompt(
+            "Sudo",
+            `[sudo] password for ${osBridge.storage.get(StorageKeys.username) || "user"}:`,
+            ""
+          );
+          if (pwd === null) {
+            if (this.ctx.print) this.ctx.print("sudo: authentication failed");
+            return { exitCode: 1 };
+          }
+          osBridge.storage.set(StorageKeys.sudoAuth, String(now));
+        }
+      } catch {}
+      const unwrapped = unwrapSudoNode(node);
+      if (!unwrapped.name) return { exitCode: 0 };
+      node.name = unwrapped.name;
+      node.args = unwrapped.args;
     }
 
     const args = [...node.args];

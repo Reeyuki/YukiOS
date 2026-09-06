@@ -19,6 +19,7 @@ import {
 import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
 import { escapeHtml } from "../utils/utils.js";
 import { getWispUrl } from "../shared/wispConfig.js";
+import { injectFileProtocolFallback, isFileProtocol } from "../shared/fileProtocolFallback.js";
 import { isFunction } from "../shared/functionUtils.js";
 import {
   isPluginEnabled as isWindowOpenPluginEnabled,
@@ -121,6 +122,12 @@ export class BrowserApp extends BaseApp {
       </div>
     `;
 
+    if (isFileProtocol()) {
+      const container = win.querySelector(".scramjet-container");
+      injectFileProtocolFallback(container, "browserApp", openUrl || window.location.href);
+      return win;
+    }
+
     this.initScramjet(null, null, win, { isIncognito, openUrl });
     if (isIncognito) {
       os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.GhostMode });
@@ -130,6 +137,11 @@ export class BrowserApp extends BaseApp {
   }
 
   async initScramjet(payload, vt, element, state) {
+    if (isFileProtocol()) {
+      const container = element.querySelector(".scramjet-container");
+      if (container) injectFileProtocolFallback(container, "browserApp", state?.openUrl || window.location.href);
+      return;
+    }
     this.element = element;
     const iframe = element.querySelector(".scramjet-iframe");
     this.iframe = iframe;
@@ -538,6 +550,14 @@ export class BrowserApp extends BaseApp {
   }
 
   navigateToUrl(iframe, url) {
+    if (isFileProtocol() || String(url || "").startsWith("file:")) {
+      const container =
+        iframe?.closest?.(".scramjet-container") || this.element?.querySelector?.(".scramjet-container");
+      if (container) {
+        injectFileProtocolFallback(container, "browserApp", url);
+        return;
+      }
+    }
     maybeTriggerSmartlink();
     if (this.isTorUrl(url)) {
       this.loadWithTor(url);
@@ -888,8 +908,8 @@ export class BrowserApp extends BaseApp {
         <span class="tor-bar-label"><i class="fas fa-shield-halved"></i> Tor Active</span>
         <button class="tor-exit-btn" id="tor-exit-btn">Exit Tor</button>
       </div>
-      <div class="tor-loading" id="tor-loading">
-        <div class="loading-spinner"></div>
+      <div class="tor-loading yuki-loading-indicator" id="tor-loading">
+        <div class="loading-spinner" style="animation-duration:1.4s;opacity:0.7"></div>
         <div class="tor-loading-text" id="tor-loading-text">Starting Tor...</div>
       </div>
       <iframe class="tor-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>

@@ -1,6 +1,6 @@
 :root {
   --taskbar-h: 3.2em;
-  --taskbar-v-w: 3.2em;
+  --taskbar-v-w: 3.6em;
   --taskbar-padding-top: 0;
   --taskbar-padding-bottom: var(--taskbar-h);
   --taskbar-padding-left: 0;
@@ -139,10 +139,10 @@ html.mac-mode {
   --font-ui: "SF Pro Display", "Poppins", sans-serif;
 }
 
-html.3d-mode #taskbar,
-html.3d-mode #desktop,
-html.3d-mode #start-menu,
-html.3d-mode .tray-content {
+html.\33 d-mode #taskbar,
+html.\33 d-mode #desktop,
+html.\33 d-mode #start-menu,
+html.\33 d-mode .tray-content {
   display: none !important;
 }
 
@@ -243,6 +243,19 @@ h6 {
 *::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.14);
   border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+html[data-theme] * {
+  scrollbar-color: var(--glass-hover) transparent;
 }
 
 .app-menubar {

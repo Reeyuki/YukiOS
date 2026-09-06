@@ -82,9 +82,9 @@ class BatteryPerformanceManager {
     const vc = $("#vanta-container");
     if (vc) SystemUtilities.disableVantaWallpaper();
 
-    os.notify.send("Battery Saver", `Battery critically low (${level}%) - switched to maximum power saving.`, {
+    os.notify.send("Battery saver", `${level}% — power saver on`, {
       type: "warning",
-      duration: 5000,
+      duration: 3000,
       icon: "fa-battery-quarter"
     });
   }
@@ -96,7 +96,7 @@ class BatteryPerformanceManager {
 
     SystemUtilities.loadWallpaper();
 
-    os.notify.send("Battery Saver", "Battery recovered - back to reduced effects mode.", {
+    os.notify.send("Battery saver", "Battery saver off", {
       type: "info",
       duration: 3000,
       icon: "fa-battery-half"
@@ -119,15 +119,11 @@ class BatteryPerformanceManager {
       vid.dataset.batterySaverPaused = "true";
     }
 
-    os.notify.send(
-      "Battery Saver",
-      `Battery at ${level}% - reduced animations and background activity to save power.`,
-      {
-        type: "warning",
-        duration: 5000,
-        icon: "fa-battery-quarter"
-      }
-    );
+    os.notify.send("Battery saver", `${level}% — reduced effects`, {
+      type: "warning",
+      duration: 3000,
+      icon: "fa-battery-quarter"
+    });
   }
 
   desktopRestore(reason) {
@@ -149,12 +145,9 @@ class BatteryPerformanceManager {
 
     this.saverActive = false;
 
-    const msg =
-      reason === "Charging"
-        ? "Device is charging - full performance restored."
-        : "Battery level recovered - full performance restored.";
+    const msg = reason === "Charging" ? "Charging — full performance" : "Battery saver off";
 
-    os.notify.send("Battery Saver Off", msg, {
+    os.notify.send("Battery saver", msg, {
       type: "success",
       duration: 3000,
       icon: "fa-bolt"

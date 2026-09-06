@@ -173,6 +173,7 @@ applications, file system, or workspace context. The UI layout engine morphs aro
 - Desktop icon system with persistent shortcuts and image thumbnails
 - Desktop drag-and-drop from host OS and icon rearrangement
 - Alt+Left-Click window drag / Alt+Right-Click window resize
+- Magnetic edge snapping on drag and resize to screen edges and taskbar
 - Window animation system with 35+ effects
 - KDE-inspired physics-based wobbly windows when dragging
 - Desktop peek button (minimize/restore all windows, hover to reveal desktop)
@@ -342,6 +343,7 @@ applications, file system, or workspace context. The UI layout engine morphs aro
 - Dev Tools (Eruda)
 - Weather
 - News
+- Aquarium
 - YukiOS Guide
 - Display Performance
 - Virtual Machine Manager

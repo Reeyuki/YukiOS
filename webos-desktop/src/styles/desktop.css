@@ -133,16 +133,16 @@
   color: var(--tx1);
   outline: none;
   transition:
-    box-shadow 0.2s,
-    filter 0.2s;
+    box-shadow 0.16s cubic-bezier(0.2, 0, 0, 1),
+    filter 0.16s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .window.snapping {
   transition:
-    width 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    height 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    top 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    left 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    top 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    left 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .window.dragging {
@@ -151,8 +151,15 @@
 
 .window.magnetized {
   box-shadow:
-    0 1.1em 40px rgba(0, 0, 0, 0.6),
-    0 0 0 1px color-mix(in oklch, var(--brand) 45%, transparent);
+    0 0 0 2px color-mix(in oklch, var(--brand) 55%, transparent),
+    0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 0.12s ease;
+}
+
+.window.snapping-preview {
+  opacity: 0.92;
+  outline: 2px solid color-mix(in oklch, var(--brand) 35%, transparent);
+  outline-offset: -2px;
 }
 
 @keyframes wa-fade-in {
@@ -172,7 +179,7 @@
   }
 
   60% {
-    transform: scale(1.03);
+    transform: scale(1.015);
     opacity: 1;
   }
 
@@ -509,7 +516,7 @@
   transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
   z-index: 999999;
-  animation: wa-ripple-expand 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: wa-ripple-expand 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes wa-ripple-expand {
@@ -932,12 +939,12 @@ body.is-resizing * {
   opacity: 0;
   transform: scale(0.96);
   transition:
-    opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-    top 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-    left 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-    width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-    height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    top 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    left 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #snap-ghost.snap-ghost-active {
@@ -1100,6 +1107,9 @@ html[data-theme="light"] .window {
   padding: 2px;
   cursor: pointer;
   position: relative;
+}
+
+.mac-dock.dock-magnify .dock-item {
   transition: transform var(--dock-anim-speed) cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 

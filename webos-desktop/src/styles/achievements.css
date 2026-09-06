@@ -488,9 +488,9 @@
   right: 0;
   width: 320px;
   background: var(--surface-2);
-  border: 1px solid var(--glass-border);
+  border: none;
   border-radius: 0;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 20px 60px var(--shadow-color);
   z-index: 100000;
   display: flex;
   gap: 0;

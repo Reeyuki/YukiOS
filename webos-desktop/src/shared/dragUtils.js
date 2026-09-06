@@ -190,7 +190,7 @@ export function makeResizable(element, callbacks, options = {}) {
       t = startRect.bottom - h;
     }
 
-    if (callbacks.move) callbacks.move(e, { left: l, top: t, width: w, height: h });
+    if (callbacks.move) callbacks.move(e, { left: l, top: t, width: w, height: h }, activeEdges);
   }
 
   function onUp(e) {

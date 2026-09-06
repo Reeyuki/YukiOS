@@ -84,7 +84,6 @@ export class DragDropManager {
     }
     this.positionStore.save(saved);
     this.selectionManager.clear();
-    if (moved > 0) os.notify.send(`${moved} item${moved !== 1 ? "s" : ""} moved to "${folderName}"`);
   }
 
   async moveIconsToExplorer(icons, explorerWinId) {
@@ -223,8 +222,6 @@ export class DragDropManager {
     this.positionStore.save(saved);
     this.selectionManager.clear();
     if (moved > 0) {
-      const pathLabel = inst.currentPath.length ? inst.currentPath.join("/") : "Home";
-      os.notify.send(`${moved} item${moved !== 1 ? "s" : ""} moved to ${pathLabel}`);
       await this.explorerApp.renderInstance(inst);
     }
   }

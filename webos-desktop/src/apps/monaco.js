@@ -1031,7 +1031,7 @@ export class MonacoApp extends BaseApp {
     this.switchTab(tabId);
 
     if (this.tabs.size === 1) {
-      speak("Ready to write some code!", ClippyAnimation.GetWizardy);
+      speak("Code editor ready.", ClippyAnimation.GetWizardy);
     }
   }
 
@@ -1415,7 +1415,6 @@ export class MonacoApp extends BaseApp {
         monaco.editor.setModelLanguage(editor.getModel(), languages[nextIndex]);
         editorData.settings.language = languages[nextIndex];
         this.updateStatusBar(editorData);
-        os.notify.send(`Switched to ${languages[nextIndex]}`);
       },
       changeTheme: () => {
         const themes = ["vs", "vs-dark", "hc-black"];
@@ -1424,7 +1423,6 @@ export class MonacoApp extends BaseApp {
         const nextIndex = (currentIndex + 1) % themes.length;
         editorData.settings.theme = themes[nextIndex];
         monaco.editor.setTheme(themes[nextIndex]);
-        os.notify.send(`Theme set to ${themes[nextIndex]}`);
       },
       toggleFullscreen: () => {
         if (!document.fullscreenElement) {
@@ -1468,7 +1466,6 @@ export class MonacoApp extends BaseApp {
             text: trimmed
           }
         ]);
-        os.notify.send("Cleaned up trailing whitespace");
       },
       transformUppercase: () => {
         const selection = editor.getSelection();
@@ -1518,7 +1515,6 @@ export class MonacoApp extends BaseApp {
             text: lines.join("\n")
           }
         ]);
-        os.notify.send("Sorted A → Z");
       },
       sortLinesDesc: () => {
         const model = editor.getModel();
@@ -1530,7 +1526,6 @@ export class MonacoApp extends BaseApp {
             text: lines.join("\n")
           }
         ]);
-        os.notify.send("Sorted Z → A");
       },
       removeDuplicates: () => {
         const model = editor.getModel();
@@ -1542,7 +1537,6 @@ export class MonacoApp extends BaseApp {
             text: unique.join("\n")
           }
         ]);
-        os.notify.send(`Dropped ${lines.length - unique.length} duplicate lines`);
       },
       reverseLines: () => {
         const model = editor.getModel();
@@ -1554,7 +1548,6 @@ export class MonacoApp extends BaseApp {
             text: lines.join("\n")
           }
         ]);
-        os.notify.send("Reversed the order");
       },
       shuffleLines: () => {
         const model = editor.getModel();
@@ -1569,7 +1562,6 @@ export class MonacoApp extends BaseApp {
             text: lines.join("\n")
           }
         ]);
-        os.notify.send("Mixed things up");
       },
       joinLines: () => {
         const selection = editor.getSelection();
@@ -1599,7 +1591,6 @@ export class MonacoApp extends BaseApp {
         const chars = text.length;
         const charsNoSpaces = text.replace(/\s/g, "").length;
         const lines = text.split("\n").length;
-        os.notify.send(`Words: ${words} | Characters: ${chars} (${charsNoSpaces} without spaces) | Lines: ${lines}`);
       },
       base64Encode: () => {
         const selection = editor.getSelection();
@@ -1612,7 +1603,6 @@ export class MonacoApp extends BaseApp {
               text: encoded
             }
           ]);
-          os.notify.send("Encoded to Base64");
         }
       },
       base64Decode: () => {
@@ -1627,7 +1617,6 @@ export class MonacoApp extends BaseApp {
                 text: decoded
               }
             ]);
-            os.notify.send("Decoded from Base64");
           } catch (e) {
             os.notify.send("That's not valid Base64");
           }
@@ -1636,7 +1625,6 @@ export class MonacoApp extends BaseApp {
       validateJSON: () => {
         try {
           JSON.parse(editor.getValue());
-          os.notify.send("Valid JSON");
           speak("JSON looks good!", ClippyAnimation.GetWizardy);
         } catch (e) {
           os.notify.send(`Not valid JSON: ${e.message}`);
@@ -1647,7 +1635,6 @@ export class MonacoApp extends BaseApp {
         try {
           const obj = JSON.parse(editor.getValue());
           editor.setValue(JSON.stringify(obj));
-          os.notify.send("Minified JSON");
         } catch (e) {
           os.notify.send(`Not valid JSON: ${e.message}`);
         }
@@ -1656,7 +1643,6 @@ export class MonacoApp extends BaseApp {
         try {
           const obj = JSON.parse(editor.getValue());
           editor.setValue(JSON.stringify(obj, null, 2));
-          os.notify.send("Beautified JSON");
         } catch (e) {
           os.notify.send(`Not valid JSON: ${e.message}`);
         }
@@ -1664,7 +1650,6 @@ export class MonacoApp extends BaseApp {
 
       showShortcuts: () => {
         const shortcuts = `File:\n  Ctrl+N - New Tab\n  Ctrl+Shift+N - New Window\n  Ctrl+O - Open File\n  Ctrl+S - Save\n  Ctrl+W - Close Tab\n  \nEdit:\n  Ctrl+Z - Undo\n  Ctrl+Y - Redo\n  Ctrl+F - Find\n  Ctrl+H - Replace\n  \nGo:\n  Ctrl+G - Go to Line\n  F12 - Go to Definition`;
-        os.notify.send(shortcuts);
       },
       showDocs: () => window.open("https://code.visualstudio.com/docs", "_blank"),
       about: () => {

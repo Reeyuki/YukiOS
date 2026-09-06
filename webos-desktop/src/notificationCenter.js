@@ -28,6 +28,7 @@ export class NotificationCenter {
     this.maxNotifications = 50;
     this.notificationId = 0;
     this.doNotDisturb = this.loadDoNotDisturb();
+    this.lastNotification = new Map();
     this.createNotificationCenterUI();
     this.initTrayEntry();
     this.updateDoNotDisturbUI();
@@ -141,6 +142,11 @@ export class NotificationCenter {
   addNotification(title, message, type = "info", duration = 5000, icon = null, appSource = null) {
     const enabled = this.getSetting("notificationsEnabled", true);
     if (!enabled) return null;
+    const key = `${title}::${message}`;
+    const now = Date.now();
+    const last = this.lastNotification.get(key);
+    if (last && now - last < 1000) return null;
+    this.lastNotification.set(key, now);
 
     if (!icon && appSource) {
       const appMapKey = APP_SOURCE_TO_APP_MAP_KEY[appSource];
@@ -169,6 +175,9 @@ export class NotificationCenter {
     if (this.doNotDisturb) {
       this.snoozedNotifications.unshift(notification);
       this.enforceMaxNotifications();
+      this.updateNotificationCenter();
+      this.updateTrayPresence();
+      this.persistNotifications();
       return notification.id;
     }
 
@@ -176,6 +185,7 @@ export class NotificationCenter {
     this.enforceMaxNotifications();
     this.updateNotificationCenter();
     this.updateTrayPresence();
+    this.persistNotifications();
     this.showToast(notification);
 
     return notification.id;
@@ -352,6 +362,7 @@ export class NotificationCenter {
     this.snoozedNotifications = this.snoozedNotifications.filter((n) => n.id !== id);
     this.updateNotificationCenter();
     this.updateTrayPresence();
+    this.persistNotifications();
   }
 
   clearAllNotifications() {
@@ -359,6 +370,7 @@ export class NotificationCenter {
     this.snoozedNotifications = [];
     this.updateNotificationCenter();
     this.updateTrayPresence();
+    this.persistNotifications();
   }
 
   updateNotificationCenter() {
@@ -420,6 +432,14 @@ export class NotificationCenter {
     });
   }
 
+  handleOutsideClick = (e) => {
+    const panel = $("#ntf-panel");
+    const trayEl = $("#app-tray");
+    if (panel && !e.target.closest("#ntf-panel") && !e.target.closest("#app-tray")) {
+      this.closeCenter();
+    }
+  };
+
   toggleCenter() {
     if (this.isOpen) {
       this.closeCenter();
@@ -438,6 +458,7 @@ export class NotificationCenter {
     this.isOpen = true;
 
     this.updateTrayActiveState();
+    document.addEventListener("click", this.handleOutsideClick);
   }
 
   closeCenter() {
@@ -453,6 +474,7 @@ export class NotificationCenter {
     this.isOpen = false;
 
     this.updateTrayActiveState();
+    document.removeEventListener("click", this.handleOutsideClick);
   }
 
   setDoNotDisturb(enabled) {
@@ -469,6 +491,68 @@ export class NotificationCenter {
       this.enforceMaxNotifications();
     }
 
+    this.updateDoNotDisturbUI();
+    this.updateNotificationCenter();
+    this.updateTrayPresence();
+    this.persistNotifications();
+  }
+
+  persistNotifications() {
+    try {
+      os.storage.set(StorageKeys.notificationHistory, {
+        notifications: this.notifications,
+        snoozedNotifications: this.snoozedNotifications,
+        nextId: this.notificationId
+      });
+    } catch {}
+  }
+
+  loadPersistedNotifications() {
+    try {
+      const data = os.storage.get(StorageKeys.notificationHistory);
+      if (!data) return;
+      let rawNotifications = [];
+      let rawSnoozed = [];
+      let rawNextId = null;
+      if (Array.isArray(data)) {
+        rawNotifications = data;
+      } else if (data.notifications) {
+        rawNotifications = Array.isArray(data.notifications) ? data.notifications : [];
+        rawSnoozed = Array.isArray(data.snoozedNotifications) ? data.snoozedNotifications : [];
+        rawNextId = data.nextId;
+      } else {
+        return;
+      }
+      const normalize = (list) =>
+        list
+          .filter((n) => n && typeof n.title === "string" && typeof n.message !== "undefined")
+          .map((n) => ({
+            id: typeof n.id === "number" ? n.id : 0,
+            title: n.title,
+            message: n.message,
+            type: n.type || "info",
+            timestamp: n.timestamp ? new Date(n.timestamp) : new Date(),
+            icon: n.icon ?? null,
+            appSource: n.appSource ?? null
+          }))
+          .filter((n) => !isNaN(n.timestamp.getTime()));
+      this.notifications = normalize(rawNotifications);
+      this.snoozedNotifications = normalize(rawSnoozed);
+      const maxId = [...this.notifications, ...this.snoozedNotifications].reduce((m, n) => Math.max(m, n.id), -1);
+      if (typeof rawNextId === "number" && rawNextId > maxId) {
+        this.notificationId = rawNextId;
+      } else {
+        this.notificationId = maxId + 1;
+      }
+      this.enforceMaxNotifications();
+    } catch {}
+  }
+
+  restorePersistedState() {
+    try {
+      this.doNotDisturb = this.loadDoNotDisturb();
+    } catch {}
+    this.loadPersistedNotifications();
     this.updateDoNotDisturbUI();
     this.updateNotificationCenter();
     this.updateTrayPresence();

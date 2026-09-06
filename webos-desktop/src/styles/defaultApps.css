@@ -70,7 +70,7 @@
 .da-seg-btn {
   appearance: none;
   -webkit-appearance: none;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
   font-size: 12px;
@@ -79,7 +79,9 @@
   cursor: pointer;
   transition:
     background 0.12s,
-    color 0.12s;
+    color 0.12s,
+    border-color 0.12s,
+    box-shadow 0.12s;
 }
 
 .da-seg-btn:hover {
@@ -87,8 +89,10 @@
 }
 
 .da-seg-btn.active {
-  background: var(--brand);
-  color: #fff;
+  background: var(--glass-strong);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 1px 4px var(--shadow-color);
 }
 
 .da-search {
@@ -107,7 +111,8 @@
 }
 
 .da-search:focus {
-  border-color: var(--brand);
+  border-color: var(--glass-border);
+  box-shadow: 0 0 0 2px var(--brand-glow);
 }
 
 .da-search::placeholder {

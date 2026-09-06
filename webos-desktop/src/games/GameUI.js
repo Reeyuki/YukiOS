@@ -357,7 +357,7 @@ export class GameUI {
         await os.fs.createFile(["Desktop"], fileName, fileContent, "text");
         if (desktopUI) {
           await desktopUI.createDesktopFileIcon(fileName);
-          os.notify.send(`"${title}" added to home screen`);
+          os.notify.send("Added to desktop", title);
         }
       } catch (err) {
         console.error("Failed to add to home screen:", err);

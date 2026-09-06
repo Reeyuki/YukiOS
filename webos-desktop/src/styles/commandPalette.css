@@ -8,11 +8,15 @@
   justify-content: center;
   padding-top: 12vh;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  backdrop-filter: blur(0px);
+  transition:
+    opacity 0.2s ease,
+    backdrop-filter 0.2s ease;
 }
 
 .command-palette-overlay--show {
   opacity: 1;
+  backdrop-filter: blur(4px);
 }
 
 .command-palette-root {
@@ -20,20 +24,29 @@
   flex-direction: column;
   width: 680px;
   max-width: calc(100vw - 48px);
-  height: min(60vh, 620px);
-  min-height: 380px;
-  max-height: calc(100vh - 24vh);
+  min-height: 160px;
+  height: auto;
+  max-height: min(60vh, 620px);
   background: var(--bg-elev-2);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-depth);
   overflow: hidden;
-  transform: translateY(-10px);
-  transition: transform 0.18s ease;
+  transform: translateY(8px) scale(0.96);
+  opacity: 0;
+  filter: blur(2px);
+  contain: paint;
+  transition:
+    transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.2s ease,
+    filter 0.2s ease;
+  will-change: transform, opacity, height;
 }
 
 .command-palette-overlay--show .command-palette-root {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  filter: blur(0);
 }
 
 .command-palette-header {
@@ -84,21 +97,126 @@
 .command-palette-body {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 4px 0;
+  min-height: 140px;
+  max-height: 420px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  contain: content;
+  view-transition-name: palette-body;
 }
 
 .command-palette-body::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
+}
+
+.command-palette-body::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;
+  border-radius: 999px;
 }
 
 .command-palette-body::-webkit-scrollbar-thumb {
-  background: var(--glass-hover);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.command-palette-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.command-palette-body::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.command-palette-body::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .command-palette-results {
   display: flex;
   flex-direction: column;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+  view-transition-name: palette-results;
+  animation: paletteFade 0.18s ease;
+}
+
+::view-transition-old(palette-results),
+::view-transition-new(palette-results) {
+  animation-duration: 0.14s;
+}
+
+@keyframes paletteFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .command-palette-root,
+  .command-palette-overlay,
+  .command-palette-results {
+    transition: none !important;
+    animation: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    view-transition-name: none !important;
+  }
+
+  .command-palette-results {
+    content-visibility: visible !important;
+  }
+
+  .command-palette-root {
+    transition:
+      height 0s !important,
+      max-height 0s !important;
+  }
+}
+
+html[data-performance="performance"] .command-palette-root,
+html[data-performance="performance"] .command-palette-overlay,
+html[data-performance="performance"] .command-palette-results {
+  transition: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  view-transition-name: none !important;
+}
+
+html[data-performance="performance"] .command-palette-results {
+  content-visibility: visible !important;
+}
+
+html[data-performance="performance"] .command-palette-root {
+  transition:
+    height 0s !important,
+    max-height 0s !important;
+}
+
+html[data-performance="balanced"] .command-palette-root {
+  transition-duration: 0.14s !important;
+  view-transition-name: none !important;
+}
+
+html[data-performance="balanced"] .command-palette-results {
+  animation-duration: 0.12s !important;
+  view-transition-name: none !important;
+  content-visibility: visible !important;
 }
 
 .command-palette-item {
@@ -198,4 +316,7 @@
   text-align: center;
   color: var(--text-muted);
   font-size: 14px;
+  min-height: 160px;
+  display: grid;
+  place-items: center;
 }

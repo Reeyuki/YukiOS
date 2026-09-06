@@ -69,21 +69,6 @@ export const vantaPresets = [
   },
   {
     id: 4,
-    name: "Globe - Purple",
-    effect: "GLOBE",
-    options: {
-      color: 0x4a00e0,
-      color2: 0x1e1e1e,
-      size: 1.2,
-      deviation: 200
-    },
-    previewStyle: {
-      background: "radial-gradient(circle at 50% 50%, #1e1e1e 0%, #4a00e0 40%, #0a0a0a 100%)",
-      animation: "globePreview 5s linear infinite"
-    }
-  },
-  {
-    id: 5,
     name: "Halo - Blue",
     effect: "HALO",
     options: {
@@ -99,7 +84,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 6,
+    id: 5,
     name: "Halo - Purple",
     effect: "HALO",
     options: {
@@ -115,7 +100,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 7,
+    id: 6,
     name: "Cells - Blue",
     effect: "CELLS",
     options: {
@@ -133,7 +118,7 @@ export const vantaPresets = [
     }
   },
   {
-    id: 8,
+    id: 7,
     name: "Cells - Purple",
     effect: "CELLS",
     options: {

@@ -44,7 +44,18 @@ export function setSelectMenuValue(id, value, root = document) {
   el.querySelectorAll(".select-menu__option").forEach((o) => o.classList.toggle("selected", o.dataset.value === value));
 }
 
-export function bindSelectMenu(root = document) {
+export function bindSelectMenu(root = document, idOrCallback, maybeCallback) {
+  if (typeof idOrCallback === "string" && typeof maybeCallback === "function") {
+    const el = $(`#${idOrCallback}`, root);
+    if (el) el.addEventListener("change", () => maybeCallback(getSelectMenuValue(idOrCallback, root)));
+    if (!root.__selectMenuBound) {
+      bindSelectMenu(root);
+      root.__selectMenuBound = true;
+    }
+    return;
+  }
+  if (root && root.__selectMenuBound) return;
+  if (root) root.__selectMenuBound = true;
   bindEvent(root, "click", (e) => {
     const trigger = e.target.closest(".select-menu__trigger");
     if (!trigger) return;

@@ -1,5 +1,6 @@
 import "../styles/defaultApps.css";
 import { BaseApp, os } from "../framework.js";
+import { $, $$, bindEvent } from "../shared/domUtils.js";
 import {
   FILE_ASSOCIATIONS_CHANGED,
   getDefaultAppForExt,
@@ -27,17 +28,13 @@ export class DefaultAppsApp extends BaseApp {
     const win = os.window.create("default-apps", "Default Apps", "720px", "560px", { icon: "fas fa-th-large" });
 
     this.mountInto(win);
-    this.host = win;
-
-    this.onAssociationsChanged = () => {
-      if (this.host && this.host.isConnected) this.render(this.host);
-    };
-    os.events.on(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
 
     win.addEventListener("remove", () => {
-      os.events.off(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
-      this.onAssociationsChanged = null;
-      this.host = null;
+      if (this.host === win) {
+        os.events.off(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+        this.onAssociationsChanged = null;
+        this.host = null;
+      }
     });
   }
 
@@ -77,31 +74,42 @@ export class DefaultAppsApp extends BaseApp {
         if (this.host && this.host.isConnected) this.render(this.host);
       };
       os.events.on(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+      const cleanup = () => {
+        if (this.host === host) {
+          os.events.off(FILE_ASSOCIATIONS_CHANGED, this.onAssociationsChanged);
+          this.onAssociationsChanged = null;
+          this.host = null;
+        }
+        host.removeEventListener("remove", cleanup);
+      };
+      host.addEventListener("remove", cleanup);
     }
   }
 
   bindHandlers(host) {
-    host.querySelector(".da-back").addEventListener("click", () => {
+    bindEvent($(".da-back", host), "click", () => {
       this.selectedAppId = null;
       this.render(host);
     });
 
-    host.querySelectorAll(".da-seg-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
+    $$(".da-seg-btn", host).forEach((btn) => {
+      bindEvent(btn, "click", () => {
+        if (btn.classList.contains("active")) return;
         this.view = btn.dataset.view;
         this.selectedAppId = null;
         this.searchQuery = "";
-        host.querySelector(".da-search").value = "";
+        const search = $(".da-search", host);
+        if (search) search.value = "";
         this.render(host);
       });
     });
 
-    host.querySelector(".da-search").addEventListener("input", (e) => {
+    bindEvent($(".da-search", host), "input", (e) => {
       this.searchQuery = e.target.value;
       this.render(host);
     });
 
-    host.querySelector(".da-reset").addEventListener("click", async () => {
+    bindEvent($(".da-reset", host), "click", async () => {
       const confirmed = await os.dialog.confirm(
         "Reset Defaults",
         "Reset every file type to the system default app? This cannot be undone."
@@ -113,13 +121,17 @@ export class DefaultAppsApp extends BaseApp {
   }
 
   render(host) {
-    const content = host.querySelector(".da-content");
-    const backBtn = host.querySelector(".da-back");
-    const title = host.querySelector(".da-title");
+    const content = $(".da-content", host);
+    const backBtn = $(".da-back", host);
+    const title = $(".da-title", host);
     const isDetail = this.view === "apps" && this.selectedAppId;
 
-    backBtn.hidden = !isDetail;
-    title.textContent = isDetail ? "Default apps" : "Default apps";
+    $$(".da-seg-btn", host).forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.view === this.view);
+    });
+
+    if (backBtn) backBtn.hidden = !isDetail;
+    if (title) title.textContent = "Default apps";
 
     if (this.view === "apps" && this.selectedAppId) {
       content.innerHTML = this.buildAppDetail(this.selectedAppId);
@@ -175,8 +187,8 @@ export class DefaultAppsApp extends BaseApp {
   }
 
   bindAppList(win, content) {
-    content.querySelectorAll(".da-app-row").forEach((row) => {
-      row.addEventListener("click", () => {
+    $$(".da-app-row", content).forEach((row) => {
+      bindEvent(row, "click", () => {
         this.selectedAppId = row.dataset.app;
         this.render(win);
       });
@@ -230,21 +242,21 @@ export class DefaultAppsApp extends BaseApp {
   }
 
   bindAppDetail(win, content) {
-    content.querySelector(".da-set-default-btn").addEventListener("click", (e) => {
+    bindEvent($(".da-set-default-btn", content), "click", (e) => {
       const appId = e.currentTarget.dataset.setDefault;
       for (const ext of getExtensionsForApp(appId)) {
         setDefaultApp(ext, appId);
       }
       os.notify.send("Default Apps", `${e.currentTarget.dataset.appName} is now the default for all its file types.`);
     });
-    content.querySelectorAll(".da-change-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+    $$(".da-change-btn", content).forEach((btn) => {
+      bindEvent(btn, "click", async () => {
         const ext = btn.dataset.change;
         await showChooseAppDialog({ ext, name: `file.${ext}`, path: [], setOnly: true });
       });
     });
-    content.querySelectorAll(".da-remove-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+    $$(".da-remove-btn", content).forEach((btn) => {
+      bindEvent(btn, "click", async () => {
         const ext = btn.dataset.remove;
         const confirmed = await os.dialog.confirm(
           "Remove Association",
@@ -286,14 +298,14 @@ export class DefaultAppsApp extends BaseApp {
   }
 
   bindFileTypeList(win, content) {
-    content.querySelectorAll(".da-change-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+    $$(".da-change-btn", content).forEach((btn) => {
+      bindEvent(btn, "click", async () => {
         const ext = btn.dataset.change;
         await showChooseAppDialog({ ext, name: `file.${ext}`, path: [], setOnly: true });
       });
     });
-    content.querySelectorAll(".da-remove-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+    $$(".da-remove-btn", content).forEach((btn) => {
+      bindEvent(btn, "click", async () => {
         const ext = btn.dataset.remove;
         const confirmed = await os.dialog.confirm(
           "Remove Association",

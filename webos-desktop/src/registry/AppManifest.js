@@ -68,21 +68,6 @@ export const APP_MANIFESTS = [
     description: "Displays system updates, release notes, and changelog entries for YukiOS features and improvements."
   },
   {
-    serviceKey: "themeHubApp",
-    enhanced: true,
-    type: "system",
-    title: "Theme Hub",
-    icon: "fas fa-share-nodes",
-    launchType: "instance",
-    windowIdPatterns: ["theme-hub"],
-    category: "utilities",
-    clippy: {
-      message: "Browse community themes and share your own, no account needed.",
-      animation: ClippyAnimation.Show
-    },
-    description: "Browse, rank, and install community themes with custom effects, no login needed."
-  },
-  {
     serviceKey: "calculatorApp",
     enhanced: true,
     type: "system",

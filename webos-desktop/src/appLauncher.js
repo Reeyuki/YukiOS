@@ -8,6 +8,7 @@ const IFRAME_ATTRS =
   'style="width:100%;height:100%;border:none;" allow="autoplay; fullscreen; clipboard-write; encrypted-media; picture-in-picture" sandbox="allow-forms allow-downloads allow-modals allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"';
 import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { StorageKeys, os, $ } from "./framework.js";
+import { buildPlayerConfig } from "./ruffle/ruffleSettings.js";
 import { getWispUrl } from "./shared/wispConfig.js";
 import { parseBool } from "./utils/utils.js";
 import {
@@ -105,7 +106,7 @@ export class AppLauncher {
         .map(([k, v]) => [k, v.clippy])
     );
 
-    this.clippyMap["vscode"] = { message: "Ready to write some code!", animation: ClippyAnimation.GetWizardy };
+    this.clippyMap["vscode"] = { message: "Code editor ready.", animation: ClippyAnimation.GetWizardy };
     this.appMap = { ...appMap, ...systemAppsWithActions };
     this.launchedAppIds = this.loadLaunchedApps();
     this.appSessions = new Map();
@@ -430,25 +431,29 @@ export class AppLauncher {
       const gameName = getGameName(originalName) || originalName;
       const swfPath = await resolveUrl(source);
 
+      const ruffleConfig = buildPlayerConfig();
+      const ruffleConfigJson = JSON.stringify(ruffleConfig).replace(/</g, "\\u003c");
       const swfHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>${gameName}</title>
 <script src="${getLibraryUrl("ruffle") || "https://unpkg.com/@ruffle-rs/ruffle/ruffle.js"}"></script>
-<style>html,body{margin:0;padding:0;width:100%;height:100%;background:black;overflow:hidden;}#player{width:100%;height:100%;}</style>
+<style>html,body{margin:0;padding:0;width:100%;height:100%;background:${ruffleConfig.backgroundColor || "#000"};overflow:hidden;}#player{width:100%;height:100%;}</style>
 </head>
 <body>
 <div id="player"></div>
 <script>
+const __ruffleCfg = ${ruffleConfigJson};
 const ruffle=window.RufflePlayer.newest();
 const player=ruffle.createPlayer();
+player.config = __ruffleCfg;
 player.style.width="100%";
 player.style.height="100%";
 player.style.display="block";
 document.getElementById("player").appendChild(player);
 player.load("${swfPath}");
-</script>
+<\/script>
 </body>
 </html>`;
 
@@ -628,7 +633,7 @@ player.load("${swfPath}");
         `;
 
         win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
-          this.overlayController?.openForWindow(win);
+          this.overlayController.openForWindow(win);
         });
 
         win.querySelector(".external-btn")?.addEventListener("click", () => {
@@ -646,7 +651,8 @@ player.load("${swfPath}");
           try {
             const injectBannerHtml =
               extra.isArchive && shouldEnableAds() ? buildGameAdBannerHtml(ADSTERRA_KEYS.leaderboard) : "";
-            iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource, { injectBannerHtml });
+            const skipRewrite = !!this.appMap[appId]?.skipRewrite;
+            iframeUrl = await fetchHtmlAsBlobUrl(resolvedSource, { injectBannerHtml, skipRewrite });
           } catch (err) {
             const message = err?.message ? String(err.message) : "Unknown error";
             const errHtml = `<!doctype html><meta charset="utf-8"><title>Failed to load</title>
@@ -786,7 +792,7 @@ player.load("${swfPath}");
     `;
 
     win.querySelector(".overlay-open-btn")?.addEventListener("click", () => {
-      this.overlayController?.openForWindow(win);
+      this.overlayController.openForWindow(win);
     });
 
     win.querySelector(".external-btn")?.addEventListener("click", () => {

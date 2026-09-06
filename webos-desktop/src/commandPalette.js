@@ -184,16 +184,44 @@ export class CommandPalette {
 
   renderResults() {
     if (!this.resultsContainer) return;
+    const root = this.resultsContainer.closest(".command-palette-root");
+    const startHeight = root ? root.getBoundingClientRect().height : 0;
+    const shouldAnimateHeight =
+      root &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+      document.documentElement.getAttribute("data-performance") !== "performance";
     const search = this.inputElement?.value.trim().toLowerCase() || "";
     this.resultsContainer.innerHTML = "";
+    const scheduleHeightAnimation = () => {
+      if (!shouldAnimateHeight || !root) return;
+      requestAnimationFrame(() => {
+        const endHeight = root.getBoundingClientRect().height;
+        if (Math.abs(endHeight - startHeight) < 3) return;
+        root.style.height = startHeight + "px";
+        root.style.overflow = "hidden";
+        root.getBoundingClientRect();
+        root.style.transition = "height 0.28s cubic-bezier(0.32, 0.72, 0, 1)";
+        root.style.height = endHeight + "px";
+        const cleanup = () => {
+          root.style.height = "";
+          root.style.transition = "";
+          root.style.overflow = "";
+          root.removeEventListener("transitionend", cleanup);
+        };
+        root.addEventListener("transitionend", cleanup, { once: true });
+        setTimeout(cleanup, 360);
+      });
+    };
 
     if (this.currentSubpalette === "wallpaper") {
       this.renderWallpaperSubpalette(search);
+      scheduleHeightAnimation();
       return;
     }
 
     if (this.currentSubpalette === "filesearch") {
       this.renderFileSearchSubpalette(search);
+      scheduleHeightAnimation();
       return;
     }
 
@@ -424,9 +452,9 @@ export class CommandPalette {
             await os.dialog.confirm("Empty Trash", "Are you sure you want to permanently delete all trashed files?")
           ) {
             await os.fs.emptyTrash();
-            os.notify.send("Trash Emptied", "All trashed files have been permanently deleted.", {
+            os.notify.send("Trash emptied", "", {
               type: "success",
-              duration: 4000,
+              duration: 2500,
               icon: "fas fa-trash",
               appSource: AppSource.COMMAND_PALETTE
             });
@@ -522,6 +550,7 @@ export class CommandPalette {
     }
 
     this.renderItems(items);
+    scheduleHeightAnimation();
   }
 
   renderItems(items) {
@@ -531,6 +560,7 @@ export class CommandPalette {
 
     if (this.results.length === 0) {
       this.resultsContainer.innerHTML = `<div class="command-palette-empty">No matching commands, apps, or files found.</div>`;
+      this.restartResultsAnimation();
       return;
     }
 
@@ -567,7 +597,17 @@ export class CommandPalette {
       this.resultsContainer.appendChild(el);
     });
 
-    this.scrollToActive();
+    this.restartResultsAnimation();
+    requestAnimationFrame(() => this.scrollToActive());
+  }
+
+  restartResultsAnimation() {
+    if (!this.resultsContainer) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (document.documentElement.getAttribute("data-performance") === "performance") return;
+    this.resultsContainer.style.animation = "none";
+    this.resultsContainer.offsetHeight;
+    this.resultsContainer.style.animation = "";
   }
 
   renderWallpaperSubpalette(search) {
@@ -853,12 +893,6 @@ export class CommandPalette {
           var text = result.toString();
           os.app.setClipboardContent(text);
           navigator.clipboard.writeText(text);
-          os.notify.send("Calculator", "Result copied to clipboard", {
-            type: "success",
-            duration: 2000,
-            icon: "fas fa-calculator",
-            appSource: AppSource.COMMAND_PALETTE
-          });
         }
       };
     } catch {
@@ -1049,12 +1083,6 @@ export class CommandPalette {
         var text = result.toString();
         os.app.setClipboardContent(text);
         navigator.clipboard.writeText(text);
-        os.notify.send("Conversion", "Result copied to clipboard", {
-          type: "success",
-          duration: 2000,
-          icon: "fas fa-arrows-left-right",
-          appSource: AppSource.COMMAND_PALETTE
-        });
       }
     };
   }
@@ -1067,9 +1095,9 @@ export class CommandPalette {
       document.documentElement.setAttribute("data-theme", effective);
     });
     os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: val });
-    os.notify.send("Theme Changed", `System appearance set to ${val}`, {
+    os.notify.send("Theme Changed", `Theme: ${val}`, {
       type: "success",
-      duration: 5000,
+      duration: 3000,
       icon: "fas fa-palette",
       appSource: AppSource.COMMAND_PALETTE
     });
@@ -1078,18 +1106,18 @@ export class CommandPalette {
   toggleSound(val) {
     os.storage.set(StorageKeys.soundEnabled, val ? "true" : "false");
     os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "soundEnabled", value: val ? "true" : "false" });
-    os.notify.send("Sound Settings", `System audio feedback is now ${val ? "enabled" : "disabled"}`, {
+    os.notify.send("Sound", val ? "On" : "Off", {
       type: "info",
-      duration: 5000,
+      duration: 2500,
       icon: "fas fa-volume-up"
     });
   }
 
   toggleDND(val) {
     os.storage.set(StorageKeys.dndKey, val ? "true" : "false");
-    os.notify.send("Do Not Disturb", `Silence state is now ${val ? "activated" : "deactivated"}`, {
+    os.notify.send("Do Not Disturb", val ? "On" : "Off", {
       type: "info",
-      duration: 5000,
+      duration: 2500,
       icon: "fas fa-bell-slash",
       appSource: AppSource.COMMAND_PALETTE
     });

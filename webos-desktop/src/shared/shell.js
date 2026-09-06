@@ -1,5 +1,5 @@
 import { $$, createElement } from "./domUtils.js";
-import { os } from "../framework.js";
+import { os, StorageKeys } from "../framework.js";
 
 export class Shell {
   constructor(fs, sessionKey) {
@@ -62,11 +62,100 @@ export class Shell {
     return expanded;
   }
 
+  async ensureSudoAuth(outputCallback) {
+    const now = Date.now();
+    const last = Number(os.storage.get(StorageKeys.sudoAuth) || 0);
+    if (now - last < 5 * 60 * 1000) return true;
+    const pwd = await os.dialog.prompt("Sudo", `[sudo] password for ${this.sessionKey}:`, "");
+    if (pwd === null) {
+      await outputCallback("sudo: authentication failed");
+      return false;
+    }
+    os.storage.set(StorageKeys.sudoAuth, String(now));
+    return true;
+  }
+
+  unwrapSudoSegment(segment) {
+    let { command, args, flags } = segment;
+    if (command !== "sudo") return segment;
+    const sudoFlagsNoValue = new Set([
+      "-A",
+      "-b",
+      "-E",
+      "-H",
+      "-k",
+      "-K",
+      "-l",
+      "-n",
+      "-S",
+      "-s",
+      "-v",
+      "-V",
+      "-h",
+      "--help",
+      "--list",
+      "--validate",
+      "--remove-timestamp",
+      "--non-interactive",
+      "--stdin",
+      "--shell",
+      "--version"
+    ]);
+    const sudoFlagsWithValue = new Set([
+      "-u",
+      "-g",
+      "-p",
+      "-C",
+      "-U",
+      "-r",
+      "-t",
+      "--user",
+      "--group",
+      "--prompt",
+      "--chdir",
+      "--other-user"
+    ]);
+    let argsQueue = [...args];
+    const innerFlags = [];
+    for (const flag of [...flags]) {
+      if (flag === "--") continue;
+      if (sudoFlagsNoValue.has(flag)) continue;
+      if (sudoFlagsWithValue.has(flag)) {
+        argsQueue.shift();
+        continue;
+      }
+      if (flag.startsWith("-") && flag.length > 2 && !flag.startsWith("--")) {
+        const chars = flag.slice(1).split("");
+        const isSudoCombined = chars.every((c) =>
+          ["A", "b", "E", "H", "k", "K", "l", "n", "S", "s", "v", "V", "h"].includes(c)
+        );
+        if (isSudoCombined) continue;
+      }
+      innerFlags.push(flag);
+    }
+    if (!argsQueue.length) return { command: null, args: [], flags: [] };
+    const innerName = argsQueue.shift();
+    return { command: innerName, args: argsQueue, flags: innerFlags };
+  }
+
   async executePipeline(pipeline, outputCallback) {
     let output = null;
 
     for (let i = 0; i < pipeline.length; i++) {
-      const { command, args, flags } = pipeline[i];
+      let { command, args, flags } = pipeline[i];
+      if (command === "sudo") {
+        const ok = await this.ensureSudoAuth(outputCallback);
+        if (!ok) return;
+      }
+      while (command === "sudo") {
+        const unwrapped = this.unwrapSudoSegment({ command, args, flags });
+        if (!unwrapped || !unwrapped.command) break;
+        command = unwrapped.command;
+        args = unwrapped.args;
+        flags = unwrapped.flags;
+        pipeline[i] = { command, args, flags };
+      }
+      if (command === "sudo" || !command) continue;
       const expandedArgs = await this.expandGlobsInArgs(args, this.currentPath);
 
       if (output !== null) {
@@ -103,6 +192,11 @@ export class Shell {
   async executeCommand(commandStr, outputCallback) {
     this.history.push(commandStr);
     const pipeline = this.parseCommand(commandStr);
+    const needsSudo = pipeline.some((p) => p.command === "sudo");
+    if (needsSudo) {
+      const ok = await this.ensureSudoAuth(outputCallback);
+      if (!ok) return;
+    }
     await this.executePipeline(pipeline, outputCallback);
   }
 
@@ -132,6 +226,33 @@ export class Shell {
     this.registerCommand("ping", (args, flags, output) => this.cmdPing(args, output));
     this.registerCommand("curl", (args, flags, output) => this.cmdCurl(args, output));
     this.registerCommand("neofetch", (args, flags, output) => this.cmdNeofetch(output));
+    this.registerCommand("screenfetch", (args, flags, output) => this.cmdNeofetch(output));
+    for (const fetchAlias of [
+      "fastfetch",
+      "hyfetch",
+      "neowofetch",
+      "archey",
+      "archey4",
+      "pfetch",
+      "ufetch",
+      "afetch",
+      "nerdfetch"
+    ]) {
+      this.registerCommand(fetchAlias, (args, flags, output) => this.cmdNeofetch(output));
+    }
+    this.registerCommand("sudo", async (args, flags, output) => {
+      const ok = await this.ensureSudoAuth(output);
+      if (!ok) return;
+      if (!args.length && !flags.length) return;
+      const unwrapped = this.unwrapSudoSegment({ command: "sudo", args, flags });
+      if (!unwrapped || !unwrapped.command) return;
+      const handler = this.commands[unwrapped.command];
+      if (!handler) {
+        if (unwrapped.command) await output(`${unwrapped.command}: command not found`);
+        return;
+      }
+      await handler(unwrapped.args, unwrapped.flags, output);
+    });
     this.registerCommand("ps", (args, flags, output) => this.cmdPs(output));
     this.registerCommand("grep", (args, flags, output) => this.cmdGrep(args, output));
     this.registerCommand("wc", (args, flags, output) => this.cmdWc(args, output));
@@ -158,6 +279,9 @@ export class Shell {
     output("  ping     - Ping a host");
     output("  curl     - Fetch URL content");
     output("  neofetch - Display system info");
+    output("  screenfetch - Alias for neofetch");
+    output("  fastfetch/hyfetch/neowofetch/archey/archey4/pfetch/ufetch/afetch/nerdfetch - Alias for neofetch");
+    output("  sudo     - Run command with elevated privileges (no-op)");
     output("  ps       - List processes");
     output("  grep     - Search for pattern");
     output("  wc       - Count lines, words, characters");

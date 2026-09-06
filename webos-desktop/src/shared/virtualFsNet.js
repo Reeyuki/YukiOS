@@ -206,7 +206,7 @@ export function buildDirectoryHtml(pathStr, entries, hrefBuilder, options = {}) 
         escapeHtml(kind) +
         '</span><span class="entry-size">' +
         escapeHtml(size) +
-        '</span><span class="entry-date">—</span></div>'
+        '</span><span class="entry-date">-</span></div>'
     );
   }
   const crumbs = ['<a class="crumb" href="/">home</a>'];

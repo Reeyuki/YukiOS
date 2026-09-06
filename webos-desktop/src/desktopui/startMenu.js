@@ -1592,6 +1592,17 @@ function showStartMenuContext(e, itemData, index) {
     );
     menu.appendChild(
       item(
+        "Customize Icon & Title",
+        () => {
+          import("../shared/appCustomizer.js").then((m) =>
+            m.showAppCustomizer(itemData.app, itemData.title, itemData.icon)
+          );
+        },
+        "fa-palette"
+      )
+    );
+    menu.appendChild(
+      item(
         "Remove Item",
         () => {
           removeGridItem(index);
@@ -1883,6 +1894,18 @@ function showAppItemContextMenu(e, appId, appData) {
     menu.appendChild(item("Properties", () => showAppProperties(appId, appData), "fas fa-info-circle"));
 
     menu.appendChild(hr());
+
+    menu.appendChild(
+      item(
+        "Customize Icon & Title",
+        () => {
+          import("../shared/appCustomizer.js").then((m) =>
+            m.showAppCustomizer(appId, appData.title || appId, appData.icon || "")
+          );
+        },
+        "fa-palette"
+      )
+    );
 
     menu.appendChild(
       item(

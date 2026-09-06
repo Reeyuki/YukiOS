@@ -1,7 +1,7 @@
 {
   "name": "YukiOS",
   "short_name": "YukiOS",
-  "description": "YukiOS is a browser-based desktop environment with 80+ apps, windowed multitasking, a virtual filesystem, and persistent storage — all running in your browser.",
+  "description": "YukiOS is a browser-based desktop environment with 80+ apps, windowed multitasking, a virtual filesystem and persistent storage. Everything runs in your browser.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",

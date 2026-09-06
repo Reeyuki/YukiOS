@@ -21,13 +21,17 @@ import {
   applyVirtualResolution,
   applyDockIconSize,
   applyDockScale,
-  applyDockAnimationSpeed
+  applyDockAnimationSpeed,
+  applyThemeConfig
 } from "./settingsApply.js";
 import { exportData, importData, deleteAllData } from "./settingsData.js";
 import { $, $$, bindEvent, toggleClass, setText, createElement, setHTML } from "../shared/domUtils.js";
 import { bindSelectMenu, getSelectMenuValue, setSelectMenuValue } from "../shared/selectMenu.js";
 import { bindRangeSlider, getRangeSliderValue, setRangeSliderValue } from "../shared/rangeSlider.js";
-import { addCustomTheme } from "../shared/themeEngine.js";
+import { addCustomTheme, getSpecialThemes, getCustomThemes, getThemeByValue } from "../shared/themeEngine.js";
+import { buildThemeContract, sanitizeThemeContract } from "../shared/themeContract.js";
+import { applyThemeEffects } from "../shared/themeEffects.js";
+import { openThemeCreator, refreshCustomThemesUI } from "./themeCreator.js";
 import { bindAccountsCategory } from "./accountsPanel.js";
 import { bindDisks } from "./pane-disks.js";
 import { loadStartupApps, renderStartupAppList } from "../shared/startupApps.js";
@@ -627,7 +631,10 @@ export function bindAppearanceCategory(
   $$(".settings-btn[data-theme-val]", win).forEach((btn) => {
     bindEvent(btn, "click", () => {
       const theme = btn.dataset.themeVal;
-      $$(".settings-btn[data-theme-val]", win).forEach((b) => toggleClass(b, "active", b === btn));
+      $$(".theme-preview-btn", win).forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const featuredGridSel = $("#settingsFeaturedGrid", win);
+      if (featuredGridSel) $$("[data-featured-theme]", featuredGridSel).forEach((b) => b.classList.remove("active"));
       settings.theme = theme;
       os.storage.set(StorageKeys.theme, theme);
       applyTheme(theme, getCustomColors);
@@ -636,6 +643,97 @@ export function bindAppearanceCategory(
       showStatus(`Theme: ${label}`);
     });
   });
+
+  const featuredGrid = $("#settingsFeaturedGrid", win);
+  if (featuredGrid) {
+    if (!featuredGrid.innerHTML.trim()) {
+      const specials = getSpecialThemes();
+      const cur = os.storage.get(StorageKeys.theme) || settings.theme;
+      featuredGrid.innerHTML = specials
+        .map(
+          (theme) =>
+            `<button class="settings-btn theme-preview-btn ${cur === theme.value ? "active" : ""}" data-featured-theme="${theme.value}" style="height:56px;background:${theme.preview};color:${theme.textColor || "#fff"};"><span>${theme.label}</span></button>`
+        )
+        .join("");
+    }
+    $$("[data-featured-theme]", featuredGrid).forEach((btn) => {
+      bindEvent(btn, "click", () => {
+        const theme = btn.dataset.featuredTheme;
+        $$(".theme-preview-btn", win).forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        settings.theme = theme;
+        os.storage.set(StorageKeys.theme, theme);
+        applyTheme(theme, getCustomColors);
+        audioMixer().playSystemSound(SystemAudio.DESKTOP_CHANGE);
+        const label = theme.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        showStatus(`Theme: ${label}`);
+      });
+    });
+  }
+
+  refreshCustomThemesUI(win);
+
+  const createThemeBtn = $("#settingsCreateThemeBtn", win);
+  if (createThemeBtn) {
+    bindEvent(createThemeBtn, "click", () => openThemeCreator(win));
+  }
+
+  const importBtn = $("#settingsImportThemeBtn", win);
+  const importInput = $("#settingsImportThemeInput", win);
+  if (importBtn && importInput) {
+    bindEvent(importBtn, "click", () => importInput.click());
+    bindEvent(importInput, "change", async () => {
+      const file = importInput.files && importInput.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const result = sanitizeThemeContract(parsed);
+        if (!result.ok) {
+          os.dialog.alert("Import Theme", result.errors.join("\n") || "Invalid theme file");
+          return;
+        }
+        const contract = result.contract;
+        const data = {
+          value: contract.name.toLowerCase().replace(/[^a-z0-9-]/g, "-") + "-" + Math.random().toString(36).slice(2, 6),
+          label: contract.name,
+          icon: contract.icon,
+          colors: contract.colors,
+          description: contract.description,
+          author: contract.author,
+          effects: contract.effects,
+          config: contract.config
+        };
+        try {
+          addCustomTheme({
+            value: data.value,
+            label: data.label,
+            icon: data.icon,
+            colors: data.colors,
+            description: data.description,
+            author: data.author,
+            effects: data.effects,
+            config: data.config
+          });
+        } catch (e) {
+          os.dialog.alert("Import Theme", e.message || "Couldn't import theme");
+          return;
+        }
+        os.storage.set(StorageKeys.theme, data.value);
+        applyTheme(data.value, () => os.storage.get(StorageKeys.customColors));
+        if (contract.effects && Object.keys(contract.effects).length > 0) applyThemeEffects(contract.effects);
+        if (contract.config && Object.keys(contract.config).length > 0) applyThemeConfig(contract.config);
+        os.notify.send("Themes", `Imported "${contract.name}"`);
+        os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: data.value });
+        refreshCustomThemesUI(win);
+        showSaved();
+      } catch (e) {
+        os.dialog.alert("Import Theme", "Couldn't read that file: " + (e.message || e));
+      } finally {
+        importInput.value = "";
+      }
+    });
+  }
 
   const customColorsBtn = $("#settingsCustomColorsBtn", win);
   if (customColorsBtn) {
@@ -662,31 +760,9 @@ export function bindAppearanceCategory(
         });
         os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.ThemeSmith });
         os.dialog.alert("Alert", `Saved "${themeName}"`);
-        os.notify.send("Theme Hub", `Saved "${themeName}". Open Theme Hub to remix or publish it.`);
+        os.notify.send("Themes", `Theme saved to My Themes`);
         showSaved();
-        const customThemesSection = Array.from($$(".settings-row--stacked", win)).find(
-          (row) => row.querySelector(".settings-label-title")?.textContent === "Custom Themes"
-        );
-        if (customThemesSection) {
-          const customThemesGrid = customThemesSection.querySelector("div[style*='grid']");
-          if (customThemesGrid) {
-            const emptyMessage = customThemesGrid.querySelector("span");
-            if (emptyMessage) emptyMessage.remove();
-            const newThemeBtn = createElement("button");
-            newThemeBtn.className = "settings-btn";
-            newThemeBtn.dataset.themeVal = themeValue;
-            newThemeBtn.innerHTML = `<i class="fas fa-palette"></i> ${themeName}`;
-            bindEvent(newThemeBtn, "click", () => {
-              $$(".settings-btn", win).forEach((btn) => btn.classList.remove("active"));
-              newThemeBtn.classList.add("active");
-              settings.theme = themeValue;
-              os.storage.set(StorageKeys.theme, themeValue);
-              applyTheme(themeValue, () => getCustomColors());
-              showStatus(`Theme: ${themeName}`);
-            });
-            customThemesGrid.appendChild(newThemeBtn);
-          }
-        }
+        refreshCustomThemesUI(win);
       } catch (e) {
         os.dialog.alert("Alert", e.message || "Couldn't save the theme");
       }
@@ -952,20 +1028,6 @@ export function bindAppearanceCategory(
   }
 
   mountWallpaperEngine(win);
-
-  const themeHubBtn = $("#settingsOpenThemeHub", win);
-  if (themeHubBtn) {
-    bindEvent(themeHubBtn, "click", () => {
-      os.app.launch("themeHubApp");
-    });
-  }
-
-  const createThemeBtn = $("#settingsOpenThemeHubCreate", win);
-  if (createThemeBtn) {
-    bindEvent(createThemeBtn, "click", () => {
-      os.app.launch("themeHubApp", { intent: "create" });
-    });
-  }
 
   bindCursorControls(win, settings, showSaved, normalizeCursorDataUrl);
 }

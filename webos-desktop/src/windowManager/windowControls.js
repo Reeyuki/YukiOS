@@ -1,4 +1,5 @@
 import { os } from "../framework.js";
+import { wobbleCancel } from "./AnimationSystem.js";
 
 export function updateMaximizeControls(win) {
   const maxBtn = win.querySelector(".maximize-btn");
@@ -39,13 +40,31 @@ export function setupWindowControls(win, wm) {
     const isIcon = (target) => !target.closest(".window-controls") && target.matches("img, i, svg, .window-icon");
     const isHeader = (target) => header.contains(target) && !target.closest(".window-controls") && !isIcon(target);
     let lastPressTime = 0;
-    const handleDoublePress = (target) => {
+    const handleDoublePress = (target, e) => {
       const now = performance.now();
       const isDouble = now - lastPressTime <= 500;
       lastPressTime = isDouble ? 0 : now;
       if (!isDouble) return;
       if (isIcon(target)) {
-        wm.closeWindow(win);
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const doClose = () => {
+          wobbleCancel(win);
+          win.classList.remove("dragging", "magnetized");
+          document.body.classList.remove("is-dragging");
+          wm.isDraggingWindow = false;
+          if (win.isConnected) wm.closeWindow(win);
+        };
+        let closed = false;
+        const trigger = () => {
+          if (closed) return;
+          closed = true;
+          requestAnimationFrame(doClose);
+        };
+        document.addEventListener("mouseup", trigger, { once: true });
+        setTimeout(trigger, 180);
       } else if (isHeader(target)) {
         const wasMaximized = win.dataset.snapZone === "maximize";
         setTimeout(() => {
@@ -58,7 +77,7 @@ export function setupWindowControls(win, wm) {
         }, 0);
       }
     };
-    header.addEventListener("mousedown", (e) => handleDoublePress(e.target));
+    header.addEventListener("mousedown", (e) => handleDoublePress(e.target, e));
   }
 
   if (maxBtn) {

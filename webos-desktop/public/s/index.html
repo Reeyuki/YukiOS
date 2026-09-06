@@ -1779,6 +1779,7 @@
 
     .browser-ad-bar {
       display: none;
+      position: relative;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -1789,6 +1790,36 @@
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       z-index: 5;
+    }
+
+    .browser-ad-close {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dim);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      opacity: 0.7;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    .browser-ad-close:hover {
+      opacity: 1;
+      background: var(--surface-hover);
+    }
+
+    .browser-ad-close:disabled {
+      opacity: 0.35;
+      cursor: default;
     }
 
     .browser-ad-label {
@@ -3585,12 +3616,38 @@
       }
     });
 
+    var browserAdCloseTimer = null;
+    function bindBrowserAdClose() {
+      var bar = document.getElementById("browser-ad-bar");
+      var btn = document.getElementById("browser-ad-close");
+      if (!bar || !btn) return;
+      if (btn.getAttribute("data-bound") !== "1") {
+        btn.setAttribute("data-bound", "1");
+        btn.addEventListener("click", function () {
+          if (btn.disabled) return;
+          bar.style.display = "none";
+          var slot = document.getElementById("browser-ad-slot");
+          if (slot) {
+            slot.removeAttribute("data-ads-loaded");
+            slot.innerHTML = "";
+          }
+          try { sessionStorage.setItem("yukiBrowserAdDismissed", "1"); } catch (e) {}
+          if (browserAdCloseTimer) { clearTimeout(browserAdCloseTimer); browserAdCloseTimer = null; }
+        });
+      }
+      btn.disabled = true;
+      if (browserAdCloseTimer) clearTimeout(browserAdCloseTimer);
+      browserAdCloseTimer = setTimeout(function () { btn.disabled = false; browserAdCloseTimer = null; }, 4000);
+    }
+
     function enableBrowserAds() {
       var bar = document.getElementById("browser-ad-bar");
       var slot = document.getElementById("browser-ad-slot");
       if (!bar || !slot) return;
+      try { if (sessionStorage.getItem("yukiBrowserAdDismissed") === "1") { bar.style.display = "none"; return; } } catch (e) {}
       if (slot.getAttribute("data-ads-loaded") === "1") {
         bar.style.display = "flex";
+        bindBrowserAdClose();
         return;
       }
       slot.setAttribute("data-ads-loaded", "1");
@@ -3611,6 +3668,7 @@
       inv.src = "https://www.highperformanceformat.com/28c33f91ee21bcf1063e489aae3024f8/invoke.js";
       slot.appendChild(inv);
       bar.style.display = "flex";
+      bindBrowserAdClose();
     }
 
     function disableBrowserAds() {
@@ -3621,6 +3679,9 @@
         slot.removeAttribute("data-ads-loaded");
         slot.innerHTML = "";
       }
+      var btn = document.getElementById("browser-ad-close");
+      if (btn) btn.disabled = true;
+      if (browserAdCloseTimer) { clearTimeout(browserAdCloseTimer); browserAdCloseTimer = null; }
     }
 
     function isWindowOpenInterceptEnabled() { return windowOpenInterceptEnabled !== false; }
@@ -4253,6 +4314,7 @@
           <div class="loading-bar-container"><div class="loading-bar" id="loading-bar"></div></div>
           <div class="browser-ad-bar" id="browser-ad-bar">
             <span class="browser-ad-label">Sponsored</span>
+            <button class="browser-ad-close" id="browser-ad-close" aria-label="Close advertisement" disabled>&times;</button>
             <div class="browser-ad-slot" id="browser-ad-slot"></div>
           </div>
           <div class="iframe-container" id="iframe-container">
@@ -6553,7 +6615,7 @@
       allWisps.forEach(function (server, index) {
         var isActive = server.url === currentUrl;
         var isCustom = index >= WISP_SERVERS.length;
-        html += '<div class="wisp-option' + (isActive ? " active" : "") + '" data-wisp-url="' + server.url + '" data-tooltip="' + server.name + ' — ' + server.url + '">' +
+        html += '<div class="wisp-option' + (isActive ? " active" : "") + '" data-wisp-url="' + server.url + '" data-tooltip="' + server.name + ' (' + server.url + ')' + '">' +
           '<div class="wisp-option-header">' +
           '<div class="wisp-option-name">' + server.name + (isActive ? ' <i class="fa-solid fa-check"></i>' : "") + '</div>' +
           '<div class="server-status">' +
@@ -7023,7 +7085,7 @@
         const isCustom = index >= WISP_SERVERS.length;
         const item = document.createElement("div");
         item.className = `wisp-option ${isActive ? "active" : ""}`;
-        item.dataset.tooltip = `${server.name} — ${server.url}`;
+        item.dataset.tooltip = `${server.name} (${server.url})`;
 
         const deleteBtn = isCustom
           ? `<button class="delete-wisp-btn" data-tooltip="Remove this custom server" onclick="event.stopPropagation(); deleteCustomWisp('${server.url}')"><i class="fa-solid fa-trash-can"></i></button>`

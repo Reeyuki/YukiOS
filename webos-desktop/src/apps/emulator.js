@@ -221,7 +221,7 @@ export class EmulatorApp extends BaseApp {
       icon: resolveIconUrl(EMULATOR_ICON),
       extraDirs: [{ dir: DESKTOP_DIR, kind: "rom" }],
       emitChanged: true,
-      spinnerHTML: `<i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)…</div>`,
+      spinnerHTML: `<div class="yuki-loading-indicator"><i class="fa-solid fa-spinner fa-spin emu-state-icon ruf-state-icon" style="animation-duration:1.4s;opacity:0.7"></i><div class="emu-state-text ruf-state-text">Saving ${files.length} file(s)…</div></div>`,
       successHTML: `<i class="fa-solid fa-circle-check emu-state-icon ruf-state-icon"></i><div class="emu-state-text ruf-state-text">Saved ${files.length} file(s)!</div>`,
       errorHTML: (msg) =>
         `<i class="fa-solid fa-triangle-exclamation emu-state-icon ruf-state-icon emu-state--error"></i><div class="emu-state-text ruf-state-text emu-state--error">${msg}</div>`,
@@ -300,8 +300,8 @@ export class EmulatorApp extends BaseApp {
     <div class="window-content emu-window ruf-window">
       ${buildLoadingStateHTML({
         winId,
-        iconClass: "fa-solid fa-gamepad fa-spin ruf-state-icon emu-state-icon",
-        wrapperClass: "emu-state ruf-loading emu-load-wrap",
+        iconClass: "fa-solid fa-gamepad fa-spin ruf-state-icon emu-state-icon yuki-loading-indicator",
+        wrapperClass: "yuki-loading-indicator emu-state ruf-loading emu-load-wrap",
         textClass: "emu-state-text ruf-state-text",
         logClass: "emu-state-text--muted ruf-log",
         displayName

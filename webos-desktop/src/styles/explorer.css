@@ -56,9 +56,9 @@
   font-size: 12px;
   cursor: pointer;
   transition:
-    background 0.15s,
-    color 0.15s,
-    box-shadow 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .explorer-nav button:hover,
@@ -105,7 +105,7 @@
   color: var(--text-secondary);
   opacity: 0.5;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity var(--transition-fast);
 }
 
 .explorer-reload-icon:hover {
@@ -175,7 +175,7 @@
   cursor: pointer;
   border-radius: var(--r-sm, 6px);
   padding: 4px 8px;
-  transition: background 0.1s;
+  transition: background var(--transition-fast);
 }
 
 .rec-search-item:hover {
@@ -221,9 +221,9 @@
   cursor: pointer;
   border-radius: 3px;
   transition:
-    opacity 0.15s,
-    background 0.15s,
-    color 0.15s;
+    opacity var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .explorer-view-btn:hover {
@@ -276,7 +276,7 @@
   padding: 0 8px;
   cursor: pointer;
   user-select: none;
-  transition: color 0.1s;
+  transition: color var(--transition-fast);
   height: 100%;
 }
 
@@ -328,7 +328,7 @@
   font-size: 13px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.08s;
+  transition: background var(--transition-fast);
 }
 
 .explorer-view-list .file-item:hover {
@@ -421,7 +421,9 @@
 }
 
 .explorer-sidebar {
-  width: 155px;
+  width: var(--explorer-sidebar-w, 155px);
+  min-width: 120px;
+  max-width: 320px;
   user-select: none;
   background: var(--glass);
   backdrop-filter: blur(16px);
@@ -430,6 +432,28 @@
   position: relative;
   display: flex;
   flex-direction: column;
+}
+
+.explorer-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+  margin-left: -2px;
+  margin-right: -2px;
+  z-index: 5;
+  transition: background 0.12s;
+  align-self: stretch;
+}
+
+.explorer-resizer:hover,
+.explorer-resizer.active {
+  background: color-mix(in oklch, var(--brand) 30%, transparent);
+}
+
+body.pane-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .explorer-sidebar::after {
@@ -468,7 +492,9 @@
   padding: 6px 12px;
   cursor: pointer;
   color: var(--text-secondary);
-  transition: background 0.08s;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
   flex-shrink: 0;
   font-size: 13px;
 }
@@ -493,7 +519,7 @@
   font-size: 13px;
   color: var(--brand);
   flex-shrink: 0;
-  transition: color 0.08s;
+  transition: color var(--transition-fast);
 }
 
 .nav-item img {
@@ -523,7 +549,7 @@
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 600;
-  transition: color 0.1s;
+  transition: color var(--transition-fast);
 }
 
 .sidebar-section-header:hover {
@@ -534,7 +560,7 @@
   font-size: 8px;
   width: 10px;
   text-align: center;
-  transition: transform 0.15s;
+  transition: transform var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -612,8 +638,8 @@
   font-family: inherit;
   min-width: 100px;
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .explorer-win-path:focus {
@@ -663,10 +689,10 @@
   font-weight: 500;
   cursor: pointer;
   transition:
-    background 0.15s,
-    color 0.15s,
-    box-shadow 0.15s,
-    opacity 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -896,10 +922,10 @@
   word-break: break-word;
   border: 1px solid transparent;
   transition:
-    background 0.15s,
-    color 0.15s,
+    background var(--transition-fast),
+    color var(--transition-fast),
     transform 0.12s,
-    box-shadow 0.15s;
+    box-shadow var(--transition-fast);
 }
 
 .file-item:hover {
@@ -1123,7 +1149,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition: background var(--transition-fast);
 }
 
 .overlay--active {
@@ -1188,8 +1214,8 @@
   align-items: center;
   gap: 6px;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -1262,7 +1288,7 @@
   cursor: pointer;
   font-size: 12.5px;
   text-align: left;
-  transition: background 0.15s;
+  transition: background var(--transition-fast);
 }
 
 .conflict-btn-icon {
@@ -1336,7 +1362,7 @@
   font-size: 13px;
   padding: 7px 10px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--transition-fast);
 }
 
 .fd-dialog-input:focus {
@@ -1493,7 +1519,7 @@ html[data-theme-mode="light"] .explorer-win-path:focus {
 .disk-chevron {
   width: 10px;
   height: 10px;
-  transition: transform 0.15s;
+  transition: transform var(--transition-fast);
   flex-shrink: 0;
   color: var(--text-muted);
 }
@@ -1527,7 +1553,7 @@ html[data-theme-mode="light"] .explorer-win-path:focus {
   padding: 12px 8px 8px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background var(--transition-fast);
   color: var(--text-secondary);
 }
 
@@ -1566,7 +1592,7 @@ html[data-theme-mode="light"] .explorer-win-path:focus {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  transition: background 0.1s;
+  transition: background var(--transition-fast);
   cursor: pointer;
 }
 

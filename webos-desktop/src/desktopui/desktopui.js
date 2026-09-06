@@ -29,6 +29,9 @@ import { PhotoFrameWidget } from "./widgets/photoFrameWidget.js";
 import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 import { AquariumWidget } from "./widgets/aquariumWidget.js";
+import { applyStartButtonIcon, showStartButtonContextMenu, showStartButtonPicker } from "./startButtonManager.js";
+import { applyAppCustomizations } from "../shared/appCustomizer.js";
+import "../styles/startButtonPicker.css";
 
 let GRID_CONFIG = { width: 68, height: 82, gap: 1, marginX: 24, marginY: 24 };
 
@@ -502,6 +505,10 @@ export class DesktopUI {
     this.desktop = $("#desktop");
     this.startButton = $("#start-button");
     this.startMenu = $("#start-menu");
+    applyStartButtonIcon();
+    try {
+      applyAppCustomizations();
+    } catch {}
     this.selectionBox = $("#selection-box");
     this.lastFocusedContext = "desktop";
 
@@ -580,6 +587,14 @@ export class DesktopUI {
       const favCat = $('.start-cat[data-cat="favorites"]');
       const targetCat = favCat && favCat.style.display !== "none" ? favCat : $('.start-cat[data-cat="all"]');
       targetCat?.click();
+    });
+    this.startButton.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showStartButtonContextMenu(e);
+    });
+    this.startButton.addEventListener("dblclick", () => {
+      showStartButtonPicker();
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("click", (e) => {
@@ -1043,6 +1058,9 @@ export class DesktopUI {
 
   async initializeDesktopFiles() {
     await this.iconManager.initializeDesktopFiles();
+    try {
+      applyAppCustomizations();
+    } catch {}
     this.widgetManager.init();
   }
 

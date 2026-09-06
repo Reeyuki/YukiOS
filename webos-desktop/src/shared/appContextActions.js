@@ -14,10 +14,8 @@ export function toggleTaskbarPin(appId, appData) {
   const displayName = appData.title || appId;
   if (isAppPinnedToTaskbar(appId)) {
     os.windowManager?.taskbarSystem?.unpinFromTaskbar(`${appId}-pinned`);
-    os.notify.send("Taskbar", `${displayName} unpinned from the taskbar.`);
   } else {
-    const pinned = os.window.pinAppToTaskbar(appId, displayName, appData.icon || "fas fa-star");
-    os.notify.send("Taskbar", pinned ? `${displayName} pinned to the taskbar.` : `${displayName} is already pinned to the taskbar.`);
+    os.window.pinAppToTaskbar(appId, displayName, appData.icon || "fas fa-star");
   }
 }
 

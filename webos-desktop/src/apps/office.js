@@ -1701,7 +1701,6 @@ export class OfficeApp extends BaseApp {
 
     const XLSX = await modules.xlsx();
     this.syncNativeTable(state, XLSX);
-    os.notify.send(`Sorted ${ascending ? "A→Z" : "Z→A"}`);
   }
   setupKeyboardShortcuts(win, state, actions) {
     win.addEventListener("keydown", (e) => {
@@ -1862,8 +1861,6 @@ export class OfficeApp extends BaseApp {
     const chars = text.length;
     const charsNoSpace = text.replace(/\s/g, "").length;
     const lines = text.split("\n").length;
-
-    os.notify.send(`${words} words · ${chars} chars · ${lines} lines`);
   }
 
   showShortcuts() {
@@ -1896,7 +1893,6 @@ export class OfficeApp extends BaseApp {
       <div>F11 - Fullscreen</div>
     </div>
   `;
-    os.notify.send(shortcuts);
   }
 
   showAbout(win) {
@@ -1912,7 +1908,6 @@ export class OfficeApp extends BaseApp {
   spellCheck(state) {
     if (state.editorType === "contenteditable" && state.editor) {
       state.editor.spellcheck = !state.editor.spellcheck;
-      os.notify.send(`Spell check ${state.editor.spellcheck ? "on" : "off"}`);
     }
   }
 
@@ -1931,7 +1926,6 @@ export class OfficeApp extends BaseApp {
       text = state.editor.innerText;
     }
     FileIO.triggerDownload(`${state.title}.txt`, text);
-    os.notify.send("Exported as .txt");
   }
 
   async createNewFile(win, state) {
@@ -2010,7 +2004,6 @@ export class OfficeApp extends BaseApp {
       try {
         await navigator.clipboard.writeText(text);
         document.execCommand("delete");
-        os.notify.send("Cut to clipboard");
       } catch (err) {
         document.execCommand("cut");
       }
@@ -2020,7 +2013,6 @@ export class OfficeApp extends BaseApp {
         try {
           await navigator.clipboard.writeText(focused.textContent);
           focused.textContent = "";
-          os.notify.send("Cut to clipboard");
         } catch (err) {
           document.execCommand("cut");
         }
@@ -2128,7 +2120,6 @@ export class OfficeApp extends BaseApp {
     }
     tr.appendChild(fragment);
     tbody.appendChild(tr);
-    os.notify.send("Row added");
   }
 
   async addSpreadsheetColumn(state) {
@@ -2149,7 +2140,6 @@ export class OfficeApp extends BaseApp {
       td.dataset.col = colIndex;
       tr.appendChild(td);
     });
-    os.notify.send("New column added");
   }
 
   async addSpreadsheetSheet(state) {
@@ -2177,7 +2167,6 @@ export class OfficeApp extends BaseApp {
     }
 
     try {
-      os.notify.send("Export to PDF", "Generating PDF, please wait...");
       const jsPDF = await modules.jsPDF();
       const html2canvas = await modules.html2canvas();
 
@@ -2253,7 +2242,6 @@ export class OfficeApp extends BaseApp {
 </html>`;
 
     FileIO.triggerDownload(`${state.title}.html`, fullHTML);
-    os.notify.send("Exported as .html");
   }
 
   findInSpreadsheet(state, searchTerm) {

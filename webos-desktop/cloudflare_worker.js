@@ -5475,7 +5475,7 @@ function renderAdminThemes(){
     var shortId=(t.id||"").slice(-8);
     return "<tr>"+
       "<td style=\\"max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\\">"+escapeHtml(t.name||"Untitled")+"</td>"+
-      "<td>"+escapeHtml(t.author||t.author_id||"—")+"</td>"+
+      "<td>"+escapeHtml(t.author||t.author_id||"Unknown")+"</td>"+
       "<td>"+badge+"</td>"+
       "<td>"+t.score+"</td>"+
       "<td>"+t.installs+"</td>"+
