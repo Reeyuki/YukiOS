@@ -5,7 +5,7 @@ import { $, createElement, bindEvent, setText, setHTML, toggleClass, BaseApp, os
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getWispUrl } from "../shared/wispConfig.js";
 import { createScramjetWebApp } from "../core/ScramjetWebAppFactory.js";
-import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "../proxies.js";
+import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy, fetchDirectAsBlobUrl } from "../proxies.js";
 import { AppSource } from "../AppSource.js";
 import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
 import { buildWindowHeader } from "../shared/windowHeader.js";
@@ -29,9 +29,29 @@ function isImageIcon(iconValue) {
   return isImageFile(iconValue) || iconValue.startsWith("data:");
 }
 
-function buildAppMapEntry(name, url, icon, faviconUrl, proxyEnabled = false, proxyIndex = 0, scramjetEnabled = false) {
+function buildAppMapEntry(
+  name,
+  url,
+  icon,
+  faviconUrl,
+  proxyEnabled = false,
+  proxyIndex = 0,
+  scramjetEnabled = false,
+  blobEnabled = false
+) {
   const iconValue = faviconUrl || icon;
-  return { type: "game", title: name, url, icon, iconValue, faviconUrl, proxyEnabled, proxyIndex, scramjetEnabled };
+  return {
+    type: "game",
+    title: name,
+    url,
+    icon,
+    iconValue,
+    faviconUrl,
+    proxyEnabled,
+    proxyIndex,
+    scramjetEnabled,
+    blobEnabled
+  };
 }
 
 function buildAppMeta(
@@ -42,9 +62,15 @@ function buildAppMeta(
   faviconUrl,
   proxyEnabled = false,
   proxyIndex = 0,
-  scramjetEnabled = false
+  scramjetEnabled = false,
+  blobEnabled = false
 ) {
-  return { appId, name, url, icon, faviconUrl, type: "game", proxyEnabled, proxyIndex, scramjetEnabled };
+  return { appId, name, url, icon, faviconUrl, type: "game", proxyEnabled, proxyIndex, scramjetEnabled, blobEnabled };
+}
+
+async function buildBlobUrl(url, proxyEnabled, proxyIndex) {
+  if (proxyEnabled) return fetchHtmlThroughProxy(url, proxyIndex, PROXIES);
+  return fetchDirectAsBlobUrl(url);
 }
 
 function deriveFaviconUrl(appUrl) {
@@ -194,6 +220,14 @@ export class AppCreatorApp extends BaseApp {
               <p class="ac-hint">Scramjet mode uses a proxy browser for better compatibility with web apps.</p>
             </div>
 
+            <div>
+              <label class="ac-checkbox">
+                <input type="checkbox" id="ac-blob-enabled" />
+                <span>Force HTML rendering</span>
+              </label>
+              <p class="ac-hint">Fetches the page first and shows it as HTML. Enable if the site shows raw code or refuses to load.</p>
+            </div>
+
             <div class="ac-icon-section">
               <label class="ac-label">Icon</label>
               <div class="ac-icon-row">
@@ -253,7 +287,8 @@ export class AppCreatorApp extends BaseApp {
           app.faviconUrl,
           !!app.proxyEnabled,
           clampProxyIndex(app.proxyIndex, PROXIES),
-          !!app.scramjetEnabled
+          !!app.scramjetEnabled,
+          !!app.blobEnabled
         )
       );
       this.addToDesktop(app.appId, app.name, app.icon, app.faviconUrl);
@@ -275,6 +310,7 @@ export class AppCreatorApp extends BaseApp {
     const proxyEnabledInput = $("#ac-proxy-enabled", win);
     const proxySelect = $("#ac-proxy-select", win);
     const scramjetEnabledInput = $("#ac-scramjet-enabled", win);
+    const blobEnabledInput = $("#ac-blob-enabled", win);
 
     if (!installBtn) {
       console.error("AppCreator: installBtn not found in DOM");
@@ -317,6 +353,11 @@ export class AppCreatorApp extends BaseApp {
       if (proxySelect) proxySelect.value = "0";
       if (proxySelect) proxySelect.disabled = true;
       if (scramjetEnabledInput) scramjetEnabledInput.checked = false;
+      if (blobEnabledInput) {
+        blobEnabledInput.checked = false;
+        blobEnabledInput.disabled = false;
+      }
+      if (scramjetEnabledInput) scramjetEnabledInput.disabled = false;
       setHTML(iconPreview, `<i class="fas fa-window-maximize"></i>`);
       const editBanner = $("#ac-edit-banner", win);
       if (editBanner) editBanner.classList.remove("active");
@@ -330,6 +371,30 @@ export class AppCreatorApp extends BaseApp {
     if (proxyEnabledInput && proxySelect) {
       proxyEnabledInput.addEventListener("change", () => {
         proxySelect.disabled = !proxyEnabledInput.checked;
+      });
+    }
+    if (scramjetEnabledInput && blobEnabledInput) {
+      scramjetEnabledInput.addEventListener("change", () => {
+        const scramjetChecked = !!scramjetEnabledInput.checked;
+        if (blobEnabledInput) {
+          blobEnabledInput.disabled = scramjetChecked;
+          if (scramjetChecked) blobEnabledInput.checked = false;
+        }
+        if (!scramjetChecked && !blobEnabledInput.checked) {
+          scramjetEnabledInput.disabled = false;
+          blobEnabledInput.disabled = false;
+        }
+      });
+      blobEnabledInput.addEventListener("change", () => {
+        const blobChecked = !!blobEnabledInput.checked;
+        if (scramjetEnabledInput) {
+          scramjetEnabledInput.disabled = blobChecked;
+          if (blobChecked) scramjetEnabledInput.checked = false;
+        }
+        if (!blobChecked && !scramjetEnabledInput.checked) {
+          scramjetEnabledInput.disabled = false;
+          blobEnabledInput.disabled = false;
+        }
       });
     }
 
@@ -377,7 +442,8 @@ export class AppCreatorApp extends BaseApp {
       const useProxy = !!proxyEnabledInput?.checked;
       const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
       const useScramjet = !!scramjetEnabledInput?.checked;
-      await this.openPreviewWindow(name, url, useProxy, proxyIndex, useScramjet);
+      const blobEnabled = !!blobEnabledInput?.checked;
+      await this.openPreviewWindow(name, url, useProxy, proxyIndex, useScramjet, blobEnabled);
     });
 
     installBtn.addEventListener("click", () => {
@@ -387,6 +453,7 @@ export class AppCreatorApp extends BaseApp {
       const proxyEnabled = !!proxyEnabledInput?.checked;
       const proxyIndex = clampProxyIndex(parseInt(proxySelect?.value), PROXIES);
       const scramjetEnabled = !!scramjetEnabledInput?.checked;
+      const blobEnabled = !!blobEnabledInput?.checked;
 
       if (!name) {
         this.showStatus(status, "error", "App name is required.");
@@ -405,8 +472,29 @@ export class AppCreatorApp extends BaseApp {
       }
 
       const task = editingAppId
-        ? this.saveEdit(editingAppId, name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win)
-        : this.installApp(name, secureUrl, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, status, win);
+        ? this.saveEdit(
+            editingAppId,
+            name,
+            secureUrl,
+            iconUrl,
+            proxyEnabled,
+            proxyIndex,
+            scramjetEnabled,
+            blobEnabled,
+            status,
+            win
+          )
+        : this.installApp(
+            name,
+            secureUrl,
+            iconUrl,
+            proxyEnabled,
+            proxyIndex,
+            scramjetEnabled,
+            blobEnabled,
+            status,
+            win
+          );
       task.catch(console.error);
     });
   }
@@ -501,6 +589,7 @@ export class AppCreatorApp extends BaseApp {
               proxyEnabled: data.proxyEnabled || false,
               proxyIndex: data.proxyIndex || 0,
               scramjetEnabled: data.scramjetEnabled || false,
+              blobEnabled: data.blobEnabled || false,
               fileName: fileName
             });
           }
@@ -536,12 +625,20 @@ export class AppCreatorApp extends BaseApp {
     const proxyEnabledInput = $("#ac-proxy-enabled", win);
     const proxySelect = $("#ac-proxy-select", win);
     const scramjetEnabledInput = $("#ac-scramjet-enabled", win);
+    const blobEnabledInput = $("#ac-blob-enabled", win);
     if (proxyEnabledInput) proxyEnabledInput.checked = !!meta.proxyEnabled;
     if (proxySelect) {
       proxySelect.value = String(clampProxyIndex(meta.proxyIndex, PROXIES));
       proxySelect.disabled = !proxyEnabledInput?.checked;
     }
     if (scramjetEnabledInput) scramjetEnabledInput.checked = !!meta.scramjetEnabled;
+    if (blobEnabledInput) blobEnabledInput.checked = !!meta.blobEnabled;
+    if (scramjetEnabledInput && blobEnabledInput) {
+      const scramjetChecked = !!meta.scramjetEnabled;
+      const blobChecked = !!meta.blobEnabled;
+      blobEnabledInput.disabled = scramjetChecked;
+      scramjetEnabledInput.disabled = blobChecked;
+    }
 
     const iconIsData = meta.icon?.startsWith("data:");
     win.setResolvedIcon(iconIsData ? meta.icon : null);
@@ -561,7 +658,7 @@ export class AppCreatorApp extends BaseApp {
     $(".window-content", win).scrollTop = 0;
   }
 
-  async saveEdit(appId, name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
+  async saveEdit(appId, name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, blobEnabled, statusEl, win) {
     const meta = await this.loadAppMeta(appId);
     if (!meta) {
       this.showStatus(statusEl, "error", "Could not find app to edit.");
@@ -583,6 +680,7 @@ export class AppCreatorApp extends BaseApp {
       proxyEnabled,
       proxyIndex,
       scramjetEnabled,
+      blobEnabled,
       isCustomApp: true
     };
 
@@ -606,7 +704,8 @@ export class AppCreatorApp extends BaseApp {
           faviconUrl,
           !!proxyEnabled,
           clampProxyIndex(proxyIndex, PROXIES),
-          !!scramjetEnabled
+          !!scramjetEnabled,
+          !!blobEnabled
         )
       );
     }
@@ -718,13 +817,27 @@ export class AppCreatorApp extends BaseApp {
     }, 4000);
   }
 
-  async openPreviewWindow(name, url, proxyEnabled = false, proxyIndex = 0, scramjetEnabled = false) {
+  async openPreviewWindow(
+    name,
+    url,
+    proxyEnabled = false,
+    proxyIndex = 0,
+    scramjetEnabled = false,
+    blobEnabled = false
+  ) {
     const secureUrl = ensureHttpsProtocol(url);
     let finalUrl = secureUrl;
 
     if (scramjetEnabled) {
       const wispUrl = getWispUrl();
       finalUrl = `/sapps/set-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(secureUrl)}`;
+    } else if (blobEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
+      try {
+        finalUrl = await buildBlobUrl(secureUrl, proxyEnabled, proxyIndex);
+      } catch (e) {
+        console.error("[AppCreator Preview] Failed to fetch blob:", e);
+        finalUrl = secureUrl;
+      }
     } else if (proxyEnabled && typeof secureUrl === "string" && /^https?:\/\//.test(secureUrl)) {
       try {
         finalUrl = await fetchHtmlThroughProxy(secureUrl, proxyIndex, PROXIES);
@@ -743,10 +856,16 @@ export class AppCreatorApp extends BaseApp {
         <iframe src="${finalUrl}" style="width:100%;height:100%;border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
       </div>
     `;
+    win.addEventListener("remove", () => {
+      if (finalUrl?.startsWith("blob:"))
+        try {
+          URL.revokeObjectURL(finalUrl);
+        } catch {}
+    });
     os.window.addToTaskbar(winId, `${name} - Preview`, AC.TASKBAR_ICON);
   }
 
-  async installApp(name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, statusEl, win) {
+  async installApp(name, url, iconUrl, proxyEnabled, proxyIndex, scramjetEnabled, blobEnabled, statusEl, win) {
     const secureUrl = ensureHttpsProtocol(url);
     const appId = `${AC.APP_ID_PREFIX}${name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
     const fileName = `${name}.desktop`;
@@ -759,7 +878,8 @@ export class AppCreatorApp extends BaseApp {
       faviconUrl,
       !!proxyEnabled,
       clampProxyIndex(proxyIndex, PROXIES),
-      !!scramjetEnabled
+      !!scramjetEnabled,
+      !!blobEnabled
     );
 
     const desktopFileContent = JSON.stringify({
@@ -772,6 +892,7 @@ export class AppCreatorApp extends BaseApp {
       proxyEnabled,
       proxyIndex,
       scramjetEnabled,
+      blobEnabled,
       isCustomApp: true
     });
 
@@ -791,7 +912,8 @@ export class AppCreatorApp extends BaseApp {
         faviconUrl,
         !!proxyEnabled,
         clampProxyIndex(proxyIndex, PROXIES),
-        !!scramjetEnabled
+        !!scramjetEnabled,
+        !!blobEnabled
       )
     );
     this.addToDesktop(appId, name, iconUrl, faviconUrl);

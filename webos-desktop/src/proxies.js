@@ -62,3 +62,20 @@ export async function fetchHtmlThroughProxy(url, proxyIndex = 0, proxies = PROXI
   const blob = new Blob([html], { type: "text/html" });
   return URL.createObjectURL(blob);
 }
+
+export async function fetchDirectAsBlobUrl(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
+  const html = await res.text();
+  const urlObj = new URL(url);
+  const baseHref = url.replace(/[^/]*$/, "");
+  let withBase = html;
+  const hasBase = /<base\b[^>]*>/i.test(html);
+  if (!hasBase) {
+    if (/<head\b[^>]*>/i.test(html))
+      withBase = html.replace(/<head\b[^>]*>/i, (m) => `${m}\n<base href="${baseHref}">`);
+    else withBase = `<base href="${baseHref}">\n${html}`;
+  }
+  const blob = new Blob([withBase], { type: "text/html" });
+  return URL.createObjectURL(blob);
+}

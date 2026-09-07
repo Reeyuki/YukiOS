@@ -31,7 +31,7 @@ import { initAnalytics, getAnalyticsBase, sendLaunchAnalytics, recordUsage, reco
 import { maybeTriggerSmartlink, buildGameAdBannerHtml, ADSTERRA_KEYS, shouldEnableAds } from "./ads.js";
 import { getNewsContentSignature, updateNewsBadge } from "./apps/news.js";
 import { SteamSettings } from "./games/steamSettings.js";
-import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy } from "./proxies.js";
+import { PROXIES, clampProxyIndex, buildProxyUrl, fetchHtmlThroughProxy, fetchDirectAsBlobUrl } from "./proxies.js";
 import { trigger as triggerCursorEffect } from "./cursorEffect.js";
 const STATICALLY_BASE = resolveGhUrl("https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main");
 
@@ -296,6 +296,21 @@ export class AppLauncher {
         if (info?.scramjetEnabled) {
           const wispUrl = getWispUrl();
           source = `/sapps/set-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
+        } else if (info?.blobEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
+          const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
+          try {
+            if (info?.proxyEnabled) {
+              source = await fetchHtmlThroughProxy(source, proxyIndex, PROXIES);
+            } else {
+              source = await fetchDirectAsBlobUrl(source);
+            }
+          } catch (e) {
+            console.warn("[AppLauncher blob] fetch failed, fallback to proxy/direct", e);
+            if (info?.proxyEnabled) {
+              const fallback = buildProxyUrl(source, proxyIndex, PROXIES);
+              if (fallback) source = fallback;
+            }
+          }
         } else if (info?.proxyEnabled && typeof source === "string" && /^https?:\/\//.test(source)) {
           const proxyIndex = clampProxyIndex(info.proxyIndex, PROXIES);
           try {
@@ -669,6 +684,17 @@ player.load("${swfPath}");
           contentDiv.innerHTML = `<iframe src="${iframeUrl}" ${IFRAME_ATTRS}></iframe>`;
         }
 
+        win.addEventListener("remove", () => {
+          if (iframeUrl?.startsWith("blob:"))
+            try {
+              URL.revokeObjectURL(iframeUrl);
+            } catch {}
+          if (resolvedSource?.startsWith("blob:"))
+            try {
+              URL.revokeObjectURL(resolvedSource);
+            } catch {}
+        });
+
         if (type === "game") externalUrl = resolvedSource;
         return;
       } else {
@@ -798,6 +824,18 @@ player.load("${swfPath}");
     win.querySelector(".external-btn")?.addEventListener("click", () => {
       const url = win.dataset.externalUrl || win.querySelector("iframe")?.src || externalUrl;
       if (url) window.open(url, "blank", "noopener,noreferrer");
+    });
+
+    win.addEventListener("remove", () => {
+      if (externalUrl?.startsWith("blob:"))
+        try {
+          URL.revokeObjectURL(externalUrl);
+        } catch {}
+      const iframeSrc = win.querySelector("iframe")?.src;
+      if (iframeSrc?.startsWith("blob:") && iframeSrc !== externalUrl)
+        try {
+          URL.revokeObjectURL(iframeSrc);
+        } catch {}
     });
 
     recordUsage(`${id}-win`);

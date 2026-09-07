@@ -34,7 +34,7 @@
 
 .ac-label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -42,8 +42,8 @@
 
 .ac-input {
   width: 100%;
-  padding: 6px var(--spacing-sm);
-  font-size: 12px;
+  padding: 8px var(--spacing-sm);
+  font-size: 14px;
   font-family: var(--font-ui);
   color: var(--text-primary);
   background: var(--surface-1);
@@ -62,6 +62,7 @@
 .ac-input:focus {
   border-color: var(--brand);
   background: var(--surface-2);
+  box-shadow: 0 0 0 2px var(--brand-glow);
 }
 
 .ac-proxy-row {
@@ -75,13 +76,17 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-primary);
   cursor: pointer;
 }
 
 .ac-checkbox input {
   appearance: none;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  margin: 0;
   width: 16px;
   height: 16px;
   background: var(--surface-1);
@@ -106,14 +111,14 @@
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
-  top: 3px;
+  top: 2px;
   left: 5px;
 }
 
 .ac-proxy-select {
   flex: 1;
-  padding: 4px var(--spacing-xs);
-  font-size: 12px;
+  padding: 6px var(--spacing-xs);
+  font-size: 14px;
   font-family: var(--font-ui);
   color: var(--text-primary);
   background: var(--surface-1);
@@ -129,7 +134,7 @@
 }
 
 .ac-hint {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   margin: 2px 0 var(--spacing-sm) 0;
   opacity: 0.8;
@@ -177,7 +182,7 @@
 }
 
 .ac-icon-file-input {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-primary);
   background: var(--surface-1);
   border: 1px solid var(--glass-border);
@@ -190,7 +195,7 @@
 .ac-icon-file-input::-webkit-file-upload-button {
   appearance: none;
   padding: 4px var(--spacing-xs);
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--font-ui);
   font-weight: 500;
   color: var(--text-primary);
@@ -207,7 +212,7 @@
 .ac-icon-file-input::file-selector-button {
   appearance: none;
   padding: 4px var(--spacing-xs);
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--font-ui);
   font-weight: 500;
   color: var(--text-primary);
@@ -226,14 +231,14 @@
 }
 
 .ac-avatar-toggle-btn {
-  font-size: 11px;
+  font-size: 13px;
   font-family: var(--font-ui);
   font-weight: 500;
   color: var(--text-primary);
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
-  padding: 4px var(--spacing-sm);
+  padding: 6px var(--spacing-sm);
   cursor: pointer;
   transition:
     background-color 0.15s ease,
@@ -253,8 +258,8 @@
 }
 
 .ac-status {
-  font-size: 12px;
-  padding: 4px var(--spacing-sm);
+  font-size: 13px;
+  padding: 6px var(--spacing-sm);
   border-radius: var(--r-sm);
   margin-bottom: var(--spacing-sm);
   display: none;
@@ -282,8 +287,8 @@
 
 .ac-btn {
   flex: 1;
-  padding: 6px var(--spacing-sm);
-  font-size: 12px;
+  padding: 8px var(--spacing-sm);
+  font-size: 14px;
   font-family: var(--font-ui);
   font-weight: 500;
   color: var(--text-primary);
@@ -319,7 +324,7 @@
 
 .ac-cancel-edit-btn {
   padding: 4px var(--spacing-xs);
-  font-size: 11px;
+  font-size: 12px;
   background: transparent;
   border: 1px solid var(--glass-border);
   color: var(--text-secondary);
@@ -339,7 +344,7 @@
 }
 
 .ac-empty {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
   padding: var(--spacing-md);
@@ -390,7 +395,7 @@
 }
 
 .ac-app-row-name {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -399,7 +404,7 @@
 }
 
 .ac-app-row-url {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -415,7 +420,7 @@
 
 .ac-row-btn {
   padding: 4px var(--spacing-xs);
-  font-size: 11px;
+  font-size: 12px;
   font-family: var(--font-ui);
   font-weight: 500;
   color: var(--text-primary);
