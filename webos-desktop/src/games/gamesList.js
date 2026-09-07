@@ -765,6 +765,12 @@ export const appMap = {
     icon: "/static/icons/isaac.webp",
     title: "Isaac Rebirth"
   },
+  isaacRepentance: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/chiikabu/boi-portable@main/index.html",
+    icon: "/static/icons/isaac.webp",
+    title: "The Binding of Isaac: Repentance"
+  },
   dan: {
     type: "game",
     url: "https://www.silvergames.com/en/dan-the-man/gameframe",

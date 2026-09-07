@@ -265,6 +265,8 @@ export const descriptionMap = {
     "The Binding of Isaac is a 2011 roguelike by Edmund McMillen and Florian Himsl. Players guide a crying child through a procedurally generated basement filled with monsters, items, and disturbing biblical imagery.",
   isaacRebirth:
     "The Binding of Isaac: Rebirth is the 2014 remake by Nicalis. It rebuilds the original on a new engine with massively expanded content, new endings, and additional characters and items.",
+  isaacRepentance:
+    "The Binding of Isaac: Repentance is the 2021 final expansion for Rebirth. It adds massive new content including alternate paths, characters, bosses, and items expanding the roguelike to its definitive form.",
   dan: "Dan the Man is a 2015 action platformer by Halfbrick Studios. Inspired by classic 8-bit beat 'em ups, players brawl through pixelated levels using a fluid combo system.",
   jojo: "JoJo's Bizarre Adventure: Heritage for the Future is a 1998 arcade fighting game by Capcom. Based on Hirohiko Araki's manga, it features a unique 'Stand' mechanic that adds a controllable second character to each fighter.",
   fistPunch:
