@@ -175,6 +175,7 @@ export class TerminalApp extends BaseApp {
         return { exitCode: 127 };
       },
       expandString: (str) => self.expandWithEnv(str),
+      requestSudoPassword: () => self.promptSudoInline(),
       printInline: (text, colors) => {
         const state = self.activeState;
         if (!state) return;
@@ -1517,7 +1518,7 @@ export class TerminalApp extends BaseApp {
     const now = Date.now();
     const last = Number(os.storage.get(StorageKeys.sudoAuth) || 0);
     if (now - last < 5 * 60 * 1000) return true;
-    const pwd = await os.dialog.prompt("Sudo", `[sudo] password for ${this.displayName}:`, "");
+    const pwd = await this.promptSudoInline();
     if (pwd === null) {
       await this.print("sudo: authentication failed");
       if (this.activeState) this.activeState.lastExitCode = 1;
@@ -1525,6 +1526,65 @@ export class TerminalApp extends BaseApp {
     }
     os.storage.set(StorageKeys.sudoAuth, String(now));
     return true;
+  }
+
+  async promptSudoInline() {
+    const state = this.activeState;
+    if (!state || !state.terminalOutput || !state.terminalInputLine) {
+      return "";
+    }
+    return new Promise((resolve) => {
+      const line = createElement("div");
+      line.className = "terminal-sudo-prompt";
+      const label = createElement("span");
+      label.textContent = `[sudo] password for ${this.displayName}: `;
+      line.appendChild(label);
+      const input = createElement("input");
+      input.type = "password";
+      input.className = "terminal-sudo-input";
+      input.autocomplete = "off";
+      input.spellcheck = false;
+      line.appendChild(input);
+      state.terminalOutput.appendChild(line);
+      line.scrollIntoView({ block: "end", behavior: "instant" });
+      const prevDisplay = state.terminalInputLine.style.display;
+      state.terminalInputLine.style.display = "none";
+      state.terminalInput.disabled = true;
+      input.focus();
+      let done = false;
+      const cleanup = () => {
+        input.removeEventListener("keydown", onKey);
+        input.removeEventListener("blur", onBlur);
+      };
+      const finish = (val) => {
+        if (done) return;
+        done = true;
+        cleanup();
+        line.remove();
+        state.terminalInputLine.style.display = prevDisplay || "";
+        state.terminalInput.disabled = false;
+        state.terminalInput.focus();
+        resolve(val);
+      };
+      const onKey = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          e.stopPropagation();
+          finish(input.value);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          finish(null);
+        } else if (e.key === "c" && e.ctrlKey) {
+          e.preventDefault();
+          finish(null);
+        }
+      };
+      const onBlur = () => {
+        if (!done) setTimeout(() => input.focus(), 0);
+      };
+      input.addEventListener("keydown", onKey);
+      input.addEventListener("blur", onBlur);
+    });
   }
 
   async executeCommand(commandStr) {

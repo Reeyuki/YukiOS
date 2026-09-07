@@ -1672,5 +1672,24 @@ export const appMap = {
     icon: "/static/icons/srb2kart.png",
     title: "SRB2 Kart",
     scramjetEnabled: true
+  },
+  wizardHult: {
+    type: "swf",
+    swf: "/static/games/swfGames/wizard-hult.swf",
+    icon: "/static/icons/wizard-hult.png",
+    title: "Wizard Hult"
+  },
+  canary: { type: "swf", swf: "/static/games/swfGames/canary.swf", icon: "/static/icons/canary.jpg", title: "Canary" },
+  transmorpher2: {
+    type: "swf",
+    swf: "/static/games/swfGames/transmorpher2.swf",
+    icon: "/static/icons/transmorpher2.jpg",
+    title: "Transmorpher 2"
+  },
+  transmorpher3: {
+    type: "swf",
+    swf: "/static/games/swfGames/transmorpher3.swf",
+    icon: "/static/icons/transmorpher3.jpg",
+    title: "Transmorpher 3"
   }
 };

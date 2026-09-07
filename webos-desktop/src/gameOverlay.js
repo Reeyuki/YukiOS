@@ -3,7 +3,6 @@ import { StorageKeys, os, ServiceKeys } from "./framework.js";
 import { BusEvents } from "./core/EventBus.js";
 import { SteamDataManager, SteamAppRenderer } from "./games/games.js";
 import { ScreenshotApp } from "./apps/screenshot.js";
-import { TerminalApp } from "./apps/terminal.js";
 import { audioMixer } from "./audioMixer.js";
 import { resolveIconUrl } from "./shared/assetResolver.js";
 import { isImageFile } from "./shared/fileKindDetector.js";
@@ -36,7 +35,6 @@ const DOCK_ITEM_DEFAULTS = [
   { id: "screenshots", title: "Screenshots", icon: "fa-images" },
   { id: "audio", title: "Audio", icon: "fa-volume-high" },
   { id: "launcher", title: "Quick Launch", icon: "fa-th" },
-  { id: "terminal", title: "Terminal", icon: "fa-terminal" },
   { id: "settings", title: "Settings", icon: "fa-cog" }
 ];
 
@@ -104,6 +102,8 @@ export class GameOverlayController {
       };
       if (!s.dockItems) {
         s.dockItems = DOCK_ITEM_DEFAULTS.map((d) => ({ id: d.id, visible: true }));
+      } else {
+        s.dockItems = s.dockItems.filter((d) => d.id !== "terminal");
       }
       return s;
     } catch {
@@ -316,7 +316,7 @@ export class GameOverlayController {
 
     this.bindOverlayEvents();
 
-    const prevOpen = this.loadOpenPanels();
+    const prevOpen = this.loadOpenPanels().filter((id) => id !== "terminal");
     if (prevOpen.includes("overview")) {
       this.togglePanel("overview");
     }
@@ -458,7 +458,6 @@ export class GameOverlayController {
       screenshots: "Screenshots",
       audio: "Audio",
       launcher: "Quick Launch",
-      terminal: "Terminal",
       settings: "Settings"
     };
     const panelTitle = titleMap[id] || (id.startsWith("screenshot-view--") ? id.replace("screenshot-view--", "") : id);
@@ -509,7 +508,6 @@ export class GameOverlayController {
       screenshots: { x: 26, y: 259, w: 320, h: 282 },
       audio: { x: 1164, y: 460, w: 347, h: 241 },
       launcher: { x: 579, y: 260, w: 373, h: 336 },
-      terminal: { x: 404, y: 32, w: 581, h: 319 },
       settings: { x: 281, y: -77, w: 500, h: 691 }
     };
 
@@ -711,9 +709,6 @@ export class GameOverlayController {
         break;
       case "launcher":
         this.renderLauncher();
-        break;
-      case "terminal":
-        this.initTerminal();
         break;
       case "settings":
         this.renderSettings();
@@ -1477,66 +1472,6 @@ export class GameOverlayController {
         }
       });
     });
-  }
-
-  initTerminal() {
-    const pane = this.overlayEl.querySelector('[data-panel="terminal"] .overlay-panel-body');
-    if (!pane) return;
-
-    if (pane.querySelector(".terminal-content")) return;
-    if (this.terminalApp && !this.terminalApp.destroyed) return;
-
-    this.terminalApp = new TerminalApp(this.os);
-
-    const content = createElement("div");
-    content.className = "window-content terminal-content overlay-terminal-container";
-    content.innerHTML = `
-      <div class="terminal-output" id="terminal-output"></div>
-      <div class="terminal-input-line" id="terminal-input-line">
-        <span id="terminal-prompt"></span>
-        <input class="terminal-input" id="terminal-input" spellcheck="false" autocomplete="off">
-      </div>
-    `;
-    pane.appendChild(content);
-
-    this.terminalApp.terminalOutput = content.querySelector("#terminal-output");
-    this.terminalApp.terminalInput = content.querySelector("#terminal-input");
-    this.terminalApp.terminalPrompt = content.querySelector("#terminal-prompt");
-    this.terminalApp.terminalInputLine = content.querySelector("#terminal-input-line");
-
-    this.terminalApp.updatePrompt();
-    this.terminalApp.print("YukiOS Terminal \u2014 Overlay", "var(--charging)");
-    this.terminalApp.print("Type 'help' for available commands\n");
-
-    this.terminalApp.terminalInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const cmd = this.terminalApp.terminalInput.value.trim();
-        if (!cmd) return;
-        this.terminalApp.history.push(cmd);
-        this.terminalApp.historyIndex = this.terminalApp.history.length;
-        this.terminalApp.terminalInput.value = "";
-        this.terminalApp.executeCommand(cmd);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        if (this.terminalApp.historyIndex > 0) {
-          this.terminalApp.terminalInput.value = this.terminalApp.history[--this.terminalApp.historyIndex];
-        }
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        this.terminalApp.historyIndex = Math.min(this.terminalApp.historyIndex + 1, this.terminalApp.history.length);
-        this.terminalApp.terminalInput.value =
-          this.terminalApp.historyIndex < this.terminalApp.history.length
-            ? this.terminalApp.history[this.terminalApp.historyIndex]
-            : "";
-      }
-    });
-
-    this.terminalApp.cmdExit = () => {
-      this.togglePanel("terminal");
-    };
-
-    this.terminalApp.terminalInput.focus();
   }
 
   startClock() {

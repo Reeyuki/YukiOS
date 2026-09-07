@@ -252,6 +252,33 @@ html[data-theme] .terminal-content ::selection {
   color: rgba(255, 255, 255, 0.7);
 }
 
+.terminal-sudo-prompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.terminal-sudo-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  padding: 4px 8px;
+  outline: none;
+}
+
+.terminal-sudo-input:focus {
+  border-color: var(--brand);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .ansi-escape {
   display: none;
 }

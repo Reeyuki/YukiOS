@@ -1272,6 +1272,33 @@ html[data-theme="light"] .window {
   will-change: transform, opacity;
 }
 
+#desktop.desktop-refreshing > .icon {
+  opacity: 0 !important;
+  transition: opacity 40ms linear !important;
+}
+
+@keyframes desktop-refresh-pop {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.desktop-refresh-enter {
+  animation: desktop-refresh-pop 150ms steps(1, end) both;
+}
+
 .wa-fall-apart-layer .wa-shard-content {
   position: absolute;
   inset: 0;

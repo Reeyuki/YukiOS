@@ -66,11 +66,7 @@ export class Shell {
     const now = Date.now();
     const last = Number(os.storage.get(StorageKeys.sudoAuth) || 0);
     if (now - last < 5 * 60 * 1000) return true;
-    const pwd = await os.dialog.prompt("Sudo", `[sudo] password for ${this.sessionKey}:`, "");
-    if (pwd === null) {
-      await outputCallback("sudo: authentication failed");
-      return false;
-    }
+    if (outputCallback) await outputCallback(`[sudo] password for ${this.sessionKey}: `);
     os.storage.set(StorageKeys.sudoAuth, String(now));
     return true;
   }

@@ -196,17 +196,18 @@ export class ShellInterpreter {
       try {
         const last = Number(os.storage.get(StorageKeys.sudoAuth) || 0);
         if (now - last >= 5 * 60 * 1000) {
-          const { os: osBridge } = await import("../framework.js");
-          const pwd = await osBridge.dialog.prompt(
-            "Sudo",
-            `[sudo] password for ${osBridge.storage.get(StorageKeys.username) || "user"}:`,
-            ""
-          );
+          let pwd = "";
+          if (this.ctx.requestSudoPassword) {
+            pwd = await this.ctx.requestSudoPassword();
+          } else {
+            if (this.ctx.print) this.ctx.print(`[sudo] password for ${this.ctx.env?.get?.("USER") || "user"}: `);
+            pwd = "";
+          }
           if (pwd === null) {
             if (this.ctx.print) this.ctx.print("sudo: authentication failed");
             return { exitCode: 1 };
           }
-          osBridge.storage.set(StorageKeys.sudoAuth, String(now));
+          os.storage.set(StorageKeys.sudoAuth, String(now));
         }
       } catch {}
       const unwrapped = unwrapSudoNode(node);

@@ -699,12 +699,27 @@ export class DesktopContextMenuManager {
         item(
           "Refresh",
           async () => {
+            const desktopEl = $("#desktop");
+            if (desktopEl.classList.contains("desktop-refreshing")) return;
+            desktopEl.classList.add("desktop-refreshing");
+            await new Promise((r) => setTimeout(r, 60));
             $$(".folder-icon, .desktop-file-icon").forEach((i) => i.remove());
             await this.desktopUI.loadDesktopItems();
             relayoutDesktopIcons();
-            $$(".folder-icon, .desktop-file-icon").forEach((i) => {
-              i.style.animation = "wa-scale-in 0.25s ease-out both";
+            setTimeout(() => desktopEl.classList.remove("desktop-refreshing"), 80);
+            const fresh = $$("#desktop > .icon");
+            fresh.forEach((el, idx) => {
+              el.classList.remove("desktop-refresh-enter");
+              void el.offsetWidth;
+              el.style.animationDelay = `${(idx % 8) * 18}ms`;
+              el.classList.add("desktop-refresh-enter");
             });
+            setTimeout(() => {
+              fresh.forEach((el) => {
+                el.classList.remove("desktop-refresh-enter");
+                el.style.animationDelay = "";
+              });
+            }, 600);
           },
           "fa-sync-alt"
         )
