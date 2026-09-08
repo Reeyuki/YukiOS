@@ -413,7 +413,8 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
       "catfish",
       "roblox",
       "gamesforaetheris",
-      "cat_fish"
+      "cat_fish",
+      "undertale"
     ].some((p) => lowerUrl.includes(p.toLowerCase())) || lowerUrl.includes("catgoesfishing.html");
   const isIgnored = skipRewrite || isWasmAutoIgnored || legacyIgnored;
 
