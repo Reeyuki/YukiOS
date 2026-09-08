@@ -1697,5 +1697,17 @@ export const appMap = {
     swf: "/static/games/swfGames/transmorpher3.swf",
     icon: "/static/icons/transmorpher3.jpg",
     title: "Transmorpher 3"
+  },
+  howToFish: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/howToFish.html",
+    icon: "/static/icons/howToFish.webp",
+    title: "How To Fish"
+  },
+  paintTheTownRed: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/pttr.html",
+    icon: "/static/icons/pttr.ico",
+    title: "Paint The Town Red"
   }
 };

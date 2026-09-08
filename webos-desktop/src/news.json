@@ -1,5 +1,16 @@
 [
   {
+    "date": "September 8, 2026",
+    "label": "Games",
+    "sections": [
+      {
+        "icon": "fa-gamepad",
+        "title": "New Games",
+        "items": [["fa-gamepad", "PTTR Webport & How To Fish Webport", "PTTR Webport & How To Fish Webport added."]]
+      }
+    ]
+  },
+  {
     "date": "September 6, 2026",
     "label": "YukiOS v4.0.0",
     "sections": [
