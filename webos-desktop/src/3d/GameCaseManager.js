@@ -21,6 +21,7 @@ const FIXED_POSITIONS = {
   slimeRancher: { x: 2.759, y: 0.02, z: -0.545, rx: -1.571, ry: 0, rz: -2.781 },
   tabs: { x: 1.076, y: 0.02, z: 1.09, rx: -1.571, ry: 0, rz: -0.296 },
   plagueIncEvolved: { x: -3.212, y: 0.02, z: -1.365, rx: -1.571, ry: 0, rz: 0.406 },
+  pttr: { x: -2.8, y: 0.02, z: -1.2, rx: -1.571, ry: 0, rz: 0.3 },
   fiveNightsAtFrickbears3: { x: 2.0, y: 0.056, z: -0.748, rx: -1.704, ry: 0.065, rz: 1.735 },
   helltaker: { x: 2.367, y: 0.02, z: 0.699, rx: -1.571, ry: 0, rz: -0.548 },
   daddy: { x: 1.9, y: 0.02, z: 1.318, rx: -1.571, ry: 0, rz: -0.278 },

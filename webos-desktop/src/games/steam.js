@@ -47,6 +47,12 @@ export const STORE_GAMES = [
     tags: ["Strategy", "Simulation"]
   },
   {
+    app: "pttr",
+    icon: resolveIconUrl("static/icons/pttr.webp"),
+    title: "Paint the Town Red",
+    tags: ["Action", "Fighting", "Voxel"]
+  },
+  {
     app: "fiveNightsAtFrickbears3",
     icon: resolveIconUrl("static/icons/fiveNightsAtFrickbears.webp"),
     title: "Five Nights At Frickbears 3",
@@ -506,6 +512,13 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       title: "Plague Inc: Evolved",
       tags: ["Strategy", "Simulation"],
       desc: "A unique mix of high strategy and terrifyingly realistic simulation. Can you infect the world?"
+    },
+    {
+      app: "pttr",
+      img: resolveIconUrl("static/icons/pttr.webp"),
+      title: "Paint the Town Red",
+      tags: ["Action", "Fighting", "Voxel"],
+      desc: "A chaotic voxel brawler where you fight through hordes of enemies with fists, weapons and utter destruction."
     },
     {
       app: "inscryption",
