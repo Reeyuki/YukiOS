@@ -1708,7 +1708,8 @@ export const appMap = {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/howToFish.html",
     icon: "/static/icons/howToFish.webp",
-    title: "How To Fish"
+    title: "How To Fish",
+    skipRewrite: true
   },
   paintTheTownRed: {
     type: "game",
