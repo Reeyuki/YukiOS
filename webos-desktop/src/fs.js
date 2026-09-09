@@ -232,7 +232,14 @@ export const defaultStorage = {
       }
     }
   },
-  Videos: {},
+  Videos: {
+    "flymetothemoon.mp4": {
+      type: "file",
+      content: resolveIconUrl("static/flymetothemoon.mp4"),
+      kind: FileKind.VIDEO,
+      icon: resolveIconUrl("static/flymetothemoon-preview.webp")
+    }
+  },
   Config: {
     yukiOs: {
       "tiling.conf": {

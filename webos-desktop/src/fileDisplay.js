@@ -232,6 +232,15 @@ export function buildFileIconHTML(
     return `<img src="${thumbnailSrc}" style="${s}object-fit:cover;">`;
   }
   if (isVideoFile(name)) {
+    if (thumbnailSrc && thumbnailSrc !== "@content") {
+      return `<img src="${thumbnailSrc}" style="${s}object-fit:cover;">`;
+    }
+    if (storedIcon && storedIcon !== "@content" && storedIcon !== "rom") {
+      const resolvedStored = resolveIconUrl(storedIcon);
+      if (/\.(webp|png|jpg|jpeg|gif|avif|svg)$/i.test(resolvedStored)) {
+        return `<img src="${resolvedStored}" style="${s}object-fit:cover;">`;
+      }
+    }
     return faIconDiv("fas fa-film", { color: "#45d0c6", bg: "var(--bg-primary)" });
   }
   if (isOfficeFile(name)) {

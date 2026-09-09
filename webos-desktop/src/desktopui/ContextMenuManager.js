@@ -4,7 +4,7 @@ import { sortDesktopIcons, relayoutDesktopIcons, changeDesktopIconSize } from ".
 import { os, StorageKeys } from "../framework.js";
 import { ArchiveExtractor } from "../archiveExtractor.js";
 import { AppSource } from "../AppSource.js";
-import { showFileProperties, isImageFile, openFileWithApp } from "../fileDisplay.js";
+import { showFileProperties, isImageFile, openFileWithApp, buildFileIconHTML } from "../fileDisplay.js";
 import { FileKind, getExt, isZipFile } from "../shared/fileKindDetector.js";
 import { getCompatibleApps, getDefaultApp } from "../fileAssociations.js";
 import { showChooseAppDialog } from "../shared/chooseAppDialog.js";
@@ -177,11 +177,16 @@ export class DesktopContextMenuManager {
     }
     const selectedArray = this.desktopUI.selectionManager.toArray();
     const fileName = fileIcon.dataset.fileName;
-    const filePath = fileIcon.dataset.filePath || "Desktop";
+    const rawFilePath = fileIcon.dataset.filePath;
+    const filePath = rawFilePath !== undefined && rawFilePath !== null && rawFilePath !== "" ? rawFilePath : "Desktop";
 
     showDynamicContextMenu(e, async (menu, item, hr, submenu) => {
       const defaultApp = getDefaultApp(fileName);
-      menu.appendChild(item("Open", () => this.desktopUI.openDesktopFile(fileName), defaultApp?.icon || "fa-file-alt"));
+      const defaultIcon =
+        defaultApp?.icon !== undefined && defaultApp?.icon !== null && defaultApp.icon !== ""
+          ? defaultApp.icon
+          : "fa-file-alt";
+      menu.appendChild(item("Open", () => this.desktopUI.openDesktopFile(fileName), defaultIcon));
       menu.appendChild(
         submenu(
           "Open with",
@@ -336,7 +341,7 @@ export class DesktopContextMenuManager {
           raw: "image/x-raw"
         };
         const ext = fileName.split(".").pop().toLowerCase();
-        const mime = mimeMap[ext] || "application/octet-stream";
+        const mime = mimeMap[ext] !== undefined && mimeMap[ext] !== null ? mimeMap[ext] : "application/octet-stream";
 
         const readAsDataUrl = async () => {
           const blob = await os.fs.readBinaryFile(filePath, fileName);
@@ -420,13 +425,17 @@ export class DesktopContextMenuManager {
       delete: buildDeleteAction(selectedArray, this.desktopUI),
       rename: () => this.startInlineDesktopRename(last),
       customize: () => {
-        import("../shared/appCustomizer.js").then((m) =>
-          m.showAppCustomizer(
-            last.dataset.app,
-            this.IconDataHelper.getIconName(last),
-            last.querySelector("img")?.src || last.querySelector("i")?.className || ""
-          )
-        );
+        import("../shared/appCustomizer.js").then((m) => {
+          const imgSrc = last.querySelector("img")?.src;
+          const iClass = last.querySelector("i")?.className;
+          let iconValue = "";
+          if (imgSrc !== undefined && imgSrc !== null && imgSrc !== "") {
+            iconValue = imgSrc;
+          } else if (iClass !== undefined && iClass !== null && iClass !== "") {
+            iconValue = iClass;
+          }
+          m.showAppCustomizer(last.dataset.app, this.IconDataHelper.getIconName(last), iconValue);
+        });
       },
       properties: buildPropertiesAction(last, this.desktopUI)
     });
@@ -434,7 +443,8 @@ export class DesktopContextMenuManager {
 
   showDesktopContextMenu(e) {
     const currentSort = this.currentSortMode();
-    const currentAutoSort = os.storage.get(StorageKeys.desktopAutoSort) || false;
+    const storedAutoSort = os.storage.get(StorageKeys.desktopAutoSort);
+    const currentAutoSort = storedAutoSort !== undefined && storedAutoSort !== null ? Boolean(storedAutoSort) : false;
 
     showDynamicContextMenu(e, (menu, item, hr, submenu) => {
       menu.appendChild(
@@ -483,7 +493,11 @@ export class DesktopContextMenuManager {
         item(
           "Open Terminal Here",
           () => {
-            const username = os.storage.get(StorageKeys.username) || "guest";
+            const storedUsername = os.storage.get(StorageKeys.username);
+            const username =
+              storedUsername !== undefined && storedUsername !== null && storedUsername !== ""
+                ? storedUsername
+                : "guest";
             os.app.launch("terminalApp", { initialPath: ["home", username, "Desktop"] });
           },
           "fa-terminal"
@@ -510,7 +524,9 @@ export class DesktopContextMenuManager {
         submenu(
           "View",
           (sub, sItem, sHr) => {
-            const currentSize = Number(os.storage.get(StorageKeys.desktopIconSize)) || 48;
+            const storedSize = os.storage.get(StorageKeys.desktopIconSize);
+            const parsedSize = Number(storedSize);
+            const currentSize = Number.isFinite(parsedSize) ? parsedSize : 48;
             const sizes = [
               { size: 32, label: "Small icons", icon: "fa-th" },
               { size: 64, label: "Medium icons", icon: "fa-th-large" },
@@ -531,7 +547,11 @@ export class DesktopContextMenuManager {
 
             sub.appendChild(sHr());
 
-            const currentAlignment = os.storage.get(StorageKeys.desktopIconAlignment) || "horizontal";
+            const storedAlignment = os.storage.get(StorageKeys.desktopIconAlignment);
+            const currentAlignment =
+              storedAlignment !== undefined && storedAlignment !== null && storedAlignment !== ""
+                ? storedAlignment
+                : "horizontal";
             const alignLabel = currentAlignment === "vertical" ? "Align Horizontally" : "Align Vertically";
             const alignIcon = currentAlignment === "vertical" ? "fa-arrows-alt-h" : "fa-arrows-alt-v";
             sub.appendChild(
@@ -728,7 +748,8 @@ export class DesktopContextMenuManager {
   }
 
   currentSortMode() {
-    return os.storage.get(StorageKeys.desktopSortMode) || "none";
+    const stored = os.storage.get(StorageKeys.desktopSortMode);
+    return stored !== undefined && stored !== null && stored !== "" ? stored : "none";
   }
 
   async showBackgroundContextMenu(e) {
@@ -854,7 +875,11 @@ export class DesktopContextMenuManager {
         icon.remove();
       } catch (err) {
         committed = false;
-        showError(err.message || "Could not create item.");
+        const msg =
+          err?.message !== undefined && err.message !== null && err.message !== ""
+            ? err.message
+            : "Could not create item.";
+        showError(msg);
         input.focus();
       }
     };
@@ -864,18 +889,19 @@ export class DesktopContextMenuManager {
 
   createInlineInput(value) {
     const wrap = createElement("div");
-    wrap.style.cssText = "display:flex;flex-direction:column;gap:4px;margin-top:4px;";
+    wrap.style.cssText =
+      "position:absolute;left:50%;top:calc(var(--icon-img-s) + 10px);transform:translateX(-50%);width:160px;max-width:180px;min-width:120px;display:flex;flex-direction:column;gap:6px;z-index:10;";
 
     const input = createElement("input");
     input.type = "text";
     input.value = value;
     input.style.cssText =
-      "padding:4px 6px;border-radius:4px;border:1px solid var(--brand);background:rgba(0,0,0,0.6);color:inherit;font-size:13px;text-align:center;outline:none;width:100%;box-sizing:border-box;";
+      "padding:6px 8px;border-radius:6px;border:1px solid var(--brand);background:var(--surface-1, rgba(20,20,30,0.95));color:var(--text-primary);font-size:12px;line-height:1.4;text-align:center;outline:none;width:100%;box-sizing:border-box;box-shadow:0 4px 16px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);";
     wrap.appendChild(input);
 
     const errorTip = createElement("div");
     errorTip.style.cssText =
-      "color:var(--error);font-size:11px;text-align:center;display:none;word-break:break-word;max-width:120px;";
+      "color:var(--error);font-size:11px;text-align:center;display:none;word-break:break-word;overflow-wrap:anywhere;max-width:160px; background:rgba(0,0,0,0.75); padding:4px 6px; border-radius:4px;";
     wrap.appendChild(errorTip);
 
     return { wrap, input, errorTip };
@@ -906,12 +932,51 @@ export class DesktopContextMenuManager {
     if (icon.classList.contains("is-renaming")) return;
     icon.classList.add("is-renaming");
 
-    const labelDiv = $("div", icon);
-    let currentName;
-    if (icon.dataset.app) {
-      currentName = labelDiv ? labelDiv.textContent.trim() : icon.dataset.app;
+    const maybeFirst = icon.firstElementChild;
+    const maybeLast = icon.querySelector("div:last-child");
+    if (
+      maybeFirst &&
+      maybeLast &&
+      maybeFirst !== maybeLast &&
+      !maybeFirst.querySelector("i, img, svg") &&
+      maybeFirst.textContent.trim()
+    ) {
+      try {
+        let targetForIcon = "";
+        if (icon.dataset.fileName !== undefined && icon.dataset.fileName !== "") {
+          targetForIcon = icon.dataset.fileName;
+        } else if (icon.dataset.folderName !== undefined && icon.dataset.folderName !== "") {
+          targetForIcon = icon.dataset.folderName;
+        } else {
+          targetForIcon = maybeLast.textContent.trim();
+        }
+        const tmp = document.createElement("div");
+        tmp.innerHTML = buildFileIconHTML(targetForIcon, { size: 64, radius: 12 }).trim();
+        const fresh = tmp.firstElementChild;
+        if (fresh) maybeFirst.replaceWith(fresh);
+      } catch {}
+    }
+
+    const labelDiv = icon.querySelector("div:last-child");
+    let currentName = "";
+    if (icon.dataset.app !== undefined && icon.dataset.app !== "") {
+      if (icon.dataset.fileName !== undefined && icon.dataset.fileName !== "") {
+        currentName = icon.dataset.fileName.replace(/\.desktop$/, "");
+      } else if (labelDiv && labelDiv.textContent !== null) {
+        const t = labelDiv.textContent.trim();
+        currentName = t.length > 0 ? t : icon.dataset.app;
+      } else {
+        currentName = icon.dataset.app;
+      }
     } else {
-      currentName = icon.dataset.folderName || icon.dataset.fileName || (labelDiv ? labelDiv.textContent : "");
+      if (icon.dataset.folderName !== undefined && icon.dataset.folderName !== "") {
+        currentName = icon.dataset.folderName;
+      } else if (icon.dataset.fileName !== undefined && icon.dataset.fileName !== "") {
+        currentName = icon.dataset.fileName;
+      } else if (labelDiv && labelDiv.textContent !== null) {
+        currentName = labelDiv.textContent.trim();
+      }
+      if (currentName.endsWith(".desktop")) currentName = currentName.slice(0, -8);
     }
     if (labelDiv) labelDiv.style.display = "none";
 
@@ -955,16 +1020,23 @@ export class DesktopContextMenuManager {
         if (icon.classList.contains("folder-icon")) {
           await this.desktopUI.fs.renameItem("Desktop", currentName, newName, true);
           icon.dataset.folderName = newName;
-          if (labelDiv) labelDiv.textContent = newName;
+          if (labelDiv) {
+            labelDiv.textContent = newName;
+            labelDiv.title = newName;
+          }
           os.notify.send(`Folder renamed to "${newName}"`);
         } else if (icon.classList.contains("desktop-file-icon")) {
-          if (currentName.endsWith(".desktop") && !newName.endsWith(".desktop")) {
+          const wasDesktop = currentName.endsWith(".desktop");
+          if (wasDesktop && !newName.endsWith(".desktop")) {
             newName += ".desktop";
           }
           await this.desktopUI.fs.renameItem("Desktop", currentName, newName, true);
           icon.dataset.fileName = newName;
           const displayName = newName.endsWith(".desktop") ? newName.slice(0, -8) : newName;
-          if (labelDiv) labelDiv.textContent = displayName;
+          if (labelDiv) {
+            labelDiv.textContent = displayName;
+            labelDiv.title = displayName;
+          }
           os.notify.send(`File renamed to "${newName}"`);
         } else if (icon.dataset.app) {
           let newFile = newName;
@@ -975,15 +1047,33 @@ export class DesktopContextMenuManager {
             await this.desktopUI.fs.renameItem("Desktop", icon.dataset.fileName, newFile, true);
             icon.dataset.fileName = newFile;
           }
-          if (labelDiv) labelDiv.textContent = newName;
+          if (labelDiv) {
+            labelDiv.textContent = newName;
+            labelDiv.title = newName;
+          }
           os.notify.send(`Renamed to "${newName}"`);
+        }
+        const first = icon.firstElementChild;
+        if (first && first !== labelDiv && !first.querySelector("i, img, svg") && first.textContent.trim()) {
+          try {
+            const targetForIcon =
+              icon.dataset.fileName !== undefined && icon.dataset.fileName !== "" ? icon.dataset.fileName : newName;
+            const tmp = document.createElement("div");
+            tmp.innerHTML = buildFileIconHTML(targetForIcon, { size: 64, radius: 12 }).trim();
+            const fresh = tmp.firstElementChild;
+            if (fresh) first.replaceWith(fresh);
+          } catch {}
         }
         icon.classList.remove("is-renaming");
         wrap.remove();
         if (labelDiv) labelDiv.style.display = "";
       } catch (err) {
         committed = false;
-        showError(err.message || `"${newName}" already exists`);
+        const msg =
+          err?.message !== undefined && err.message !== null && err.message !== ""
+            ? err.message
+            : `"${newName}" already exists`;
+        showError(msg);
         input.focus();
       }
     };

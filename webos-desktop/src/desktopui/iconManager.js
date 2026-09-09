@@ -142,11 +142,11 @@ export class IconManager {
 
   dragMove(dx, dy) {
     this.selectionManager.forEach((icon) => {
-      this.positionHelper.setPosition(
-        icon,
-        Math.max(0, (parseFloat(icon.style.left) || 0) + dx),
-        Math.max(0, (parseFloat(icon.style.top) || 0) + dy)
-      );
+      const leftRaw = parseFloat(icon.style.left);
+      const topRaw = parseFloat(icon.style.top);
+      const leftBase = Number.isFinite(leftRaw) ? leftRaw : 0;
+      const topBase = Number.isFinite(topRaw) ? topRaw : 0;
+      this.positionHelper.setPosition(icon, Math.max(0, leftBase + dx), Math.max(0, topBase + dy));
     });
   }
 
@@ -154,10 +154,11 @@ export class IconManager {
     this.selectionManager.forEach((icon) => {
       this.positionHelper.snap(icon);
       setStyle(icon, { opacity: "1", zIndex: "1", cursor: "default" });
-      const { col, row } = this.positionHelper.pixelsToCell(
-        parseFloat(icon.style.left) || 0,
-        parseFloat(icon.style.top) || 0
-      );
+      const leftRaw = parseFloat(icon.style.left);
+      const topRaw = parseFloat(icon.style.top);
+      const leftVal = Number.isFinite(leftRaw) ? leftRaw : 0;
+      const topVal = Number.isFinite(topRaw) ? topRaw : 0;
+      const { col, row } = this.positionHelper.pixelsToCell(leftVal, topVal);
       const saved = this.positionStore.load();
       saved[this.positionStore.getKey(icon)] = { col, row };
       this.positionStore.save(saved);
@@ -172,7 +173,10 @@ export class IconManager {
       if ($(`.folder-icon[data-folder-name="${CSS.escape(folderName)}"]`)) return;
       const folderIcon = createElement("div", { className: "icon selectable folder-icon" });
       folderIcon.dataset.folderName = folderName;
-      setHTML(folderIcon, `<img src="${resolveIconUrl("static/icons/file.webp")}"><div>${folderName}</div>`);
+      setHTML(
+        folderIcon,
+        `<img src="${resolveIconUrl("static/icons/file.webp")}"><div title="${folderName.replace(/"/g, "&quot;")}">${folderName}</div>`
+      );
       const saved = this.positionStore.load();
       const key = this.positionStore.getKey(folderIcon);
       if (saved[key]) this.positionHelper.placeAtCell(folderIcon, saved[key].col, saved[key].row, folderIcon);
@@ -212,7 +216,7 @@ export class IconManager {
           icon.dataset.filePath = "Desktop";
           if (parsed && parsed.app) icon.dataset.app = parsed.app;
           if (parsed && parsed.steamGameId) icon.dataset.steamGameId = parsed.steamGameId;
-          setHTML(icon, `${iconHTML}<div>${displayName}</div>`);
+          setHTML(icon, `${iconHTML}<div title="${displayName.replace(/"/g, "&quot;")}">${displayName}</div>`);
           const saved = this.positionStore.load();
           const key = this.positionStore.getKey(icon);
           if (saved[key]) this.positionHelper.placeAtCell(icon, saved[key].col, saved[key].row, icon);
@@ -245,9 +249,15 @@ export class IconManager {
       }
 
       if ($(`.desktop-file-icon[data-file-name="${CSS.escape(fileName)}"]`)) return;
+      let storedIconValue = null;
+      if (itemData?.faIcon !== undefined && itemData.faIcon !== null && itemData.faIcon !== "") {
+        storedIconValue = itemData.faIcon;
+      } else if (itemData?.icon !== undefined && itemData.icon !== null && itemData.icon !== "") {
+        storedIconValue = itemData.icon;
+      }
       const iconHTML = buildFileIconHTML(fileName, {
         thumbnailSrc,
-        storedIcon: itemData?.faIcon || itemData?.icon,
+        storedIcon: storedIconValue,
         isFolder: false,
         size: 64,
         radius: 12
@@ -255,7 +265,7 @@ export class IconManager {
       const icon = createElement("div", { className: "icon selectable desktop-file-icon" });
       icon.dataset.fileName = fileName;
       icon.dataset.filePath = "Desktop";
-      setHTML(icon, `${iconHTML}<div>${displayName}</div>`);
+      setHTML(icon, `${iconHTML}<div title="${displayName.replace(/"/g, "&quot;")}">${displayName}</div>`);
 
       const saved = this.positionStore.load();
       const key = this.positionStore.getKey(icon);
@@ -291,7 +301,9 @@ export class IconManager {
 
   openYouTubeEmbedDesktop(content) {
     const winId = `yt-embed-${Date.now()}`;
-    const win = os.window.create(winId, content.name || "YouTube Embed", "800px", "600px");
+    const effectiveName =
+      content.name !== undefined && content.name !== null && content.name !== "" ? content.name : "YouTube Embed";
+    const win = os.window.create(winId, effectiveName, "800px", "600px");
 
     const base = content.nocookie ? "https://www.youtube-nocookie.com" : "https://www.youtube.com";
     const params = new URLSearchParams();
@@ -317,7 +329,7 @@ export class IconManager {
 
     win.innerHTML = `
       <div class="window-header">
-        <span>${content.name || "YouTube Embed"}</span>
+        <span>${effectiveName}</span>
         ${os.window.getWindowControls()}
       </div>
       <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#000;">
@@ -343,7 +355,8 @@ export class IconManager {
 
     const wallpapersPath = ["Pictures", "Wallpapers"];
     await os.fs.mkdir(wallpapersPath);
-    const safeIcon = kind === FileKind.IMAGE ? "@content" : icon || resolveIconUrl("static/icons/file.webp");
+    const hasIcon = icon !== undefined && icon !== null && icon !== "";
+    const safeIcon = kind === FileKind.IMAGE ? "@content" : hasIcon ? icon : resolveIconUrl("static/icons/file.webp");
     await os.fs.write([...wallpapersPath, name], content, { kind, icon: safeIcon });
   }
 
@@ -432,7 +445,7 @@ export class IconManager {
         if (name.endsWith(".desktop")) {
           const label = name.replace(".desktop", "");
           const isHardcoded = $$(".icon.selectable:not(.desktop-file-icon)").some(
-            (i) => $("div, span", i)?.textContent?.trim() === label
+            (i) => i.querySelector("div:last-child")?.textContent?.trim() === label
           );
 
           if (isHardcoded) continue;

@@ -36,7 +36,8 @@ import "../styles/startButtonPicker.css";
 let GRID_CONFIG = { width: 68, height: 82, gap: 1, marginX: 24, marginY: 24 };
 
 export function updateGridConfig(iconSize) {
-  const size = Math.max(32, Math.min(128, Number(iconSize) || 48));
+  const parsed = Number(iconSize);
+  const size = Math.max(32, Math.min(128, Number.isFinite(parsed) ? parsed : 48));
   GRID_CONFIG.width = size + 4;
   GRID_CONFIG.height = size + 20;
   GRID_CONFIG.gap = 1;
@@ -45,7 +46,8 @@ export function updateGridConfig(iconSize) {
 
 export function changeDesktopIconSize(size) {
   os.storage.set(StorageKeys.desktopIconSize, String(size));
-  const iconSize = Math.max(32, Math.min(128, Number(size) || 48));
+  const parsedSize = Number(size);
+  const iconSize = Math.max(32, Math.min(128, Number.isFinite(parsedSize) ? parsedSize : 48));
   document.documentElement.style.setProperty("--icon-w", `${iconSize}px`);
   document.documentElement.style.setProperty("--icon-img-s", `${iconSize}px`);
   document.documentElement.style.setProperty("--icon-h", `${iconSize + 20}px`);
@@ -64,7 +66,11 @@ export function relayoutDesktopIcons() {
     i.style.left = "";
     i.style.top = "";
   });
-  const alignment = os.storage.get(StorageKeys.desktopIconAlignment) || "horizontal";
+  const storedAlignment = os.storage.get(StorageKeys.desktopIconAlignment);
+  const alignment =
+    storedAlignment !== undefined && storedAlignment !== null && storedAlignment !== ""
+      ? storedAlignment
+      : "horizontal";
   let occupied = null;
   if (regularIcons.length) {
     occupied =
@@ -74,8 +80,10 @@ export function relayoutDesktopIcons() {
   }
   const saved = {};
   allIcons.forEach((icon) => {
-    const left = parseFloat(icon.style.left) || 0;
-    const top = parseFloat(icon.style.top) || 0;
+    const leftRaw = parseFloat(icon.style.left);
+    const topRaw = parseFloat(icon.style.top);
+    const left = Number.isFinite(leftRaw) ? leftRaw : 0;
+    const top = Number.isFinite(topRaw) ? topRaw : 0;
     const { col, row } = positionHelper.pixelsToCell(left, top);
     saved[PositionStore.getKey(icon)] = { col, row };
   });
@@ -168,18 +176,22 @@ class PositionHelper {
   }
 
   snap(icon, exclude = null) {
-    const x = parseFloat(icon.style.left) || 0;
-    const y = parseFloat(icon.style.top) || 0;
+    const xRaw = parseFloat(icon.style.left);
+    const yRaw = parseFloat(icon.style.top);
+    const x = Number.isFinite(xRaw) ? xRaw : 0;
+    const y = Number.isFinite(yRaw) ? yRaw : 0;
     const { col, row } = this.pixelsToCell(x, y);
-    const occupied = this.buildOccupancySet(exclude || icon);
-    const free = this.nextFreeCell(col, row, exclude || icon, occupied);
+    const effectiveExclude = exclude ?? icon;
+    const occupied = this.buildOccupancySet(effectiveExclude);
+    const free = this.nextFreeCell(col, row, effectiveExclude, occupied);
     const { left, top } = this.cellToPixels(free.col, free.row);
     this.setPosition(icon, left, top);
   }
 
   placeAtCell(icon, col, row, exclude = null) {
-    const occupied = this.buildOccupancySet(exclude || icon);
-    const free = this.nextFreeCell(col, row, exclude || icon, occupied);
+    const effectiveExclude = exclude ?? icon;
+    const occupied = this.buildOccupancySet(effectiveExclude);
+    const free = this.nextFreeCell(col, row, effectiveExclude, occupied);
     const { left, top } = this.cellToPixels(free.col, free.row);
     this.setPosition(icon, left, top);
   }
@@ -191,7 +203,7 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
-    const occupied = occupiedBefore || this.buildOccupancySet();
+    const occupied = occupiedBefore ?? this.buildOccupancySet();
     let col = 0,
       row = 0;
     icons.forEach((icon) => {
@@ -232,7 +244,7 @@ class PositionHelper {
       cellH = height + gap;
     const maxRows = Math.max(1, Math.floor((this.desktop.clientHeight - 2 * marginY) / cellH));
     const maxCols = Math.max(1, Math.floor((this.desktop.clientWidth - 2 * marginX) / cellW));
-    const occupied = occupiedBefore || this.buildOccupancySet();
+    const occupied = occupiedBefore ?? this.buildOccupancySet();
     let col = maxCols - 1,
       row = 0;
     icons.forEach((icon) => {
@@ -398,7 +410,8 @@ class DeletedIconsStore {
   static load() {
     const raw = os.storage.get(StorageKeys.deletedIconsKey);
     try {
-      return raw || [];
+      if (Array.isArray(raw)) return raw;
+      return [];
     } catch {
       return [];
     }
@@ -418,7 +431,9 @@ class DeletedIconsStore {
 export class PositionStore {
   static load() {
     try {
-      return os.storage.get(StorageKeys.positionsKey) || {};
+      const stored = os.storage.get(StorageKeys.positionsKey);
+      if (stored !== undefined && stored !== null && typeof stored === "object") return stored;
+      return {};
     } catch {
       return {};
     }
@@ -427,18 +442,38 @@ export class PositionStore {
     os.storage.set(StorageKeys.positionsKey, map);
   }
   static getKey(icon) {
-    return icon.dataset.folderName
-      ? `folder:${icon.dataset.folderName}`
-      : icon.dataset.fileName
-        ? `file:${icon.dataset.fileName}`
-        : `app:${icon.dataset.app}:${IconDataHelper.getIconName(icon)}`;
+    if (icon.dataset.folderName !== undefined && icon.dataset.folderName !== "") {
+      return `folder:${icon.dataset.folderName}`;
+    }
+    if (icon.dataset.fileName !== undefined && icon.dataset.fileName !== "") {
+      return `file:${icon.dataset.fileName}`;
+    }
+    return `app:${icon.dataset.app}:${IconDataHelper.getIconName(icon)}`;
   }
 }
 
 class IconDataHelper {
   static getIconName(icon) {
-    const el = icon.querySelector("div, span");
-    return el ? el.textContent.trim() : "Unknown";
+    if (icon.dataset.fileName !== undefined && icon.dataset.fileName !== "") {
+      return icon.dataset.fileName.replace(/\.desktop$/, "");
+    }
+    if (icon.dataset.folderName !== undefined && icon.dataset.folderName !== "") {
+      return icon.dataset.folderName;
+    }
+    if (icon.dataset.app !== undefined && icon.dataset.app !== "") {
+      const lbl = icon.querySelector("div:last-child");
+      if (lbl !== null && typeof lbl.textContent === "string") {
+        const t = lbl.textContent.trim();
+        if (t.length > 0) return t;
+      }
+      return icon.dataset.app;
+    }
+    const el = icon.querySelector("div:last-child");
+    if (el !== null && typeof el.textContent === "string") {
+      const t = el.textContent.trim();
+      if (t.length > 0) return t;
+    }
+    return "Unknown";
   }
   static getIconPathMap() {
     return {
@@ -460,8 +495,16 @@ class IconDataHelper {
   static createDesktopFileData(app, name, path = null) {
     const iconPathMap = this.getIconPathMap();
     const appInfo = os.app.getAppInfo(app);
-    const fallback = iconPathMap[app] || appInfo?.icon || resolveIconUrl("static/icons/file.webp");
-    return JSON.stringify({ app, name, path: path || fallback });
+    let fallback = "";
+    if (iconPathMap[app] !== undefined && iconPathMap[app] !== null && iconPathMap[app] !== "") {
+      fallback = iconPathMap[app];
+    } else if (appInfo?.icon !== undefined && appInfo.icon !== null && appInfo.icon !== "") {
+      fallback = appInfo.icon;
+    } else {
+      fallback = resolveIconUrl("static/icons/file.webp");
+    }
+    const effectivePath = path !== null && path !== undefined && path !== "" ? path : fallback;
+    return JSON.stringify({ app, name, path: effectivePath });
   }
 }
 
@@ -663,8 +706,23 @@ export class DesktopUI {
                   const appId = iconData.data.app;
                   const tmp = createElement("div");
                   tmp.innerHTML = iconData.data.innerHTML;
-                  const nameEl = tmp.querySelector("div, span");
-                  const iconName = (nameEl ? nameEl.textContent.trim() : "") || iconData.data.name || appId;
+                  const nameEl = tmp.querySelector("div:last-child");
+                  let iconName = "";
+                  if (nameEl !== null && typeof nameEl.textContent === "string") {
+                    const t = nameEl.textContent.trim();
+                    if (t.length > 0) iconName = t;
+                  }
+                  if (
+                    iconName === "" &&
+                    iconData.data.name !== undefined &&
+                    iconData.data.name !== null &&
+                    iconData.data.name !== ""
+                  ) {
+                    iconName = iconData.data.name;
+                  }
+                  if (iconName === "" && appId !== undefined && appId !== null && appId !== "") {
+                    iconName = appId;
+                  }
                   const fileName = `${iconName}.desktop`;
                   const fileContent = IconDataHelper.createDesktopFileData(appId, iconName);
                   await os.fs.write([...inst.currentPath, fileName], fileContent);
@@ -1067,9 +1125,10 @@ export class DesktopUI {
   async loadDesktopItems() {
     await this.iconManager.loadDesktopItems();
     const autoSort = os.storage.get(StorageKeys.desktopAutoSort);
-    if (autoSort) {
-      const mode = os.storage.get(StorageKeys.desktopSortMode) || "name";
-      if (mode && mode !== "none") {
+    if (autoSort === true || autoSort === "true") {
+      const storedMode = os.storage.get(StorageKeys.desktopSortMode);
+      const mode = storedMode !== undefined && storedMode !== null && storedMode !== "" ? storedMode : "name";
+      if (mode !== "none") {
         sortDesktopIcons(mode);
       }
     }
@@ -1201,7 +1260,9 @@ export function sortDesktopIcons(mode) {
   if (desktop.clientWidth === 0 || desktop.clientHeight === 0) return;
 
   const withKey = allIcons.map((icon) => {
-    const label = icon.querySelector("div")?.textContent?.trim() || "";
+    const labelEl = icon.querySelector("div:last-child");
+    const rawLabel = labelEl?.textContent?.trim();
+    const label = rawLabel !== undefined && rawLabel !== null ? rawLabel : "";
     let key;
     switch (mode) {
       case "name":
@@ -1209,12 +1270,19 @@ export function sortDesktopIcons(mode) {
         break;
       case "type":
         if (icon.classList.contains("folder-icon")) key = `0:${label}`;
-        else if (icon.dataset.app) key = `1:${label}`;
+        else if (icon.dataset.app !== undefined && icon.dataset.app !== "") key = `1:${label}`;
         else key = `2:${label}`;
         break;
       case "recent": {
         const appId = icon.dataset.app;
-        key = appId ? -(os.storage.get(StorageKeys.launchTimePrefix + appId) || 0) : 0;
+        if (appId !== undefined && appId !== null && appId !== "") {
+          const stored = os.storage.get(StorageKeys.launchTimePrefix + appId);
+          const parsed = Number(stored);
+          const timeVal = Number.isFinite(parsed) ? parsed : 0;
+          key = -timeVal;
+        } else {
+          key = 0;
+        }
         break;
       }
       default:
@@ -1225,7 +1293,9 @@ export function sortDesktopIcons(mode) {
 
   withKey.sort((a, b) => {
     if (typeof a.key === "string" && typeof b.key === "string") return a.key.localeCompare(b.key);
-    return (a.key || 0) - (b.key || 0);
+    const aVal = typeof a.key === "number" && Number.isFinite(a.key) ? a.key : 0;
+    const bVal = typeof b.key === "number" && Number.isFinite(b.key) ? b.key : 0;
+    return aVal - bVal;
   });
 
   const positionHelper = new PositionHelper(desktop, GRID_CONFIG);
@@ -1236,7 +1306,9 @@ export function sortDesktopIcons(mode) {
     i.style.top = "";
     i.style.zIndex = "";
   });
-  const alignment = os.storage.get(StorageKeys.desktopIconAlignment) || "horizontal";
+  const storedAlign = os.storage.get(StorageKeys.desktopIconAlignment);
+  const alignment =
+    storedAlign !== undefined && storedAlign !== null && storedAlign !== "" ? storedAlign : "horizontal";
   let occupied = null;
   if (regularIcons.length) {
     occupied =
@@ -1247,8 +1319,10 @@ export function sortDesktopIcons(mode) {
 
   const saved = {};
   allIcons.forEach((icon) => {
-    const left = parseFloat(icon.style.left) || 0;
-    const top = parseFloat(icon.style.top) || 0;
+    const leftRaw = parseFloat(icon.style.left);
+    const topRaw = parseFloat(icon.style.top);
+    const left = Number.isFinite(leftRaw) ? leftRaw : 0;
+    const top = Number.isFinite(topRaw) ? topRaw : 0;
     const { col, row } = positionHelper.pixelsToCell(left, top);
     saved[PositionStore.getKey(icon)] = { col, row };
   });

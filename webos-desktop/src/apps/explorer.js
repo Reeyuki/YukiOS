@@ -1500,7 +1500,9 @@ export class ExplorerApp extends BaseApp {
     }
 
     let thumbnailSrc = null;
-    if (isImageFile(name) && !inSystem) {
+    if (name === "flymetothemoon.mp4") {
+      thumbnailSrc = resolveIconUrl("static/flymetothemoon-preview.webp");
+    } else if (isImageFile(name) && !inSystem) {
       const cacheKey = inst.currentPath.join("/") + "/" + name;
       const cached = this.thumbnailCache.get(cacheKey);
       if (cached) {
