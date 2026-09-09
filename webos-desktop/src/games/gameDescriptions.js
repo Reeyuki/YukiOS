@@ -16,8 +16,9 @@ export const descriptionMap = {
   tabs: "Totally Accurate Battle Simulator (TABS) is a physics based ragdoll tactics game developed by Landfall Games. Players pit armies of historical, mythological, and absurd units - from mammoths and squires to laser wielding raptors - against each other in a series of wobbly, unpredictable battles where the engine's chaotic physics are just as important as strategy.",
   plagueIncEvolved:
     "Plague Inc: Evolved is a real-time strategy simulation by Ndemic Creations, released in 2016. Players design and evolve a deadly pathogen - bacteria, virus, fungus, or more exotic threats - with the goal of infecting and exterminating the entire human population before a cure is developed.",
-  pttr:
-    "Paint the Town Red is a chaotic voxel brawler by South East Games, released in 2021. Players fight through destructible arenas packed with enemies, using fists, blades and brutal finishers in endlessly replayable sandbox carnage.",
+  pttr: "Paint the Town Red is a chaotic voxel brawler by South East Games, released in 2021. Players fight through destructible arenas packed with enemies, using fists, blades and brutal finishers in endlessly replayable sandbox carnage.",
+  howToDateASleepParalysisDemon:
+    "How to Date a Sleep Paralysis Demon is a surreal horror dating sim where players navigate nightly visits from a possessive demon, balancing affection and fear through dialogue choices to unlock multiple eerie and bittersweet endings.",
   fiveNightsAtFrickbears3:
     "A fan-made parody inspired by Scott Cawthon's Five Nights at Freddy's series. Players sit in a security office, monitor cameras, and survive five nights against haunted animatronics that grow more aggressive as the hours pass.",
   baldisBasicsTeachingOnTwos:

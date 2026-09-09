@@ -53,6 +53,12 @@ export const STORE_GAMES = [
     tags: ["Action", "Fighting", "Voxel"]
   },
   {
+    app: "howToDateASleepParalysisDemon",
+    icon: resolveIconUrl("static/icons/howToDateASleepParalysisDemon.webp"),
+    title: "How to Date a Sleep Paralysis Demon",
+    tags: ["Visual Novel", "Horror", "Dating Sim"]
+  },
+  {
     app: "fiveNightsAtFrickbears3",
     icon: resolveIconUrl("static/icons/fiveNightsAtFrickbears.webp"),
     title: "Five Nights At Frickbears 3",
@@ -519,6 +525,13 @@ export function initStorePage(container, onLaunch, navigateTo, CDN_BASE_REF, img
       title: "Paint the Town Red",
       tags: ["Action", "Fighting", "Voxel"],
       desc: "A chaotic voxel brawler where you fight through hordes of enemies with fists, weapons and utter destruction."
+    },
+    {
+      app: "howToDateASleepParalysisDemon",
+      img: resolveIconUrl("static/icons/howToDateASleepParalysisDemon.webp"),
+      title: "How to Date a Sleep Paralysis Demon",
+      tags: ["Visual Novel", "Horror", "Dating Sim"],
+      desc: "A surreal horror dating sim where affection blooms in the limbo between waking and nightmare."
     },
     {
       app: "inscryption",

@@ -12,6 +12,33 @@ export const appMap = {
     title: "Deltarune CH1-5",
     scramjetEnabled: true
   },
+  howToFish: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/howToFish.html",
+    icon: "/static/icons/howToFish.webp",
+    title: "How To Fish",
+    skipRewrite: true
+  },
+  paintTheTownRed: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/pttr.html",
+    icon: "/static/icons/pttr.webp",
+    title: "Paint The Town Red"
+  },
+  howToDateASleepParalysisDemon: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/howToDateASleepParalysisDemon.html",
+    icon: "/static/icons/howToDateASleepParalysisDemon.webp",
+    title: "How to Date a Sleep Paralysis Demon",
+    skipRewrite: true
+  },
+  thkill: {
+    type: "game",
+    url: "https://truffled.lol/games/thkill/",
+    icon: "/static/icons/ultrakill.webp",
+    title: "UltraKill Webport",
+    scramjetEnabled: true
+  },
   slimeRancher: {
     type: "game",
     url: "/static/games/html/slime.html",
@@ -1703,18 +1730,5 @@ export const appMap = {
     swf: "/static/games/swfGames/transmorpher3.swf",
     icon: "/static/icons/transmorpher3.jpg",
     title: "Transmorpher 3"
-  },
-  howToFish: {
-    type: "game",
-    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/howToFish.html",
-    icon: "/static/icons/howToFish.webp",
-    title: "How To Fish",
-    skipRewrite: true
-  },
-  paintTheTownRed: {
-    type: "game",
-    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/pttr.html",
-    icon: "/static/icons/pttr.webp",
-    title: "Paint The Town Red"
   }
 };
