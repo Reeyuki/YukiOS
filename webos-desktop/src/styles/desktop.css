@@ -158,7 +158,6 @@
   display: flex;
   flex-direction: column;
   z-index: 10;
-  border-radius: var(--r);
   border: 1px solid var(--glass-border);
   overflow: var(--wm-window-overflow, hidden);
   backdrop-filter: blur(24px);

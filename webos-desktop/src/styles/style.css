@@ -1498,7 +1498,7 @@ html.transparent-ui.tp-window-body[data-theme] .window {
 }
 
 html.transparent-ui.tp-window-header[data-theme] .window-header {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: black;
   backdrop-filter: blur(var(--tp-blur-window, 40px)) saturate(1.4) !important;
   -webkit-backdrop-filter: blur(var(--tp-blur-window, 40px)) saturate(1.4) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
