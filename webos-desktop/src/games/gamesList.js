@@ -27,10 +27,17 @@ export const appMap = {
   },
   howToDateASleepParalysisDemon: {
     type: "game",
-    url: "https://cdn.jsdelivr.net/gh/Reeyuki/yukios-games@main/html/howToDateASleepParalysisDemon.html",
+    url: "https://sfour-s4.itch.io/how-to-date-a-sleep-paralysis-demon",
     icon: "/static/icons/howToDateASleepParalysisDemon.webp",
     title: "How to Date a Sleep Paralysis Demon",
-    skipRewrite: true
+    scramjetEnabled: true
+  },
+  howToDateAnEntity: {
+    type: "game",
+    url: "https://sfour-s4.itch.io/how-to-date-an-entity",
+    icon: "/static/icons/howToDateAnEntity.webp",
+    title: "How to Date an Entity",
+    scramjetEnabled: true
   },
   thkill: {
     type: "game",

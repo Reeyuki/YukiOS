@@ -167,7 +167,6 @@ export const HIGHLIGHTED_GAMES = new Set([
   "slimeRancher",
   "plagueIncEvolved",
   "pttr",
-  "howToDateASleepParalysisDemon",
   "helltaker",
   "passpartout",
   "inStarsAndTime",

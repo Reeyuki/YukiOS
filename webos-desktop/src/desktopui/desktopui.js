@@ -30,7 +30,7 @@ import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 import { AquariumWidget } from "./widgets/aquariumWidget.js";
 import { RhythmsWidget } from "./widgets/rhythmsWidget.js";
-import { applyStartButtonIcon, showStartButtonContextMenu, showStartButtonPicker } from "./startButtonManager.js";
+import { applyStartButtonIcon, showStartButtonContextMenu } from "./startButtonManager.js";
 import { applyAppCustomizations } from "../shared/appCustomizer.js";
 import "../styles/startButtonPicker.css";
 
@@ -637,9 +637,6 @@ export class DesktopUI {
       e.preventDefault();
       e.stopPropagation();
       showStartButtonContextMenu(e);
-    });
-    this.startButton.addEventListener("dblclick", () => {
-      showStartButtonPicker();
     });
     this.startMenu.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("click", (e) => {
