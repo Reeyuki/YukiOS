@@ -47,7 +47,8 @@ export function windowMakeResizable(win, wm, setHeightUnsetElement = null) {
   makeResizable(
     win,
     {
-      start() {
+      start(e) {
+        if (e?.target?.closest?.(".window-header, .browser-tabbar, .app-menubar")) return;
         wm.isDraggingWindow = true;
         document.body.classList.add("is-resizing");
       },

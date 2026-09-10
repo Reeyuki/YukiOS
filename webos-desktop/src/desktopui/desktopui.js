@@ -34,13 +34,13 @@ import { applyStartButtonIcon, showStartButtonContextMenu } from "./startButtonM
 import { applyAppCustomizations } from "../shared/appCustomizer.js";
 import "../styles/startButtonPicker.css";
 
-let GRID_CONFIG = { width: 68, height: 82, gap: 1, marginX: 24, marginY: 24 };
+let GRID_CONFIG = { width: 84, height: 80, gap: 1, marginX: 24, marginY: 24 };
 
 export function updateGridConfig(iconSize) {
   const parsed = Number(iconSize);
   const size = Math.max(32, Math.min(128, Number.isFinite(parsed) ? parsed : 48));
-  GRID_CONFIG.width = size + 4;
-  GRID_CONFIG.height = size + 20;
+  GRID_CONFIG.width = size + 36;
+  GRID_CONFIG.height = size + 32;
   GRID_CONFIG.gap = 1;
   relayoutDesktopIcons();
 }
@@ -49,9 +49,9 @@ export function changeDesktopIconSize(size) {
   os.storage.set(StorageKeys.desktopIconSize, String(size));
   const parsedSize = Number(size);
   const iconSize = Math.max(32, Math.min(128, Number.isFinite(parsedSize) ? parsedSize : 48));
-  document.documentElement.style.setProperty("--icon-w", `${iconSize}px`);
+  document.documentElement.style.setProperty("--icon-w", `${iconSize + 32}px`);
   document.documentElement.style.setProperty("--icon-img-s", `${iconSize}px`);
-  document.documentElement.style.setProperty("--icon-h", `${iconSize + 20}px`);
+  document.documentElement.style.setProperty("--icon-h", `${iconSize + 32}px`);
   updateGridConfig(size);
 }
 

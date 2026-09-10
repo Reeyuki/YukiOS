@@ -298,9 +298,9 @@ export function applyUiDensity(density) {
 
 export function applyDesktopIconSize(size) {
   const iconSize = Math.max(32, Math.min(128, Number(size) || 48));
-  document.documentElement.style.setProperty("--icon-w", `${iconSize}px`);
+  document.documentElement.style.setProperty("--icon-w", `${iconSize + 32}px`);
   document.documentElement.style.setProperty("--icon-img-s", `${iconSize}px`);
-  document.documentElement.style.setProperty("--icon-h", `${iconSize + 20}px`);
+  document.documentElement.style.setProperty("--icon-h", `${iconSize + 32}px`);
 }
 
 export function applyTaskbarScale(scale) {

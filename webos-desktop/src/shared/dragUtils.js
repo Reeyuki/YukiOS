@@ -124,6 +124,7 @@ export function makeResizable(element, callbacks, options = {}) {
   let startPointer = null;
 
   function getEdge(e) {
+    if (e.target?.closest?.(".window-header, .browser-tabbar, .app-menubar")) return null;
     const rect = element.getBoundingClientRect();
     const pos = getPos(e);
     const edge = { top: false, left: false, bottom: false, right: false };
@@ -156,6 +157,8 @@ export function makeResizable(element, callbacks, options = {}) {
   }
 
   function onDown(e) {
+    if (e.defaultPrevented) return;
+    if (e.target?.closest?.(".window-header, .browser-tabbar, .app-menubar")) return;
     if (e.button !== undefined && e.button !== 0) return;
     const edge = getEdge(e);
     if (!edge) return;

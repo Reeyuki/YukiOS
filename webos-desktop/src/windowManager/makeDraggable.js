@@ -412,7 +412,7 @@ export function windowMakeDraggable(win, wm) {
             const btn = e.target.closest("button, a, input, select, textarea");
             if (btn) return;
           }
-
+          e.stopPropagation();
           wm.bringToFront(win);
           wm.isDraggingWindow = true;
           document.body.classList.add("is-dragging");
@@ -465,6 +465,7 @@ export function windowMakeDraggable(win, wm) {
   };
 
   const startResize = (e) => {
+    if (e.target.closest(".window-header, .browser-tabbar, .app-menubar")) return;
     if (e.button !== 2) return;
     if (!(e.altKey || e.metaKey)) return;
     if (isInteractive(e.target)) return;

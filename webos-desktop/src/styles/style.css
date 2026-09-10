@@ -67,8 +67,8 @@
   --menu-bg: var(--bg-elev-2);
   --window-bg: var(--bg-elev-1);
 
-  --icon-w: 48px;
-  --icon-h: 68px;
+  --icon-w: 80px;
+  --icon-h: 80px;
   --icon-img-s: 48px;
   --icon-gap: calc(10px * var(--spacing-scale));
 

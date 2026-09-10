@@ -176,19 +176,38 @@
   max-height: 18px;
 }
 
+#taskbar.position-left #time-container,
+#taskbar.position-right #time-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2px 0;
+  box-sizing: border-box;
+}
+
 #taskbar.position-left #system-tray #clock,
 #taskbar.position-right #system-tray #clock {
-  margin-top: 5px;
-  font-size: 0.8em;
+  width: 100%;
+  font-size: 0.68em;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-primary);
   text-align: center;
 }
 
 #taskbar.position-left #system-tray #date,
 #taskbar.position-right #system-tray #date {
-  margin-top: 2px;
-  font-size: 0.7em;
+  width: 100%;
+  font-size: 0.58em;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
   text-align: center;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 #taskbar.position-left .taskbar-item,
