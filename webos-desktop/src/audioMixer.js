@@ -751,7 +751,7 @@ class AudioMixer {
       this.panel.style.left = `${left}px`;
     } else {
       const pos = getTrayPosition();
-      setStyle(this.panel, { right: pos.right, top: pos.top, bottom: pos.bottom, left: "auto" });
+      setStyle(this.panel, { left: pos.left, right: pos.right, top: pos.top, bottom: pos.bottom });
     }
   }
 

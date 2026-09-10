@@ -1,6 +1,6 @@
 :root {
   --taskbar-h: 3.2em;
-  --taskbar-v-w: 3.6em;
+  --taskbar-v-w: 64px;
   --taskbar-padding-top: 0;
   --taskbar-padding-bottom: var(--taskbar-h);
   --taskbar-padding-left: 0;

@@ -123,8 +123,8 @@ export class TaskbarSystem {
           const justifyMap = { left: "flex-start", center: "center", right: "flex-end" };
           taskbarWindows.style.justifyContent = justifyMap[taskbarAlignment] || "flex-start";
         } else {
-          const alignMap = { left: "flex-start", center: "center", right: "flex-end" };
-          taskbarWindows.style.alignItems = alignMap[taskbarAlignment] || "flex-start";
+          taskbarWindows.style.justifyContent = "";
+          taskbarWindows.style.alignItems = "center";
         }
       }
     }
@@ -296,8 +296,8 @@ export class TaskbarSystem {
           const justifyMap = { left: "flex-start", center: "center", right: "flex-end" };
           taskbarWindows.style.justifyContent = justifyMap[taskbarAlignment] || "flex-start";
         } else {
-          const alignMap = { left: "flex-start", center: "center", right: "flex-end" };
-          taskbarWindows.style.alignItems = alignMap[taskbarAlignment] || "flex-start";
+          taskbarWindows.style.justifyContent = "";
+          taskbarWindows.style.alignItems = "center";
         }
       }
     }

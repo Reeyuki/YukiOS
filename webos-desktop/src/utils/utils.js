@@ -152,10 +152,18 @@ export function sanitizeTitle(title) {
   return title;
 }
 
+export function getTaskbarPosition() {
+  const taskbar = $("#taskbar");
+  if (!taskbar) return "bottom";
+  if (taskbar.classList.contains("position-top")) return "top";
+  if (taskbar.classList.contains("position-left")) return "left";
+  if (taskbar.classList.contains("position-right")) return "right";
+  return "bottom";
+}
+
 export function isTaskbarTop() {
   if (os.modes.isActive(MODES.MAC)) return true;
-  const taskbar = $("#taskbar");
-  return taskbar && taskbar.classList.contains("position-top");
+  return getTaskbarPosition() === "top";
 }
 
 export function parseBool(val, defaultValue = false) {

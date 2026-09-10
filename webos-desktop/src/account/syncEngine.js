@@ -39,7 +39,6 @@ const componentDefs = [
       StorageKeys.soundEnabled,
       StorageKeys.masterVolume,
       StorageKeys.systemAudioEnabled,
-      StorageKeys.taskbarPosition,
       StorageKeys.taskbarAlignment,
       StorageKeys.taskbarScale,
       StorageKeys.taskbarShowLabels,

@@ -4,7 +4,7 @@ import { parseBool } from "../utils/utils.js";
 
 import { BusEvents } from "../core/EventBus.js";
 import { StorageKeys, os, MODES, createElement } from "../framework.js";
-import { isTaskbarTop } from "../utils/utils.js";
+import { isTaskbarTop, getTaskbarPosition } from "../utils/utils.js";
 class TrayManager {
   constructor() {
     this.items = new Map();
@@ -327,29 +327,23 @@ class TrayManager {
     this.updatePopupContent(items);
     const steamdeckActive = os.modes.isActive(MODES.STEAMDECK);
     const tilingActive = os.modes.isActive(MODES.TILING);
-    let refEl, barAtTop;
+    let refEl;
     if (steamdeckActive) {
       refEl = sourceEl || $("#steamdeck-topbar-tray") || $("#steamdeck-quick-access-tray") || this.el;
-      barAtTop = true;
     } else if (tilingActive) {
       refEl = sourceEl || $("#tiling-tray-items");
-      const tilingBar = $("#tiling-bar");
-      barAtTop = tilingBar ? !tilingBar.classList.contains("position-bottom") : isTaskbarTop();
     } else {
-      refEl = this.el;
-      barAtTop = isTaskbarTop();
+      refEl = sourceEl || this.el;
     }
     if (!refEl) refEl = this.el;
-    const trayRect = refEl.getBoundingClientRect();
-    if (barAtTop) {
-      this.popupEl.style.top = `${trayRect.bottom + 6}px`;
-      this.popupEl.style.bottom = "auto";
-    } else {
-      this.popupEl.style.bottom = `${window.innerHeight - trayRect.top + 6}px`;
-      this.popupEl.style.top = "auto";
-    }
-    this.popupEl.style.right = `${window.innerWidth - trayRect.right}px`;
     this.popupEl.style.display = "flex";
+    this.popupEl.style.visibility = "hidden";
+    const pos = getTrayPosition(refEl, this.popupEl);
+    this.popupEl.style.left = pos.left;
+    this.popupEl.style.right = pos.right;
+    this.popupEl.style.top = pos.top;
+    this.popupEl.style.bottom = pos.bottom;
+    this.popupEl.style.visibility = "";
     this.popupEl.style.flexWrap = "wrap";
     this.popupEl.style.gap = "2px";
     this.popupVisible = true;
@@ -510,7 +504,7 @@ class TrayManager {
   }
 }
 
-export function getTrayPosition(refEl) {
+export function getTrayPosition(refEl, popupEl) {
   const steamdeckActive = os.modes.isActive(MODES.STEAMDECK);
   const tilingActive = os.modes.isActive(MODES.TILING);
   let el, atTop;
@@ -533,8 +527,36 @@ export function getTrayPosition(refEl) {
   }
   const trayRect = el
     ? el.getBoundingClientRect()
-    : { right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
+    : { left: window.innerWidth - 16, right: 16, top: window.innerHeight - 48, bottom: window.innerHeight - 48 };
+  const taskbarPos = getTaskbarPosition();
+  if (!steamdeckActive && !tilingActive) {
+    if (taskbarPos === "left" || taskbarPos === "right") {
+      let popupHeight = 360;
+      if (popupEl) {
+        const h = popupEl.getBoundingClientRect().height;
+        if (h > 40) popupHeight = h;
+      }
+      const iconCenterY = trayRect.top + trayRect.height / 2;
+      let top = iconCenterY - popupHeight / 2;
+      top = Math.max(8, Math.min(top, window.innerHeight - popupHeight - 8));
+      if (taskbarPos === "left") {
+        return {
+          left: `${trayRect.right + 8}px`,
+          right: "auto",
+          top: `${top}px`,
+          bottom: "auto"
+        };
+      }
+      return {
+        left: "auto",
+        right: `${window.innerWidth - trayRect.left + 8}px`,
+        top: `${top}px`,
+        bottom: "auto"
+      };
+    }
+  }
   return {
+    left: "auto",
     right: `${window.innerWidth - trayRect.right}px`,
     top: atTop ? `${trayRect.bottom + 8}px` : "auto",
     bottom: atTop ? "auto" : `${window.innerHeight - trayRect.top + 8}px`

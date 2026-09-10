@@ -37,8 +37,7 @@ You are working under webos-desktop directory. when src is mentioned it means we
   utility functions from `src/shared/domUtils.js` instead. Import and use `$` (querySelector), `$$` (querySelectorAll),
   `bindEvent`, `toggleClass`, `setText`, `setHTML`, `createElement`, etc. For general utility functions, use
   `src/utils/utils.js` (e.g., `formatSize`, `isImageFile`, `isTextFile`, `pluralize`).
-- Use os.notify.send() for discrete, user-facing application events that represent a state change or completion, and
-  ensure notifications are not emitted from high-frequency, repeating, or continuously-updating processes.
+- Use os.notify.send() sparingly and only for meaningful, discrete, user-facing events that represent a genuine state change or completion the user needs to know about. Never add notifications for trivial, low-value, or high-frequency actions (e.g., drag repositioning, hover states, layout/positional updates, theme/wallpaper previews, or any continuously-updating process). When in doubt, omit the notification. Keep existing legitimate notifications intact and add notifications if its useful to add.
 - If a change introduces a new system, abstraction, manager, API surface, or reusable capability, create a new file and
   integrate it via imports. Only modify existing files if the change is a direct refinement of existing logic without
   introducing a new responsibility boundary.

@@ -57,6 +57,13 @@
   box-shadow: -2px 0 8px var(--shadow-color);
 }
 
+#taskbar.position-left,
+#taskbar.position-right {
+  padding: 4px;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
 #taskbar.position-left {
   justify-content: flex-start;
   align-items: stretch;
@@ -87,7 +94,12 @@
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--glass-border) transparent;
-  margin: var(--spacing-xs);
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  gap: 4px;
+  align-items: stretch;
 }
 
 #taskbar.position-left #taskbar-windows::-webkit-scrollbar,
@@ -104,15 +116,64 @@
 #taskbar.position-left #system-tray,
 #taskbar.position-right #system-tray {
   flex-direction: column;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-xs);
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 120px;
+  gap: 6px;
+  padding: 6px 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 0;
   height: auto;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+#taskbar.position-left #app-tray,
+#taskbar.position-right #app-tray {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  justify-items: stretch;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 2px;
+}
+
+#taskbar.position-left #app-tray .tray-icon-btn,
+#taskbar.position-right #app-tray .tray-icon-btn {
+  width: 100% !important;
+  height: 28px !important;
+  min-width: 0;
+  padding: 0 !important;
+}
+
+#taskbar.position-left #app-tray .tray-icon-btn img,
+#taskbar.position-right #app-tray .tray-icon-btn img,
+#taskbar.position-left #app-tray .tray-icon-btn svg,
+#taskbar.position-right #app-tray .tray-icon-btn svg,
+#taskbar.position-left #app-tray .tray-icon-btn i,
+#taskbar.position-right #app-tray .tray-icon-btn i {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#taskbar.position-left #app-tray .tray-icon-btn #tray-audio-bars,
+#taskbar.position-right #app-tray .tray-icon-btn #tray-audio-bars {
+  width: 22px !important;
+  height: 18px !important;
+  min-width: 22px;
+  min-height: 18px;
+  max-width: 22px;
+  max-height: 18px;
 }
 
 #taskbar.position-left #system-tray #clock,
@@ -133,11 +194,17 @@
 #taskbar.position-left .taskbar-item,
 #taskbar.position-right .taskbar-item {
   flex-direction: column;
-  padding: var(--spacing-xs);
-  min-height: 40px;
+  padding: 6px 4px;
   justify-content: center;
   align-items: center;
   text-align: center;
+  width: 100%;
+  margin: 0;
+  min-height: 48px;
+  min-width: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  gap: 2px;
 }
 
 #taskbar.position-left .taskbar-item::after {
@@ -185,8 +252,12 @@
 #taskbar.position-right .taskbar-item img,
 #taskbar.position-left .taskbar-item svg,
 #taskbar.position-right .taskbar-item svg {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 #taskbar.position-left #workspace-bar,
@@ -3057,4 +3128,30 @@ html[data-theme].mac-mode[data-theme-mode="light"] #context-menu.context-menu-gl
 
 .mcc-shortcut i {
   font-size: 13px;
+}
+
+#taskbar {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 0.12s ease;
+}
+
+#taskbar .taskbar-item {
+  cursor: pointer;
+}
+
+#taskbar #system-tray,
+#taskbar #start-button,
+#taskbar #mac-menu-bar {
+  cursor: default;
+}
+
+body.taskbar-drag-active {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+body.taskbar-drag-active * {
+  cursor: grabbing !important;
 }

@@ -308,5 +308,6 @@ export const StorageKeys = {
   sudoAuth: "yukiOS_sudo_auth",
   startButtonIcon: "yukiOS_startButtonIcon",
   appCustomIcons: "yukiOS_app_custom_icons",
-  appCustomTitles: "yukiOS_app_custom_titles"
+  appCustomTitles: "yukiOS_app_custom_titles",
+  macPrevTaskbar: "yukiOS_mac_prev_taskbar"
 };

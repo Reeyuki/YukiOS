@@ -16,6 +16,8 @@ const macSession = new SessionMode(MODES.MAC);
 export function applyMacSettings() {
   os.storage.set(StorageKeys.dockEnabled, "true");
   macSession.enter();
+  const prev = taskbarPositionManager.getCurrentPosition() || os.storage.get(StorageKeys.taskbarPosition) || "bottom";
+  os.storage.set(StorageKeys.macPrevTaskbar, prev);
   os.storage.set(StorageKeys.theme, "macos-fluent");
   applyTheme("macos-fluent", () => os.storage.get(StorageKeys.customColors) || null);
   os.storage.set(StorageKeys.taskbarPosition, "top");
@@ -51,8 +53,13 @@ export function disableMacSettings() {
   if (os.storage.get(StorageKeys.windowCloseAnimation) === MAC_CLOSE) {
     os.storage.set(StorageKeys.windowCloseAnimation, CLOSE_ANIMATIONS.scaleDownCenter);
   }
-  os.storage.set(StorageKeys.taskbarPosition, "bottom");
-  taskbarPositionManager.setPosition("bottom");
+  let prevPos = os.storage.get(StorageKeys.macPrevTaskbar) || "bottom";
+  const stored = os.storage.get(StorageKeys.taskbarPosition);
+  if (stored && ["top", "bottom", "left", "right"].includes(stored) && stored !== "top") prevPos = stored;
+  const restorePos = ["top", "bottom", "left", "right"].includes(prevPos) ? prevPos : "bottom";
+  os.storage.set(StorageKeys.taskbarPosition, restorePos);
+  taskbarPositionManager.setPosition(restorePos);
+  os.storage.remove(StorageKeys.macPrevTaskbar);
   os.storage.set(StorageKeys.taskbarAlignment, "left");
   const taskbarWindows = $("#taskbar-windows");
   const taskbar = $("#taskbar");

@@ -196,6 +196,7 @@ export class ChromeOsQuickSettings {
 
     const pos = getTrayPosition();
     if (pos) {
+      panel.style.left = pos.left;
       if (pos.right) panel.style.right = pos.right;
       if (pos.top) panel.style.top = pos.top;
       if (pos.bottom) panel.style.bottom = pos.bottom;

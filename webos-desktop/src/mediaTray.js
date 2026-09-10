@@ -397,9 +397,7 @@ class MediaPlayerTray {
         el.currentTime = 0;
       } else if (kind === "next") {
         const winEl = el.closest(".window");
-        const siblings = winEl
-          ? Array.from(winEl.querySelectorAll("audio, video"))
-          : [el];
+        const siblings = winEl ? Array.from(winEl.querySelectorAll("audio, video")) : [el];
         const idx = siblings.indexOf(el);
         const nextEl = siblings[(idx + 1) % siblings.length];
         if (nextEl !== el) {
@@ -416,10 +414,10 @@ class MediaPlayerTray {
             ? "pause"
             : "play"
           : kind === "prev"
-          ? "previoustrack"
-          : kind === "next"
-          ? "nexttrack"
-          : null;
+            ? "previoustrack"
+            : kind === "next"
+              ? "nexttrack"
+              : null;
       if (cmd) src.channel.sendCommand(cmd);
     }
   }
@@ -630,7 +628,7 @@ class MediaPlayerTray {
       this.panel.style.left = `${left}px`;
     } else {
       const pos = getTrayPosition();
-      setStyle(this.panel, { right: pos.right, top: pos.top, bottom: pos.bottom, left: "auto" });
+      setStyle(this.panel, { left: pos.left, right: pos.right, top: pos.top, bottom: pos.bottom });
     }
   }
 }

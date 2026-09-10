@@ -222,6 +222,7 @@ class MacControlCenter {
     document.body.appendChild(popup);
 
     const pos = getTrayPosition();
+    popup.style.left = pos.left;
     popup.style.right = pos.right;
     popup.style.top = pos.top;
     popup.style.bottom = pos.bottom;

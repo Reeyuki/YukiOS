@@ -23,7 +23,7 @@ import { CommandPalette } from "./commandPalette.js";
 import { ClipboardManager } from "./systemClipboardManager.js";
 import { resolveIconUrl, initializeMirrors, CDN_MIRRORS, getCdnMirror, setCdnMirror } from "./shared/assetResolver.js";
 import { appMap } from "./games/gamesList.js";
-import "./desktopui/taskbarPositionManager.js";
+import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 import { isMobile, isTouchDevice } from "./shared/platformUtils.js";
 import { batteryPerformanceManager } from "./services/BatteryPerformanceManager.js";
 import { PortManager } from "./services/PortManager.js";
@@ -76,6 +76,9 @@ const os = initializeOSBridge({
 });
 
 notificationCenter.restorePersistedState();
+try {
+  taskbarPositionManager.restorePersistedPosition();
+} catch {}
 
 os.clipboardManager = clipboardManager;
 new MacControlCenter();

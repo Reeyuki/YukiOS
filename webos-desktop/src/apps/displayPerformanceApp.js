@@ -402,12 +402,15 @@ class DisplayPerformanceApp extends BaseApp {
     `;
 
     document.body.appendChild(popup);
-
-    const pos = getTrayPosition();
+    popup.style.display = "block";
+    popup.style.visibility = "hidden";
+    const btn = document.querySelector('[data-win-id="display-performance-window"]') || $("#app-tray");
+    const pos = getTrayPosition(btn, popup);
+    popup.style.left = pos.left;
     popup.style.right = pos.right;
     popup.style.top = pos.top;
     popup.style.bottom = pos.bottom;
-    popup.style.display = "block";
+    popup.style.visibility = "";
 
     this.popupVisible = true;
     this.bindEvents(popup);
