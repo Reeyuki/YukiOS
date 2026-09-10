@@ -9,6 +9,7 @@ import { BusEvents } from "./core/EventBus.js";
 import { getVantaPresetById } from "./vantaPresets.js";
 import { vantaPresets } from "./vantaPresets.js";
 import { loadVantaEffect } from "./vanta/vantaLoader.js";
+import { videos, videos2 } from "./wallpaperList.js";
 import { parseBool, isBlobLike } from "./utils/utils.js";
 import { isFunction } from "./shared/functionUtils.js";
 
@@ -221,6 +222,12 @@ class WallpaperManager {
     return `vanta:${preset.id}`;
   }
 
+  static pickAnimatedWallpaper() {
+    const allVideos = [...videos, ...videos2];
+    if (!allVideos.length) return null;
+    return allVideos[Math.floor(Math.random() * allVideos.length)];
+  }
+
   static async setSequentialWallpaper() {
     const isManual = parseBool(os.storage.get(StorageKeys.manualWallpaper));
     if (isManual) return;
@@ -243,8 +250,9 @@ class WallpaperManager {
 
     const hasImages = typeof DEFAULT_WALLPAPER_FILES !== "undefined" && DEFAULT_WALLPAPER_FILES.length;
     const hasVanta = vantaPresets && vantaPresets.length;
+    const hasVideo = [...videos, ...videos2].length > 0;
 
-    if (!hasImages && !hasVanta) {
+    if (!hasImages && !hasVanta && !hasVideo) {
       const fallback = this.pickStaticFallbackWallpaper();
       os.storage.set(StorageKeys.wallpaperKey, fallback);
       this.applyWallpaper(fallback);
@@ -277,19 +285,31 @@ class WallpaperManager {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
         wallpaper = this.pickVantaWallpaper();
+      } else if (hasVideo) {
+        newWallpaperType = "video";
+        os.storage.set(StorageKeys.wallpaperType, "video");
+        wallpaper = this.pickAnimatedWallpaper();
       }
     } else if (randomChoice < 0.66) {
       if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
         wallpaper = this.pickVantaWallpaper();
+      } else if (hasVideo) {
+        newWallpaperType = "video";
+        os.storage.set(StorageKeys.wallpaperType, "video");
+        wallpaper = this.pickAnimatedWallpaper();
       } else if (hasImages) {
         newWallpaperType = "image";
         os.storage.set(StorageKeys.wallpaperType, "image");
         wallpaper = this.pickImageWallpaper();
       }
     } else {
-      if (hasVanta) {
+      if (hasVideo) {
+        newWallpaperType = "video";
+        os.storage.set(StorageKeys.wallpaperType, "video");
+        wallpaper = this.pickAnimatedWallpaper();
+      } else if (hasVanta) {
         newWallpaperType = "vanta";
         os.storage.set(StorageKeys.wallpaperType, "vanta");
         wallpaper = this.pickVantaWallpaper();

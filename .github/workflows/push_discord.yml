@@ -201,6 +201,29 @@ jobs:
             fi
           fi
 
+          if [ -f "$SINGLE_HTML" ]; then
+            INPUT_FILE="$SINGLE_HTML"
+            OUTPUT_FILE="yukios.svg"
+            ENCODED=$(base64 -w 0 "$INPUT_FILE")
+            cat <<EOF > "$OUTPUT_FILE"
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="position:fixed;top:0;left:0;">
+          <foreignObject x="0" y="0" width="100%" height="100%">
+          <body xmlns="http://www.w3.org/1999/xhtml">
+          <iframe id="test" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;margin:0;padding:0;overflow:hidden;"></iframe>
+          <script>
+          let encoded = "$ENCODED";
+          document.getElementById("test").srcdoc = atob(encoded);
+          </script>
+          </body>
+          </foreignObject>
+          </svg>
+          EOF
+            echo "Successfully converted $INPUT_FILE to $OUTPUT_FILE"
+            if [ -f "$OUTPUT_FILE" ]; then
+              upload_file "$OUTPUT_FILE" "image/svg+xml" "🖼️ SVG variant for YukiOS from $SHA ($SUBJECT)"
+            fi
+          fi
+
           if [ -d dist-web ]; then
             ZIP_FILE="dist.zip"
             zip -r "$ZIP_FILE" dist-web -x "dist-web/wasm/*" -x "dist-web/class/*"

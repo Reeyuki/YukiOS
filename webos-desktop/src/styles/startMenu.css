@@ -295,7 +295,6 @@
     color 0.15s ease;
   margin: 1px 4px;
   border-radius: var(--r-sm);
-  border-left: 2px solid transparent;
 }
 
 .start-cat i {
