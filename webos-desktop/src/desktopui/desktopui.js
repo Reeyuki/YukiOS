@@ -29,6 +29,7 @@ import { PhotoFrameWidget } from "./widgets/photoFrameWidget.js";
 import { TimerWidget } from "./widgets/timerWidget.js";
 import { YouTubeWidget } from "./widgets/youtubeWidget.js";
 import { AquariumWidget } from "./widgets/aquariumWidget.js";
+import { RhythmsWidget } from "./widgets/rhythmsWidget.js";
 import { applyStartButtonIcon, showStartButtonContextMenu, showStartButtonPicker } from "./startButtonManager.js";
 import { applyAppCustomizations } from "../shared/appCustomizer.js";
 import "../styles/startButtonPicker.css";
@@ -607,6 +608,7 @@ export class DesktopUI {
     this.widgetManager.registerWidgetType("timer", TimerWidget);
     this.widgetManager.registerWidgetType("youtube", YouTubeWidget);
     this.widgetManager.registerWidgetType("aquarium", AquariumWidget);
+    this.widgetManager.registerWidgetType("rhythms", RhythmsWidget);
     this.setupEventListeners();
     this.initializeDesktopFiles();
   }
