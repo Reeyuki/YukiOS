@@ -5,7 +5,7 @@
   box-shadow:
     0 24px 64px var(--shadow-color),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  border-radius: 14px;
+  border-radius: 0px;
   overflow: hidden;
   display: flex;
   flex-direction: column;

@@ -96,7 +96,7 @@ export class WindowManagerUtils {
   getWindowIconHtml(iconValue, color = null) {
     if (!iconValue) return "";
     iconValue = resolveIconUrl(iconValue);
-    const size = 25;
+    const size = 16;
     const { isImage, isDataUrl } = this.resolveIconType(iconValue);
 
     if (isImage || isDataUrl) {

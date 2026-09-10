@@ -509,4 +509,4 @@ top.
 
 ## License
 
-YukiOS is licensed under the MIT License. It would be greatly appreciated to attribute if you use this project.
+YukiOS is licensed under the MIT License, see [LICENSE](LICENSE) for details. If you use any part of this project, including code, design, themes or assets, whether you fork or copy, please retain the original copyright notice and kindly credit **YukiOS by Reeyuki** at https://github.com/Reeyuki/YukiOS.

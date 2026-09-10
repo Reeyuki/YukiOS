@@ -1197,12 +1197,6 @@ html[data-theme] .window.transparent {
   background: transparent;
 }
 
-html[data-theme] .window-header {
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--glass-border);
-  color: var(--text-primary);
-}
-
 html[data-theme] .window.transparent .window-header {
   background: rgba(20, 20, 30, 0.85);
   backdrop-filter: blur(32px);
