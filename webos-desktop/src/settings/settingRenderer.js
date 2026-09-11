@@ -1751,10 +1751,14 @@ function renderCreditsSettings() {
     <div class="settings-card settings-licenses-card">
       <div class="settings-card-header"><i class="fas fa-scale-balanced"></i> Credits</div>
       <div class="settings-credits-author">
-        <i class="fas fa-heart"></i>
-        <span>Made by Reeyuki · MIT Licensed</span>
+        <img class="settings-credits-avatar" src="${resolveIconUrl("static/icons/reeyuki.webp")}" alt="Reeyuki" loading="lazy" onerror="this.style.display='none'" />
+        <div class="settings-credits-author-info">
+          <span class="settings-credits-author-name"><i class="fas fa-heart"></i> Made by Reeyuki</span>
+          <span class="settings-credits-author-sub">Creator of YukiOS</span>
+        </div>
         <a class="settings-credits-author-link" href="https://github.com/reeyuki" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
       </div>
+      <div class="settings-credits-license">MIT Licensed</div>
       <div class="settings-licenses">${items}</div>
     </div>
   `;
@@ -1792,15 +1796,18 @@ export function renderAboutSettings() {
             <span class="settings-label-title">YukiCord</span>
             <span class="settings-label-desc">Join our Discord server</span>
           </div>
-          <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
-            <button class="settings-btn settings-btn-discord"><i class="fab fa-discord"></i> Join</button>
-          </a>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <input readonly value="https://discord.gg/2Z8Gvtqt7" class="settings-input" style="width:210px;padding:7px 10px;font-family:monospace;font-size:13px;user-select:all;cursor:text;" onclick="this.select()" title="Click to select invite" />
+            <a href="https://discord.gg/2Z8Gvtqt7" target="_blank" rel="noopener noreferrer" class="settings-discord-link">
+              <button class="settings-btn settings-btn-discord"><i class="fab fa-discord"></i> Join</button>
+            </a>
+          </div>
         </div>
       </div>
 
-      ${renderSystemInfo()}
-
       ${renderCreditsSettings()}
+
+      ${renderSystemInfo()}
     </div>
   `;
 }

@@ -244,8 +244,7 @@ export class GameRenderer {
 
     const favoriteBtn = target.querySelector('[data-action="favorite"]');
     if (favoriteBtn) {
-      favoriteBtn.onclick = async () => {
-        const { SteamDataManager } = await import("./steamSettings.js");
+      favoriteBtn.onclick = () => {
         SteamDataManager.toggleFavorite(appId);
         const icon = favoriteBtn.querySelector("i");
         const span = favoriteBtn.querySelector("span");
@@ -257,8 +256,7 @@ export class GameRenderer {
 
     const saveToCollectionBtn = target.querySelector('[data-action="saveToCollection"]');
     if (saveToCollectionBtn) {
-      saveToCollectionBtn.onclick = async () => {
-        const { SteamDataManager } = await import("./steamSettings.js");
+      saveToCollectionBtn.onclick = () => {
         SteamDataManager.addCurrentToCollection(appId);
       };
     }
@@ -414,8 +412,7 @@ export class GameRenderer {
 
     const favoriteBtn = target.querySelector('[data-action="favorite"]');
     if (favoriteBtn) {
-      favoriteBtn.onclick = async () => {
-        const { SteamDataManager } = await import("./steamSettings.js");
+      favoriteBtn.onclick = () => {
         SteamDataManager.toggleFavorite(archiveGame.appId);
         const icon = favoriteBtn.querySelector("i");
         const span = favoriteBtn.querySelector("span");
@@ -427,8 +424,7 @@ export class GameRenderer {
 
     const saveToCollectionBtn = target.querySelector('[data-action="saveToCollection"]');
     if (saveToCollectionBtn) {
-      saveToCollectionBtn.onclick = async () => {
-        const { SteamDataManager } = await import("./steamSettings.js");
+      saveToCollectionBtn.onclick = () => {
         SteamDataManager.addCurrentToCollection(archiveGame.appId);
       };
     }

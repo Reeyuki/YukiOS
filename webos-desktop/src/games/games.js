@@ -327,6 +327,30 @@ export const SteamDataManager = {
       SteamDataManager.setCollections(cols);
     }
   },
+  isFavorite: (appId) => SteamDataManager.getFavorites().includes(appId),
+  addCurrentToCollection: async (appId) => {
+    const cols = SteamDataManager.getCollections();
+    const names = Object.keys(cols);
+    if (names.length === 0) {
+      const name = await os.dialog.prompt("New Collection", "Enter collection name:");
+      if (name && name.trim()) {
+        const clean = name.trim();
+        SteamDataManager.createCollection(clean);
+        SteamDataManager.addToCollection(clean, appId);
+      }
+      return;
+    }
+    const suggestion = names[0];
+    const name = await os.dialog.prompt(
+      "Save to Collection",
+      `Enter collection name (existing: ${names.join(", ")}):`,
+      suggestion
+    );
+    if (!name || !name.trim()) return;
+    const clean = name.trim();
+    if (!cols[clean]) SteamDataManager.createCollection(clean);
+    SteamDataManager.addToCollection(clean, appId);
+  },
   getRecentGames: () => {
     try {
       const stored = os.storage.get(StorageKeys.steamRecentGames);

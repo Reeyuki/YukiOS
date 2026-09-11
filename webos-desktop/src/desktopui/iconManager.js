@@ -28,7 +28,8 @@ const HARDCODED_DESKTOP_ICONS = [
   { app: "notepadApp", name: "Notepad", icon: "static/icons/notepad.webp" },
   { app: "shittifyApp", name: "Evil Spotify", icon: "static/icons/shittify.webp" },
   { app: "room3dApp", name: "3D Room", icon: "static/icons/3dyukios.webp" },
-  { app: "craxgptApp", name: "CraxGPT", icon: "fas fa-robot", isFa: true }
+  { app: "craxgptApp", name: "CraxGPT", icon: "fas fa-robot", isFa: true },
+  { app: "geometryTodayApp", name: "Cloud Gaming (Geometry Today)", icon: "fas fa-gamepad", isFa: true }
 ];
 
 export class IconManager {

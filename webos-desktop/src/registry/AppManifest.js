@@ -1512,5 +1512,20 @@ export const APP_MANIFESTS = [
     description: "Stream live TV channels instantly via Famelack.",
     targetUrl: "https://famelack.com",
     windowSize: ["90vw", "85vh"]
+  },
+  {
+    serviceKey: "geometryTodayApp",
+    enhanced: true,
+    type: "system",
+    title: "Cloud Gaming (Geometry Today)",
+    icon: "fas fa-gamepad",
+    launchType: "instance",
+    windowIdPatterns: ["geometry-today", "geometryToday"],
+    category: "games",
+    persistContentState: false,
+    clippy: { message: "Play cloud games instantly via Geometry Today.", animation: ClippyAnimation.Show },
+    description: "Stream and play cloud games instantly via Geometry Today.",
+    targetUrl: "https://geometry.today/",
+    windowSize: ["90vw", "85vh"]
   }
 ];

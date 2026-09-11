@@ -2383,15 +2383,64 @@ a.settings-license-item .settings-license-name::after {
 .settings-credits-author {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 14px;
+  padding: 14px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 13.5px;
   color: var(--text-primary);
 }
 
-.settings-credits-author > i {
+.settings-credits-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 0 3px var(--brand-dim),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: var(--bg-secondary);
+}
+
+.settings-credits-license {
+  padding: 8px 12px 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+
+.settings-credits-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.settings-credits-author-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.settings-credits-author-name > i {
   color: var(--error);
+  font-size: 12px;
+}
+
+.settings-credits-author-sub {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text-secondary);
 }
 
 .settings-credits-author-link {

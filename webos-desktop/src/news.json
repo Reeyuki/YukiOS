@@ -1,5 +1,16 @@
 [
   {
+    "date": "September 11, 2026",
+    "label": "Cloud Gaming",
+    "sections": [
+      {
+        "icon": "fa-cloud",
+        "title": "Cloud Gaming",
+        "items": [["fa-cloud", "Geometry Today", "Play cloud games easily with Geometry Today."]]
+      }
+    ]
+  },
+  {
     "date": "September 8, 2026",
     "label": "Games",
     "sections": [
