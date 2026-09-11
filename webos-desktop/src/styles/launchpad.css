@@ -6,8 +6,11 @@
   backdrop-filter: blur(48px) saturate(1.4);
   -webkit-backdrop-filter: blur(48px) saturate(1.4);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding: 56px 0 24px;
+  box-sizing: border-box;
+  overflow: hidden;
   transform-origin: bottom center;
   animation: launchpadIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -38,19 +41,72 @@
   }
 }
 
+.launchpad-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 1;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    background 0.15s,
+    transform 0.15s,
+    border-color 0.15s;
+}
+
+.launchpad-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: scale(1.06);
+}
+
+.launchpad-close:active {
+  transform: scale(0.94);
+}
+
+html[data-theme="light"] .launchpad-close {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"] .launchpad-close:hover {
+  background: #fff;
+}
+
 .launchpad-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  justify-content: flex-start;
+  gap: 20px;
   width: 100%;
-  max-width: 1020px;
-  padding: 32px 24px;
+  max-width: 1100px;
+  height: calc(100vh - 80px);
+  max-height: 860px;
+  min-height: 0;
+  padding: 0 20px 0;
+  box-sizing: border-box;
 }
 
 .launchpad-search-wrap {
   position: relative;
-  width: 300px;
+  width: 280px;
+  flex-shrink: 0;
 }
 
 .launchpad-search-icon {
@@ -65,13 +121,13 @@
 
 .launchpad-search {
   width: 100%;
-  height: 40px;
+  height: 36px;
   padding: 0 14px 0 36px;
   border: none;
   border-radius: var(--r-md);
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-family: var(--font-ui);
   outline: none;
   box-sizing: border-box;
@@ -86,13 +142,36 @@
 
 .launchpad-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 16px;
   width: 100%;
-  max-height: 60vh;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  align-content: start;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px;
+  padding: 6px 6px 12px;
+  box-sizing: border-box;
+}
+
+.launchpad-section-label {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  padding: 10px 6px 2px;
+  border-top: 1px solid var(--glass-border);
+  margin-top: 4px;
+}
+
+.launchpad-section-label:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 4px;
 }
 
 .launchpad-item {
@@ -108,15 +187,15 @@
   -webkit-user-select: none;
 }
 .launchpad-item:hover {
-  transform: scale(1.18);
+  transform: scale(1.12);
 }
 .launchpad-item:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 .launchpad-item-icon-wrap {
-  width: 90px;
-  height: 90px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,10 +205,10 @@
 }
 
 .launchpad-item-icon {
-  font-size: 38px;
+  font-size: 34px;
   color: var(--brand);
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
 }
 
@@ -138,7 +217,7 @@
   color: var(--text-primary);
   text-align: center;
   line-height: 1.2;
-  max-width: 90px;
+  max-width: 84px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

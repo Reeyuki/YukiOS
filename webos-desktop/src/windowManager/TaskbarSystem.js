@@ -538,6 +538,13 @@ export class TaskbarSystem {
           title: "Aniwatch Anime",
           iconValue: "fas fa-play-circle",
           color: null
+        },
+        {
+          winId: "launchpad-pinned",
+          appId: "launchpadApp",
+          title: "Launchpad",
+          iconValue: "fas fa-th",
+          color: null
         }
       ];
 
