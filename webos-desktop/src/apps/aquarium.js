@@ -102,11 +102,15 @@ export class AquariumApp extends BaseApp {
     window.removeEventListener("resize", this.boundResize);
     this.stopBgm();
     if (this.audioCtx) {
-      try { this.audioCtx.close(); } catch {}
+      try {
+        this.audioCtx.close();
+      } catch {}
       this.audioCtx = null;
       this.masterGain = null;
     }
-    try { os.tray.unregister("aquarium"); } catch {}
+    try {
+      os.tray.unregister("aquarium");
+    } catch {}
     this.win = null;
     this.canvas = null;
     this.ctx = null;
@@ -178,7 +182,9 @@ export class AquariumApp extends BaseApp {
             if (trayOpts.onQuit) {
               trayOpts.onQuit();
             } else {
-              try { os.tray.unregister("aquarium"); } catch {}
+              try {
+                os.tray.unregister("aquarium");
+              } catch {}
               if (this.win) os.window.close(this.win);
             }
           }
@@ -299,14 +305,19 @@ export class AquariumApp extends BaseApp {
   toggleSound() {
     this.soundEnabled = !this.soundEnabled;
     os.storage.set(StorageKeys.aquariumSoundEnabled, String(this.soundEnabled));
-    if (this.masterGain) this.masterGain.gain.linearRampToValueAtTime(this.soundEnabled ? 0.28 : 0, this.audioCtx.currentTime + 0.12);
+    if (this.masterGain)
+      this.masterGain.gain.linearRampToValueAtTime(this.soundEnabled ? 0.28 : 0, this.audioCtx.currentTime + 0.12);
     const btn = this.win?.querySelector('[data-action="sound"]');
     if (btn) {
       btn.classList.toggle("active", !this.soundEnabled);
       btn.innerHTML = `<i class="fas ${this.soundEnabled ? "fa-volume-high" : "fa-volume-xmark"}"></i> ${this.soundEnabled ? "Sound" : "Muted"}`;
     }
     this.setStatus(this.soundEnabled ? "Sound on" : "Muted");
-    if (this.soundEnabled) { this.ensureAudio(); this.startBgm(); this.playFeed(); } else this.stopBgm();
+    if (this.soundEnabled) {
+      this.ensureAudio();
+      this.startBgm();
+      this.playFeed();
+    } else this.stopBgm();
     this.scheduleSave();
   }
 
@@ -377,7 +388,10 @@ export class AquariumApp extends BaseApp {
   }
 
   stopBgm() {
-    if (this.bgmTimer) { clearInterval(this.bgmTimer); this.bgmTimer = null; }
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
     if (!this.bgmNodes) return;
     try {
       const now = this.audioCtx ? this.audioCtx.currentTime : 0;
@@ -390,7 +404,9 @@ export class AquariumApp extends BaseApp {
         } catch {}
         this.bgmNodes = null;
       }, 700);
-    } catch { this.bgmNodes = null; }
+    } catch {
+      this.bgmNodes = null;
+    }
   }
 
   loadState() {
@@ -425,7 +441,15 @@ export class AquariumApp extends BaseApp {
     try {
       const data = {
         v: 2,
-        fishes: this.fishes.map((f) => ({ id: f.fd.id, x: Math.round(f.x), y: Math.round(f.y), vx: Number(f.vx.toFixed(2)), vy: Number(f.vy.toFixed(2)), s: Math.round(f.size), p: Number(f.phase.toFixed(2)) }))
+        fishes: this.fishes.map((f) => ({
+          id: f.fd.id,
+          x: Math.round(f.x),
+          y: Math.round(f.y),
+          vx: Number(f.vx.toFixed(2)),
+          vy: Number(f.vy.toFixed(2)),
+          s: Math.round(f.size),
+          p: Number(f.phase.toFixed(2))
+        }))
       };
       os.storage.set(StorageKeys.aquariumState, JSON.stringify(data));
     } catch {}
@@ -634,12 +658,16 @@ export class AquariumApp extends BaseApp {
     if (!grid) return;
     const list = getAllFish();
     if (countEl) countEl.textContent = `(${list.length})`;
-    grid.innerHTML = list.map((fd) => `
+    grid.innerHTML = list
+      .map(
+        (fd) => `
       <button class="aquarium-catalog-item" data-fish-id="${fd.id}" title="${fd.name}">
         <canvas width="120" height="80" data-preview="${fd.id}"></canvas>
         <span class="aquarium-catalog-name">${fd.name}</span>
       </button>
-    `).join("");
+    `
+      )
+      .join("");
     grid.querySelectorAll("[data-fish-id]").forEach((btn) => {
       btn.addEventListener("click", () => this.spawnFishById(btn.dataset.fishId));
     });
@@ -683,7 +711,9 @@ export class AquariumApp extends BaseApp {
         return previewSize;
       })();
       const previewFish = { fd, size: autoScale, phase: Math.random() * Math.PI * 2 };
-      try { drawSeaFish(ctx, previewFish, 0, false, 0); } catch {}
+      try {
+        drawSeaFish(ctx, previewFish, 0, false, 0);
+      } catch {}
       ctx.restore();
     });
   }
@@ -768,11 +798,23 @@ export class AquariumApp extends BaseApp {
       this.setStatus("No fishes to destroy");
       return;
     }
-    const ok = await os.dialog.confirm("Destroy All Fishes", `Remove all ${this.fishes.length} fishes? This cannot be undone.`);
+    const ok = await os.dialog.confirm(
+      "Destroy All Fishes",
+      `Remove all ${this.fishes.length} fishes? This cannot be undone.`
+    );
     if (!ok) return;
     this.ensureAudio();
     for (const f of this.fishes) {
-      for (let i = 0; i < 8; i++) this.particles.push({ x: f.x, y: f.y, vx: randomBetween(-2.8, 2.8), vy: randomBetween(-2.8, 1.2), life: 1, decay: randomBetween(0.03, 0.06), r: randomBetween(1.5, 3) });
+      for (let i = 0; i < 8; i++)
+        this.particles.push({
+          x: f.x,
+          y: f.y,
+          vx: randomBetween(-2.8, 2.8),
+          vy: randomBetween(-2.8, 1.2),
+          life: 1,
+          decay: randomBetween(0.03, 0.06),
+          r: randomBetween(1.5, 3)
+        });
     }
     this.fishes = [];
     this.pellets = [];
@@ -999,7 +1041,7 @@ export class AquariumApp extends BaseApp {
     ctx.save();
     ctx.globalAlpha = 0.07;
     for (let i = 0; i < 3; i++) {
-      const y = (h * 0.18) + i * 22 + Math.sin(performance.now() * 0.0003 + i) * 6;
+      const y = h * 0.18 + i * 22 + Math.sin(performance.now() * 0.0003 + i) * 6;
       ctx.beginPath();
       ctx.moveTo(0, y);
       for (let x = 0; x < w; x += 18) {

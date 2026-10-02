@@ -17,7 +17,7 @@ const toast = $("toast");
 function showToast(msg) {
   toast.textContent = msg;
   toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 4000);
+  setTimeout(() => (toast.style.display = "none"), 4000);
 }
 
 const core = new RemoteClientCore({
@@ -45,7 +45,10 @@ const core = new RemoteClientCore({
 });
 
 roomInput.addEventListener("input", () => {
-  roomInput.value = roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  roomInput.value = roomInput.value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 6);
   connectBtn.disabled = roomInput.value.length !== 6;
 });
 

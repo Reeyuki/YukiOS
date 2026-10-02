@@ -1,4 +1,8 @@
-export function buildLoadingIndicator({ label = "Loading...", progress = null, iconClass = "fas fa-spinner fa-spin" } = {}) {
+export function buildLoadingIndicator({
+  label = "Loading...",
+  progress = null,
+  iconClass = "fas fa-spinner fa-spin"
+} = {}) {
   const bar = progress !== null ? `<div class="yuki-loading-bar"><div style="width:${progress}%"></div></div>` : "";
   return `<div class="yuki-loading-indicator"><i class="${iconClass}" style="animation-duration:1.4s;opacity:0.7"></i><span>${label}</span>${bar}</div>`;
 }

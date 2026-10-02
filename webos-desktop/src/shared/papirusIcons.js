@@ -1,10 +1,5 @@
 import { resolveGhUrl } from "./assetResolver.js";
-import {
-  PAPIRUS_AVAILABLE,
-  PAPIRUS_SYMLINKS,
-  papirusReady,
-  ensurePapirusData
-} from "./papirusDataLoader.js";
+import { PAPIRUS_AVAILABLE, PAPIRUS_SYMLINKS, papirusReady, ensurePapirusData } from "./papirusDataLoader.js";
 
 export { PAPIRUS_AVAILABLE, PAPIRUS_SYMLINKS, papirusReady, ensurePapirusData };
 
@@ -36,8 +31,6 @@ export function getPapirusName(icon) {
   if (!isPapirusIcon(icon)) return null;
   return icon.slice(8);
 }
-
-
 
 function pickAvailableSize(requestedBucket, availableSizes) {
   if (!availableSizes || availableSizes.length === 0) return requestedBucket;

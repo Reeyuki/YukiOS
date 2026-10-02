@@ -41,7 +41,7 @@ export async function switchToUser(userId) {
 
 export function showAccountSwitchDialog(container, onSwitch) {
   const otherUsers = getOtherUsers();
-  
+
   if (otherUsers.length === 0) {
     return null;
   }

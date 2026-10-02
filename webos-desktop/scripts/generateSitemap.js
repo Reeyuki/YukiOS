@@ -1,7 +1,6 @@
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import https from "https";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -124,45 +123,33 @@ async function fetchArchiveGames() {
     "https://cdn.jsdelivr.net/gh/NaoTomori1/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7/archive/";
   const url = `${archiveBase}games.json`;
 
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            const parsed = JSON.parse(data);
-            const games = Array.isArray(parsed) ? parsed : parsed?.games || [];
-            const archiveGames = games.map((game) => {
-              const name = game.name || "";
-              const fullUrl = game.url?.startsWith("http") ? game.url : archiveBase + (game.url || "");
-              const thumb = game.thumbnail
-                ? game.thumbnail.startsWith("http")
-                  ? game.thumbnail
-                  : archiveBase.replace(/\/$/, "") + "/" + game.thumbnail.replace(/^\//, "")
-                : "";
-              const key = name.toLowerCase().replace(/[^a-z0-9]+/g, "");
-              return {
-                key,
-                title: name,
-                url: fullUrl,
-                icon: thumb,
-                genre: classifyGameGenre(name, ""),
-                isArchive: true
-              };
-            });
-            resolve(archiveGames);
-          } catch (e) {
-            console.error("Error parsing archive games:", e);
-            resolve([]);
-          }
-        });
-      })
-      .on("error", (e) => {
-        console.error("Error fetching archive games:", e);
-        resolve([]);
-      });
-  });
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(20_000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const parsed = await res.json();
+    const games = Array.isArray(parsed) ? parsed : parsed?.games || [];
+    return games.map((game) => {
+      const name = game.name || "";
+      const fullUrl = game.url?.startsWith("http") ? game.url : archiveBase + (game.url || "");
+      const thumb = game.thumbnail
+        ? game.thumbnail.startsWith("http")
+          ? game.thumbnail
+          : archiveBase.replace(/\/$/, "") + "/" + game.thumbnail.replace(/^\//, "")
+        : "";
+      const key = name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      return {
+        key,
+        title: name,
+        url: fullUrl,
+        icon: thumb,
+        genre: classifyGameGenre(name, ""),
+        isArchive: true
+      };
+    });
+  } catch (e) {
+    console.error(`[generatePages] Could not load archive games (${e.message}); continuing without them`);
+    return [];
+  }
 }
 
 const GENRE_KEYWORDS = {
@@ -2271,47 +2258,52 @@ console.log(
 );
 
 async function main() {
+  const indexHtml = resolve(ROOT, "dist/index.html");
+  if (!existsSync(indexHtml)) {
+    console.log("[generatePages] dist/index.html not found - skipping page generation");
+    return;
+  }
+
   const archiveGames = await fetchArchiveGames();
   console.log(`[generatePages] Fetched ${archiveGames.length} archive games`);
   const allGames = [...games, ...archiveGames];
 
-  const indexHtml = resolve(ROOT, "dist/index.html");
-  try {
-    const html = readFileSync(indexHtml, "utf-8");
-    const { appCount, gameCount, genreCount, featureCount } = buildPages(apps, allGames, gameDescs, featurePages, html);
-    console.log(
-      `[generatePages] ${appCount} app pages, ${gameCount} game pages, ${genreCount} genre pages, ${featureCount} feature pages, 404 page written`
-    );
-    const outDir = resolve(ROOT, "dist");
-    writeFileSync(resolve(outDir, "sitemap.xml"), buildSitemap(apps, allGames, gameDescs, featurePages), "utf-8");
-    console.log("[generatePages] sitemap.xml written");
-    writeFileSync(
-      resolve(outDir, "apps.html"),
-      makeCatalogPage(
-        "All YukiOS Apps - Browser Desktop Applications",
-        `Browse ${apps.length} built-in apps in the YukiOS browser desktop environment. From terminal and calculator to office and development tools, all free and no downloads needed.`,
-        apps,
-        "app"
-      ),
-      "utf-8"
-    );
-    writeFileSync(
-      resolve(outDir, "games.html"),
-      makeCatalogPage(
-        "All YukiOS Games - Play Free Online Browser Games",
-        `Browse ${allGames.length} free online games in the YukiOS browser desktop environment. Play instantly with no downloads or sign-ups.`,
-        allGames,
-        "game",
-        200
-      ),
-      "utf-8"
-    );
-    console.log(`[generatePages] apps.html and games.html catalog pages written`);
-  } catch {
-    console.log("[generatePages] dist/index.html not found - skipping page generation");
-  }
+  const html = readFileSync(indexHtml, "utf-8");
+  const { appCount, gameCount, genreCount, featureCount } = buildPages(apps, allGames, gameDescs, featurePages, html);
+  console.log(
+    `[generatePages] ${appCount} app pages, ${gameCount} game pages, ${genreCount} genre pages, ${featureCount} feature pages, 404 page written`
+  );
+
+  const outDir = resolve(ROOT, "dist");
+  writeFileSync(resolve(outDir, "sitemap.xml"), buildSitemap(apps, allGames, gameDescs, featurePages), "utf-8");
+  console.log("[generatePages] sitemap.xml written");
+  writeFileSync(
+    resolve(outDir, "apps.html"),
+    makeCatalogPage(
+      "All YukiOS Apps - Browser Desktop Applications",
+      `Browse ${apps.length} built-in apps in the YukiOS browser desktop environment. From terminal and calculator to office and development tools, all free and no downloads needed.`,
+      apps,
+      "app"
+    ),
+    "utf-8"
+  );
+  writeFileSync(
+    resolve(outDir, "games.html"),
+    makeCatalogPage(
+      "All YukiOS Games - Play Free Online Browser Games",
+      `Browse ${allGames.length} free online games in the YukiOS browser desktop environment. Play instantly with no downloads or sign-ups.`,
+      allGames,
+      "game",
+      200
+    ),
+    "utf-8"
+  );
+  console.log(`[generatePages] apps.html and games.html catalog pages written`);
 }
 
-main();
+main().catch((err) => {
+  console.error("[generatePages] Page generation failed:", err);
+  process.exit(1);
+});
 
 export { apps, games, gameDescs, featurePages, buildPages, makeLanding };

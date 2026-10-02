@@ -65,7 +65,12 @@ export async function accountLogin(identifier, password) {
   if (!res.ok || res.data.error) {
     return { error: res.data.error || "Login failed. Try again." };
   }
-  setSession({ token: res.data.token, userId: res.data.userId, nickname: res.data.nickname || "", updatedAt: Date.now() });
+  setSession({
+    token: res.data.token,
+    userId: res.data.userId,
+    nickname: res.data.nickname || "",
+    updatedAt: Date.now()
+  });
   return { ok: true };
 }
 

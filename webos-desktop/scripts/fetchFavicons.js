@@ -11,9 +11,10 @@ const cachePath = join(currentDir, "faviconCache.json");
 const force = process.argv.includes("--force");
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 const TIMEOUT_HTML = 15000;
-const TIMEOUT_HEAD = 8000;
+const CONCURRENCY = 4;
 const TIMEOUT_IMAGE = 15000;
-const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const requireFn = createRequire(import.meta.url);
 
 let sharp = null;
@@ -22,7 +23,10 @@ try {
 } catch {}
 
 function serviceKeyToSlug(key) {
-  return key.replace(/App$/, "").replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  return key
+    .replace(/App$/, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase();
 }
 
 function ensureDirs() {
@@ -52,10 +56,24 @@ function loadWebApps() {
 }
 
 function fetchWithTimeout(url, options = {}, timeoutMs = TIMEOUT_HTML) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  const opts = { ...options, signal: controller.signal, redirect: "follow" };
-  return fetch(url, opts).finally(() => clearTimeout(timer));
+  // AbortSignal.timeout also covers reading the response body, unlike a timer cleared on headers.
+  return fetch(url, { ...options, signal: AbortSignal.timeout(timeoutMs), redirect: "follow" });
+}
+
+function safeCodePoint(n) {
+  return Number.isInteger(n) && n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : "";
+}
+
+// href="...&amp;..." and "&#038;" must be decoded before the URL is requested.
+function decodeHtmlEntities(value) {
+  return value
+    .replace(/&#(\d+);/g, (_, n) => safeCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => safeCodePoint(parseInt(h, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }
 
 function decodeDataUri(uri) {
@@ -102,7 +120,7 @@ function parseFaviconLinks(html, baseUrl) {
     if (isManifest) continue;
     const hrefMatch = tag.match(/href\s*=\s*["']([^"']+)["']/i);
     if (!hrefMatch) continue;
-    let href = hrefMatch[1].trim();
+    let href = decodeHtmlEntities(hrefMatch[1].trim());
     if (!href) continue;
     if (href.startsWith("data:;")) {
       if (href === "data:;base64,=" || href.length < 20) continue;
@@ -154,7 +172,7 @@ async function fetchManifestIcons(html, baseUrl) {
     if (!relMatch[1].toLowerCase().includes("manifest")) continue;
     const hrefMatch = tag.match(/href\s*=\s*["']([^"']+)["']/i);
     if (hrefMatch) {
-      manifestHref = hrefMatch[1];
+      manifestHref = decodeHtmlEntities(hrefMatch[1]);
       break;
     }
   }
@@ -166,7 +184,11 @@ async function fetchManifestIcons(html, baseUrl) {
     return icons;
   }
   try {
-    const res = await fetchWithTimeout(manifestUrl, { headers: { "User-Agent": USER_AGENT, Accept: "application/json,*/*" } }, TIMEOUT_HTML);
+    const res = await fetchWithTimeout(
+      manifestUrl,
+      { headers: { "User-Agent": USER_AGENT, Accept: "application/json,*/*" } },
+      TIMEOUT_HTML
+    );
     if (!res.ok) return icons;
     const text = await res.text();
     const json = JSON.parse(text);
@@ -259,28 +281,27 @@ async function tryFetchImage(candidate) {
     else if (candidate.includes("image/webp")) ct = "image/webp";
     return { ok: true, status: 200, buffer: buf, contentType: ct, sourceUrl: candidate };
   }
-  let headStatus = null;
   try {
-    const headRes = await fetchWithTimeout(candidate, { method: "HEAD", headers: { "User-Agent": USER_AGENT, Accept: "image/*,*/*;q=0.8" } }, TIMEOUT_HEAD);
-    headStatus = headRes.status;
-  } catch (e) {
-    headStatus = e.cause ? e.cause.message : e.message;
-  }
-  try {
-    const res = await fetchWithTimeout(candidate, { headers: { "User-Agent": USER_AGENT, Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8" } }, TIMEOUT_IMAGE);
-    if (!res.ok) return { ok: false, status: res.status, buffer: null, contentType: "", headStatus };
+    const res = await fetchWithTimeout(
+      candidate,
+      { headers: { "User-Agent": USER_AGENT, Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8" } },
+      TIMEOUT_IMAGE
+    );
+    if (!res.ok) return { ok: false, status: res.status, buffer: null, contentType: "" };
     const ct = res.headers.get("content-type") || "";
     const ab = await res.arrayBuffer();
     const buffer = Buffer.from(ab);
-    if (buffer.length < 80) return { ok: false, status: res.status, buffer: null, contentType: ct, headStatus };
+    if (buffer.length < 80) return { ok: false, status: res.status, buffer: null, contentType: ct };
     const ctLower = ct.toLowerCase();
-    if (ctLower.includes("text/html") || ctLower.includes("application/xhtml+xml")) return { ok: false, status: res.status, buffer: null, contentType: ct, headStatus };
+    if (ctLower.includes("text/html") || ctLower.includes("application/xhtml+xml"))
+      return { ok: false, status: res.status, buffer: null, contentType: ct };
     const headStr = buffer.toString("utf8", 0, 2000).trim().toLowerCase();
     const headSlice = headStr.slice(0, 500);
-    if (headSlice.startsWith("<!doctype") || headSlice.startsWith("<html") || headSlice.includes("<html")) return { ok: false, status: res.status, buffer: null, contentType: ct, headStatus };
-    return { ok: true, status: res.status, buffer, contentType: ct, headStatus, sourceUrl: candidate };
+    if (headSlice.startsWith("<!doctype") || headSlice.startsWith("<html") || headSlice.includes("<html"))
+      return { ok: false, status: res.status, buffer: null, contentType: ct };
+    return { ok: true, status: res.status, buffer, contentType: ct, sourceUrl: candidate };
   } catch (e) {
-    return { ok: false, status: 0, buffer: null, contentType: "", headStatus, error: e.message };
+    return { ok: false, status: 0, buffer: null, contentType: "", error: e.message };
   }
 }
 
@@ -288,7 +309,16 @@ async function collectCandidates(targetUrl) {
   const parsed = [];
   let html = "";
   try {
-    const res = await fetchWithTimeout(targetUrl, { headers: { "User-Agent": USER_AGENT, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/*;q=0.8,*/*;q=0.7" } }, TIMEOUT_HTML);
+    const res = await fetchWithTimeout(
+      targetUrl,
+      {
+        headers: {
+          "User-Agent": USER_AGENT,
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/*;q=0.8,*/*;q=0.7"
+        }
+      },
+      TIMEOUT_HTML
+    );
     if (res.ok) {
       const ct = res.headers.get("content-type") || "";
       if (ct.includes("text/html") || ct.includes("application/xhtml") || ct === "") {
@@ -320,34 +350,123 @@ async function collectCandidates(targetUrl) {
   return combined;
 }
 
-async function convertToWebp(buffer, contentType, outPath) {
-  if (sharp) {
-    try {
-      const input = buffer;
-      const isSvgString = contentType.includes("svg") || buffer.toString("utf8", 0, 500).trim().startsWith("<svg") || buffer.toString("utf8", 0, 500).includes("<svg");
-      let pipeline;
-      if (isSvgString) {
-        const str = buffer.toString("utf8");
-        const svgBuffer = Buffer.from(str);
-        pipeline = sharp(svgBuffer, { density: 128 });
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+// Decodes a bitmap (BMP/DIB) frame stored inside an .ico into RGBA pixels. Supports 1/4/8/24/32-bit, uncompressed.
+function decodeIcoBmp(frame) {
+  if (frame.length < 40) return null;
+  const headerSize = frame.readUInt32LE(0);
+  const width = frame.readInt32LE(4);
+  const height = Math.abs(frame.readInt32LE(8)) / 2; // header height covers the pixels plus the AND mask
+  const bpp = frame.readUInt16LE(14);
+  const compression = frame.readUInt32LE(16);
+  if (headerSize < 40 || compression !== 0 || ![1, 4, 8, 24, 32].includes(bpp)) return null;
+  if (width <= 0 || width > 512 || !Number.isInteger(height) || height <= 0 || height > 512) return null;
+
+  const paletteEntries = bpp <= 8 ? frame.readUInt32LE(32) || 1 << bpp : 0;
+  const xorOffset = headerSize + paletteEntries * 4;
+  const xorStride = Math.ceil((width * bpp) / 32) * 4;
+  const andOffset = xorOffset + xorStride * height;
+  const andStride = Math.ceil(width / 32) * 4;
+  if (andOffset > frame.length) return null;
+
+  const rgba = Buffer.alloc(width * height * 4);
+  let hasAlpha = false;
+
+  for (let y = 0; y < height; y++) {
+    const row = xorOffset + (height - 1 - y) * xorStride; // bitmaps are stored bottom-up
+    for (let x = 0; x < width; x++) {
+      let r, g, b;
+      let a = 255;
+      if (bpp === 32) {
+        const o = row + x * 4;
+        [b, g, r, a] = [frame[o], frame[o + 1], frame[o + 2], frame[o + 3]];
+        if (a) hasAlpha = true;
+      } else if (bpp === 24) {
+        const o = row + x * 3;
+        [b, g, r] = [frame[o], frame[o + 1], frame[o + 2]];
       } else {
-        pipeline = sharp(input, { animated: false });
+        const bitPos = x * bpp;
+        const index = (frame[row + (bitPos >> 3)] >> (8 - bpp - (bitPos & 7))) & ((1 << bpp) - 1);
+        const p = headerSize + index * 4;
+        [b, g, r] = [frame[p], frame[p + 1], frame[p + 2]];
       }
-      const outBuffer = await pipeline.resize(128, 128, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).webp({ quality: 85 }).toBuffer();
-      writeFileSync(outPath, outBuffer);
-      return { bytes: outBuffer.length, converted: true };
-    } catch (e) {
-      try {
-        writeFileSync(outPath, buffer);
-        return { bytes: buffer.length, converted: false, error: e.message };
-      } catch (err) {
-        throw err;
+      const out = (y * width + x) * 4;
+      rgba[out] = r;
+      rgba[out + 1] = g;
+      rgba[out + 2] = b;
+      rgba[out + 3] = a;
+    }
+  }
+
+  // Without a real alpha channel, transparency comes from the 1-bit AND mask.
+  if (!hasAlpha) {
+    const maskFits = andOffset + andStride * height <= frame.length;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const masked = maskFits && (frame[andOffset + (height - 1 - y) * andStride + (x >> 3)] >> (7 - (x & 7))) & 1;
+        rgba[(y * width + x) * 4 + 3] = masked ? 0 : 255;
       }
     }
-  } else {
+  }
+  return { rgba, width, height };
+}
+
+// sharp cannot decode .ico files. Take the largest frame we can read: an embedded PNG, or a decoded bitmap.
+function decodeIco(buffer) {
+  if (buffer.length < 22 || buffer.readUInt16LE(0) !== 0 || buffer.readUInt16LE(2) !== 1) return null;
+  const count = buffer.readUInt16LE(4);
+  const entries = [];
+  for (let i = 0; i < count; i++) {
+    const offset = 6 + i * 16;
+    if (offset + 16 > buffer.length) break;
+    entries.push({
+      width: buffer[offset] || 256,
+      size: buffer.readUInt32LE(offset + 8),
+      dataOffset: buffer.readUInt32LE(offset + 12)
+    });
+  }
+  entries.sort((a, b) => b.width - a.width);
+
+  for (const entry of entries) {
+    const frame = buffer.subarray(entry.dataOffset, entry.dataOffset + entry.size);
+    if (frame.length >= 8 && frame.subarray(0, 8).equals(PNG_SIGNATURE)) return { png: frame };
+    const bitmap = decodeIcoBmp(frame);
+    if (bitmap) return bitmap;
+  }
+  return null;
+}
+
+// Throws if the image can't be converted, so the caller can move on to the next candidate
+// instead of saving raw .ico/.bmp bytes under a .webp name.
+async function convertToWebp(buffer, contentType, outPath) {
+  if (!sharp) {
     writeFileSync(outPath, buffer);
     return { bytes: buffer.length, converted: false };
   }
+
+  const ico = decodeIco(buffer);
+  let pipeline;
+  if (ico && ico.rgba) {
+    pipeline = sharp(ico.rgba, { raw: { width: ico.width, height: ico.height, channels: 4 } });
+  } else {
+    const input = (ico && ico.png) || buffer;
+    const isSvg = contentType.includes("svg") || input.toString("utf8", 0, 500).includes("<svg");
+    pipeline = isSvg ? sharp(input, { density: 128 }) : sharp(input, { animated: false });
+  }
+
+  const out = await pipeline
+    .resize(128, 128, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .webp({ quality: 85 })
+    .toBuffer();
+  writeFileSync(outPath, out);
+  return { bytes: out.length, converted: true };
+}
+
+function upsertCache(cache, entry) {
+  const idx = cache.findIndex((c) => c.slug === entry.slug);
+  if (idx >= 0) cache[idx] = { ...cache[idx], ...entry };
+  else cache.push(entry);
 }
 
 function shouldSkip(slug) {
@@ -365,51 +484,63 @@ function shouldSkip(slug) {
 async function processApp(app, cache) {
   const slug = serviceKeyToSlug(app.serviceKey);
   const outPrimary = join(primaryOut, `${slug}.webp`);
+
   if (shouldSkip(slug)) {
     try {
       const stat = statSync(outPrimary);
-      console.log(`[skip] ${slug} (${app.serviceKey} -> ${app.targetUrl}) exists ${stat.size} bytes age ${(Date.now() - stat.mtimeMs) / 1000 / 3600 | 0}h`);
-      const existing = cache.find((c) => c.slug === slug);
-      if (existing) {
-        existing.bytes = stat.size;
-        existing.status = "cached";
-      } else {
-        cache.push({ slug, url: app.targetUrl, sourceUrl: existing ? existing.sourceUrl : "", fetchedAt: new Date().toISOString(), bytes: stat.size, status: "cached" });
-      }
+      console.log(
+        `[skip] ${slug} (${app.serviceKey} -> ${app.targetUrl}) exists ${stat.size} bytes age ${((Date.now() - stat.mtimeMs) / 3600000) | 0}h`
+      );
+      upsertCache(cache, { slug, url: app.targetUrl, bytes: stat.size, status: "cached" });
       return { slug, status: "cached" };
     } catch {}
   }
+
   const candidates = await collectCandidates(app.targetUrl);
   let success = null;
-  let lastHead = null;
+  let lastFailure = "no candidates";
+
   for (const cand of candidates) {
     const result = await tryFetchImage(cand);
-    lastHead = result.headStatus !== undefined ? result.headStatus : result.status;
-    if (result.ok && result.buffer) {
-      success = result;
+    if (!(result.ok && result.buffer)) {
+      lastFailure = `${cand} -> status ${result.status}`;
+      continue;
+    }
+    try {
+      const conv = await convertToWebp(result.buffer, result.contentType, outPrimary);
+      success = { ...result, ...conv };
       break;
+    } catch (e) {
+      lastFailure = `${cand} -> convert failed: ${e.message}`;
     }
   }
+
   if (!success) {
-    console.log(`[fail] ${slug} (${app.targetUrl}) all ${candidates.length} candidates failed lastHead=${lastHead}`);
-    cache.push({ slug, url: app.targetUrl, sourceUrl: candidates[0] || "", fetchedAt: new Date().toISOString(), bytes: 0, status: "fail" });
+    console.log(`[fail] ${slug} (${app.targetUrl}) all ${candidates.length} candidates failed; last: ${lastFailure}`);
+    upsertCache(cache, {
+      slug,
+      url: app.targetUrl,
+      sourceUrl: candidates[0] || "",
+      fetchedAt: new Date().toISOString(),
+      bytes: 0,
+      status: "fail"
+    });
     return { slug, status: "fail" };
   }
-  try {
-    const conv = await convertToWebp(success.buffer, success.contentType, outPrimary);
-    const bytes = conv.bytes;
-    const convertedLabel = conv.converted ? "webp" : sharp ? "fallback" : "no-sharp";
-    console.log(`[ok] ${slug} <- ${success.sourceUrl} head=${success.headStatus ?? "-"} get=${success.status} bytes=${success.buffer.length} -> ${bytes} ${convertedLabel}`);
-    const entry = { slug, url: app.targetUrl, sourceUrl: success.sourceUrl, fetchedAt: new Date().toISOString(), bytes, status: "ok" };
-    const idx = cache.findIndex((c) => c.slug === slug);
-    if (idx >= 0) cache[idx] = entry;
-    else cache.push(entry);
-    return { slug, status: "ok", bytes };
-  } catch (e) {
-    console.log(`[fail] ${slug} write error ${e.message}`);
-    cache.push({ slug, url: app.targetUrl, sourceUrl: success.sourceUrl, fetchedAt: new Date().toISOString(), bytes: 0, status: "fail" });
-    return { slug, status: "fail" };
-  }
+
+  const label = success.converted ? "webp" : "raw (sharp missing)";
+  console.log(
+    `[ok] ${slug} <- ${success.sourceUrl} get=${success.status} bytes=${success.buffer.length} -> ${success.bytes} ${label}`
+  );
+  upsertCache(cache, {
+    slug,
+    url: app.targetUrl,
+    sourceUrl: success.sourceUrl,
+    fetchedAt: new Date().toISOString(),
+    bytes: success.bytes,
+    status: "ok"
+  });
+  return { slug, status: "ok", bytes: success.bytes };
 }
 
 async function main() {
@@ -430,17 +561,24 @@ async function main() {
   let okCount = 0;
   let failCount = 0;
   let cachedCount = 0;
-  for (const app of apps) {
-    try {
-      const res = await processApp(app, cache);
-      if (res.status === "ok") okCount++;
-      else if (res.status === "cached") cachedCount++;
-      else failCount++;
-    } catch (e) {
-      console.log(`[fail] ${app.serviceKey} exception ${e.message}`);
-      failCount++;
+  const queue = [...apps];
+  const worker = async () => {
+    while (queue.length > 0) {
+      const app = queue.shift();
+      try {
+        const res = await processApp(app, cache);
+        if (res.status === "ok") okCount++;
+        else if (res.status === "cached") cachedCount++;
+        else failCount++;
+      } catch (e) {
+        console.log(`[fail] ${app.serviceKey} exception ${e.message}`);
+        failCount++;
+      }
     }
-  }
+  };
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, apps.length) }, worker));
+
+  cache.sort((a, b) => a.slug.localeCompare(b.slug));
   writeFileSync(cachePath, JSON.stringify(cache, null, 2) + "\n");
   console.log(`Done ok=${okCount} cached=${cachedCount} fail=${failCount} total=${apps.length}`);
   console.log(`Primary: ${primaryOut}`);
@@ -448,6 +586,7 @@ async function main() {
   if (failCount > 0) {
     const fails = cache.filter((c) => c.status === "fail").map((c) => c.slug);
     console.log(`Failed slugs: ${fails.join(", ")}`);
+    if (process.argv.includes("--strict")) process.exit(1);
   }
 }
 

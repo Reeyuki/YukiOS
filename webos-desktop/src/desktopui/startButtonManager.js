@@ -19,7 +19,13 @@ export function getStoredStartIcon() {
 }
 
 function resolveImageUrl(value) {
-  if (value.startsWith("data:") || value.startsWith("blob:") || value.startsWith("http://") || value.startsWith("https://")) return value;
+  if (
+    value.startsWith("data:") ||
+    value.startsWith("blob:") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  )
+    return value;
   if (value.startsWith("static/") || value.startsWith("/static/")) return resolveIconUrl(value);
   if (!value.includes("/")) return resolveIconUrl(`static/icons/${value}`);
   return value;
@@ -85,10 +91,16 @@ export function showStartButtonContextMenu(e) {
   showDynamicContextMenu(e, (menu, item, hr) => {
     menu.appendChild(item("Change Start Icon", () => showStartButtonPicker(), "fa-palette"));
     if (getStoredStartIcon()) {
-      menu.appendChild(item("Reset to Default", () => {
-        resetStartButtonIcon();
-        os.notify.send("Start button reset to default");
-      }, "fa-undo"));
+      menu.appendChild(
+        item(
+          "Reset to Default",
+          () => {
+            resetStartButtonIcon();
+            os.notify.send("Start button reset to default");
+          },
+          "fa-undo"
+        )
+      );
     }
     menu.appendChild(hr());
     menu.appendChild(item("Upload Custom Icon", () => triggerFilePicker(), "fa-upload"));

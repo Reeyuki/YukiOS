@@ -2,3 +2,12 @@ public/sapps
 public/wasm
 public/s
 wasm
+
+src/generated/
+src/games/steamNewsData.js
+public/app-list.json
+dist/
+release/
+
+src/news.json
+src/utils/avatarData.js
