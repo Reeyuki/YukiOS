@@ -1,149 +1,214 @@
-import { readdirSync, readFileSync, writeFileSync, statSync, mkdirSync, existsSync } from "fs";
-import { resolve, relative, join, dirname, sep } from "path";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, posix, relative, resolve, sep } from "node:path";
 
-const projectRoot = process.cwd();
-const sourceDir = resolve(projectRoot, "src");
-const generatedDir = resolve(sourceDir, "generated");
-const manifestPath = resolve(generatedDir, "systemLibraryManifest.js");
-const overridesCachePath = resolve(projectRoot, "node_modules/.cache/yukios-system-overrides.json");
 const OVERRIDES_ROUTE = "/__yukios-overrides";
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
+const MANIFEST_DEBOUNCE_MS = 200;
 
-const overrideStore = new Map();
+/* -------------------------------------------------------------------------- */
+/*  Source manifest                                                           */
+/* -------------------------------------------------------------------------- */
 
-function collectSourceFiles(currentDir, excludedDirs) {
-  let dirEntries;
+function isTestFile(name) {
+  return /\.(test|spec)\.js$/.test(name);
+}
+
+function collectSourceFiles(dir, generatedDir) {
+  let entries;
   try {
-    dirEntries = readdirSync(currentDir, { withFileTypes: true });
+    entries = readdirSync(dir, { withFileTypes: true });
   } catch {
     return [];
   }
+
   const collected = [];
-  for (const dirEntry of dirEntries) {
-    const fullPath = join(currentDir, dirEntry.name);
-    if (dirEntry.isDirectory()) {
-      if (dirEntry.name === "__tests__" || excludedDirs.has(fullPath)) continue;
-      collected.push(...collectSourceFiles(fullPath, excludedDirs));
-      continue;
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === "__tests__" || fullPath === generatedDir) continue;
+      collected.push(...collectSourceFiles(fullPath, generatedDir));
+    } else if (entry.isFile() && /\.(js|css)$/.test(entry.name) && !isTestFile(entry.name)) {
+      collected.push(fullPath);
     }
-    if (!dirEntry.isFile()) continue;
-    if (!/\.(js|css)$/.test(dirEntry.name)) continue;
-    if (/\.test\.js$/.test(dirEntry.name) || /\.spec\.js$/.test(dirEntry.name)) continue;
-    collected.push(fullPath);
   }
   return collected;
 }
 
-function regenerateSystemLibraryManifest() {
-  const excludedDirs = new Set([generatedDir]);
-  const sourceFiles = collectSourceFiles(sourceDir, excludedDirs);
-  const entries = [];
-  for (const filePath of sourceFiles) {
-    const stats = statSync(filePath);
-    entries.push({
-      path: relative(sourceDir, filePath).split(sep).join("/"),
-      bytes: stats.size,
-      mtime: Math.round(stats.mtimeMs)
-    });
-  }
-  entries.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
-  const serialized = `export const SYSTEM_LIBRARY_FILES = ${JSON.stringify(entries)};\n`;
-  let existingContent = "";
-  try {
-    existingContent = readFileSync(manifestPath, "utf-8");
-  } catch {
-    existingContent = "";
-  }
-  if (existingContent !== serialized) {
-    mkdirSync(dirname(manifestPath), { recursive: true });
-    writeFileSync(manifestPath, serialized, "utf-8");
-  }
+/* -------------------------------------------------------------------------- */
+/*  Override endpoint helpers                                                 */
+/* -------------------------------------------------------------------------- */
+
+/** Overrides may only target real-looking files under src/ (never generated output or anything outside). */
+function isValidOverridePath(value) {
+  return (
+    typeof value === "string" &&
+    !value.includes("\0") &&
+    !value.includes("\\") &&
+    posix.normalize(value) === value &&
+    value.startsWith("src/") &&
+    !value.startsWith("src/generated/") &&
+    /\.(js|css)$/.test(value)
+  );
 }
 
-function loadPersistedOverrides() {
-  try {
-    if (!existsSync(overridesCachePath)) return;
-    const parsed = JSON.parse(readFileSync(overridesCachePath, "utf-8"));
-    for (const [filePath, content] of Object.entries(parsed)) {
-      if (typeof content === "string") overrideStore.set(filePath, content);
+/**
+ * Blocks cross-site requests. A malicious web page can make your browser POST to this dev endpoint
+ * (a simple request needs no CORS preflight), which would let it inject code into your dev build.
+ * Browsers always attach Origin / Sec-Fetch-Site to such requests, so we reject anything that isn't same-origin.
+ */
+function isSameOriginRequest(req) {
+  const site = req.headers["sec-fetch-site"];
+  if (site && site !== "same-origin" && site !== "none") return false;
+
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      return new URL(origin).host === req.headers.host;
+    } catch {
+      return false; // e.g. Origin: null from sandboxed frames
     }
-  } catch {
-    overrideStore.clear();
   }
-}
-
-function persistOverrides() {
-  try {
-    mkdirSync(dirname(overridesCachePath), { recursive: true });
-    writeFileSync(overridesCachePath, JSON.stringify(Object.fromEntries(overrideStore)), "utf-8");
-  } catch {}
-}
-
-function normalizeModuleId(moduleId) {
-  let normalizedId = moduleId.split("?")[0];
-  while (normalizedId.startsWith("\0")) {
-    normalizedId = normalizedId.slice(1);
-  }
-  return normalizedId;
-}
-
-function toRootRelativePosixPath(absolutePath) {
-  return relative(projectRoot, absolutePath).split(sep).join("/");
+  return true;
 }
 
 function readJsonBody(req) {
-  return new Promise((resolveBody) => {
-    let raw = "";
+  return new Promise((done) => {
+    const chunks = [];
+    let size = 0;
+    let tooLarge = false;
+
     req.on("data", (chunk) => {
-      raw += chunk;
+      size += chunk.length;
+      if (size > MAX_BODY_BYTES) tooLarge = true;
+      else chunks.push(chunk);
     });
     req.on("end", () => {
+      if (tooLarge) return done({ tooLarge: true });
       try {
-        resolveBody(JSON.parse(raw));
+        done({ body: JSON.parse(Buffer.concat(chunks).toString("utf-8")) });
       } catch {
-        resolveBody(null);
+        done({ body: null });
       }
     });
-    req.on("error", () => resolveBody(null));
+    req.on("error", () => done({ body: null }));
   });
 }
 
-function sendJson(res, payload) {
-  res.statusCode = 200;
+function sendJson(res, status, payload, extraHeaders = {}) {
+  res.statusCode = status;
   res.setHeader("Content-Type", "application/json");
+  for (const [name, value] of Object.entries(extraHeaders)) res.setHeader(name, value);
   res.end(JSON.stringify(payload));
 }
 
+function normalizeModuleId(moduleId) {
+  let id = moduleId.split("?")[0];
+  while (id.startsWith("\0")) id = id.slice(1);
+  return id;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Plugin                                                                    */
+/* -------------------------------------------------------------------------- */
+
 export function systemLibraryPlugin() {
+  let root = process.cwd();
+  const overrideStore = new Map();
+
+  const sourceDir = () => resolve(root, "src");
+  const generatedDir = () => resolve(sourceDir(), "generated");
+  const manifestPath = () => resolve(generatedDir(), "systemLibraryManifest.js");
+  const overridesCachePath = () => resolve(root, "node_modules/.cache/yukios-system-overrides.json");
+
+  const toRootRelativePosixPath = (absolutePath) => relative(root, absolutePath).split(sep).join("/");
+
+  function regenerateManifest() {
+    const entries = [];
+    for (const filePath of collectSourceFiles(sourceDir(), generatedDir())) {
+      try {
+        const stats = statSync(filePath);
+        entries.push({
+          path: relative(sourceDir(), filePath).split(sep).join("/"),
+          bytes: stats.size,
+          mtime: Math.round(stats.mtimeMs)
+        });
+      } catch {
+        // file vanished between readdir and stat
+      }
+    }
+    entries.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+
+    const serialized = `export const SYSTEM_LIBRARY_FILES = ${JSON.stringify(entries)};\n`;
+    let existing = "";
+    try {
+      existing = readFileSync(manifestPath(), "utf-8");
+    } catch {}
+    if (existing !== serialized) {
+      mkdirSync(dirname(manifestPath()), { recursive: true });
+      writeFileSync(manifestPath(), serialized, "utf-8");
+    }
+  }
+
+  function loadPersistedOverrides() {
+    try {
+      if (!existsSync(overridesCachePath())) return;
+      const parsed = JSON.parse(readFileSync(overridesCachePath(), "utf-8"));
+      for (const [filePath, content] of Object.entries(parsed)) {
+        if (isValidOverridePath(filePath) && typeof content === "string") overrideStore.set(filePath, content);
+      }
+    } catch {
+      overrideStore.clear();
+    }
+  }
+
+  function persistOverrides() {
+    try {
+      mkdirSync(dirname(overridesCachePath()), { recursive: true });
+      writeFileSync(overridesCachePath(), JSON.stringify(Object.fromEntries(overrideStore)), "utf-8");
+    } catch (err) {
+      console.warn(`[system-library] could not persist overrides: ${err.message}`);
+    }
+  }
+
   return {
     name: "yukios-system-library",
-    buildStart() {
-      regenerateSystemLibraryManifest();
+
+    configResolved(config) {
+      root = config.root;
     },
+
+    buildStart() {
+      regenerateManifest();
+    },
+
+    // Serves edited source from the override store instead of disk (dev server only; the store is empty in builds).
     load(id) {
-      const normalizedId = normalizeModuleId(id);
-      const absoluteId = resolve(normalizedId);
-      const rootRelativePath = toRootRelativePosixPath(absoluteId);
-      if (!rootRelativePath.startsWith("src/")) return null;
-      if (!overrideStore.has(rootRelativePath)) return null;
+      if (overrideStore.size === 0) return null;
+      const rootRelativePath = toRootRelativePosixPath(resolve(normalizeModuleId(id)));
+      if (!rootRelativePath.startsWith("src/") || !overrideStore.has(rootRelativePath)) return null;
       return { code: overrideStore.get(rootRelativePath), map: null };
     },
+
     configureServer(server) {
       loadPersistedOverrides();
+      if (overrideStore.size > 0) {
+        console.warn(
+          `[system-library] ${overrideStore.size} persisted source override(s) are active and replace files on disk. ` +
+            `Delete node_modules/.cache/yukios-system-overrides.json to reset.`
+        );
+      }
 
       function invalidateModuleTree(rootRelativePath) {
-        const absolutePath = resolve(projectRoot, rootRelativePath);
-        const modulesToInvalidate = new Set();
+        const absolutePath = resolve(root, rootRelativePath);
+        const modules = new Set();
         try {
-          const moduleById = server.moduleGraph.getModuleById(absolutePath);
-          if (moduleById) modulesToInvalidate.add(moduleById);
+          const byId = server.moduleGraph.getModuleById(absolutePath);
+          if (byId) modules.add(byId);
         } catch {}
         try {
-          const modulesByFile = server.moduleGraph.getModulesByFile(absolutePath);
-          if (Array.isArray(modulesByFile)) {
-            for (const mod of modulesByFile) modulesToInvalidate.add(mod);
-          }
+          for (const mod of server.moduleGraph.getModulesByFile(absolutePath) ?? []) modules.add(mod);
         } catch {}
-        for (const mod of modulesToInvalidate) {
+        for (const mod of modules) {
           try {
             server.moduleGraph.invalidateModule(mod);
           } catch {}
@@ -151,42 +216,54 @@ export function systemLibraryPlugin() {
         server.ws.send({ type: "full-reload" });
       }
 
+      // Keep the manifest in sync when source files are added or removed while the dev server runs.
+      let manifestTimer = null;
+      const onSourceListChange = (file) => {
+        const abs = resolve(file);
+        if (!abs.startsWith(sourceDir() + sep) || abs.startsWith(generatedDir() + sep)) return;
+        if (!/\.(js|css)$/.test(abs) || isTestFile(abs)) return;
+        clearTimeout(manifestTimer);
+        manifestTimer = setTimeout(regenerateManifest, MANIFEST_DEBOUNCE_MS);
+      };
+      server.watcher.on("add", onSourceListChange);
+      server.watcher.on("unlink", onSourceListChange);
+      server.httpServer?.once("close", () => clearTimeout(manifestTimer));
+
       server.middlewares.use(async (req, res, next) => {
         const requestUrl = req.url || "";
         if (!requestUrl.startsWith(OVERRIDES_ROUTE)) return next();
-        const routePath = requestUrl.slice(OVERRIDES_ROUTE.length);
-        if (routePath && routePath !== "/" ) return next();
+        const routePath = requestUrl.slice(OVERRIDES_ROUTE.length).split("?")[0];
+        if (routePath && routePath !== "/") return next();
+
+        if (!isSameOriginRequest(req)) {
+          return sendJson(res, 403, { ok: false, error: "cross-origin request rejected" });
+        }
 
         if (req.method === "GET") {
-          sendJson(res, { overrides: Object.fromEntries(overrideStore) });
-          return;
+          return sendJson(res, 200, { overrides: Object.fromEntries(overrideStore) });
         }
 
-        const body = await readJsonBody(req);
-        if (!body || typeof body.path !== "string") {
-          res.statusCode = 400;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ ok: false, error: "invalid body" }));
-          return;
+        if (req.method !== "POST" && req.method !== "DELETE") {
+          return sendJson(res, 405, { ok: false, error: "method not allowed" }, { Allow: "GET, POST, DELETE" });
         }
 
-        if (req.method === "POST" && typeof body.content === "string") {
+        const { body, tooLarge } = await readJsonBody(req);
+        if (tooLarge) return sendJson(res, 413, { ok: false, error: "payload too large" });
+        if (!body || !isValidOverridePath(body.path)) {
+          return sendJson(res, 400, { ok: false, error: "invalid body or path" });
+        }
+
+        if (req.method === "POST") {
+          if (typeof body.content !== "string")
+            return sendJson(res, 400, { ok: false, error: "content must be a string" });
           overrideStore.set(body.path, body.content);
-          persistOverrides();
-          invalidateModuleTree(body.path);
-          sendJson(res, { ok: true });
-          return;
-        }
-
-        if (req.method === "DELETE") {
+        } else {
           overrideStore.delete(body.path);
-          persistOverrides();
-          invalidateModuleTree(body.path);
-          sendJson(res, { ok: true });
-          return;
         }
 
-        return next();
+        persistOverrides();
+        invalidateModuleTree(body.path);
+        return sendJson(res, 200, { ok: true });
       });
     }
   };

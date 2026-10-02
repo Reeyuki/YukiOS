@@ -16,23 +16,31 @@ export function renderRuffleSettings() {
             <span class="settings-label-title">Letterbox</span>
             <span class="settings-label-desc">How the stage fits the window</span>
           </div>
-          ${renderSelectMenu("settingsRuffleLetterbox", [
-            { value: "off", label: "Off stretches to fill" },
-            { value: "on", label: "On keeps aspect ratio (default)" },
-            { value: "fullscreen", label: "Fullscreen fills viewport" }
-          ], cfg.letterbox)}
+          ${renderSelectMenu(
+            "settingsRuffleLetterbox",
+            [
+              { value: "off", label: "Off stretches to fill" },
+              { value: "on", label: "On keeps aspect ratio (default)" },
+              { value: "fullscreen", label: "Fullscreen fills viewport" }
+            ],
+            cfg.letterbox
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Scale Mode</span>
             <span class="settings-label-desc">SWF stage scaling</span>
           </div>
-          ${renderSelectMenu("settingsRuffleScale", [
-            { value: "showAll", label: "Show All" },
-            { value: "noBorder", label: "No Border" },
-            { value: "exactFit", label: "Exact Fit" },
-            { value: "noScale", label: "No Scale" }
-          ], cfg.scale)}
+          ${renderSelectMenu(
+            "settingsRuffleScale",
+            [
+              { value: "showAll", label: "Show All" },
+              { value: "noBorder", label: "No Border" },
+              { value: "exactFit", label: "Exact Fit" },
+              { value: "noScale", label: "No Scale" }
+            ],
+            cfg.scale
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
@@ -60,32 +68,44 @@ export function renderRuffleSettings() {
             <span class="settings-label-title">Autoplay</span>
             <span class="settings-label-desc">Start SWF without user gesture</span>
           </div>
-          ${renderSelectMenu("settingsRuffleAutoplay", [
-            { value: "on", label: "On" },
-            { value: "off", label: "Off" },
-            { value: "auto", label: "Auto" }
-          ], cfg.autoplay)}
+          ${renderSelectMenu(
+            "settingsRuffleAutoplay",
+            [
+              { value: "on", label: "On" },
+              { value: "off", label: "Off" },
+              { value: "auto", label: "Auto" }
+            ],
+            cfg.autoplay
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Unmute Overlay</span>
             <span class="settings-label-desc">Click-to-unmute prompt for audio</span>
           </div>
-          ${renderSelectMenu("settingsRuffleUnmuteOverlay", [
-            { value: "visible", label: "Visible" },
-            { value: "hidden", label: "Hidden" }
-          ], cfg.unmuteOverlay)}
+          ${renderSelectMenu(
+            "settingsRuffleUnmuteOverlay",
+            [
+              { value: "visible", label: "Visible" },
+              { value: "hidden", label: "Hidden" }
+            ],
+            cfg.unmuteOverlay
+          )}
         </div>
         <div class="settings-row">
           <div class="settings-label-group">
             <span class="settings-label-title">Context Menu</span>
             <span class="settings-label-desc">Right-click menu inside player</span>
           </div>
-          ${renderSelectMenu("settingsRuffleContextMenu", [
-            { value: "on", label: "On" },
-            { value: "off", label: "Off" },
-            { value: "rightClickOnly", label: "Right-click only" }
-          ], cfg.contextMenu)}
+          ${renderSelectMenu(
+            "settingsRuffleContextMenu",
+            [
+              { value: "on", label: "On" },
+              { value: "off", label: "Off" },
+              { value: "rightClickOnly", label: "Right-click only" }
+            ],
+            cfg.contextMenu
+          )}
         </div>
       </div>
 
@@ -149,24 +169,32 @@ export function renderRuffleSettings() {
                 <span class="settings-label-title">Open URL Mode</span>
                 <span class="settings-label-desc">How navigateToURL is handled</span>
               </div>
-              ${renderSelectMenu("settingsRuffleOpenUrl", [
-                { value: "allow", label: "Allow" },
-                { value: "confirm", label: "Confirm" },
-                { value: "deny", label: "Deny" }
-              ], cfg.openUrlMode)}
+              ${renderSelectMenu(
+                "settingsRuffleOpenUrl",
+                [
+                  { value: "allow", label: "Allow" },
+                  { value: "confirm", label: "Confirm" },
+                  { value: "deny", label: "Deny" }
+                ],
+                cfg.openUrlMode
+              )}
             </div>
             <div class="settings-row">
               <div class="settings-label-group">
                 <span class="settings-label-title">Log Level</span>
                 <span class="settings-label-desc">Verbosity inside player console</span>
               </div>
-              ${renderSelectMenu("settingsRuffleLogLevel", [
-                { value: "error", label: "Error" },
-                { value: "warn", label: "Warn" },
-                { value: "info", label: "Info" },
-                { value: "debug", label: "Debug" },
-                { value: "trace", label: "Trace" }
-              ], cfg.logLevel)}
+              ${renderSelectMenu(
+                "settingsRuffleLogLevel",
+                [
+                  { value: "error", label: "Error" },
+                  { value: "warn", label: "Warn" },
+                  { value: "info", label: "Info" },
+                  { value: "debug", label: "Debug" },
+                  { value: "trace", label: "Trace" }
+                ],
+                cfg.logLevel
+              )}
             </div>
           </div>
         </details>
@@ -192,13 +220,27 @@ export function bindRuffleCategory(win) {
     os.events.emit(BusEvents.SETTINGS_CHANGED, { key: StorageKeys.ruffleConfig, value: patch });
   };
 
-  win.querySelector("#settingsRuffleLetterbox")?.addEventListener("change", () => save({ letterbox: getSelectMenuValue("settingsRuffleLetterbox", win) }));
-  win.querySelector("#settingsRuffleScale")?.addEventListener("change", () => save({ scale: getSelectMenuValue("settingsRuffleScale", win) }));
-  win.querySelector("#settingsRuffleAutoplay")?.addEventListener("change", () => save({ autoplay: getSelectMenuValue("settingsRuffleAutoplay", win) }));
-  win.querySelector("#settingsRuffleUnmuteOverlay")?.addEventListener("change", () => save({ unmuteOverlay: getSelectMenuValue("settingsRuffleUnmuteOverlay", win) }));
-  win.querySelector("#settingsRuffleContextMenu")?.addEventListener("change", () => save({ contextMenu: getSelectMenuValue("settingsRuffleContextMenu", win) }));
-  win.querySelector("#settingsRuffleOpenUrl")?.addEventListener("change", () => save({ openUrlMode: getSelectMenuValue("settingsRuffleOpenUrl", win) }));
-  win.querySelector("#settingsRuffleLogLevel")?.addEventListener("change", () => save({ logLevel: getSelectMenuValue("settingsRuffleLogLevel", win) }));
+  win
+    .querySelector("#settingsRuffleLetterbox")
+    ?.addEventListener("change", () => save({ letterbox: getSelectMenuValue("settingsRuffleLetterbox", win) }));
+  win
+    .querySelector("#settingsRuffleScale")
+    ?.addEventListener("change", () => save({ scale: getSelectMenuValue("settingsRuffleScale", win) }));
+  win
+    .querySelector("#settingsRuffleAutoplay")
+    ?.addEventListener("change", () => save({ autoplay: getSelectMenuValue("settingsRuffleAutoplay", win) }));
+  win
+    .querySelector("#settingsRuffleUnmuteOverlay")
+    ?.addEventListener("change", () => save({ unmuteOverlay: getSelectMenuValue("settingsRuffleUnmuteOverlay", win) }));
+  win
+    .querySelector("#settingsRuffleContextMenu")
+    ?.addEventListener("change", () => save({ contextMenu: getSelectMenuValue("settingsRuffleContextMenu", win) }));
+  win
+    .querySelector("#settingsRuffleOpenUrl")
+    ?.addEventListener("change", () => save({ openUrlMode: getSelectMenuValue("settingsRuffleOpenUrl", win) }));
+  win
+    .querySelector("#settingsRuffleLogLevel")
+    ?.addEventListener("change", () => save({ logLevel: getSelectMenuValue("settingsRuffleLogLevel", win) }));
 
   const bg = win.querySelector("#settingsRuffleBg");
   bg?.addEventListener("change", () => save({ backgroundColor: bg.value }));
@@ -240,8 +282,20 @@ export function bindRuffleCategory(win) {
     setSelectMenuValue(win, "settingsRuffleLogLevel", fresh.logLevel);
     const bg2 = win.querySelector("#settingsRuffleBg");
     if (bg2) bg2.value = fresh.backgroundColor;
-    const ids = ["settingsRuffleSplash", "settingsRuffleScriptAccess", "settingsRuffleUpgradeHttps", "settingsRuffleSwfDownload", "settingsRuffleWarnUnsupported"];
-    const vals = [fresh.splashScreen, fresh.allowScriptAccess, fresh.upgradeToHttps, fresh.showSwfDownload, fresh.warnOnUnsupportedContent];
+    const ids = [
+      "settingsRuffleSplash",
+      "settingsRuffleScriptAccess",
+      "settingsRuffleUpgradeHttps",
+      "settingsRuffleSwfDownload",
+      "settingsRuffleWarnUnsupported"
+    ];
+    const vals = [
+      fresh.splashScreen,
+      fresh.allowScriptAccess,
+      fresh.upgradeToHttps,
+      fresh.showSwfDownload,
+      fresh.warnOnUnsupportedContent
+    ];
     ids.forEach((id, i) => {
       const el = win.querySelector(`#${id}`);
       if (el) el.checked = vals[i];

@@ -1,8 +1,7 @@
 import { $ } from "../shared/domUtils.js";
 
 const DRAG_BAND_HEIGHT = 44;
-const INTERACTIVE_SELECTOR =
-  "button, input, select, textarea, a, .window-controls, .steam-settings-window-controls";
+const INTERACTIVE_SELECTOR = "button, input, select, textarea, a, .window-controls, .steam-settings-window-controls";
 const TEXT_FIELD_SELECTOR = "input, textarea, select, [contenteditable='true']";
 
 function forwardBandDrag(win, e) {

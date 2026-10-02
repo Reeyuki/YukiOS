@@ -1,4 +1,4 @@
-import { StorageKeys, os,$ } from "../framework.js";
+import { StorageKeys, os, $ } from "../framework.js";
 import { steamAudio } from "./steamAudio.js";
 import { steamDeckAudio } from "../modes/steamdeck/SteamDeckAudio.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
@@ -6,11 +6,25 @@ import { initSteamPopupWindow } from "./steamPopupWindow.js";
 import { windowMakeDraggable } from "../windowManager/makeDraggable.js";
 import { windowMakeResizable } from "../windowManager/makeResizable.js";
 import { renderSelectMenu, setSelectMenuValue, bindSelectMenu } from "../shared/selectMenu.js";
-import { SETTINGS, SETTINGS_SELECT_OPTIONS, SETTINGS_PANELS, SETTINGS_NAV, DEFAULT_SETTINGS } from "./steamSettingsCatalog.js";
+import {
+  SETTINGS,
+  SETTINGS_SELECT_OPTIONS,
+  SETTINGS_PANELS,
+  SETTINGS_NAV,
+  DEFAULT_SETTINGS
+} from "./steamSettingsCatalog.js";
 
 export function renderSettingsSelectMenu(id, setting) {
-  const html = renderSelectMenu(id, SETTINGS_SELECT_OPTIONS[setting] || [], SteamSettings.get(setting), "steam-settings-select");
-  return html.replace('<div class="select-menu steam-settings-select" id="', `<div class="select-menu steam-settings-select" data-setting="${setting}" id="`);
+  const html = renderSelectMenu(
+    id,
+    SETTINGS_SELECT_OPTIONS[setting] || [],
+    SteamSettings.get(setting),
+    "steam-settings-select"
+  );
+  return html.replace(
+    '<div class="select-menu steam-settings-select" id="',
+    `<div class="select-menu steam-settings-select" data-setting="${setting}" id="`
+  );
 }
 
 export class SteamSettings {
@@ -63,9 +77,10 @@ export function initSettingsToggles(root) {
     if (toggle.inited) return;
     toggle.inited = true;
     const setting = toggle.dataset.setting;
-    const value = setting === "steamAudioEnabled"
-      ? os.storage.get(StorageKeys.steamDeckAudioEnabled) !== "false"
-      : settings[setting];
+    const value =
+      setting === "steamAudioEnabled"
+        ? os.storage.get(StorageKeys.steamDeckAudioEnabled) !== "false"
+        : settings[setting];
 
     if (value) {
       toggle.classList.add("active");
@@ -178,7 +193,11 @@ function animateSettingsPanelChange(settingsPage, category, direction) {
   currentPanel.classList.add("steam-settings-panel--out", `steam-settings-panel--${direction}`);
 
   const startIn = () => {
-    currentPanel.classList.remove("steam-settings-panel--out", "steam-settings-panel--up", "steam-settings-panel--down");
+    currentPanel.classList.remove(
+      "steam-settings-panel--out",
+      "steam-settings-panel--up",
+      "steam-settings-panel--down"
+    );
     currentPanel.classList.add("hidden");
     targetPanel.classList.remove("hidden");
     targetPanel.classList.add("steam-settings-panel--in", `steam-settings-panel--${direction}`);
@@ -386,8 +405,7 @@ export async function openSteamSettingsWindow(wm) {
     icon: "fas fa-snowflake",
     resizable: true
   });
-  win.style.background =
-    "linear-gradient(90deg, #2a2d34 0, #2a2d34 260px, #171d25 260px, #171d25 100%)";
+  win.style.background = "linear-gradient(90deg, #2a2d34 0, #2a2d34 260px, #171d25 260px, #171d25 100%)";
 
   win.classList.add("steam-settings-window");
 

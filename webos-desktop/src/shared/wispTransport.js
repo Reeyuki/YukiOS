@@ -78,7 +78,13 @@ export async function fetchThroughWisp(url, options = {}) {
   const headersArr = options.headers ? Object.entries(options.headers) : [];
   let body = options.body || null;
   if (typeof body === "string") body = new TextEncoder().encode(body);
-  const res = await rawTransport.request(new URL(url), options.method || "GET", body, headersArr, new AbortController().signal);
+  const res = await rawTransport.request(
+    new URL(url),
+    options.method || "GET",
+    body,
+    headersArr,
+    new AbortController().signal
+  );
   const headers = new Headers();
   if (Array.isArray(res.headers)) {
     for (const pair of res.headers) {

@@ -78,9 +78,13 @@ function buildDirectBlobHtml(rawHtml) {
   const baseTag = '<base href="' + baseHref + '">';
   let html = rawHtml;
   if (/<base[^>]*>/i.test(html)) {
-    html = html.replace(/<base[^>]*>/i, function(m){ return m + "\n" + baseTag + "\n" + detection; });
+    html = html.replace(/<base[^>]*>/i, function (m) {
+      return m + "\n" + baseTag + "\n" + detection;
+    });
   } else if (/<head[^>]*>/i.test(html)) {
-    html = html.replace(/<head[^>]*>/i, function(m){ return m + "\n" + baseTag + "\n" + detection; });
+    html = html.replace(/<head[^>]*>/i, function (m) {
+      return m + "\n" + baseTag + "\n" + detection;
+    });
   } else {
     html = baseTag + "\n" + detection + "\n" + html;
   }
@@ -101,7 +105,13 @@ export class InfaredYoutubeApp extends BaseApp {
   getScramjetUrl() {
     const wispUrl = getWispUrl();
     const target = this.getSource();
-    return window.location.origin + "/sapps/set-template.html?wisp=" + encodeURIComponent(wispUrl) + "&target=" + encodeURIComponent(target);
+    return (
+      window.location.origin +
+      "/sapps/set-template.html?wisp=" +
+      encodeURIComponent(wispUrl) +
+      "&target=" +
+      encodeURIComponent(target)
+    );
   }
 
   async open() {
@@ -116,7 +126,8 @@ export class InfaredYoutubeApp extends BaseApp {
       appId: "infaredYoutubeApp"
     });
 
-    win.innerHTML = '<div class="infrared-root" style="width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-primary)"><div class="infrared-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;height:100%;color:var(--text-secondary)"><div style="width:28px;height:28px;border:2px solid var(--glass-border);border-top-color:var(--brand);border-radius:50%;animation:spin 0.8s linear infinite"></div><div style="font-size:13px">Loading Infrared...</div><div class="infrared-status" style="font-size:11px;opacity:0.7"></div></div><iframe class="infrared-iframe" style="width:100%;height:100%;border:none;display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"></iframe><div class="infrared-fallback-bar" style="display:none;align-items:center;gap:8px;padding:6px 10px;background:var(--glass);border-top:1px solid var(--glass-border);font-size:12px;color:var(--text-secondary)"><span>Blocked on this network, switched to proxy</span><button class="infrared-retry-direct" style="margin-left:auto;padding:4px 8px;border-radius:6px;border:1px solid var(--glass-border);background:var(--surface-1);color:var(--text-primary);cursor:pointer;font-size:11px">Try direct</button></div></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+    win.innerHTML =
+      '<div class="infrared-root" style="width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-primary)"><div class="infrared-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;height:100%;color:var(--text-secondary)"><div style="width:28px;height:28px;border:2px solid var(--glass-border);border-top-color:var(--brand);border-radius:50%;animation:spin 0.8s linear infinite"></div><div style="font-size:13px">Loading Infrared...</div><div class="infrared-status" style="font-size:11px;opacity:0.7"></div></div><iframe class="infrared-iframe" style="width:100%;height:100%;border:none;display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"></iframe><div class="infrared-fallback-bar" style="display:none;align-items:center;gap:8px;padding:6px 10px;background:var(--glass);border-top:1px solid var(--glass-border);font-size:12px;color:var(--text-secondary)"><span>Blocked on this network, switched to proxy</span><button class="infrared-retry-direct" style="margin-left:auto;padding:4px 8px;border-radius:6px;border:1px solid var(--glass-border);background:var(--surface-1);color:var(--text-primary);cursor:pointer;font-size:11px">Try direct</button></div></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
 
     const iframe = win.querySelector(".infrared-iframe");
     const loading = win.querySelector(".infrared-loading");
@@ -147,8 +158,14 @@ export class InfaredYoutubeApp extends BaseApp {
 
     const cleanup = () => {
       if (messageHandler) window.removeEventListener("message", messageHandler);
-      if (blobUrl && blobUrl.startsWith("blob:")) try{ URL.revokeObjectURL(blobUrl);}catch{}
-      if (directBlobUrl && directBlobUrl.startsWith("blob:")) try{ URL.revokeObjectURL(directBlobUrl);}catch{}
+      if (blobUrl && blobUrl.startsWith("blob:"))
+        try {
+          URL.revokeObjectURL(blobUrl);
+        } catch {}
+      if (directBlobUrl && directBlobUrl.startsWith("blob:"))
+        try {
+          URL.revokeObjectURL(directBlobUrl);
+        } catch {}
     };
 
     win.addEventListener("remove", () => {
@@ -158,28 +175,33 @@ export class InfaredYoutubeApp extends BaseApp {
     });
 
     const loadViaScramjet = () => {
-      if (fallbackTriggered && this.activeMode.get(winId)==="scramjet") return;
+      if (fallbackTriggered && this.activeMode.get(winId) === "scramjet") return;
       fallbackTriggered = true;
       this.activeMode.set(winId, "scramjet");
       setStatus("Network filter detected, loading via proxy...");
       showFallbackBar();
       const scramjetUrl = this.getScramjetUrl();
-      if (blobUrl && blobUrl.startsWith("blob:")) try{ URL.revokeObjectURL(blobUrl);}catch{}
+      if (blobUrl && blobUrl.startsWith("blob:"))
+        try {
+          URL.revokeObjectURL(blobUrl);
+        } catch {}
       iframe.style.display = "block";
       if (loading) loading.style.display = "none";
       iframe.removeAttribute("srcdoc");
       iframe.src = scramjetUrl;
       showIframe();
-      try{ os.notify.send("Infared Youtube", "Direct load blocked, switched to proxy", { type:"info", duration:3000}); }catch{}
+      try {
+        os.notify.send("Infared Youtube", "Direct load blocked, switched to proxy", { type: "info", duration: 3000 });
+      } catch {}
     };
 
     const loadDirectBlob = (html) => {
       const built = buildDirectBlobHtml(html);
-      directBlobUrl = URL.createObjectURL(new Blob([built], { type:"text/html" }));
+      directBlobUrl = URL.createObjectURL(new Blob([built], { type: "text/html" }));
       blobUrl = directBlobUrl;
       iframe.src = directBlobUrl;
       iframe.onload = () => {
-        setTimeout(()=> showIframe(), 300);
+        setTimeout(() => showIframe(), 300);
       };
       iframe.onerror = () => loadViaScramjet();
     };
@@ -191,7 +213,7 @@ export class InfaredYoutubeApp extends BaseApp {
         if (data.blocked) {
           loadViaScramjet();
         } else {
-          setTimeout(()=> showIframe(), 200);
+          setTimeout(() => showIframe(), 200);
         }
       }
     };
@@ -201,9 +223,9 @@ export class InfaredYoutubeApp extends BaseApp {
       retryBtn.addEventListener("click", async () => {
         fallbackTriggered = false;
         this.activeMode.set(winId, "direct");
-        if (fallbackBar) fallbackBar.style.display="none";
-        if (loading) loading.style.display="flex";
-        if (iframe) iframe.style.display="none";
+        if (fallbackBar) fallbackBar.style.display = "none";
+        if (loading) loading.style.display = "flex";
+        if (iframe) iframe.style.display = "none";
         setStatus("Retrying direct...");
         iframe.removeAttribute("src");
         await attemptDirect();
@@ -214,12 +236,12 @@ export class InfaredYoutubeApp extends BaseApp {
       setStatus("Checking direct access...");
       let controller = null;
       let timeoutId = null;
-      try{
+      try {
         controller = new AbortController();
-        timeoutId = setTimeout(()=> controller.abort(), 7000);
-        const res = await fetch(SOURCE, { cache:"no-store", signal: controller.signal, redirect:"follow" });
+        timeoutId = setTimeout(() => controller.abort(), 7000);
+        const res = await fetch(SOURCE, { cache: "no-store", signal: controller.signal, redirect: "follow" });
         clearTimeout(timeoutId);
-        if (!res.ok) throw new Error("HTTP "+res.status);
+        if (!res.ok) throw new Error("HTTP " + res.status);
         const html = await res.text();
         const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
         const title = titleMatch ? titleMatch[1] : "";
@@ -227,33 +249,33 @@ export class InfaredYoutubeApp extends BaseApp {
           loadViaScramjet();
           return;
         }
-        const hasReal = REAL_MARKERS.some(m=> html.toLowerCase().includes(m));
+        const hasReal = REAL_MARKERS.some((m) => html.toLowerCase().includes(m));
         if (!hasReal && html.toLowerCase().includes("blocked")) {
           loadViaScramjet();
           return;
         }
         loadDirectBlob(html);
-        setTimeout(()=>{
-          if (!fallbackTriggered && this.activeMode.get(winId)==="direct") {
+        setTimeout(() => {
+          if (!fallbackTriggered && this.activeMode.get(winId) === "direct") {
             const cur = iframe.style.display;
-            if (cur==="none") showIframe();
+            if (cur === "none") showIframe();
           }
         }, 4500);
-        setTimeout(()=>{
+        setTimeout(() => {
           if (!fallbackTriggered) {
-            try{
+            try {
               const doc = iframe.contentDocument;
               if (!doc || !doc.documentElement || doc.documentElement.innerHTML.length < 300) {
                 const inner = doc && doc.documentElement ? doc.documentElement.innerHTML : "";
                 if (isBlockedHtml(inner, doc ? doc.title : "")) loadViaScramjet();
               }
-            }catch{}
+            } catch {}
           }
         }, 6000);
-      }catch(err){
+      } catch (err) {
         clearTimeout(timeoutId);
-        const msg = String(err && err.message || err);
-        const isAbort = msg.toLowerCase().includes("abort") || err && err.name==="AbortError";
+        const msg = String((err && err.message) || err);
+        const isAbort = msg.toLowerCase().includes("abort") || (err && err.name === "AbortError");
         if (isAbort) {
           setStatus("Direct load timed out, switching to proxy...");
           loadViaScramjet();
@@ -266,31 +288,31 @@ export class InfaredYoutubeApp extends BaseApp {
           iframe.src = SOURCE;
           iframe.onload = () => {
             showIframe();
-            setTimeout(()=>{
-              try{
+            setTimeout(() => {
+              try {
                 const doc = iframe.contentDocument;
                 if (doc) {
                   const html = doc.documentElement ? doc.documentElement.innerHTML : "";
                   if (isBlockedHtml(html, doc.title)) loadViaScramjet();
                 }
-              }catch{
-                setTimeout(()=> {
+              } catch {
+                setTimeout(() => {
                   if (!fallbackTriggered) showIframe();
                 }, 2000);
               }
             }, 1800);
           };
           iframe.onerror = () => loadViaScramjet();
-          setTimeout(()=>{
-            if (!fallbackTriggered && iframe.style.display==="none") showIframe();
+          setTimeout(() => {
+            if (!fallbackTriggered && iframe.style.display === "none") showIframe();
           }, 3500);
-          setTimeout(()=>{
+          setTimeout(() => {
             if (!fallbackTriggered) {
-              let maybeBlocked=false;
-              try{
-                const doc=iframe.contentDocument;
-                if (doc) maybeBlocked=isBlockedHtml(doc.documentElement.innerHTML, doc.title);
-              }catch{}
+              let maybeBlocked = false;
+              try {
+                const doc = iframe.contentDocument;
+                if (doc) maybeBlocked = isBlockedHtml(doc.documentElement.innerHTML, doc.title);
+              } catch {}
               if (maybeBlocked) loadViaScramjet();
             }
           }, 6000);
@@ -302,16 +324,16 @@ export class InfaredYoutubeApp extends BaseApp {
 
     await attemptDirect();
 
-    setTimeout(()=>{
-      if (this.activeMode.get(winId)==="direct" && !fallbackTriggered) {
-        try{
-          if (iframe.style.display==="none") showIframe();
-        }catch{}
+    setTimeout(() => {
+      if (this.activeMode.get(winId) === "direct" && !fallbackTriggered) {
+        try {
+          if (iframe.style.display === "none") showIframe();
+        } catch {}
       }
     }, 8000);
   }
 
-  onClose(winId){
+  onClose(winId) {
     this.openWindows.delete(winId);
     this.activeMode.delete(winId);
   }

@@ -1,138 +1,134 @@
-import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync, lstatSync, readlinkSync } from "fs";
-import { join, resolve, dirname, sep } from "path";
-import { spawnSync } from "child_process";
-import { tmpdir } from "os";
-import { fileURLToPath } from "url";
+import { lstatSync, mkdirSync, mkdtempSync, readdirSync, readlinkSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/**
+ * Generates src/generated/papirus-available.json and papirus-symlinks.json from the Papirus icon theme.
+ *
+ *   node scripts/generatePapirusData.js
+ *   PAPIRUS_REF=<tag-or-branch> node scripts/generatePapirusData.js   (pin a version)
+ */
+
+const REPO_URL = "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme.git";
+const REPO_REF = process.env.PAPIRUS_REF || "";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const generatedDirCandidates = [
-  resolve(scriptDir, "../src/generated"),
-  resolve(process.cwd(), "src/generated"),
-  resolve(process.cwd(), "webos-desktop/src/generated"),
-];
-let generatedDir = generatedDirCandidates.find((p) => existsSync(p) || existsSync(dirname(p)));
-if (!generatedDir) generatedDir = generatedDirCandidates[0];
-for (const c of generatedDirCandidates) {
-  if (c.includes("webos-desktop/src/generated") && existsSync(join(c, ".."))) {
-    generatedDir = c;
-    break;
-  }
-}
-if (!generatedDir.includes("webos-desktop")) {
-  const fallback = resolve(scriptDir, "../src/generated");
-  if (existsSync(fallback) || existsSync(join(fallback, ".."))) generatedDir = fallback;
-}
+const generatedDir = resolve(scriptDir, "../src/generated");
 const availPath = join(generatedDir, "papirus-available.json");
 const symPath = join(generatedDir, "papirus-symlinks.json");
-const repoUrl = "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme.git";
+
+function git(args) {
+  const result = spawnSync("git", args, { stdio: "inherit" });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`git ${args[0]} failed (exit ${result.status})`);
+}
+
+function safeLstat(path) {
+  try {
+    return lstatSync(path);
+  } catch {
+    return null;
+  }
+}
+
+function sortKeys(obj) {
+  return Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
+}
 
 function scanPapirus(root) {
   const available = {};
   const symlinks = {};
   const papirusRoot = join(root, "Papirus");
-  if (!existsSync(papirusRoot)) return { available, symlinks };
+  if (!safeLstat(papirusRoot)) return { available, symlinks };
 
-  const sizes = readdirSync(papirusRoot);
-  for (const size of sizes) {
-    const sizePath = join(papirusRoot, size);
-    let st;
-    try {
-      st = lstatSync(sizePath);
-    } catch {
-      continue;
-    }
-    if (!st.isDirectory()) continue;
+  for (const size of readdirSync(papirusRoot)) {
     if (!/^\d+x\d+$/.test(size)) continue;
-    const contexts = readdirSync(sizePath);
-    for (const ctx of contexts) {
+    const sizePath = join(papirusRoot, size);
+    if (!safeLstat(sizePath)?.isDirectory()) continue;
+
+    for (const ctx of readdirSync(sizePath)) {
       const ctxPath = join(sizePath, ctx);
-      try {
-        st = lstatSync(ctxPath);
-      } catch {
-        continue;
-      }
-      if (!st.isDirectory()) continue;
-      const files = readdirSync(ctxPath);
-      for (const file of files) {
+      if (!safeLstat(ctxPath)?.isDirectory()) continue;
+
+      for (const file of readdirSync(ctxPath)) {
         if (!file.endsWith(".svg")) continue;
-        const name = file.slice(0, -4);
-        const key = `${ctx}/${name}`;
+        const key = `${ctx}/${file.slice(0, -4)}`;
         const fullPath = join(ctxPath, file);
-        let lst;
-        try {
-          lst = lstatSync(fullPath);
-        } catch {
-          continue;
-        }
-        if (lst.isSymbolicLink()) {
+        const stat = safeLstat(fullPath);
+        if (!stat) continue;
+
+        if (stat.isSymbolicLink()) {
           let target;
           try {
             target = readlinkSync(fullPath);
           } catch {
             continue;
           }
-          const targetCtx = dirname(target);
           const targetBase = target.endsWith(".svg") ? target.slice(0, -4) : target;
+          const targetCtx = dirname(target);
           let resolvedKey;
           if (targetCtx === "." || targetCtx === "") {
             resolvedKey = `${ctx}/${targetBase}`;
           } else if (target.startsWith("/")) {
             resolvedKey = target.slice(1).replace(/\.svg$/, "");
           } else {
-            const combined = join(ctx, targetBase);
-            resolvedKey = combined.split(sep).join("/");
+            resolvedKey = join(ctx, targetBase).split(sep).join("/");
           }
           if (!symlinks[key]) symlinks[key] = resolvedKey;
         } else {
-          if (!available[key]) available[key] = [];
+          available[key] ??= [];
           if (!available[key].includes(size)) available[key].push(size);
         }
       }
     }
   }
 
-  for (const k of Object.keys(available)) {
-    available[k].sort((a, b) => {
-      const an = parseInt(a.split("x")[0], 10);
-      const bn = parseInt(b.split("x")[0], 10);
-      return an - bn;
-    });
+  for (const sizes of Object.values(available)) {
+    sizes.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
   }
 
-  return { available, symlinks };
+  return { available: sortKeys(available), symlinks: sortKeys(symlinks) };
 }
 
 function main() {
-  const tmpRoot = join(tmpdir(), `papirus-${Date.now()}`);
+  const tmpRoot = mkdtempSync(join(tmpdir(), "papirus-"));
   try {
+    console.log(`[papirus] cloning ${REPO_URL}${REPO_REF ? ` @ ${REPO_REF}` : ""} (Papirus/ only) to ${tmpRoot}`);
+    // core.symlinks=true keeps symlinks as real links on Windows; sparse + blob filter skips everything but Papirus/.
+    git([
+      "-c",
+      "core.symlinks=true",
+      "clone",
+      "--depth",
+      "1",
+      "--filter=blob:none",
+      "--sparse",
+      ...(REPO_REF ? ["--branch", REPO_REF] : []),
+      REPO_URL,
+      tmpRoot
+    ]);
+    git(["-C", tmpRoot, "sparse-checkout", "set", "Papirus"]);
+
+    const { available, symlinks } = scanPapirus(tmpRoot);
+    if (Object.keys(available).length === 0) {
+      throw new Error("no icons found, aborting");
+    }
+
+    mkdirSync(generatedDir, { recursive: true });
+    writeFileSync(availPath, JSON.stringify(available), "utf-8");
+    writeFileSync(symPath, JSON.stringify(symlinks), "utf-8");
+    console.log(`[papirus] wrote ${availPath} (${Object.keys(available).length} icons)`);
+    console.log(`[papirus] wrote ${symPath} (${Object.keys(symlinks).length} symlinks)`);
+  } finally {
     rmSync(tmpRoot, { recursive: true, force: true });
-  } catch {}
-
-  console.log(`[papirus] cloning ${repoUrl} to ${tmpRoot}`);
-  const clone = spawnSync("git", ["clone", "--depth", "1", repoUrl, tmpRoot], {
-    stdio: "inherit",
-  });
-  if (clone.status !== 0) {
-    console.error("[papirus] git clone failed");
-    process.exit(1);
   }
-
-  const { available, symlinks } = scanPapirus(tmpRoot);
-
-  if (Object.keys(available).length === 0) {
-    console.error("[papirus] no icons found, abort");
-    process.exit(1);
-  }
-
-  mkdirSync(generatedDir, { recursive: true });
-  writeFileSync(availPath, JSON.stringify(available), "utf-8");
-  writeFileSync(symPath, JSON.stringify(symlinks), "utf-8");
-  console.log(`[papirus] wrote ${availPath} (${Object.keys(available).length} icons)`);
-  console.log(`[papirus] wrote ${symPath} (${Object.keys(symlinks).length} symlinks)`);
-
-  try {
-    rmSync(tmpRoot, { recursive: true, force: true });
-  } catch {}
 }
 
-main();
+try {
+  main();
+} catch (err) {
+  console.error(`[papirus] ${err.message}`);
+  process.exit(1);
+}

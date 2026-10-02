@@ -40,7 +40,7 @@ export const STEAM_NEWS_ITEMS = [
     "image": "https://cdn.akamai.steamstatic.com/steam/apps/517670/header.jpg",
     "title": "Now Available on Steam - Cowbots and Aliens",
     "description": "Cowbots and Aliens is Now Available on Steam! Cowbots and Aliens is a furious PvP Multiplayer VR brawl set in the Saloon-iverse! Free movement, laser precise gunplay, multiple competitive modes and a custom networked physics system that lets you use EVERYTHING as a weapon makes for an immensely satisfying VR ruckus!",
-    "date": "December 25, 2023"
+    "date": "December 24, 2023"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/479010/header.jpg",
@@ -124,7 +124,7 @@ export const STEAM_NEWS_ITEMS = [
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1427650/header.jpg",
     "title": "New DLC Available - ROMANCE OF THE THREE KINGDOMS XIV: Diplomacy and Strategy Expansion Pack, 10% off!",
     "description": "ROMANCE OF THE THREE KINGDOMS XIV: Diplomacy and Strategy Expansion Pack , all new content for ROMANCE OF THE THREE KINGDOMS XIV is Now Available on Steam and is 10% off!* The Diplomacy and Strategy Expansion Pack for the series' latest title &quot;ROMANCE OF THE THREE KINGDOMS XIV&quot; is available at last!An all new",
-    "date": "December 10, 2020"
+    "date": "December 9, 2020"
   },
   {
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/1054690/header.jpg",
@@ -154,7 +154,7 @@ export const STEAM_NEWS_ITEMS = [
     "image": "https://cdn.cloudflare.steamstatic.com/steam/apps/978180/header.jpg",
     "title": "Now Available on Steam - Stay Silent",
     "description": "Stay Silent is Now Available on Steam! Stay Silent is a western-themed multiplayer online FPS game for VR. Step into a Wild West town in the aftermath of an alien incursion. Playing as either the Marauders or the Guardians, fight against stealthy opponents on silent nights using both traditional guns and powerful alien",
-    "date": "September 17, 2020"
+    "date": "September 16, 2020"
   },
   {
     "image": "https://steamcdn-a.akamaihd.net/steam/apps/632360/header.jpg",
@@ -191,5 +191,11 @@ export const STEAM_NEWS_ITEMS = [
     "title": "Now Available on Steam - Resident Evil 3 Special Soundtrack",
     "description": "Resident Evil 3 Special Soundtrack is Now Available on Steam! 24 haunting tracks from Resident Evil 3 and 21 spine-chilling tracks from Resident Evil Resistance combine to make a soundtrack befitting of survival horror.",
     "date": "May 7, 2020"
+  },
+  {
+    "image": "https://steamcdn-a.akamaihd.net/steam/news/62557/social_media_share.jpg?t=1592505828",
+    "title": "Weekend Deal - The Elder Scrolls Franchise, 60-70% Off",
+    "description": "Save 60-70% on The Elder Scrolls Franchise as part of this week's Weekend Deal*. Also, check out the Elder Scrolls Complete the Set Bundle to save even more! *Offer ends June 25th at 10AM Pacific Time",
+    "date": "June 18, 2020"
   }
 ];

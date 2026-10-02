@@ -1,13 +1,14 @@
 import "./styles/papirusIcons.css";
+import "./styles/batterySaver.css";
 import { ExplorerApp } from "./apps/explorer.js";
 import { WindowManager } from "./windowManager.js";
 import { AppLauncher } from "./appLauncher.js";
 import { BrowserApp } from "./apps/browser.js";
 import { NotepadApp } from "./apps/notepad.js";
 import { SystemUtilities } from "./system.js";
-import { setGameLauncher, initSteamDataManagerCache } from "./games/games.js";
+import { setGameLauncher, initSteamDataManagerCache, setDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { FileSystemManager } from "./fs.js";
-import { setupStartMenu, toggleStartMenu } from "./desktopui/startMenu.js";
+import { setupStartMenu } from "./desktopui/startMenu.js";
 import { DesktopUI } from "./desktopui/desktopui.js";
 import { DesktopPeekManager } from "./desktopPeek.js";
 import { SettingsApp } from "./settings/settings.js";
@@ -17,7 +18,6 @@ import { parseBool } from "./utils/utils.js";
 import { NotificationCenter } from "./notificationCenter.js";
 import { JsDosApp } from "./apps/jsdos.js";
 import { V86App } from "./apps/v86.js";
-import { setDesktopUI, handleSteamUrlParam } from "./games/games.js";
 import { registerPWA } from "./pwa/pwa.js";
 import { SessionManager } from "./SessionManager.js";
 import { CommandPalette } from "./commandPalette.js";
@@ -30,11 +30,10 @@ import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 import { isMobile, isTouchDevice } from "./shared/platformUtils.js";
 import { batteryPerformanceManager } from "./services/BatteryPerformanceManager.js";
 import { PortManager } from "./services/PortManager.js";
-import "./styles/batterySaver.css";
 import logoImg from "./assets/logo.png";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
-import { init } from "./cursorEffect.js";
+import { init as initCursorEffect } from "./cursorEffect.js";
 import { versionChecker } from "./versionChecker.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { StorageKeys } from "./StorageKeys.js";
@@ -43,56 +42,156 @@ import { showBootScreen } from "./bootScreen.js";
 import { deckCapture } from "./modes/steamdeck/deckCapture.js";
 import { initPopunder } from "./ads.js";
 import { bus } from "./core/EventBus.js";
+import { resolveDeepLink } from "./core/deepLinks.js";
 import { trayManager } from "./tray/tray.js";
 import { MacControlCenter } from "./modes/macos/ControlCenter.js";
 import { MenuBarManager } from "./modes/macos/MenuBarManager.js";
 import { applyStartButtonIcon } from "./desktopui/startButtonManager.js";
 
-registerPWA();
+const LEGACY_HOST = "yukios.vercel.app";
+const CANONICAL_HOST = "yukios.netlify.app";
+const ACCOUNT_SYNC_DELAY_MS = 2500;
+const POPUNDER_DELAY_MS = 5000;
+const FONT_AWESOME_CDN = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js";
 
-document.documentElement.removeAttribute("style");
+let bootScreen = null;
 
-const root = document.documentElement;
-if (isMobile() || isTouchDevice()) {
-  root.classList.add("is-mobile");
-  document.body.style.cursor = "default";
+/* -------------------------------------------------------------------------- */
+/*  Helpers                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** Runs a non-critical startup step; a failure is logged instead of aborting boot. */
+function safely(label, fn) {
+  try {
+    return fn();
+  } catch (err) {
+    console.warn(`[boot] ${label} failed:`, err);
+    return undefined;
+  }
 }
 
-const notificationCenter = new NotificationCenter();
-const portManager = new PortManager();
-const fileSystemManager = new FileSystemManager();
-const windowManager = new WindowManager(notificationCenter);
-const desktopPeekManager = new DesktopPeekManager(windowManager);
-const clipboardManager = new ClipboardManager(bus);
+/** Sends old-domain visitors to the canonical host before anything else loads. */
+function redirectLegacyHost() {
+  if (location.hostname !== LEGACY_HOST) return false;
+  const url = new URL(location.href);
+  url.hostname = CANONICAL_HOST;
+  location.replace(url.toString());
+  return true;
+}
 
-trayManager.init(windowManager, bus);
+function isPapirusEnabled(os) {
+  try {
+    const value = os.storage.get(StorageKeys.papirusEnabled);
+    return value === true || value === "true" || value === "1";
+  } catch {
+    return true;
+  }
+}
 
-const os = initializeOSBridge({
-  windowManager,
-  fileSystemManager,
-  notificationCenter,
-  eventBus: bus,
-  trayManager,
-  portManager
-});
+// Without the Papirus icon theme, fall back to Font Awesome's script build.
+function loadFontAwesomeFallback() {
+  if ($('script[src*="font-awesome"], script[src*="fontawesome"]')) return;
+  const script = createElement("script");
+  script.src = FONT_AWESOME_CDN;
+  script.defer = true;
+  script.crossOrigin = "anonymous";
+  document.head.appendChild(script);
+}
 
-notificationCenter.restorePersistedState();
-try {
-  taskbarPositionManager.restorePersistedPosition();
-} catch {}
+/** Pulls then pushes account data, in that order, so a push never overwrites unsynced remote changes. */
+async function syncAccountIfEnabled() {
+  const [{ syncPull, syncPush, isSyncEnabledPref }, { isLoggedIn }] = await Promise.all([
+    import("./account/syncEngine.js"),
+    import("./account/session.js")
+  ]);
+  if (!isLoggedIn() || !isSyncEnabledPref()) return;
+  await syncPull().catch((err) => console.warn("[sync] pull failed:", err));
+  await syncPush().catch((err) => console.warn("[sync] push failed:", err));
+}
 
-os.clipboardManager = clipboardManager;
-new MacControlCenter();
-init();
-window.os = os;
-deckCapture.install();
+function runDeepLink(link, appLauncher, windowManager) {
+  setTimeout(() => {
+    if (link.action === "steam") handleSteamUrlParam(appLauncher, windowManager);
+    else if (link.swf === undefined) appLauncher.launch(link.id);
+    else appLauncher.launch(link.id, link.swf);
+  }, 0);
+}
 
-const boot = showBootScreen();
+/** Last-resort screen so a boot failure never leaves the user stuck on the splash. */
+function showFatalBootError(err) {
+  console.error("[boot] YukiOS failed to start:", err);
+  safely("hide boot screen", () => bootScreen?.hide());
 
-const preloaded = {};
+  const overlay = document.createElement("div");
+  overlay.setAttribute("role", "alert");
+  overlay.style.cssText =
+    "position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;" +
+    "justify-content:center;gap:16px;background:#0f0f1a;color:#ddd;font:16px/1.5 system-ui,sans-serif;padding:24px;text-align:center";
 
-{
-  const apps = [
+  const title = document.createElement("h1");
+  title.textContent = "YukiOS failed to start";
+  title.style.cssText = "margin:0;color:#fff;font-size:24px";
+
+  const detail = document.createElement("pre");
+  detail.textContent = String(err?.message || err);
+  detail.style.cssText = "max-width:min(640px,90vw);white-space:pre-wrap;color:#f99;margin:0;font-size:13px";
+
+  const button = document.createElement("button");
+  button.textContent = "Reload";
+  button.style.cssText =
+    "padding:10px 28px;border-radius:8px;border:2px solid #d97706;background:transparent;color:#d97706;font:600 16px system-ui;cursor:pointer";
+  button.addEventListener("click", () => location.reload());
+
+  overlay.append(title, detail, button);
+  document.body.appendChild(overlay);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Boot                                                                      */
+/* -------------------------------------------------------------------------- */
+
+async function bootstrap() {
+  registerPWA();
+
+  document.documentElement.removeAttribute("style");
+  if (isMobile() || isTouchDevice()) {
+    document.documentElement.classList.add("is-mobile");
+    document.body.style.cursor = "default";
+  }
+
+  // Core services
+  const notificationCenter = new NotificationCenter();
+  const portManager = new PortManager();
+  const fileSystemManager = new FileSystemManager();
+  const windowManager = new WindowManager(notificationCenter);
+  const desktopPeekManager = new DesktopPeekManager(windowManager);
+  const clipboardManager = new ClipboardManager(bus);
+
+  trayManager.init(windowManager, bus);
+
+  const os = initializeOSBridge({
+    windowManager,
+    fileSystemManager,
+    notificationCenter,
+    eventBus: bus,
+    trayManager,
+    portManager
+  });
+
+  notificationCenter.restorePersistedState();
+  safely("restore taskbar position", () => taskbarPositionManager.restorePersistedPosition());
+
+  os.clipboardManager = clipboardManager;
+  void new MacControlCenter(); // constructed for its side effects (registers itself)
+  initCursorEffect();
+  window.os = os;
+  deckCapture.install();
+
+  bootScreen = showBootScreen();
+
+  // Built-in apps that must exist before the rest of the registry loads
+  const preloaded = {};
+  const builtIns = [
     ["notepadApp", new NotepadApp(os)],
     ["explorerApp", new ExplorerApp(os)],
     ["officeApp", new OfficeAppProxy(os)],
@@ -102,265 +201,88 @@ const preloaded = {};
     ["settingsApp", new SettingsApp(os)],
     ["appCreatorApp", new AppCreatorApp(os)]
   ];
-  for (const [key, instance] of apps) {
+  for (const [key, instance] of builtIns) {
     preloaded[key] = instance;
     os.app.register(key, instance);
   }
-}
 
-setDialogExplorerApp(preloaded.explorerApp);
+  const { explorerApp, settingsApp, appCreatorApp } = preloaded;
+  setDialogExplorerApp(explorerApp);
+  loadApps(os, preloaded);
 
-const appRegistry = loadApps(os, preloaded);
+  const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app.registry);
+  os.setAppLauncher(appLauncher);
+  windowManager.setAppLauncher(appLauncher);
+  setGameLauncher(appLauncher);
+  initSteamDataManagerCache();
+  appLauncher.setEmulatorApp(os.app.getInstance(ServiceKeys.EMULATOR));
 
-const explorerApp = preloaded.explorerApp;
-const notepadApp = preloaded.notepadApp;
-const browserApp = preloaded.browserApp;
-const officeApp = preloaded.officeApp;
-const jsDosApp = preloaded.jsDosApp;
-const v86App = preloaded.v86app;
-const settingsApp = preloaded.settingsApp;
-const appCreatorApp = preloaded.appCreatorApp;
+  appCreatorApp.restoreInstalledApps();
 
-const appLauncher = new AppLauncher(windowManager, fileSystemManager, os.app.registry);
-os.setAppLauncher(appLauncher);
-windowManager.setAppLauncher(appLauncher);
-setGameLauncher(appLauncher);
-initSteamDataManagerCache();
+  // Desktop shell
+  const desktopUI = new DesktopUI(explorerApp);
+  os.desktopUI = desktopUI;
+  os.app.register("desktopUI", desktopUI);
+  explorerApp.desktopUI = desktopUI;
+  desktopUI.fs = fileSystemManager;
+  fileSystemManager.setDesktopUI(desktopUI);
+  setDesktopUI(desktopUI);
 
-appLauncher.setEmulatorApp(os.app.getInstance(ServiceKeys.EMULATOR));
+  const sessionManager = new SessionManager(os);
+  os.app.register("sessionManager", sessionManager);
+  os.app.register("commandPalette", new CommandPalette(os));
 
-appCreatorApp.restoreInstalledApps();
+  const menuBar = new MenuBarManager(os);
 
-const desktopUI = new DesktopUI(explorerApp);
-os.desktopUI = desktopUI;
-os.app.register("desktopUI", desktopUI);
-explorerApp.desktopUI = desktopUI;
-desktopUI.fs = fileSystemManager;
-fileSystemManager.setDesktopUI(desktopUI);
-setDesktopUI(desktopUI);
+  SystemUtilities.startClock();
+  SystemUtilities.setSettings(settingsApp);
+  SystemUtilities.startTaskbarWeather();
 
-const sessionManager = new SessionManager(os);
-os.app.register("sessionManager", sessionManager);
-const commandPalette = new CommandPalette(os);
-os.app.register("commandPalette", commandPalette);
-
-const menuBar = new MenuBarManager(os);
-
-SystemUtilities.startClock();
-SystemUtilities.setSettings(settingsApp);
-SystemUtilities.startTaskbarWeather();
-
-async function start() {
+  // Appearance and background services
   setTimeout(() => {
-    import("./account/syncEngine.js").then(({ syncPull, syncPush, isSyncEnabledPref }) => {
-      import("./account/session.js").then(({ isLoggedIn }) => {
-        if (isLoggedIn() && isSyncEnabledPref()) {
-          syncPull().catch(() => {});
-          syncPush().catch(() => {});
-        }
-      });
-    });
-  }, 2500);
-  try {
-    applyIconPack(getIconPack());
-  } catch {}
-  try {
-    initLiveIconRefresh();
-  } catch {}
-  const papirusEnabled = (() => {
-    try {
-      const v = os.storage.get(StorageKeys.papirusEnabled);
-      return v === true || v === "true" || v === "1";
-    } catch {
-      return true;
-    }
-  })();
-  if (!papirusEnabled) {
-    const faScript = $('script[src*="font-awesome"], script[src*="fontawesome"]');
-    if (!faScript) {
-      const s = createElement("script");
-      s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js";
-      s.defer = true;
-      s.crossOrigin = "anonymous";
-      document.head.appendChild(s);
-    }
-  }
+    syncAccountIfEnabled().catch((err) => console.warn("[sync] skipped:", err));
+  }, ACCOUNT_SYNC_DELAY_MS);
+
+  safely("icon pack", () => applyIconPack(getIconPack()));
+  safely("live icon refresh", initLiveIconRefresh);
+  if (!isPapirusEnabled(os)) loadFontAwesomeFallback();
 
   await clipboardManager.init();
+
   setTimeout(() => {
     initializeMirrors(appMap);
-    try {
-      applyStartButtonIcon();
-    } catch {}
+    safely("start button icon", applyStartButtonIcon);
   }, 100);
 
   document.documentElement.style.setProperty("--start-logo-url", `url("${logoImg}")`);
-  try {
-    applyStartButtonIcon();
-  } catch {}
+  safely("start button icon", applyStartButtonIcon);
 
-  setDesktopUI(desktopUI);
   await SystemUtilities.loadWallpaper();
   windowManager.restorePinnedItems();
   desktopPeekManager.setupPeekButton();
 
+  // Login, then reveal the desktop
   const sessionPromise = sessionManager.showLogin();
-  await boot.hide();
+  await bootScreen.hide();
   await sessionPromise;
 
   batteryPerformanceManager.init();
   versionChecker.start();
   menuBar.init();
-  setTimeout(() => initPopunder(), 5000);
+  setTimeout(() => initPopunder(), POPUNDER_DELAY_MS);
 
-  const url = new URL(location.href);
+  const link = resolveDeepLink({ pathname: location.pathname, search: location.search }, { parseBool });
+  if (link) runDeepLink(link, appLauncher, windowManager);
 
-  if (url.hostname === "yukios.vercel.app") {
-    url.hostname = "yukios.netlify.app";
-    location.replace(url.toString());
-  }
-
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const game = urlParams.get("game");
-  const app = urlParams.get("app");
-  const swf = parseBool(urlParams.get("swf"));
-  const steamParam = urlParams.get("steam");
-
-  const pathMatch = window.location.pathname.match(/^\/(app|game)\/(.+)\.html$/);
-  const featureMatch = window.location.pathname.match(/^\/feature\/(.+)\.html$/);
-  const isFeatureIndex = window.location.pathname === "/features.html";
-
-  if (pathMatch) {
-    const id = pathMatch[2];
-    setTimeout(() => {
-      appLauncher.launch(id);
-    }, 0);
-  } else if (featureMatch) {
-    const FEATURE_APP_MAP = {
-      terminal: "terminalApp",
-      games: "steamApp",
-      tiling: null,
-      "mac-mode": null,
-      emulators: null,
-      "3d-room": "room3dApp",
-      "start-menu": null,
-      workspaces: null,
-      widgets: null,
-      "audio-mixer": null,
-      "user-accounts": null
-    };
-    const appId = FEATURE_APP_MAP[featureMatch[1]];
-    if (appId) {
-      setTimeout(() => {
-        appLauncher.launch(appId);
-      }, 0);
-    }
-  } else if (isFeatureIndex) {
-  } else if (steamParam) {
-    setTimeout(() => {
-      handleSteamUrlParam(appLauncher, windowManager);
-    }, 0);
-  } else if (app) {
-    setTimeout(() => {
-      appLauncher.launch(app);
-    }, 0);
-  } else if (game) {
-    setTimeout(() => {
-      appLauncher.launch(game, swf);
-    }, 0);
-  }
   setupStartMenu(sessionManager);
 
-  if (window.electronAPI && window.electronAPI.onTrayAction) {
-    import("./audioMixer.js").then(({ audioMixer }) => {
-      import("./shared/performanceManager.js").then(({ performanceManager }) => {
-        import("./modeManager.js").then(({ modeManager, MODES }) => {
-          const getSessionMode = () => {
-            const active = modeManager.getActiveModes();
-            if (active.length === 0) return "normal";
-            const m = active[0];
-            if (m === MODES.MAC) return "mac";
-            if (m === MODES.TILING) return "tiling";
-            if (m === MODES.CHROME_OS) return "chromeos";
-            return m;
-          };
-
-          const syncState = () => {
-            const mixer = audioMixer();
-            const remoteApp = os.app.getInstance(ServiceKeys.REMOTE_HOST);
-            window.electronAPI.sendTrayState({
-              dnd: os.notify.getDoNotDisturb(),
-              muted: mixer ? mixer.muted : false,
-              powerMode: performanceManager.getMode(),
-              sessionMode: getSessionMode(),
-              remoteDesktopActive: !!(remoteApp && remoteApp.hostStreaming),
-              remoteDesktopCode: (remoteApp && remoteApp.hostRoomCode) || null
-            });
-          };
-
-          window.electronAPI.onTrayAction(async ({ action, value }) => {
-            switch (action) {
-              case "toggle-dnd": {
-                const current = os.notify.getDoNotDisturb();
-                os.notify.setDoNotDisturb(!current);
-                window.electronAPI.sendTrayState({ dnd: !current });
-                break;
-              }
-              case "toggle-mute": {
-                const mixer = audioMixer();
-                if (mixer) {
-                  mixer.muted = !mixer.muted;
-                  mixer.applyMasterToAll();
-                  mixer.save();
-                  window.electronAPI.sendTrayState({ muted: mixer.muted });
-                }
-                break;
-              }
-              case "lock-screen": {
-                os.app.lockSession();
-                break;
-              }
-              case "set-power-mode": {
-                performanceManager.setMode(value);
-                window.electronAPI.sendTrayState({ powerMode: value });
-                break;
-              }
-              case "set-session-mode": {
-                modeManager.exitAll();
-                const modeMap = { mac: MODES.MAC, chromeos: MODES.CHROME_OS, tiling: MODES.TILING };
-                const modeId = modeMap[value];
-                if (modeId) modeManager.enter(modeId);
-                window.electronAPI.sendTrayState({ sessionMode: value });
-                break;
-              }
-              case "remote-stop": {
-                try {
-                  await window.electronAPI.stopRemoteHost();
-                } catch {}
-                window.electronAPI.sendTrayState({
-                  remoteDesktopActive: false,
-                  remoteDesktopCode: null
-                });
-                break;
-              }
-            }
-          });
-
-          syncState();
-          setInterval(() => {
-            const remoteApp = os.app.getInstance(ServiceKeys.REMOTE_HOST);
-            const active = !!(remoteApp && remoteApp.hostStreaming);
-            const code = (remoteApp && remoteApp.hostRoomCode) || null;
-            window.electronAPI.sendTrayState({
-              remoteDesktopActive: active,
-              remoteDesktopCode: code
-            });
-          }, 5000);
-        });
-      });
-    });
+  if (window.electronAPI?.onTrayAction) {
+    import("./services/electronTrayBridge.js")
+      .then(({ initElectronTrayBridge }) => initElectronTrayBridge(os))
+      .catch((err) => console.warn("[tray] bridge failed to start:", err));
   }
 }
 
-start();
+if (!redirectLegacyHost()) {
+  bootstrap().catch(showFatalBootError);
+}

@@ -126,8 +126,7 @@ export function enableTaskbarReorder(item, config) {
     const sign = state.sign;
     const shift = state.shift;
     siblings.forEach((s, i) => {
-      s.style.transform =
-        i >= target ? `translate${axis === "x" ? "X" : "Y"}(${(sign * shift) / state.zoom}px)` : "";
+      s.style.transform = i >= target ? `translate${axis === "x" ? "X" : "Y"}(${(sign * shift) / state.zoom}px)` : "";
     });
   };
 
@@ -169,9 +168,7 @@ export function enableTaskbarReorder(item, config) {
     const siblings = getSiblings();
     const draggedRect = item.getBoundingClientRect();
     const center =
-      state.axis === "x"
-        ? (draggedRect.left + draggedRect.right) / 2
-        : (draggedRect.top + draggedRect.bottom) / 2;
+      state.axis === "x" ? (draggedRect.left + draggedRect.right) / 2 : (draggedRect.top + draggedRect.bottom) / 2;
     const sibRects = siblings.map((s) => s.getBoundingClientRect());
     const target = computeTargetIndex(center, sibRects, state.axis, state.sign);
 

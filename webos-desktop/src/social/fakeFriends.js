@@ -1,11 +1,9 @@
 import { getLiveUserId } from "./userIdentity.js";
 
-
 const NOW = Date.now();
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
-
 
 let fakeFriends = [
   {
@@ -61,7 +59,6 @@ let fakeFriends = [
   }
 ];
 
-
 let fakeRequests = [
   {
     userId: "demoman-tf2",
@@ -77,7 +74,6 @@ let fakeRequests = [
   }
 ];
 
-
 let fakeSentRequests = [
   {
     userId: "miyamoto",
@@ -92,7 +88,6 @@ let fakeSentRequests = [
     note: "Just checking if the number 3 is real."
   }
 ];
-
 
 let fakeMessageStore = {
   "gabe-newell": [
@@ -160,7 +155,7 @@ let fakeMessageStore = {
       sentAt: NOW - 5 * MINUTE
     }
   ],
-  "clippy": [
+  clippy: [
     {
       body: "It looks like you're trying to open YukiOS.",
       fromId: "clippy",
@@ -193,8 +188,7 @@ let fakeMessageStore = {
     }
   ],
 
-
-  "doomguy": [
+  doomguy: [
     {
       body: "hey",
       fromId: null,
@@ -217,7 +211,6 @@ let fakeMessageStore = {
     }
   ],
 
-
   "the-cake": [
     {
       body: "You should probably stop looking for me.",
@@ -234,15 +227,12 @@ let fakeMessageStore = {
       fromId: "the-cake",
       sentAt: NOW - DAY + 2 * MINUTE
     }
-  ],
-
+  ]
 };
 
-
 export function fakeFriendsEnabled() {
-  return  location.hostname === "localhost";
+  return location.hostname === "localhost";
 }
-
 
 export function fakeFriendsResult() {
   return {
@@ -251,7 +241,6 @@ export function fakeFriendsResult() {
     sentRequests: fakeSentRequests.slice()
   };
 }
-
 
 export function fakeSendFriendRequest(friendId) {
   const known = fakeFriends.find((f) => f.userId === friendId);
@@ -268,7 +257,6 @@ export function fakeSendFriendRequest(friendId) {
 
   return { status: "pending" };
 }
-
 
 export function fakeAcceptFriendRequest(friendId) {
   const request = fakeRequests.find((r) => r.userId === friendId);
@@ -288,7 +276,6 @@ export function fakeAcceptFriendRequest(friendId) {
   return { status: "accepted" };
 }
 
-
 export function fakeRemoveFriend(friendId) {
   fakeFriends = fakeFriends.filter((f) => f.userId !== friendId);
   fakeRequests = fakeRequests.filter((r) => r.userId !== friendId);
@@ -297,7 +284,6 @@ export function fakeRemoveFriend(friendId) {
 
   return { success: true };
 }
-
 
 export function fakeSendMessage(friendId, body) {
   if (!fakeMessageStore[friendId]) {
@@ -313,7 +299,6 @@ export function fakeSendMessage(friendId, body) {
   return { status: "ok" };
 }
 
-
 export function fakeFetchMessages(friendId) {
   const me = getLiveUserId();
 
@@ -323,16 +308,11 @@ export function fakeFetchMessages(friendId) {
   }));
 }
 
-
 export function fakeFetchConversations() {
   const me = getLiveUserId();
 
   return fakeFriends
-    .filter(
-      (friend) =>
-        fakeMessageStore[friend.userId] &&
-        fakeMessageStore[friend.userId].length > 0
-    )
+    .filter((friend) => fakeMessageStore[friend.userId] && fakeMessageStore[friend.userId].length > 0)
     .map((friend) => {
       const messages = fakeMessageStore[friend.userId];
       const last = messages[messages.length - 1];
@@ -349,7 +329,6 @@ export function fakeFetchConversations() {
       };
     });
 }
-
 
 export function fakeFriendRelation(userId) {
   if (userId === getLiveUserId()) return "self";

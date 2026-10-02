@@ -1,290 +1,290 @@
 [
   {
-    "slug": "youtube",
-    "url": "https://youtube.com",
-    "sourceUrl": "https://www.youtube.com/s/desktop/e60429bd/img/favicon_144x144.png",
-    "fetchedAt": "2026-09-12T18:20:32.668Z",
-    "bytes": 5020,
-    "status": "cached"
-  },
-  {
-    "slug": "chatgpt",
-    "url": "https://chatgpt.com",
-    "sourceUrl": "https://chatgpt.com/cdn/assets/favicon-180x180-od45eci6.webp",
-    "fetchedAt": "2026-09-12T18:20:33.186Z",
-    "bytes": 3856,
-    "status": "cached"
-  },
-  {
-    "slug": "itch-io",
-    "url": "https://itch.io",
-    "sourceUrl": "https://itch.io/static/images/itchio-square-144.png",
-    "fetchedAt": "2026-09-12T18:20:33.772Z",
-    "bytes": 3161,
-    "status": "cached"
-  },
-  {
-    "slug": "crazy-games",
-    "url": "https://crazygames.com",
-    "sourceUrl": "https://imgs.crazygames.com/favicons/touch-icon.png?metadata=none&amp;quality=60&amp;width=196&amp;height=196&amp;fit=crop&amp;format=png",
-    "fetchedAt": "2026-09-12T18:20:34.062Z",
-    "bytes": 7218,
-    "status": "cached"
-  },
-  {
-    "slug": "newgrounds",
-    "url": "https://newgrounds.com",
-    "sourceUrl": "https://www.newgrounds.com/_guard/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:35.652Z",
-    "bytes": 2922,
-    "status": "cached"
-  },
-  {
-    "slug": "spotify",
-    "url": "https://open.spotify.com",
-    "sourceUrl": "https://open.spotifycdn.com/cdn/images/favicon32.b64ecc03.png",
-    "fetchedAt": "2026-09-12T18:20:35.879Z",
-    "bytes": 4800,
-    "status": "cached"
-  },
-  {
-    "slug": "slack",
-    "url": "https://slack.com",
-    "sourceUrl": "https://a.slack-edge.com/9cc0056/img/icons/favicon-32.png",
-    "fetchedAt": "2026-09-12T18:20:36.990Z",
-    "bytes": 2672,
-    "status": "cached"
-  },
-  {
-    "slug": "gmail",
-    "url": "https://mail.google.com",
-    "sourceUrl": "https://ssl.gstatic.com/images/branding/product/1x/gmail_2020q4_32dp.png",
-    "fetchedAt": "2026-09-12T18:20:37.956Z",
-    "bytes": 2794,
-    "status": "cached"
-  },
-  {
-    "slug": "outlook",
-    "url": "https://outlook.live.com",
-    "sourceUrl": "https://outlook.live.com/mail/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:38.348Z",
-    "bytes": 9622,
-    "status": "cached"
-  },
-  {
-    "slug": "deepseek",
-    "url": "https://chat.deepseek.com/",
-    "sourceUrl": "https://www.deepseek.com/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:39.011Z",
-    "bytes": 209762,
-    "status": "cached"
-  },
-  {
-    "slug": "zoom",
-    "url": "https://zoom.us",
-    "sourceUrl": "https://st1.zoom.us/homepage/20260908-1234/primary/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:39.368Z",
-    "bytes": 1994,
-    "status": "cached"
-  },
-  {
-    "slug": "notion",
-    "url": "https://notion.so",
-    "sourceUrl": "https://notion.so/front-static/logo-ios.png",
-    "fetchedAt": "2026-09-12T18:20:40.233Z",
-    "bytes": 8078,
-    "status": "cached"
-  },
-  {
-    "slug": "figma",
-    "url": "https://figma.com",
-    "sourceUrl": "https://static.figma.com/app/icon/2/icon-256.png",
-    "fetchedAt": "2026-09-12T18:20:43.116Z",
-    "bytes": 3827,
-    "status": "cached"
-  },
-  {
-    "slug": "twitter",
-    "url": "https://twitter.com",
-    "sourceUrl": "https://twitter.com/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:45.761Z",
-    "bytes": 549,
-    "status": "cached"
-  },
-  {
-    "slug": "instagram",
-    "url": "https://instagram.com",
-    "sourceUrl": "https://static.cdninstagram.com/rsrc.php/yr/r/rzWiSjZRxk5.webp",
-    "fetchedAt": "2026-09-12T18:20:46.477Z",
-    "bytes": 3608,
-    "status": "cached"
-  },
-  {
-    "slug": "pinterest",
-    "url": "https://pinterest.com",
-    "sourceUrl": "https://s.pinimg.com/webapp/logo_transparent_144x144-3da7a67b.png",
-    "fetchedAt": "2026-09-12T18:20:48.053Z",
-    "bytes": 3352,
-    "status": "cached"
-  },
-  {
-    "slug": "google-docs",
-    "url": "https://docs.google.com",
-    "sourceUrl": "https://ssl.gstatic.com/images/branding/product/1x/docs_2020q4_32dp.png",
-    "fetchedAt": "2026-09-12T18:20:49.004Z",
-    "bytes": 1310,
+    "slug": "aniwatch",
+    "url": "https://aniwatch.co.at",
+    "sourceUrl": "https://i0.wp.com/aniwatch.co.at/wp-content/uploads/2026/01/cropped-favicon-192x192.webp?fit=192,192&ssl=1",
+    "fetchedAt": "2026-10-02T00:24:08.317Z",
+    "bytes": 1890,
     "status": "cached"
   },
   {
     "slug": "canva",
     "url": "https://canva.com",
-    "sourceUrl": "https://static.canva.com/domain-assets/canva/static/images/android-192x192-2.png",
-    "fetchedAt": "2026-09-12T18:20:50.108Z",
-    "bytes": 4574,
+    "sourceUrl": "https://canva.com/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:05.307Z",
+    "bytes": 6150,
     "status": "cached"
   },
   {
-    "slug": "github",
-    "url": "https://github.com",
-    "sourceUrl": "https://github.com/fluidicon.png",
-    "fetchedAt": "2026-09-12T18:20:51.287Z",
-    "bytes": 33270,
-    "status": "cached"
-  },
-  {
-    "slug": "gitlab",
-    "url": "https://gitlab.com",
-    "sourceUrl": "https://about.gitlab.com/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:54.433Z",
-    "bytes": 3056,
+    "slug": "chatgpt",
+    "url": "https://chatgpt.com",
+    "sourceUrl": "https://icons.duckduckgo.com/ip3/chatgpt.com.ico",
+    "fetchedAt": "2026-10-02T00:24:01.342Z",
+    "bytes": 4320,
     "status": "cached"
   },
   {
     "slug": "codepen",
     "url": "https://codepen.io",
     "sourceUrl": "https://icons.duckduckgo.com/ip3/codepen.io.ico",
-    "fetchedAt": "2026-09-12T18:20:55.187Z",
-    "bytes": 2212,
-    "status": "cached"
-  },
-  {
-    "slug": "twitch",
-    "url": "https://twitch.tv",
-    "sourceUrl": "https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png",
-    "fetchedAt": "2026-09-12T18:20:56.117Z",
-    "bytes": 1864,
-    "status": "cached"
-  },
-  {
-    "slug": "soundcloud",
-    "url": "https://soundcloud.com",
-    "sourceUrl": "https://a-v2.sndcdn.com/assets/images/sc-icons/ios-a62dfc8fe7.png",
-    "fetchedAt": "2026-09-12T18:20:56.934Z",
-    "bytes": 3144,
-    "status": "cached"
-  },
-  {
-    "slug": "deezer",
-    "url": "https://deezer.com",
-    "sourceUrl": "https://cdn-files.dzcdn.net/cache/images/common/favicon/favicon-240x240.bb3a6a29ad16a77f10cb.png",
-    "fetchedAt": "2026-09-12T18:20:58.363Z",
-    "bytes": 5096,
-    "status": "cached"
-  },
-  {
-    "slug": "protonmail",
-    "url": "https://proton.me",
-    "sourceUrl": "https://proton.me/favicons/apple-touch-icon.png",
-    "fetchedAt": "2026-09-12T18:20:59.001Z",
-    "bytes": 4350,
-    "status": "cached"
-  },
-  {
-    "slug": "yahoo-mail",
-    "url": "https://mail.yahoo.com",
-    "sourceUrl": "https://s.yimg.com/cv/apiv2/default/hp/favicon.ico",
-    "fetchedAt": "2026-09-12T18:20:59.289Z",
-    "bytes": 1994,
-    "status": "cached"
-  },
-  {
-    "slug": "geforce-now",
-    "url": "https://play.geforcenow.com/mall/",
-    "sourceUrl": "https://play.geforcenow.com/mall/assets/icons/GFN-Logo-120.webp",
-    "fetchedAt": "2026-09-12T18:21:00.401Z",
-    "bytes": 3250,
-    "status": "cached"
-  },
-  {
-    "slug": "pixlr",
-    "url": "https://pixlr.com",
-    "sourceUrl": "https://pixlr.com/apple-touch-icon.png",
-    "fetchedAt": "2026-09-12T18:21:01.454Z",
-    "bytes": 8608,
-    "status": "cached"
-  },
-  {
-    "slug": "grok",
-    "url": "https://grok.x.ai",
-    "sourceUrl": "https://x.ai/favicon.ico",
-    "fetchedAt": "2026-09-12T18:21:01.910Z",
-    "bytes": 1420,
+    "fetchedAt": "2026-10-02T00:24:05.312Z",
+    "bytes": 2096,
     "status": "cached"
   },
   {
     "slug": "craxgpt",
     "url": "https://gpt.crax.lol",
     "sourceUrl": "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%225%22 fill=%22%23050505%22/%3E%3Cpath d=%22M18.2 6.2a8.1 8.1 0 1 0 0 11.6%22 fill=%22none%22 stroke=%22%23f2f2f2%22 stroke-width=%222.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22m14.2 7.7 5.6 4.3-5.6 4.3 1.6-4.3z%22 fill=%22%233d7dff%22/%3E%3C/svg%3E",
-    "fetchedAt": "2026-09-12T18:21:02.039Z",
-    "bytes": 292,
+    "fetchedAt": "2026-10-02T00:24:07.813Z",
+    "bytes": 2118,
     "status": "cached"
   },
   {
-    "slug": "aniwatch",
-    "url": "https://aniwatch.co.at",
-    "sourceUrl": "https://i0.wp.com/aniwatch.co.at/wp-content/uploads/2026/01/cropped-favicon-192x192.webp?fit=192,192&#038;ssl=1",
-    "fetchedAt": "2026-09-12T18:21:02.543Z",
-    "bytes": 2990,
+    "slug": "crazy-games",
+    "url": "https://crazygames.com",
+    "sourceUrl": "https://imgs.crazygames.com/favicons/touch-icon.png?metadata=none&quality=60&width=196&height=196&fit=crop&format=png",
+    "fetchedAt": "2026-10-02T00:24:01.669Z",
+    "bytes": 3008,
     "status": "cached"
   },
   {
-    "slug": "tiktok",
-    "url": "https://tiktok.com",
-    "sourceUrl": "https://sf16-sg.tiktokcdn.com/obj/eden-sg/uvkuhyieh7lpqpbj/pwa/512x512.png",
-    "fetchedAt": "2026-09-12T18:21:05.341Z",
-    "bytes": 16070,
+    "slug": "deepseek",
+    "url": "https://chat.deepseek.com/",
+    "sourceUrl": "https://www.deepseek.com/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:02.617Z",
+    "bytes": 5900,
+    "status": "cached"
+  },
+  {
+    "slug": "deezer",
+    "url": "https://deezer.com",
+    "sourceUrl": "https://cdn-files.dzcdn.net/cache/images/common/favicon/favicon-240x240.bb3a6a29ad16a77f10cb.png",
+    "fetchedAt": "2026-10-02T00:24:06.737Z",
+    "bytes": 3654,
+    "status": "cached"
+  },
+  {
+    "slug": "figma",
+    "url": "https://figma.com",
+    "sourceUrl": "https://static.figma.com/app/icon/2/icon-256.png",
+    "fetchedAt": "2026-10-02T00:24:03.880Z",
+    "bytes": 1152,
     "status": "cached"
   },
   {
     "slug": "flashpoint-database",
     "url": "https://flashpointproject.github.io/flashpoint-database/",
     "sourceUrl": "https://flashpointproject.github.io/flashpoint-database/favicon.ico",
-    "fetchedAt": "2026-09-12T18:21:05.477Z",
-    "bytes": 92478,
+    "fetchedAt": "2026-10-02T00:24:08.425Z",
+    "bytes": 2404,
     "status": "cached"
   },
   {
-    "slug": "movies",
-    "url": "https://aether.ist/",
-    "sourceUrl": "https://aether.ist/apple-touch-icon.png?v=2",
-    "fetchedAt": "2026-09-12T18:21:05.717Z",
-    "bytes": 20281,
-    "status": "cached"
-  },
-  {
-    "slug": "tv-streaming",
-    "url": "https://famelack.com",
-    "sourceUrl": "https://famelack.com/favicon-192.png",
-    "fetchedAt": "2026-09-12T18:21:06.028Z",
-    "bytes": 1946,
+    "slug": "geforce-now",
+    "url": "https://play.geforcenow.com/mall/",
+    "sourceUrl": "https://play.geforcenow.com/mall/assets/icons/GFN-Logo-120.webp",
+    "fetchedAt": "2026-10-02T00:24:07.457Z",
+    "bytes": 1722,
     "status": "cached"
   },
   {
     "slug": "geometry-today",
     "url": "https://geometry.today/",
     "sourceUrl": "https://geometry.today/favicon.ico",
-    "fetchedAt": "2026-09-12T18:21:06.359Z",
-    "bytes": 48950,
+    "fetchedAt": "2026-10-02T00:24:09.207Z",
+    "bytes": 5220,
+    "status": "cached"
+  },
+  {
+    "slug": "github",
+    "url": "https://github.com",
+    "sourceUrl": "https://github.com/fluidicon.png",
+    "fetchedAt": "2026-10-02T00:24:05.371Z",
+    "bytes": 4824,
+    "status": "cached"
+  },
+  {
+    "slug": "gitlab",
+    "url": "https://gitlab.com",
+    "sourceUrl": "https://about.gitlab.com/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:10.198Z",
+    "bytes": 4056,
+    "status": "cached"
+  },
+  {
+    "slug": "gmail",
+    "url": "https://mail.google.com",
+    "sourceUrl": "https://ssl.gstatic.com/images/branding/product/1x/gmail_2020q4_32dp.png",
+    "fetchedAt": "2026-10-02T00:24:03.189Z",
+    "bytes": 3906,
+    "status": "cached"
+  },
+  {
+    "slug": "google-docs",
+    "url": "https://docs.google.com",
+    "sourceUrl": "https://ssl.gstatic.com/images/branding/product/1x/docs_2020q4_32dp.png",
+    "fetchedAt": "2026-10-02T00:24:04.606Z",
+    "bytes": 2100,
+    "status": "cached"
+  },
+  {
+    "slug": "grok",
+    "url": "https://grok.x.ai",
+    "sourceUrl": "https://x.ai/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:08.041Z",
+    "bytes": 1838,
+    "status": "cached"
+  },
+  {
+    "slug": "instagram",
+    "url": "https://instagram.com",
+    "sourceUrl": "https://static.cdninstagram.com/rsrc.php/yr/r/rzWiSjZRxk5.webp",
+    "fetchedAt": "2026-10-02T00:24:04.318Z",
+    "bytes": 2916,
+    "status": "cached"
+  },
+  {
+    "slug": "itch-io",
+    "url": "https://itch.io",
+    "sourceUrl": "https://itch.io/static/images/itchio-square-144.png",
+    "fetchedAt": "2026-10-02T00:24:01.327Z",
+    "bytes": 2086,
+    "status": "cached"
+  },
+  {
+    "slug": "movies",
+    "url": "https://aether.ist/",
+    "sourceUrl": "https://aether.ist/apple-touch-icon.png?v=2",
+    "fetchedAt": "2026-10-02T00:24:08.810Z",
+    "bytes": 1470,
+    "status": "cached"
+  },
+  {
+    "slug": "newgrounds",
+    "url": "https://newgrounds.com",
+    "sourceUrl": "https://www.newgrounds.com/_guard/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:01.925Z",
+    "bytes": 2306,
+    "status": "cached"
+  },
+  {
+    "slug": "notion",
+    "url": "https://notion.so",
+    "sourceUrl": "https://notion.so/front-static/logo-ios.png",
+    "fetchedAt": "2026-10-02T00:24:03.422Z",
+    "bytes": 1604,
+    "status": "cached"
+  },
+  {
+    "slug": "outlook",
+    "url": "https://outlook.live.com",
+    "sourceUrl": "https://outlook.live.com/mail/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:02.560Z",
+    "bytes": 4224,
+    "status": "cached"
+  },
+  {
+    "slug": "pinterest",
+    "url": "https://pinterest.com",
+    "sourceUrl": "https://s.pinimg.com/webapp/logo_transparent_144x144-3da7a67b.png",
+    "fetchedAt": "2026-10-02T00:24:04.680Z",
+    "bytes": 4766,
+    "status": "cached"
+  },
+  {
+    "slug": "pixlr",
+    "url": "https://pixlr.com",
+    "sourceUrl": "https://pixlr.com/apple-touch-icon.png",
+    "fetchedAt": "2026-10-02T00:24:08.079Z",
+    "bytes": 1328,
+    "status": "cached"
+  },
+  {
+    "slug": "protonmail",
+    "url": "https://proton.me",
+    "sourceUrl": "https://proton.me/favicons/apple-touch-icon.png",
+    "fetchedAt": "2026-10-02T00:24:07.415Z",
+    "bytes": 890,
+    "status": "cached"
+  },
+  {
+    "slug": "slack",
+    "url": "https://slack.com",
+    "sourceUrl": "https://a.slack-edge.com/9cc0056/img/icons/favicon-32.png",
+    "fetchedAt": "2026-10-02T00:24:02.295Z",
+    "bytes": 5140,
+    "status": "cached"
+  },
+  {
+    "slug": "soundcloud",
+    "url": "https://soundcloud.com",
+    "sourceUrl": "https://a-v2.sndcdn.com/assets/images/sc-icons/ios-a62dfc8fe7.png",
+    "fetchedAt": "2026-10-02T00:24:06.980Z",
+    "bytes": 1528,
+    "status": "cached"
+  },
+  {
+    "slug": "spotify",
+    "url": "https://open.spotify.com",
+    "sourceUrl": "https://open.spotifycdn.com/cdn/images/favicon32.b64ecc03.png",
+    "fetchedAt": "2026-10-02T00:24:01.940Z",
+    "bytes": 5408,
+    "status": "cached"
+  },
+  {
+    "slug": "tiktok",
+    "url": "https://tiktok.com",
+    "sourceUrl": "https://sf16-sg.tiktokcdn.com/obj/eden-sg/uvkuhyieh7lpqpbj/pwa/512x512.png",
+    "fetchedAt": "2026-10-02T00:24:10.361Z",
+    "bytes": 3012,
+    "status": "cached"
+  },
+  {
+    "slug": "tv-streaming",
+    "url": "https://famelack.com",
+    "sourceUrl": "https://famelack.com/favicon-192.png",
+    "fetchedAt": "2026-10-02T00:24:08.935Z",
+    "bytes": 594,
+    "status": "cached"
+  },
+  {
+    "slug": "twitch",
+    "url": "https://twitch.tv",
+    "sourceUrl": "https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png",
+    "fetchedAt": "2026-10-02T00:24:06.091Z",
+    "bytes": 2418,
+    "status": "cached"
+  },
+  {
+    "slug": "twitter",
+    "url": "https://twitter.com",
+    "sourceUrl": "https://twitter.com/apple-touch-icon.png",
+    "fetchedAt": "2026-10-02T00:24:04.900Z",
+    "bytes": 1342,
+    "status": "cached"
+  },
+  {
+    "slug": "yahoo-mail",
+    "url": "https://mail.yahoo.com",
+    "sourceUrl": "https://s.yimg.com/cv/apiv2/default/hp/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:07.375Z",
+    "bytes": 854,
+    "status": "cached"
+  },
+  {
+    "slug": "youtube",
+    "url": "https://youtube.com",
+    "sourceUrl": "https://www.youtube.com/s/desktop/2b888666/img/favicon_144x144.png",
+    "fetchedAt": "2026-10-02T00:24:01.803Z",
+    "bytes": 2148,
+    "status": "cached"
+  },
+  {
+    "slug": "zoom",
+    "url": "https://zoom.us",
+    "sourceUrl": "https://st1.zoom.us/homepage/20260930-1234/primary/favicon.ico",
+    "fetchedAt": "2026-10-02T00:24:03.188Z",
+    "bytes": 3934,
     "status": "cached"
   }
 ]

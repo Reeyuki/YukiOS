@@ -1,71 +1,105 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { resolve, join } from "path";
-import { gzipSync, brotliCompressSync, constants } from "zlib";
-import { spawnSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { resolve, join } from "node:path";
+import { brotliCompressSync, constants, gzipSync } from "node:zlib";
+import { spawnSync } from "node:child_process";
 
-function ensurePapirusData() {
-  const base = resolve(process.cwd(), "src/generated");
-  const availPath = join(base, "papirus-available.json");
-  const symPath = join(base, "papirus-symlinks.json");
-  if (existsSync(availPath) && existsSync(symPath)) return;
-  try {
-    mkdirSync(base, { recursive: true });
-  } catch {}
-  const genScript = resolve(process.cwd(), "scripts/generatePapirusData.js");
-  if (existsSync(genScript)) {
-    const res = spawnSync("node", [genScript], { stdio: "inherit", cwd: process.cwd() });
-    if (res.status === 0 && existsSync(availPath) && existsSync(symPath)) return;
-  }
-  if (!existsSync(availPath) || !existsSync(symPath)) {
-    console.warn(
-      "[papirus] papirus data missing and generatePapirusData.js failed or not found. Build will fail without real papirus-available.json"
-    );
-  }
+const DATA_FILES = ["papirus-available.json", "papirus-symlinks.json"];
+const DEBOUNCE_MS = 150;
+
+function isStale(source, target) {
+  return !existsSync(target) || statSync(target).mtimeMs < statSync(source).mtimeMs;
 }
 
-function compressPapirusData() {
-  ensurePapirusData();
-  const base = resolve(process.cwd(), "src/generated");
-  const files = ["papirus-available.json", "papirus-symlinks.json"];
-  for (const name of files) {
-    const jsonPath = join(base, name);
+function hasAllData(generatedDir) {
+  return DATA_FILES.every((name) => existsSync(join(generatedDir, name)));
+}
+
+/** Runs scripts/generatePapirusData.js if the JSON is missing. Returns true when the data exists. */
+function ensurePapirusData(root) {
+  const generatedDir = resolve(root, "src/generated");
+  if (hasAllData(generatedDir)) return true;
+
+  mkdirSync(generatedDir, { recursive: true });
+  const script = resolve(root, "scripts/generatePapirusData.js");
+  if (existsSync(script)) {
+    spawnSync(process.execPath, [script], { stdio: "inherit", cwd: root });
+  }
+  return hasAllData(generatedDir);
+}
+
+/** Writes .gz / .br siblings next to the JSON, skipping any that are already up to date. */
+function compressPapirusData(generatedDir) {
+  for (const name of DATA_FILES) {
+    const jsonPath = join(generatedDir, name);
     if (!existsSync(jsonPath)) continue;
+
+    const gzPath = `${jsonPath}.gz`;
+    const brPath = `${jsonPath}.br`;
+    const needGz = isStale(jsonPath, gzPath);
+    const needBr = isStale(jsonPath, brPath);
+    if (!needGz && !needBr) continue;
+
     const data = readFileSync(jsonPath);
-    const gz = gzipSync(data, { level: 9, mtime: 0 });
-    writeFileSync(`${jsonPath}.gz`, gz);
-    try {
-      const br = brotliCompressSync(data, {
-        params: { [constants.BROTLI_PARAM_QUALITY]: 11 }
-      });
-      writeFileSync(`${jsonPath}.br`, br);
-    } catch {}
+    if (needGz) writeFileSync(gzPath, gzipSync(data, { level: 9, mtime: 0 }));
+    if (needBr) {
+      try {
+        writeFileSync(brPath, brotliCompressSync(data, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }));
+      } catch (err) {
+        console.warn(`[papirus] brotli compression failed for ${name}: ${err.message}`);
+      }
+    }
   }
 }
 
 export function papirusDataPlugin() {
+  let root = process.cwd();
+  let isBuild = false;
+  let generateAttempted = false;
+
+  // Returns false only when the data is missing and could not be generated.
+  function prepare() {
+    const generatedDir = resolve(root, "src/generated");
+    let ok = hasAllData(generatedDir);
+    if (!ok && !generateAttempted) {
+      generateAttempted = true; // dev runs buildStart and configureServer; don't clone twice
+      ok = ensurePapirusData(root);
+    }
+    if (ok) compressPapirusData(generatedDir);
+    return ok;
+  }
+
   return {
     name: "yukios-papirus-data",
-    buildStart() {
-      compressPapirusData();
+
+    configResolved(config) {
+      root = config.root;
+      isBuild = config.command === "build";
     },
+
+    buildStart() {
+      if (prepare()) return;
+      const message =
+        "[papirus] src/generated/papirus-*.json is missing and scripts/generatePapirusData.js could not create it. " +
+        "Run `pnpm generate:papirus` (needs git and network access).";
+      if (isBuild) this.error(message);
+      this.warn(message);
+    },
+
     configureServer(server) {
-      compressPapirusData();
-      const watcherPath = resolve(process.cwd(), "src/generated/papirus-available.json");
-      const watcherPath2 = resolve(process.cwd(), "src/generated/papirus-symlinks.json");
-      try {
-        server.watcher.add(watcherPath);
-        server.watcher.add(watcherPath2);
-        server.watcher.on("change", (p) => {
-          if (p.includes("papirus-available.json") || p.includes("papirus-symlinks.json")) {
-            compressPapirusData();
-          }
-        });
-        server.watcher.on("add", (p) => {
-          if (p.includes("papirus-available.json") || p.includes("papirus-symlinks.json")) {
-            compressPapirusData();
-          }
-        });
-      } catch {}
+      prepare();
+
+      const watched = new Set(DATA_FILES.map((name) => resolve(root, "src/generated", name)));
+      let timer = null;
+      const onDataChange = (file) => {
+        if (!watched.has(resolve(file))) return;
+        clearTimeout(timer);
+        timer = setTimeout(() => compressPapirusData(resolve(root, "src/generated")), DEBOUNCE_MS);
+      };
+
+      for (const file of watched) server.watcher.add(file);
+      server.watcher.on("add", onDataChange);
+      server.watcher.on("change", onDataChange);
+      server.httpServer?.once("close", () => clearTimeout(timer));
     }
   };
 }

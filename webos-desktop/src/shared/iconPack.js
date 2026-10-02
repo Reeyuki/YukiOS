@@ -33,7 +33,9 @@ export function applyIconPack(pack) {
     os.storage.set(StorageKeys.papirusEnabled, String(normalized === ICON_PACKS.PAPIRUS));
   } catch {}
   try {
-    const hasFa = document.querySelector('link[href*="font-awesome"], link[href*="fontawesome"], script[src*="font-awesome"], script[src*="fontawesome"]');
+    const hasFa = document.querySelector(
+      'link[href*="font-awesome"], link[href*="fontawesome"], script[src*="font-awesome"], script[src*="fontawesome"]'
+    );
     if (!hasFa) {
       const s = document.createElement("script");
       s.src = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js";

@@ -81,7 +81,13 @@ export function applyAppCustomizations() {
 
 function resolveImageUrl(value) {
   if (!value) return "";
-  if (value.startsWith("data:") || value.startsWith("blob:") || value.startsWith("http://") || value.startsWith("https://")) return value;
+  if (
+    value.startsWith("data:") ||
+    value.startsWith("blob:") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  )
+    return value;
   if (value.startsWith("static/") || value.startsWith("/static/")) return resolveIconUrl(value);
   if (!value.includes("/")) return resolveYukiAsset(`static/icons/${value}`);
   return value;
@@ -200,9 +206,15 @@ export function showAppCustomizer(appId, currentTitle, currentIcon) {
   previewBox.className = "start-picker-preview-box";
   function getPreviewUrl(val) {
     if (val) return resolveImageUrl(val);
-    if (currentIcon && (currentIcon.startsWith("data:") || currentIcon.startsWith("http") || currentIcon.startsWith("blob:"))) return currentIcon;
-    if (currentIcon && (currentIcon.startsWith("static/") || currentIcon.startsWith("/static/"))) return resolveIconUrl(currentIcon);
-    if (currentIcon && !currentIcon.includes("/") && !currentIcon.startsWith("fa")) return resolveYukiAsset(`static/icons/${currentIcon}`);
+    if (
+      currentIcon &&
+      (currentIcon.startsWith("data:") || currentIcon.startsWith("http") || currentIcon.startsWith("blob:"))
+    )
+      return currentIcon;
+    if (currentIcon && (currentIcon.startsWith("static/") || currentIcon.startsWith("/static/")))
+      return resolveIconUrl(currentIcon);
+    if (currentIcon && !currentIcon.includes("/") && !currentIcon.startsWith("fa"))
+      return resolveYukiAsset(`static/icons/${currentIcon}`);
     return "";
   }
   const initialPreview = pendingIcon ? getPreviewUrl(pendingIcon) : getPreviewUrl(currentIcon);

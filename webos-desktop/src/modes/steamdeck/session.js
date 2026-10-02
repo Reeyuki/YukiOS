@@ -13,7 +13,7 @@ export function applySteamDeckSettings() {
   steamDeckSession.enter();
   steamDeckManager.setup();
   playDeckBootVideo();
-  
+
   headerMouseMoveHandler = (e) => {
     const threshold = 50;
     if (e.clientY < threshold) {

@@ -1,6 +1,23 @@
-import { os, StorageKeys, BusEvents, $, $$, bindEvent, toggleClass, setText, setHTML, createElement } from "../framework.js";
+import {
+  os,
+  StorageKeys,
+  BusEvents,
+  $,
+  $$,
+  bindEvent,
+  toggleClass,
+  setText,
+  setHTML,
+  createElement
+} from "../framework.js";
 import { getThemeByValue, getCustomThemes, addCustomTheme, getThemeColors } from "../shared/themeEngine.js";
-import { buildThemeContract, THEME_EFFECT_OPTIONS, THEME_CONFIG_FONTS, THEME_CONFIG_DENSITIES, sanitizeThemeContract } from "../shared/themeContract.js";
+import {
+  buildThemeContract,
+  THEME_EFFECT_OPTIONS,
+  THEME_CONFIG_FONTS,
+  THEME_CONFIG_DENSITIES,
+  sanitizeThemeContract
+} from "../shared/themeContract.js";
 import { applyThemeEffects } from "../shared/themeEffects.js";
 import { applyTheme, applyThemeConfig } from "./settingsApply.js";
 import { buildControlsForStyle, getHeaderStyle, resolveHeaderStyleId } from "../windowManager/headerStyles.js";
@@ -57,12 +74,19 @@ function colorInputValue(value, fallback) {
 }
 
 function humanizeEffectValue(v) {
-  const spaced = String(v).replace(/([A-Z])/g, " $1").trim();
+  const spaced = String(v)
+    .replace(/([A-Z])/g, " $1")
+    .trim();
   return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
 function escapeHtml(str) {
-  return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return String(str == null ? "" : str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function getCurrentWin(win) {
@@ -88,15 +112,26 @@ export function refreshCustomThemesUI(win) {
     const customs = getCustomThemes();
     const cur = os.storage.get(StorageKeys.theme) || "";
     if (customs.length === 0) {
-      setHTML(grid, '<span style="grid-column:1/-1;color:var(--text-secondary);font-size:12px;text-align:center;padding:8px;">No custom themes yet. Click "Create Theme" to make one</span>');
+      setHTML(
+        grid,
+        '<span style="grid-column:1/-1;color:var(--text-secondary);font-size:12px;text-align:center;padding:8px;">No custom themes yet. Click "Create Theme" to make one</span>'
+      );
     } else {
-      setHTML(grid, customs.map(t => `<button class="settings-btn theme-preview-btn ${cur===t.value?"active":""}" data-theme-val="${t.value}" data-custom-theme="${t.value}" style="height:56px;background:${t.preview||"linear-gradient(135deg,#6b5ce7,#312e81)"};color:${t.textColor||"#fff"};"><span>${t.label}</span></button>`).join(""));
-      $$("[data-theme-val]", grid).forEach(btn => {
+      setHTML(
+        grid,
+        customs
+          .map(
+            (t) =>
+              `<button class="settings-btn theme-preview-btn ${cur === t.value ? "active" : ""}" data-theme-val="${t.value}" data-custom-theme="${t.value}" style="height:56px;background:${t.preview || "linear-gradient(135deg,#6b5ce7,#312e81)"};color:${t.textColor || "#fff"};"><span>${t.label}</span></button>`
+          )
+          .join("")
+      );
+      $$("[data-theme-val]", grid).forEach((btn) => {
         bindEvent(btn, "click", () => {
           const val = btn.dataset.themeVal;
           os.storage.set(StorageKeys.theme, val);
           applyTheme(val, () => os.storage.get(StorageKeys.customColors));
-          $$(".theme-preview-btn", target).forEach(b => b.classList.remove("active"));
+          $$(".theme-preview-btn", target).forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
           os.notify.send("Themes", `Theme: ${val}`);
           os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: val });
@@ -112,10 +147,20 @@ export function refreshCustomThemesUI(win) {
       list.style.display = "none";
     } else {
       list.style.display = "";
-      setHTML(list, customs.map(t => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--glass-border);"><span style="flex:1;font-size:13px;color:var(--text-primary);">${escapeHtml(t.label)}</span><button class="settings-btn" data-edit="${t.value}" style="padding:4px 8px;font-size:12px;">Edit</button><button class="settings-btn" data-export="${t.value}" style="padding:4px 8px;font-size:12px;">Export</button><button class="settings-btn" data-remove="${t.value}" style="padding:4px 8px;font-size:12px;color:var(--error);">Remove</button></div>`).join(""));
-      $$("[data-edit]", list).forEach(btn => bindEvent(btn, "click", () => editTheme(btn.dataset.edit, target)));
-      $$("[data-export]", list).forEach(btn => bindEvent(btn, "click", () => exportTheme(btn.dataset.export)));
-      $$("[data-remove]", list).forEach(btn => bindEvent(btn, "click", () => removeTheme(btn.dataset.remove, target)));
+      setHTML(
+        list,
+        customs
+          .map(
+            (t) =>
+              `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--glass-border);"><span style="flex:1;font-size:13px;color:var(--text-primary);">${escapeHtml(t.label)}</span><button class="settings-btn" data-edit="${t.value}" style="padding:4px 8px;font-size:12px;">Edit</button><button class="settings-btn" data-export="${t.value}" style="padding:4px 8px;font-size:12px;">Export</button><button class="settings-btn" data-remove="${t.value}" style="padding:4px 8px;font-size:12px;color:var(--error);">Remove</button></div>`
+          )
+          .join("")
+      );
+      $$("[data-edit]", list).forEach((btn) => bindEvent(btn, "click", () => editTheme(btn.dataset.edit, target)));
+      $$("[data-export]", list).forEach((btn) => bindEvent(btn, "click", () => exportTheme(btn.dataset.export)));
+      $$("[data-remove]", list).forEach((btn) =>
+        bindEvent(btn, "click", () => removeTheme(btn.dataset.remove, target))
+      );
     }
   }
 }
@@ -158,7 +203,7 @@ export async function removeTheme(themeValue, win) {
   if (!ok) return;
   let themes = os.storage.get(StorageKeys.customThemes);
   if (!Array.isArray(themes)) themes = getCustomThemes();
-  const remaining = themes.filter(t => String(t.value) !== String(themeValue));
+  const remaining = themes.filter((t) => String(t.value) !== String(themeValue));
   os.storage.set(StorageKeys.customThemes, remaining);
   if (os.storage.get(StorageKeys.theme) === themeValue) {
     os.storage.set(StorageKeys.theme, "dark");
@@ -192,7 +237,15 @@ export function openThemeCreator(win, prefill) {
   let initial = { name: "", author: "", description: "", colors: {}, effects: {}, config: {} };
   if (typeof prefill === "string") {
     const t = getThemeByValue(prefill);
-    if (t) initial = { name: t.label, author: t.author || "", description: t.description || "", colors: { ...(t.colors || {}) }, effects: { ...(t.effects || {}) }, config: { ...(t.config || {}) } };
+    if (t)
+      initial = {
+        name: t.label,
+        author: t.author || "",
+        description: t.description || "",
+        colors: { ...(t.colors || {}) },
+        effects: { ...(t.effects || {}) },
+        config: { ...(t.config || {}) }
+      };
   } else if (prefill && typeof prefill === "object" && prefill.colors) {
     initial = {
       name: prefill.name || "",
@@ -213,11 +266,32 @@ export function openThemeCreator(win, prefill) {
   const title = initial.name ? `Edit Theme` : "Create Theme";
   const windowWidth = Math.min(860, Math.floor(window.innerWidth * 0.94));
   const windowHeight = Math.min(560, Math.floor(window.innerHeight * 0.82));
-  const creatorWin = os.window.create("theme-creator", title, `${windowWidth}px`, `${windowHeight}px`, { icon: "fas fa-palette", appId: "settingsApp" });
+  const creatorWin = os.window.create("theme-creator", title, `${windowWidth}px`, `${windowHeight}px`, {
+    icon: "fas fa-palette",
+    appId: "settingsApp"
+  });
   const stateColors = { ...initial.colors };
   let selectedDensity = initial.config.density || "";
   const previewHTML = buildWindowPreviewHTML(stateColors, initial.name || "Sample Window");
-  creatorWin.innerHTML = `<div class="theme-creator-root" style="display:flex;flex-direction:column;height:100%;background:var(--bg-secondary);overflow:hidden"><div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:16px"><div id="tc-preview-wrap" style="position:sticky;top:0;z-index:2;background:var(--bg-secondary);padding-bottom:8px">${previewHTML}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;color:var(--text-secondary);font-weight:500">Theme name</label><input id="tc-name" placeholder="My Awesome Theme" value="${escapeHtml(initial.name)}" style="padding:9px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);font-size:13px"/></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;color:var(--text-secondary);font-weight:500">Author</label><input id="tc-author" placeholder="Optional" value="${escapeHtml(initial.author)}" style="padding:9px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);font-size:13px"/></div></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;color:var(--text-secondary);font-weight:500">Description</label><textarea id="tc-desc" placeholder="Short description (optional)" style="padding:9px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);min-height:56px;resize:vertical;font-size:13px">${escapeHtml(initial.description)}</textarea></div><div style="font-size:12px;color:var(--text-secondary);font-weight:600;letter-spacing:0.02em;text-transform:uppercase">Colors</div><div id="tc-color-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${EDITABLE_COLOR_KEYS.filter(k=>!k.advanced).map(({key,label})=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary)"><input type="color" data-color-key="${key}" value="${colorInputValue(stateColors[key], WINDOW_PREVIEW_FALLBACKS[key]||"#6b5ce7")}" style="width:34px;height:26px;padding:0;border:none;border-radius:6px;cursor:pointer"/><span style="font-size:12px;color:var(--text-primary);font-weight:500">${label}</span></div>`).join("")}</div><button class="settings-btn" id="tc-advanced-toggle" style="align-self:flex-start;display:flex;align-items:center;gap:6px"><i class="fas fa-chevron-down" id="tc-adv-icon" style="font-size:10px"></i> Advanced</button><div id="tc-advanced" style="display:none;flex-direction:column;gap:14px"><div style="font-size:12px;color:var(--text-secondary);font-weight:600;letter-spacing:0.02em;text-transform:uppercase">More Colors</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${EDITABLE_COLOR_KEYS.filter(k=>k.advanced).map(({key,label})=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary)"><input type="color" data-color-key="${key}" value="${colorInputValue(stateColors[key], WINDOW_PREVIEW_FALLBACKS[key]||"#6b5ce7")}" style="width:34px;height:26px;padding:0;border:none;border-radius:6px;cursor:pointer"/><span style="font-size:12px;color:var(--text-primary);font-weight:500">${label}</span></div>`).join("")}</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Open animation</label>${renderSelectMenu("tc-open", [{value:"",label:"Default"}, ...THEME_EFFECT_OPTIONS.open.map(o=>({value:o,label:humanizeEffectValue(o)}))], initial.effects.windowAnimation||"")}</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Close animation</label>${renderSelectMenu("tc-close-sel", [{value:"",label:"Default"}, ...THEME_EFFECT_OPTIONS.close.map(o=>({value:o,label:humanizeEffectValue(o)}))], initial.effects.closeAnimation||"")}</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Minimize</label>${renderSelectMenu("tc-minimize", [{value:"",label:"Default"}, ...THEME_EFFECT_OPTIONS.minimize.map(o=>({value:o,label:humanizeEffectValue(o)}))], initial.effects.minimizeAnimation||"")}</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Restore</label>${renderSelectMenu("tc-restore", [{value:"",label:"Default"}, ...THEME_EFFECT_OPTIONS.restore.map(o=>({value:o,label:humanizeEffectValue(o)}))], initial.effects.restoreAnimation||"")}</div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;color:var(--text-primary);font-weight:500">Disable cursor effect</span><span style="font-size:11px;color:var(--text-secondary)">Turn off the custom cursor animation</span></div><label class="settings-toggle"><input type="checkbox" id="tc-cursorOff" ${initial.effects.cursorOff?"checked":""}/><span class="settings-track"><span class="settings-thumb"></span></span></label></div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Custom background</label><input id="tc-bg" placeholder="e.g. #1a1a2e or linear-gradient(...)" value="${escapeHtml(initial.effects.background||"")}" style="padding:8px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-primary);color:var(--text-primary);font-size:12px"/></div><div style="font-size:12px;color:var(--text-secondary);font-weight:600;letter-spacing:0.02em;text-transform:uppercase">Config</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Font</label>${renderSelectMenu("tc-font", [{value:"",label:"Default"}, ...THEME_CONFIG_FONTS.map(f=>({value:f,label:f}))], initial.config.fontFamily||"")}</div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:11px;color:var(--text-secondary)">Density</label><div style="display:flex;gap:8px" id="tc-density-row">${THEME_CONFIG_DENSITIES.map(d=>`<button class="settings-btn ${initial.config.density===d?"active":""}" data-density="${d}" style="flex:1;padding:7px;font-size:12px">${d}</button>`).join("")}</div></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:11px;color:var(--text-secondary)">Window transparency</label><div style="display:flex;align-items:center;gap:10px">${renderRangeSlider("tc-transparency", 20, 100, 1, initial.config.windowTransparency||90)}<span id="tc-transparency-val" style="font-size:12px;color:var(--text-secondary);min-width:36px;text-align:right">${initial.config.windowTransparency||90}%</span></div></div></div></div><div style="padding:12px 16px;border-top:1px solid var(--glass-border);display:flex;justify-content:flex-end;gap:8px;background:var(--bg-primary);flex-shrink:0"><button class="settings-btn" id="tc-cancel">Cancel</button><button class="settings-btn" id="tc-create" style="background:var(--brand);color:var(--text-on-brand);border:none;min-width:120px"><i class="fas fa-check"></i> ${initial.name ? "Save" : "Create"} Theme</button></div></div>`;
+  creatorWin.innerHTML = `<div class="theme-creator-root" style="display:flex;flex-direction:column;height:100%;background:var(--bg-secondary);overflow:hidden"><div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:16px"><div id="tc-preview-wrap" style="position:sticky;top:0;z-index:2;background:var(--bg-secondary);padding-bottom:8px">${previewHTML}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;color:var(--text-secondary);font-weight:500">Theme name</label><input id="tc-name" placeholder="My Awesome Theme" value="${escapeHtml(initial.name)}" style="padding:9px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);font-size:13px"/></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;color:var(--text-secondary);font-weight:500">Author</label><input id="tc-author" placeholder="Optional" value="${escapeHtml(initial.author)}" style="padding:9px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);font-size:13px"/></div></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;color:var(--text-secondary);font-weight:500">Description</label><textarea id="tc-desc" placeholder="Short description (optional)" style="padding:9px 10px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);min-height:56px;resize:vertical;font-size:13px">${escapeHtml(initial.description)}</textarea></div><div style="font-size:12px;color:var(--text-secondary);font-weight:600;letter-spacing:0.02em;text-transform:uppercase">Colors</div><div id="tc-color-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${EDITABLE_COLOR_KEYS.filter(
+    (k) => !k.advanced
+  )
+    .map(
+      ({ key, label }) =>
+        `<div style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary)"><input type="color" data-color-key="${key}" value="${colorInputValue(stateColors[key], WINDOW_PREVIEW_FALLBACKS[key] || "#6b5ce7")}" style="width:34px;height:26px;padding:0;border:none;border-radius:6px;cursor:pointer"/><span style="font-size:12px;color:var(--text-primary);font-weight:500">${label}</span></div>`
+    )
+    .join(
+      ""
+    )}</div><button class="settings-btn" id="tc-advanced-toggle" style="align-self:flex-start;display:flex;align-items:center;gap:6px"><i class="fas fa-chevron-down" id="tc-adv-icon" style="font-size:10px"></i> Advanced</button><div id="tc-advanced" style="display:none;flex-direction:column;gap:14px"><div style="font-size:12px;color:var(--text-secondary);font-weight:600;letter-spacing:0.02em;text-transform:uppercase">More Colors</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${EDITABLE_COLOR_KEYS.filter(
+    (k) => k.advanced
+  )
+    .map(
+      ({ key, label }) =>
+        `<div style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--glass-border);border-radius:8px;background:var(--bg-primary)"><input type="color" data-color-key="${key}" value="${colorInputValue(stateColors[key], WINDOW_PREVIEW_FALLBACKS[key] || "#6b5ce7")}" style="width:34px;height:26px;padding:0;border:none;border-radius:6px;cursor:pointer"/><span style="font-size:12px;color:var(--text-primary);font-weight:500">${label}</span></div>`
+    )
+    .join(
+      ""
+    )}</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Open animation</label>${renderSelectMenu("tc-open", [{ value: "", label: "Default" }, ...THEME_EFFECT_OPTIONS.open.map((o) => ({ value: o, label: humanizeEffectValue(o) }))], initial.effects.windowAnimation || "")}</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Close animation</label>${renderSelectMenu("tc-close-sel", [{ value: "", label: "Default" }, ...THEME_EFFECT_OPTIONS.close.map((o) => ({ value: o, label: humanizeEffectValue(o) }))], initial.effects.closeAnimation || "")}</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Minimize</label>${renderSelectMenu("tc-minimize", [{ value: "", label: "Default" }, ...THEME_EFFECT_OPTIONS.minimize.map((o) => ({ value: o, label: humanizeEffectValue(o) }))], initial.effects.minimizeAnimation || "")}</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Restore</label>${renderSelectMenu("tc-restore", [{ value: "", label: "Default" }, ...THEME_EFFECT_OPTIONS.restore.map((o) => ({ value: o, label: humanizeEffectValue(o) }))], initial.effects.restoreAnimation || "")}</div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;color:var(--text-primary);font-weight:500">Disable cursor effect</span><span style="font-size:11px;color:var(--text-secondary)">Turn off the custom cursor animation</span></div><label class="settings-toggle"><input type="checkbox" id="tc-cursorOff" ${initial.effects.cursorOff ? "checked" : ""}/><span class="settings-track"><span class="settings-thumb"></span></span></label></div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Custom background</label><input id="tc-bg" placeholder="e.g. #1a1a2e or linear-gradient(...)" value="${escapeHtml(initial.effects.background || "")}" style="padding:8px;border:1px solid var(--glass-border);border-radius:6px;background:var(--bg-primary);color:var(--text-primary);font-size:12px"/></div><div style="font-size:12px;color:var(--text-secondary);font-weight:600;letter-spacing:0.02em;text-transform:uppercase">Config</div><div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-secondary)">Font</label>${renderSelectMenu("tc-font", [{ value: "", label: "Default" }, ...THEME_CONFIG_FONTS.map((f) => ({ value: f, label: f }))], initial.config.fontFamily || "")}</div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:11px;color:var(--text-secondary)">Density</label><div style="display:flex;gap:8px" id="tc-density-row">${THEME_CONFIG_DENSITIES.map((d) => `<button class="settings-btn ${initial.config.density === d ? "active" : ""}" data-density="${d}" style="flex:1;padding:7px;font-size:12px">${d}</button>`).join("")}</div></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:11px;color:var(--text-secondary)">Window transparency</label><div style="display:flex;align-items:center;gap:10px">${renderRangeSlider("tc-transparency", 20, 100, 1, initial.config.windowTransparency || 90)}<span id="tc-transparency-val" style="font-size:12px;color:var(--text-secondary);min-width:36px;text-align:right">${initial.config.windowTransparency || 90}%</span></div></div></div></div><div style="padding:12px 16px;border-top:1px solid var(--glass-border);display:flex;justify-content:flex-end;gap:8px;background:var(--bg-primary);flex-shrink:0"><button class="settings-btn" id="tc-cancel">Cancel</button><button class="settings-btn" id="tc-create" style="background:var(--brand);color:var(--text-on-brand);border:none;min-width:120px"><i class="fas fa-check"></i> ${initial.name ? "Save" : "Create"} Theme</button></div></div>`;
   bindSelectMenu(creatorWin);
   bindRangeSlider(creatorWin);
   const nameInput = $("#tc-name", creatorWin);
@@ -231,7 +305,7 @@ export function openThemeCreator(win, prefill) {
   os.events.on(BusEvents.SETTINGS_CHANGED, onSettingsChanged);
   creatorWin.addEventListener("remove", () => os.events.off(BusEvents.SETTINGS_CHANGED, onSettingsChanged));
   const colorInputs = $$("[data-color-key]", creatorWin);
-  colorInputs.forEach(inp => {
+  colorInputs.forEach((inp) => {
     bindEvent(inp, "input", () => {
       stateColors[inp.dataset.colorKey] = inp.value;
       rerenderPreview();
@@ -249,10 +323,10 @@ export function openThemeCreator(win, prefill) {
   }
   const densityRow = $("#tc-density-row", creatorWin);
   if (densityRow) {
-    $$("[data-density]", densityRow).forEach(btn => {
+    $$("[data-density]", densityRow).forEach((btn) => {
       bindEvent(btn, "click", () => {
         selectedDensity = btn.dataset.density;
-        $$("[data-density]", densityRow).forEach(b => toggleClass(b, "active", b===btn));
+        $$("[data-density]", densityRow).forEach((b) => toggleClass(b, "active", b === btn));
       });
     });
   }
@@ -265,54 +339,78 @@ export function openThemeCreator(win, prefill) {
   const cancelBtn = $("#tc-cancel", creatorWin);
   if (cancelBtn) bindEvent(cancelBtn, "click", closeWin);
   const createBtn = $("#tc-create", creatorWin);
-  if (createBtn) bindEvent(createBtn, "click", () => {
-    const name = $("#tc-name", creatorWin).value.trim();
-    if (!name) { os.dialog.alert("Themes", "Give your theme a name first."); return; }
-    const author = $("#tc-author", creatorWin).value.trim();
-    const description = $("#tc-desc", creatorWin).value.trim();
-    const colors = {};
-    $$("[data-color-key]", creatorWin).forEach(inp => { colors[inp.dataset.colorKey] = inp.value; });
-    const effects = {};
-    const openVal = getSelectMenuValue("tc-open", creatorWin);
-    const closeVal = getSelectMenuValue("tc-close-sel", creatorWin);
-    const minimizeVal = getSelectMenuValue("tc-minimize", creatorWin);
-    const restoreVal = getSelectMenuValue("tc-restore", creatorWin);
-    if (openVal) effects.windowAnimation = openVal;
-    if (closeVal) effects.closeAnimation = closeVal;
-    if (minimizeVal) effects.minimizeAnimation = minimizeVal;
-    if (restoreVal) effects.restoreAnimation = restoreVal;
-    const cursorOffEl = $("#tc-cursorOff", creatorWin);
-    if (cursorOffEl && cursorOffEl.checked) effects.cursorOff = true;
-    const bg = $("#tc-bg", creatorWin).value.trim();
-    if (bg) effects.background = bg;
-    const config = {};
-    const fontVal = getSelectMenuValue("tc-font", creatorWin);
-    if (fontVal) config.fontFamily = fontVal;
-    if (selectedDensity) config.density = selectedDensity;
-    const transRaw = String(getRangeSliderValue("tc-transparency", creatorWin));
-    const transNum = Number(transRaw);
-    if (Number.isFinite(transNum)) config.windowTransparency = Math.round(transNum);
-    let contract;
-    try {
-      contract = buildThemeContract({ name, description, author, icon: "fas fa-palette", colors, effects, config });
-    } catch (err) {
-      os.dialog.alert("Themes", String(err.message || err));
-      return;
-    }
-    const data = { value: contract.name.toLowerCase().replace(/[^a-z0-9-]/g, "-") + "-" + Math.random().toString(36).slice(2,6), label: contract.name, icon: contract.icon, colors: contract.colors, description: contract.description, author: contract.author, effects: contract.effects, config: contract.config };
-    try {
-      addCustomTheme({ value: data.value, label: data.label, icon: data.icon, colors: data.colors, description: data.description, author: data.author, effects: data.effects, config: data.config });
-    } catch (err) {
-      os.dialog.alert("Themes", String(err.message || err));
-      return;
-    }
-    os.storage.set(StorageKeys.theme, data.value);
-    applyTheme(data.value, () => os.storage.get(StorageKeys.customColors));
-    if (Object.keys(contract.effects).length > 0) applyThemeEffects(contract.effects);
-    if (Object.keys(contract.config).length > 0) applyThemeConfig(contract.config);
-    os.notify.send("Themes", `Created "${contract.name}"`);
-    os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: data.value });
-    if (settingsWin) refreshCustomThemesUI(settingsWin);
-    closeWin();
-  });
+  if (createBtn)
+    bindEvent(createBtn, "click", () => {
+      const name = $("#tc-name", creatorWin).value.trim();
+      if (!name) {
+        os.dialog.alert("Themes", "Give your theme a name first.");
+        return;
+      }
+      const author = $("#tc-author", creatorWin).value.trim();
+      const description = $("#tc-desc", creatorWin).value.trim();
+      const colors = {};
+      $$("[data-color-key]", creatorWin).forEach((inp) => {
+        colors[inp.dataset.colorKey] = inp.value;
+      });
+      const effects = {};
+      const openVal = getSelectMenuValue("tc-open", creatorWin);
+      const closeVal = getSelectMenuValue("tc-close-sel", creatorWin);
+      const minimizeVal = getSelectMenuValue("tc-minimize", creatorWin);
+      const restoreVal = getSelectMenuValue("tc-restore", creatorWin);
+      if (openVal) effects.windowAnimation = openVal;
+      if (closeVal) effects.closeAnimation = closeVal;
+      if (minimizeVal) effects.minimizeAnimation = minimizeVal;
+      if (restoreVal) effects.restoreAnimation = restoreVal;
+      const cursorOffEl = $("#tc-cursorOff", creatorWin);
+      if (cursorOffEl && cursorOffEl.checked) effects.cursorOff = true;
+      const bg = $("#tc-bg", creatorWin).value.trim();
+      if (bg) effects.background = bg;
+      const config = {};
+      const fontVal = getSelectMenuValue("tc-font", creatorWin);
+      if (fontVal) config.fontFamily = fontVal;
+      if (selectedDensity) config.density = selectedDensity;
+      const transRaw = String(getRangeSliderValue("tc-transparency", creatorWin));
+      const transNum = Number(transRaw);
+      if (Number.isFinite(transNum)) config.windowTransparency = Math.round(transNum);
+      let contract;
+      try {
+        contract = buildThemeContract({ name, description, author, icon: "fas fa-palette", colors, effects, config });
+      } catch (err) {
+        os.dialog.alert("Themes", String(err.message || err));
+        return;
+      }
+      const data = {
+        value: contract.name.toLowerCase().replace(/[^a-z0-9-]/g, "-") + "-" + Math.random().toString(36).slice(2, 6),
+        label: contract.name,
+        icon: contract.icon,
+        colors: contract.colors,
+        description: contract.description,
+        author: contract.author,
+        effects: contract.effects,
+        config: contract.config
+      };
+      try {
+        addCustomTheme({
+          value: data.value,
+          label: data.label,
+          icon: data.icon,
+          colors: data.colors,
+          description: data.description,
+          author: data.author,
+          effects: data.effects,
+          config: data.config
+        });
+      } catch (err) {
+        os.dialog.alert("Themes", String(err.message || err));
+        return;
+      }
+      os.storage.set(StorageKeys.theme, data.value);
+      applyTheme(data.value, () => os.storage.get(StorageKeys.customColors));
+      if (Object.keys(contract.effects).length > 0) applyThemeEffects(contract.effects);
+      if (Object.keys(contract.config).length > 0) applyThemeConfig(contract.config);
+      os.notify.send("Themes", `Created "${contract.name}"`);
+      os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "theme", value: data.value });
+      if (settingsWin) refreshCustomThemesUI(settingsWin);
+      closeWin();
+    });
 }
