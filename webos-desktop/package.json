@@ -24,7 +24,7 @@
     "name": "Reeyuki",
     "url": "https://github.com/Reeyuki"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "main": "electron/main.cjs",
   "engines": {
@@ -46,6 +46,7 @@
     "build": "vite build",
     "build:dev": "cross-env VITE_DEV_BUILD=true vite build",
     "build:single": "cross-env VITE_SINGLE_FILE=true vite build",
+    "build:site": "pnpm prebuild && vite build && node scripts/prepareSelfHost.js",
     "build:dev:single": "cross-env VITE_SINGLE_FILE=true VITE_DEV_BUILD=true vite build",
     "build:electron": "cross-env VITE_SINGLE_FILE=false VITE_ELECTRON=true vite build",
     "electron:prepare": "pnpm build:electron && node scripts/removeDistFavicon.cjs",

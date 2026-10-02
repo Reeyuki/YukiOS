@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const BASE = "https://yukios.netlify.app";
+const BASE = (process.env.SITE_URL || "https://yukios.netlify.app").replace(/\/+$/, "");
 
 function extractApps() {
   const content = readFileSync(resolve(ROOT, "src/registry/AppManifest.js"), "utf-8");
@@ -1566,7 +1566,7 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/NaoTomori1/yukios@main/.github/yuki-deck.png">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="canonical" href="https://yukios.netlify.app/${itemType}s.html">
+<link rel="canonical" href="${BASE}/${itemType}s.html">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}

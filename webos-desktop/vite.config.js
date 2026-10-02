@@ -444,7 +444,7 @@ function bundleStats() {
 
 const plugins = [
   nodePolyfills({
-    include: ["buffer", "process", "stream", "path", "util", "timers"],
+    include: ["buffer", "process", "stream", "path", "util", "timers", "crypto"],
     globals: { Buffer: true, global: true, process: true },
     protocolImports: true
   }),
