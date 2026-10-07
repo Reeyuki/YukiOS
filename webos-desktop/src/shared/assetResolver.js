@@ -643,6 +643,12 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     );
   }
 
+  const unityDocumentUrlShim = looksLikeUnityWebgl
+    ? "<script>try{(function(){var u=" +
+      JSON.stringify(url) +
+      ';try{Object.defineProperty(document,"URL",{configurable:true,get:function(){return u;}});}catch(e){}})();}catch(e){}<\/script>'
+    : "";
+
   const injectedScripts = `<script>
 (function() {
   try {
@@ -731,7 +737,7 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     }
   }, true);
 })();
-<\/script>`;
+<\/script>${unityDocumentUrlShim}`;
 
   let withBase = rewritten;
 
@@ -743,7 +749,7 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     }
   }
 
-  const historyGuard = `<script>try{const _rs=history.replaceState.bind(history),_ps=history.pushState.bind(history);history.replaceState=function(s,t,u){try{return _rs(s,t,u);}catch(e){if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:"))return;throw e;}};history.pushState=function(s,t,u){try{return _ps(s,t,u);}catch(e){if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:"))return;throw e;}};}catch{}<\/script>`;
+  const historyGuard = `<script>try{const _rs=history.replaceState.bind(history),_ps=history.pushState.bind(history);history.replaceState=function(s,t,u){try{return _rs(s,t,u);}catch(e){if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:"))return;throw e;}};history.pushState=function(s,t,u){try{return _ps(s,t,u);}catch(e){if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:"))return;throw e;}};}catch{}<\/script>${unityDocumentUrlShim}`;
   if (lowerUrl.includes("wasmdotrip") || lowerUrl.includes("peak-port")) {
     rewritten = rewritten.replace(
       /history\.replaceState\s*\(\s*null\s*,\s*""\s*,\s*u\.toString\(\)\s*\)\s*;/g,

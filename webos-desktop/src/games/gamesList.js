@@ -1909,5 +1909,12 @@ export const appMap = {
     icon: "/static/icons/omori.webp",
     title: "Endacopia",
     skipRewrite: true
+  },
+  gambonanza: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/AlexBoops/Gambonanza-Port@main/single.html",
+    icon: "/static/icons/gambonanza.webp",
+    title: "Gambonanza",
+    skipRewrite: true
   }
 };
