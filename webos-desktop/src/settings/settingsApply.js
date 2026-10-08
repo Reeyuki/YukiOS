@@ -27,15 +27,19 @@ const LIGHT_THEMES = new Set([
   "mint",
   "cream",
   "neumorphism",
-  "y2k"
+  "y2k",
 ]);
 
 export function applyTheme(theme, getCustomColors) {
-  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
+  const prefersDark =
+    window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
   const effective = theme === "auto" ? (prefersDark ? "dark" : "light") : theme;
   animateThemeChange(() => {
     document.documentElement.setAttribute("data-theme", effective);
-    document.documentElement.setAttribute("data-theme-mode", LIGHT_THEMES.has(effective) ? "light" : "dark");
+    document.documentElement.setAttribute(
+      "data-theme-mode",
+      LIGHT_THEMES.has(effective) ? "light" : "dark",
+    );
   });
 
   requestAnimationFrame(() => {
@@ -77,7 +81,8 @@ export function applyWindowTransparency(value) {
     styleEl.id = "yukios-transparency-override";
     document.head.appendChild(styleEl);
   }
-  styleEl.textContent = opacity < 1 ? `.window { opacity: ${opacity} !important; }` : "";
+  styleEl.textContent =
+    opacity < 1 ? `.window { opacity: ${opacity} !important; }` : "";
 }
 
 export function applyTransparentUI(enabled) {
@@ -90,7 +95,7 @@ const TRANSPARENCY_PART_CLASSES = {
   windowBody: "tp-window-body",
   startMenu: "tp-start-menu",
   contextMenus: "tp-context",
-  tray: "tp-tray"
+  tray: "tp-tray",
 };
 
 export function applyTransparencyParts(parts) {
@@ -105,7 +110,7 @@ const TRANSPARENCY_BLUR_VARS = {
   taskbar: "--tp-blur-taskbar",
   startMenu: "--tp-blur-startmenu",
   context: "--tp-blur-context",
-  tray: "--tp-blur-tray"
+  tray: "--tp-blur-tray",
 };
 
 export function applyTransparencyBlur(blur) {
@@ -124,7 +129,10 @@ export function applySound(enabled, volume) {
 }
 
 export function applyGuiScale(scale) {
-  document.documentElement.style.setProperty("--gui-scale", String(scale / 100));
+  document.documentElement.style.setProperty(
+    "--gui-scale",
+    String(scale / 100),
+  );
 }
 
 export function applyVirtualResolution(resolution, guiScale) {
@@ -132,7 +140,10 @@ export function applyVirtualResolution(resolution, guiScale) {
 }
 
 export function applyFontSize(size) {
-  document.documentElement.style.setProperty("--font-size-scale", String(size / 100));
+  document.documentElement.style.setProperty(
+    "--font-size-scale",
+    String(size / 100),
+  );
 }
 
 export function applyCursor(dataUrl) {
@@ -232,39 +243,39 @@ export function applyFontFamily(fontFamily, customFontData = null) {
       stack: '"Open Sans", sans-serif',
       url: "https://cdn.jsdelivr.net/fontsource/fonts/open-sans:vf@latest/latin-wght-normal.woff2",
       format: "woff2-variations",
-      weight: "300 800"
+      weight: "300 800",
     },
     inter: {
       family: "Inter",
       stack: '"Inter", sans-serif',
       url: "https://cdn.jsdelivr.net/gh/rsms/inter@master/docs/font-files/Inter-Regular.woff2",
-      format: "woff2"
+      format: "woff2",
     },
     rubik: {
       family: "Rubik",
       stack: '"Rubik", sans-serif',
       url: "https://cdn.jsdelivr.net/gh/google/fonts/ofl/rubik/Rubik-Regular.ttf",
-      format: "truetype"
+      format: "truetype",
     },
     sora: {
       family: "Sora",
       stack: '"Sora", sans-serif',
       url: "https://cdn.jsdelivr.net/fontsource/fonts/sora:vf@latest/latin-wght-normal.woff2",
       format: "woff2-variations",
-      weight: "100 800"
+      weight: "100 800",
     },
     jetbrainsmono: {
       family: "JetBrains Mono",
       stack: '"JetBrains Mono", monospace',
       url: "https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2",
-      format: "woff2"
+      format: "woff2",
     },
     monocraft: {
       family: "Monocraft",
       stack: '"Monocraft", monospace',
       url: "https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
-      format: "truetype"
-    }
+      format: "truetype",
+    },
   };
 
   const fontConfig = customFontData || fontMap[fontFamily] || fontMap.opensans;
@@ -290,17 +301,20 @@ export function applyUiDensity(density) {
   const densityMap = {
     compact: 0.75,
     comfortable: 1,
-    spacious: 1.25
+    spacious: 1.25,
   };
   const densityValue = densityMap[density] || 1;
-  document.documentElement.style.setProperty("--spacing-scale", String(densityValue));
+  document.documentElement.style.setProperty(
+    "--spacing-scale",
+    String(densityValue),
+  );
 }
 
 export function applyDesktopIconSize(size) {
   const iconSize = Math.max(32, Math.min(128, Number(size) || 48));
   document.documentElement.style.setProperty("--icon-w", `${iconSize + 32}px`);
   document.documentElement.style.setProperty("--icon-img-s", `${iconSize}px`);
-  document.documentElement.style.setProperty("--icon-h", `${iconSize + 32}px`);
+  document.documentElement.style.setProperty("--icon-h", `${iconSize + 44}px`);
 }
 
 export function applyTaskbarScale(scale) {
@@ -312,7 +326,10 @@ export function applyTaskbarScale(scale) {
 
 export function applyDockIconSize(size) {
   const iconSize = Math.max(28, Math.min(80, Number(size) || 43));
-  document.documentElement.style.setProperty("--dock-icon-size", `${iconSize}px`);
+  document.documentElement.style.setProperty(
+    "--dock-icon-size",
+    `${iconSize}px`,
+  );
 }
 
 export function applyDockScale(scale) {
@@ -335,10 +352,19 @@ export function applyThemeConfig(config) {
     applyUiDensity(config.density);
     os.storage.set(StorageKeys.uiDensity, config.density);
   }
-  if (typeof config.windowTransparency === "number" && Number.isFinite(config.windowTransparency)) {
-    const pct = Math.max(20, Math.min(100, Math.round(config.windowTransparency)));
+  if (
+    typeof config.windowTransparency === "number" &&
+    Number.isFinite(config.windowTransparency)
+  ) {
+    const pct = Math.max(
+      20,
+      Math.min(100, Math.round(config.windowTransparency)),
+    );
     applyWindowTransparency(pct / 100);
     os.storage.set(StorageKeys.windowTransparency, String(pct));
   }
-  os.events.emit(BusEvents.SETTINGS_CHANGED, { key: "themeConfig", value: config });
+  os.events.emit(BusEvents.SETTINGS_CHANGED, {
+    key: "themeConfig",
+    value: config,
+  });
 }

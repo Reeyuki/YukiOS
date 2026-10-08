@@ -2,12 +2,17 @@ import { makeDraggable } from "../shared/dragUtils.js";
 import { StorageKeys, os, MODES } from "../framework.js";
 import { $, $$, createElement } from "../shared/domUtils.js";
 import { parseBool } from "../utils/utils.js";
-import { wobbleStart, wobbleMove, wobbleEnd, wobbleCancel } from "./AnimationSystem.js";
+import {
+  wobbleStart,
+  wobbleMove,
+  wobbleEnd,
+  wobbleCancel,
+} from "./AnimationSystem.js";
 import {
   isPhysicsChaosActive,
   grabPhysicsBody,
   notePhysicsDrag,
-  releasePhysicsBody
+  releasePhysicsBody,
 } from "../shared/desktopPhysics.js";
 import { updateMaximizeControls } from "./windowControls.js";
 import { BusEvents } from "../core/EventBus.js";
@@ -50,8 +55,16 @@ function getTaskbarPositionAndRect() {
 function getTilingBarInset() {
   try {
     const bar = $("#tiling-bar");
-    if (!bar || bar.style.display === "none" || !os.modes.isActive(MODES.TILING)) return { top: 0, bottom: 0 };
-    const h = bar.getBoundingClientRect().height || parseInt(getComputedStyle(bar).height, 10) || 0;
+    if (
+      !bar ||
+      bar.style.display === "none" ||
+      !os.modes.isActive(MODES.TILING)
+    )
+      return { top: 0, bottom: 0 };
+    const h =
+      bar.getBoundingClientRect().height ||
+      parseInt(getComputedStyle(bar).height, 10) ||
+      0;
     if (!h) return { top: 0, bottom: 0 };
     const isBottom = bar.classList.contains("position-bottom");
     return isBottom ? { top: 0, bottom: h } : { top: h, bottom: 0 };
@@ -61,7 +74,8 @@ function getTilingBarInset() {
 }
 
 function applyMagnet(newLeft, newTop, winW, winH, drag) {
-  if (!isMagnetEnabled() || drag.tiling) return { left: newLeft, top: newTop, magnetized: false, magnetAxis: null };
+  if (!isMagnetEnabled() || drag.tiling)
+    return { left: newLeft, top: newTop, magnetized: false, magnetAxis: null };
   const threshold = getMagnetThreshold();
   const breakThreshold = threshold + MAGNET_BREAK_EXTRA;
   const vpLeft = drag.isFixed ? newLeft : newLeft + drag.desktopRect.left;
@@ -79,14 +93,22 @@ function applyMagnet(newLeft, newTop, winW, winH, drag) {
   let stuckVpLeft = drag.stuckVpLeft;
   let stuckVpTop = drag.stuckVpTop;
 
-  if (wasX && stuckVpLeft !== null && Math.abs(vpLeft - stuckVpLeft) <= breakThreshold) {
+  if (
+    wasX &&
+    stuckVpLeft !== null &&
+    Math.abs(vpLeft - stuckVpLeft) <= breakThreshold
+  ) {
     magnetizedX = true;
     nextLeft = drag.isFixed ? stuckVpLeft : stuckVpLeft - drag.desktopRect.left;
   } else if (wasX && stuckVpLeft !== null) {
     magnetizedX = false;
     stuckVpLeft = null;
   }
-  if (wasY && stuckVpTop !== null && Math.abs(vpTop - stuckVpTop) <= breakThreshold) {
+  if (
+    wasY &&
+    stuckVpTop !== null &&
+    Math.abs(vpTop - stuckVpTop) <= breakThreshold
+  ) {
     magnetizedY = true;
     nextTop = drag.isFixed ? stuckVpTop : stuckVpTop - drag.desktopRect.top;
   } else if (wasY && stuckVpTop !== null) {
@@ -161,7 +183,9 @@ function applyMagnet(newLeft, newTop, winW, winH, drag) {
         if (distTop <= threshold) {
           magnetizedY = true;
           const targetVpTop = screenTop;
-          nextTop = drag.isFixed ? targetVpTop : targetVpTop - drag.desktopRect.top;
+          nextTop = drag.isFixed
+            ? targetVpTop
+            : targetVpTop - drag.desktopRect.top;
           stuckVpTop = targetVpTop;
         }
       }
@@ -170,7 +194,9 @@ function applyMagnet(newLeft, newTop, winW, winH, drag) {
         if (distBottom <= threshold) {
           const targetVpTop = screenBottom - winH;
           magnetizedY = true;
-          nextTop = drag.isFixed ? targetVpTop : targetVpTop - drag.desktopRect.top;
+          nextTop = drag.isFixed
+            ? targetVpTop
+            : targetVpTop - drag.desktopRect.top;
           stuckVpTop = targetVpTop;
         }
       }
@@ -184,7 +210,9 @@ function applyMagnet(newLeft, newTop, winW, winH, drag) {
         if (distLeft <= threshold) {
           magnetizedX = true;
           const targetVpLeft = screenLeft;
-          nextLeft = drag.isFixed ? targetVpLeft : targetVpLeft - drag.desktopRect.left;
+          nextLeft = drag.isFixed
+            ? targetVpLeft
+            : targetVpLeft - drag.desktopRect.left;
           stuckVpLeft = targetVpLeft;
         }
       }
@@ -193,7 +221,9 @@ function applyMagnet(newLeft, newTop, winW, winH, drag) {
         if (distRight <= threshold) {
           const targetVpLeft = screenRight - winW;
           magnetizedX = true;
-          nextLeft = drag.isFixed ? targetVpLeft : targetVpLeft - drag.desktopRect.left;
+          nextLeft = drag.isFixed
+            ? targetVpLeft
+            : targetVpLeft - drag.desktopRect.left;
           stuckVpLeft = targetVpLeft;
         }
       }
@@ -229,7 +259,7 @@ function applyMagnet(newLeft, newTop, winW, winH, drag) {
             ? drag.isFixed
               ? nextTop
               : nextTop + drag.desktopRect.top
-            : null
+            : null,
     };
   }
   return { left: nextLeft, top: nextTop, magnetized: false, magnetAxis: null };
@@ -269,7 +299,8 @@ export function windowMakeDraggable(win, wm) {
       win.style.position = "absolute";
     }
     const rect = win.getBoundingClientRect();
-    const { position: taskbarPosition, rect: taskbarRect } = getTaskbarPositionAndRect();
+    const { position: taskbarPosition, rect: taskbarRect } =
+      getTaskbarPositionAndRect();
     return {
       offsetX: posX - rect.left,
       offsetY: posY - rect.top,
@@ -294,7 +325,7 @@ export function windowMakeDraggable(win, wm) {
       magnetized: false,
       magnetAxis: null,
       stuckVpLeft: null,
-      stuckVpTop: null
+      stuckVpTop: null,
     };
   };
 
@@ -319,7 +350,13 @@ export function windowMakeDraggable(win, wm) {
       newLeft -= drag.desktopRect.left;
       newTop -= drag.desktopRect.top;
     }
-    const magnet = applyTaskbarMagnet(newLeft, newTop, drag.winW, drag.winH, drag);
+    const magnet = applyTaskbarMagnet(
+      newLeft,
+      newTop,
+      drag.winW,
+      drag.winH,
+      drag,
+    );
     newLeft = magnet.left;
     newTop = magnet.top;
     drag.magnetized = magnet.magnetized;
@@ -382,7 +419,8 @@ export function windowMakeDraggable(win, wm) {
     win.classList.remove("magnetized");
     win.classList.remove("snapping-preview");
 
-    if (drag.tilingHovered) drag.tilingHovered.classList.remove("tile-drop-hover");
+    if (drag.tilingHovered)
+      drag.tilingHovered.classList.remove("tile-drop-hover");
     wobbleEnd(win);
 
     if (drag.tiling) {
@@ -430,7 +468,11 @@ export function windowMakeDraggable(win, wm) {
           document.body.classList.add("is-dragging");
 
           const tilingDragTouched = wm.tilingManager;
-          if (tilingDragTouched && tilingDragTouched.enabled && parseBool(win.dataset.tiled)) {
+          if (
+            tilingDragTouched &&
+            tilingDragTouched.enabled &&
+            parseBool(win.dataset.tiled)
+          ) {
             win.dataset.tilingDrag = "true";
             wobbleStart(win);
           } else {
@@ -448,15 +490,23 @@ export function windowMakeDraggable(win, wm) {
 
         end() {
           endDrag();
-        }
+        },
       },
       {
         ignoreFrom:
-          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .explorer-tab, .explorer-tab-close, .explorer-tab-new"
-      }
+          "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .explorer-tab, .explorer-tab-close, .explorer-tab-new, .browser-native-root .tab, .browser-native-root .new-tab",
+      },
     );
 
     h.addEventListener("contextmenu", (e) => {
+      if (
+        e.target instanceof Element &&
+        e.target.closest(
+          ".browser-native-root .tab, .browser-native-root .new-tab",
+        )
+      ) {
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       wm.showWindowContextMenu(e, win);
@@ -465,20 +515,23 @@ export function windowMakeDraggable(win, wm) {
 
   const isInteractive = (target) => {
     return !!target.closest(
-      "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .explorer-tab, .explorer-tab-close, .explorer-tab-new"
+      "button, input, select, textarea, .browser-tab, .tab-close, .tab-new-btn, .steam-menu-item, .steam-user-profile, .steam-notifications, .app-menubar-item, .explorer-tab, .explorer-tab-close, .explorer-tab-new, .browser-native-root .tab, .browser-native-root .new-tab",
     );
   };
 
   const isDesktopStretchScrollDisabled = () => {
     try {
-      return os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false";
+      return (
+        os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false"
+      );
     } catch {
       return false;
     }
   };
 
   const startResize = (e) => {
-    if (e.target.closest(".window-header, .browser-tabbar, .app-menubar")) return;
+    if (e.target.closest(".window-header, .browser-tabbar, .app-menubar"))
+      return;
     if (e.button !== 2) return;
     if (!(e.altKey || e.metaKey)) return;
     if (isInteractive(e.target)) return;
@@ -506,7 +559,8 @@ export function windowMakeDraggable(win, wm) {
       let magnetized = false;
       if (isMagnetEnabled() && !win.dataset.tilingDrag) {
         const threshold = getMagnetThreshold();
-        const { position: taskbarPos, rect: taskbarRect } = getTaskbarPositionAndRect();
+        const { position: taskbarPos, rect: taskbarRect } =
+          getTaskbarPositionAndRect();
         const tilingInset = getTilingBarInset();
         const screenRight = window.innerWidth;
         const screenBottom = window.innerHeight - tilingInset.bottom;
@@ -603,7 +657,8 @@ export function windowMakeDraggable(win, wm) {
 
     const { clientX: startX, clientY: startY } = getClientXY(e);
     const rect = win.getBoundingClientRect();
-    const { position: taskbarPosition, rect: taskbarRect } = getTaskbarPositionAndRect();
+    const { position: taskbarPosition, rect: taskbarRect } =
+      getTaskbarPositionAndRect();
     drag = {
       offsetX: startX - rect.left,
       offsetY: startY - rect.top,
@@ -628,7 +683,7 @@ export function windowMakeDraggable(win, wm) {
       magnetized: false,
       magnetAxis: null,
       stuckVpLeft: null,
-      stuckVpTop: null
+      stuckVpTop: null,
     };
     win.classList.add("dragging");
 
@@ -669,14 +724,18 @@ export function windowMakeDraggable(win, wm) {
     document.addEventListener("touchcancel", onUp);
   };
 
-  const existing = win.querySelectorAll(".window-header:not(.tc-preview-header), .browser-tabbar, .app-menubar");
+  const existing = win.querySelectorAll(
+    ".window-header:not(.tc-preview-header), .browser-tabbar, .app-menubar",
+  );
   existing.forEach(initHeader);
 
   const observer = new MutationObserver((mutations) => {
     for (const m of mutations) {
       if (m.addedNodes.length) {
         win
-          .querySelectorAll(".window-header:not(.tc-preview-header), .browser-tabbar, .app-menubar")
+          .querySelectorAll(
+            ".window-header:not(.tc-preview-header), .browser-tabbar, .app-menubar",
+          )
           .forEach(initHeader);
         break;
       }
@@ -722,7 +781,9 @@ export function getSnapBounds() {
       taskbarHeight = taskbar.offsetHeight;
     }
   } else {
-    console.warn("Taskbar element not found for snap zone detection, using bottom position as fallback");
+    console.warn(
+      "Taskbar element not found for snap zone detection, using bottom position as fallback",
+    );
     taskbarHeight = 48;
   }
 
@@ -747,8 +808,10 @@ export function getSnapBounds() {
 export function getSnapZoneFromBounds(x, y, bounds) {
   if (y < bounds.topBoundary && x < bounds.leftBoundary) return "top-left";
   if (y < bounds.topBoundary && x > bounds.rightBoundary) return "top-right";
-  if (y > bounds.bottomBoundary && x < bounds.leftBoundary) return "bottom-left";
-  if (y > bounds.bottomBoundary && x > bounds.rightBoundary) return "bottom-right";
+  if (y > bounds.bottomBoundary && x < bounds.leftBoundary)
+    return "bottom-left";
+  if (y > bounds.bottomBoundary && x > bounds.rightBoundary)
+    return "bottom-right";
 
   if (y < bounds.topBoundary) return "maximize";
   if (x < bounds.leftBoundary) return "left";
@@ -812,12 +875,21 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
   let tilingBarH = "0px";
   let tilingBarTop = "0px";
   const tilingBar = $("#tiling-bar");
-  if (tilingBar && tilingBar.style.display !== "none" && os.modes.isActive(MODES.TILING)) {
+  if (
+    tilingBar &&
+    tilingBar.style.display !== "none" &&
+    os.modes.isActive(MODES.TILING)
+  ) {
     tilingBarH = getComputedStyle(tilingBar).height || "38px";
-    tilingBarTop = tilingBar.classList.contains("position-bottom") ? "0px" : tilingBarH;
+    tilingBarTop = tilingBar.classList.contains("position-bottom")
+      ? "0px"
+      : tilingBarH;
   }
 
-  const topOffset = taskbarPosition === "top" ? `calc(${taskbarH} + ${tilingBarTop})` : tilingBarTop;
+  const topOffset =
+    taskbarPosition === "top"
+      ? `calc(${taskbarH} + ${tilingBarTop})`
+      : tilingBarTop;
 
   let availableWidth, availableHeight;
 
@@ -829,57 +901,63 @@ export function applySnap(wm, win, zone, skipSavePreSnap = false) {
     availableHeight = `calc(100vh - ${taskbarH} - ${tilingBarH})`;
   }
 
-  const halfW = taskbarPosition === "left" || taskbarPosition === "right" ? `calc(50vw - ${taskbarH} / 2)` : "50vw";
-  const halfH = taskbarPosition === "top" || taskbarPosition === "bottom" ? `calc(50vh - ${taskbarH} / 2)` : "50vh";
+  const halfW =
+    taskbarPosition === "left" || taskbarPosition === "right"
+      ? `calc(50vw - ${taskbarH} / 2)`
+      : "50vw";
+  const halfH =
+    taskbarPosition === "top" || taskbarPosition === "bottom"
+      ? `calc(50vh - ${taskbarH} / 2)`
+      : "50vh";
 
   if (zone === "maximize") {
     Object.assign(win.style, {
       top: topOffset,
       left: "0",
       width: availableWidth,
-      height: availableHeight
+      height: availableHeight,
     });
   } else if (zone === "left") {
     Object.assign(win.style, {
       top: topOffset,
       left: "0",
       width: halfW,
-      height: availableHeight
+      height: availableHeight,
     });
   } else if (zone === "right") {
     Object.assign(win.style, {
       top: topOffset,
       left: halfW,
       width: halfW,
-      height: availableHeight
+      height: availableHeight,
     });
   } else if (zone === "top-left") {
     Object.assign(win.style, {
       top: topOffset,
       left: "0",
       width: halfW,
-      height: halfH
+      height: halfH,
     });
   } else if (zone === "top-right") {
     Object.assign(win.style, {
       top: topOffset,
       left: halfW,
       width: halfW,
-      height: halfH
+      height: halfH,
     });
   } else if (zone === "bottom-left") {
     Object.assign(win.style, {
       top: `calc(${topOffset} + ${halfH})`,
       left: "0",
       width: halfW,
-      height: halfH
+      height: halfH,
     });
   } else if (zone === "bottom-right") {
     Object.assign(win.style, {
       top: `calc(${topOffset} + ${halfH})`,
       left: halfW,
       width: halfW,
-      height: halfH
+      height: halfH,
     });
   }
   os.events.emit(BusEvents.WINDOW_SNAPPED);

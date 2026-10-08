@@ -1,9 +1,16 @@
 import { BaseApp } from "./BaseApp.js";
 import "../styles/scramjet.css";
-import { handlePopupMessage, handlePopupTitleMessage } from "./ScramjetPopupManager.js";
+import {
+  handlePopupMessage,
+  handlePopupTitleMessage,
+} from "./ScramjetPopupManager.js";
 import { os } from "../framework.js";
 import { getWispUrl } from "../shared/wispConfig.js";
-import { injectFileProtocolFallback, isFileProtocol } from "../shared/fileProtocolFallback.js";
+import {
+  injectFileProtocolFallback,
+  isFileProtocol,
+} from "../shared/fileProtocolFallback.js";
+import { mountFileProtocolView } from "../shared/fileProtocolEngine.js";
 export class ScramjetBaseApp extends BaseApp {
   popupMessageHandler = null;
 
@@ -14,7 +21,11 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   getPopupBridgeMeta() {
-    return { parentAppId: this.getAppId(), parentName: this.getAppName(), parentIcon: this.getAppIcon() };
+    return {
+      parentAppId: this.getAppId(),
+      parentName: this.getAppName(),
+      parentIcon: this.getAppIcon(),
+    };
   }
 
   bindPopupBridge(win) {
@@ -45,7 +56,9 @@ export class ScramjetBaseApp extends BaseApp {
   }
 
   getTargetURL() {
-    throw new Error(`${this.constructor.name}.getTargetURL() must be implemented.`);
+    throw new Error(
+      `${this.constructor.name}.getTargetURL() must be implemented.`,
+    );
   }
 
   getCSS() {
@@ -74,7 +87,7 @@ export class ScramjetBaseApp extends BaseApp {
 
     const win = os.window.create(winId, this.getAppName(), size[0], size[1], {
       icon: this.getAppIcon(),
-      appId: this.getAppId()
+      appId: this.getAppId(),
     });
 
     win.innerHTML = `
@@ -110,9 +123,22 @@ export class ScramjetBaseApp extends BaseApp {
 
   async initScramjet(payload, vt, element, state) {
     if (isFileProtocol()) {
-      const targetUrl = this.getTargetURL();
       const container = element.querySelector(".scramjet-base-container");
-      if (container) injectFileProtocolFallback(container, this.getAppId(), targetUrl);
+      if (container) {
+        try {
+          await mountFileProtocolView(container, {
+            targetUrl: this.getTargetURL(),
+            appId: this.getAppId(),
+            showChrome: false,
+          });
+        } catch {
+          await injectFileProtocolFallback(
+            container,
+            this.getAppId(),
+            this.getTargetURL(),
+          );
+        }
+      }
       return;
     }
     if (
@@ -125,7 +151,7 @@ export class ScramjetBaseApp extends BaseApp {
         "Launch Error",
         "This app you are launching and other web apps does not work inside this url because of svg/iframe limitations on this domain (" +
           location.hostname +
-          ")."
+          ").",
       );
     }
     this.iframe = element.querySelector(`#${this.getAppId()}-iframe`);
@@ -135,8 +161,6 @@ export class ScramjetBaseApp extends BaseApp {
       window.location.origin +
       this.getHTMLPath() +
       `?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(targetUrl)}`;
-
-    /* makeDraggable/makeResizable handled by os.window.create */
   }
 
   cleanupScramjet() {

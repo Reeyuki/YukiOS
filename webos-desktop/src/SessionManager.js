@@ -13,11 +13,23 @@ import { taskbarPositionManager } from "./desktopui/taskbarPositionManager.js";
 import { fetchLiveStats } from "./analytics.js";
 import { liveActivityManager } from "./social/liveActivityManager.js";
 import { modeManager, MODES } from "./modeManager.js";
-import { createAdaptiveInterval, isReducedActivity } from "./shared/pollThrottle.js";
+import {
+  createAdaptiveInterval,
+  isReducedActivity,
+} from "./shared/pollThrottle.js";
 import { applyMacSettings, disableMacSettings } from "./modes/macos/session.js";
-import { applyTilingSettings, disableTilingSettings } from "./modes/tiling/session.js";
-import { applyChromeOsSettings, disableChromeOsSettings } from "./modes/chromeos/session.js";
-import { applySteamDeckSettings, disableSteamDeckSettings } from "./modes/steamdeck/session.js";
+import {
+  applyTilingSettings,
+  disableTilingSettings,
+} from "./modes/tiling/session.js";
+import {
+  applyChromeOsSettings,
+  disableChromeOsSettings,
+} from "./modes/chromeos/session.js";
+import {
+  applySteamDeckSettings,
+  disableSteamDeckSettings,
+} from "./modes/steamdeck/session.js";
 import { getRecentNews } from "./apps/news.js";
 import { pickLoginTip } from "./shared/loginTips.js";
 import { BOOT_ANIMATIONS, pickAnimation } from "./bootAnimations.js";
@@ -36,7 +48,8 @@ export class SessionManager {
     this.userHistory = this.loadUserHistory();
     this.sessionState = "login";
     this.selectedUser = null;
-    this.selectedSession = os.storage.get(StorageKeys.selectedSession) || "Yuki Desktop(Default)";
+    this.selectedSession =
+      os.storage.get(StorageKeys.selectedSession) || "Yuki Desktop(Default)";
     this.ensureUserId();
     this.setupProfileUpdateListener();
     this.startTime = Date.now();
@@ -69,7 +82,9 @@ export class SessionManager {
   async handleProfileUpdate(data) {
     const { userId, name, avatar } = data;
 
-    const existingIndex = this.userHistory.findIndex((u) => u.key === userId || u.userId === userId);
+    const existingIndex = this.userHistory.findIndex(
+      (u) => u.key === userId || u.userId === userId,
+    );
     if (existingIndex >= 0) {
       this.userHistory[existingIndex].name = name;
       this.userHistory[existingIndex].avatar = avatar;
@@ -99,7 +114,7 @@ export class SessionManager {
           return {
             ...user,
             userId: id,
-            key: id
+            key: id,
           };
         }
         return user;
@@ -124,13 +139,15 @@ export class SessionManager {
 
   addToUserHistory(session) {
     const userKey = session.key || this.ensureUserId();
-    const existingIndex = this.userHistory.findIndex((u) => u.key === userKey || u.userId === userKey);
+    const existingIndex = this.userHistory.findIndex(
+      (u) => u.key === userKey || u.userId === userKey,
+    );
     const userEntry = {
       userId: userKey,
       name: session.name,
       key: userKey,
       avatar: session.avatar,
-      lastLogin: Date.now()
+      lastLogin: Date.now(),
     };
 
     if (existingIndex >= 0) {
@@ -153,7 +170,10 @@ export class SessionManager {
             this.startLogin().then(resolve);
           }
         });
-        observer.observe(seoOverlay, { attributes: true, attributeFilter: ["class"] });
+        observer.observe(seoOverlay, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
       });
     }
     return this.startLogin();
@@ -174,7 +194,8 @@ export class SessionManager {
       this.currentSession = {
         name: os.storage.get(StorageKeys.username) || "Guest",
         key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
-        avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+        avatar:
+          os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
       };
       await this.initializeSession();
       return;
@@ -187,7 +208,8 @@ export class SessionManager {
         this.currentSession = {
           name: os.storage.get(StorageKeys.username) || "Guest",
           key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
-          avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+          avatar:
+            os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
         };
         setDeckBootVideoSkip(true);
         await this.initializeSession();
@@ -204,7 +226,8 @@ export class SessionManager {
         this.currentSession = {
           name: savedName,
           key: os.storage.get(StorageKeys.userId) || this.ensureUserId(),
-          avatar: os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0]
+          avatar:
+            os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0],
         };
         await this.initializeSession();
         return;
@@ -227,20 +250,33 @@ export class SessionManager {
 
     const now = new Date();
     const timeStr = this.formatLoginClock(now);
-    const dateStr = now.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+    const dateStr = now.toLocaleDateString([], {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
 
     const lastUsername = os.storage.get(StorageKeys.username) || "";
-    const lastAvatarRef = os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
+    const lastAvatarRef =
+      os.storage.get(StorageKeys.profilePicture) || PREDEFINED_AVATARS[0];
     const displayName = lastUsername || "Guest";
     const userId = this.ensureUserId();
 
     this.userHistory = this.loadUserHistory();
 
-    const primaryUser = { name: displayName, key: userId, avatar: lastAvatarRef, userId: userId };
+    const primaryUser = {
+      name: displayName,
+      key: userId,
+      avatar: lastAvatarRef,
+      userId: userId,
+    };
 
-    const allUsers = this.userHistory.length > 0 ? this.userHistory : [primaryUser];
-    const selectedKey = this.userHistory.length > 0 ? this.userHistory[0].key : primaryUser.key;
-    this.selectedUser = allUsers.find((u) => u.key === selectedKey) || allUsers[0];
+    const allUsers =
+      this.userHistory.length > 0 ? this.userHistory : [primaryUser];
+    const selectedKey =
+      this.userHistory.length > 0 ? this.userHistory[0].key : primaryUser.key;
+    this.selectedUser =
+      allUsers.find((u) => u.key === selectedKey) || allUsers[0];
 
     this.container.innerHTML = `
       <div class="session-wallpaper"></div>
@@ -406,7 +442,7 @@ export class SessionManager {
                 <div class="avatar-tile ${url === this.selectedUser.avatar ? "active" : ""}" data-url="${url}">
                   <img src="${url}" alt="Avatar" loading="lazy">
                 </div>
-              `
+              `,
               ).join("")}
             </div>
         </div>
@@ -581,10 +617,13 @@ export class SessionManager {
 
     document.body.appendChild(this.container);
 
-    const electronBanner = this.container.querySelector("#session-electron-banner");
+    const electronBanner = this.container.querySelector(
+      "#session-electron-banner",
+    );
     if (
       electronBanner &&
-      (typeof window.electronAPI !== "undefined" || os.storage.get(StorageKeys.electronBannerDismissed))
+      (typeof window.electronAPI !== "undefined" ||
+        os.storage.get(StorageKeys.electronBannerDismissed))
     ) {
       electronBanner.style.display = "none";
     } else if (electronBanner) {
@@ -623,11 +662,15 @@ export class SessionManager {
   }
 
   async renderUserCarousel() {
-    const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
+    const users =
+      this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
     const renderedUsers = await Promise.all(
       users.map(async (user) => {
         const isSelected = user.key === this.selectedUser?.key;
-        const avatarUrl = await resolveAvatarUrl(user.avatar, PREDEFINED_AVATARS[0]);
+        const avatarUrl = await resolveAvatarUrl(
+          user.avatar,
+          PREDEFINED_AVATARS[0],
+        );
         return `
         <div class="user-carousel-tile ${isSelected ? "selected" : ""}"
              data-key="${user.key}" data-name="${user.name}" data-avatar="${user.avatar}" data-user-id="${user.userId || user.key}">
@@ -637,7 +680,7 @@ export class SessionManager {
           <span>${user.name}</span>
         </div>
       `;
-      })
+      }),
     );
 
     return renderedUsers.join("");
@@ -668,7 +711,7 @@ export class SessionManager {
     this.currentSession = {
       name: this.selectedUser.name,
       key: this.selectedUser.key,
-      avatar: this.selectedUser.avatar
+      avatar: this.selectedUser.avatar,
     };
     setDeckBootVideoSkip(false);
     await this.initializeSession();
@@ -730,7 +773,8 @@ export class SessionManager {
       return;
     }
     const currentTag = bgEl?.tagName.toLowerCase();
-    const needsReplacement = !bgEl || currentTag === "div" || wp.isVideo !== (currentTag === "video");
+    const needsReplacement =
+      !bgEl || currentTag === "div" || wp.isVideo !== (currentTag === "video");
     if (needsReplacement) {
       if (bgEl) bgEl.remove();
       bgEl = wp.isVideo ? createElement("video") : createElement("img");
@@ -741,8 +785,20 @@ export class SessionManager {
     if (wp.isVideo) {
       bgEl.autoplay = true;
       bgEl.loop = true;
+      bgEl.setAttribute("loop", "");
+      bgEl.preload = "auto";
       bgEl.muted = true;
       bgEl.playsInline = true;
+      if (!bgEl.dataset.loopGuard) {
+        bgEl.dataset.loopGuard = "true";
+        bgEl.addEventListener("ended", () => {
+          try {
+            bgEl.currentTime = 0;
+            const p = bgEl.play?.();
+            if (p && typeof p.catch === "function") p.catch(() => {});
+          } catch {}
+        });
+      }
     }
     if (blurOverlay) blurOverlay.style.display = "none";
   }
@@ -783,20 +839,22 @@ export class SessionManager {
     return date.toLocaleTimeString("en-US", {
       hour12: !use24h,
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   }
 
   loadSessionPrefs() {
     const sections = os.storage.get(StorageKeys.sessionSectionVisibility) || {};
     const modes = os.storage.get(StorageKeys.sessionModeVisibility) || {};
-    const showSocial = os.storage.get(StorageKeys.sessionShowSocial) !== "false";
-    const showBanner = os.storage.get(StorageKeys.sessionShowBanner) !== "false";
+    const showSocial =
+      os.storage.get(StorageKeys.sessionShowSocial) !== "false";
+    const showBanner =
+      os.storage.get(StorageKeys.sessionShowBanner) !== "false";
     return {
       sections: {
         online: sections.online !== false,
         live: sections.live !== false,
-        news: sections.news !== false
+        news: sections.news !== false,
       },
       modes: {
         reset: modes.reset !== false,
@@ -804,10 +862,10 @@ export class SessionManager {
         chromeos: modes.chromeos !== false,
         tiling: modes.tiling !== false,
         "3d": modes["3d"] !== false,
-        steamdeck: modes.steamdeck !== false
+        steamdeck: modes.steamdeck !== false,
       },
       showSocial,
-      showBanner
+      showBanner,
     };
   }
 
@@ -815,25 +873,34 @@ export class SessionManager {
     if (!this.container) return;
     const prefs = this.loadSessionPrefs();
 
-    ["session-support-btn", "session-github-btn", "session-discord-btn"].forEach((cls) => {
+    [
+      "session-support-btn",
+      "session-github-btn",
+      "session-discord-btn",
+    ].forEach((cls) => {
       const el = this.container.querySelector(`.${cls}`);
       if (el) el.style.display = prefs.showSocial ? "" : "none";
     });
 
     ["online", "live", "news"].forEach((block) => {
-      const el = this.container.querySelector(`.status-block[data-block="${block}"]`);
+      const el = this.container.querySelector(
+        `.status-block[data-block="${block}"]`,
+      );
       if (el) el.hidden = !prefs.sections[block];
     });
 
-    this.container.querySelectorAll("#session-modes .session-mode-btn").forEach((btn) => {
-      btn.style.display = prefs.modes[btn.dataset.mode] ? "" : "none";
-    });
+    this.container
+      .querySelectorAll("#session-modes .session-mode-btn")
+      .forEach((btn) => {
+        btn.style.display = prefs.modes[btn.dataset.mode] ? "" : "none";
+      });
 
     const banner = this.container.querySelector("#session-electron-banner");
     if (banner) {
       const dismissed = os.storage.get(StorageKeys.electronBannerDismissed);
       const inElectron = typeof window.electronAPI !== "undefined";
-      banner.style.display = !prefs.showBanner || dismissed || inElectron ? "none" : "";
+      banner.style.display =
+        !prefs.showBanner || dismissed || inElectron ? "none" : "";
     }
   }
 
@@ -871,7 +938,11 @@ export class SessionManager {
     const modal = this.container?.querySelector("#session-settings-modal");
     this.destroyBootAnimPreviews(modal);
     if (this.settingsModalEscHandler) {
-      document.removeEventListener("keydown", this.settingsModalEscHandler, true);
+      document.removeEventListener(
+        "keydown",
+        this.settingsModalEscHandler,
+        true,
+      );
       this.settingsModalEscHandler = null;
     }
     if (!modal) return;
@@ -881,7 +952,8 @@ export class SessionManager {
   }
 
   destroyBootAnimPreviews(modal) {
-    if (this.bootMiniTls) this.bootMiniTls.forEach((tl) => tl.kill && tl.kill());
+    if (this.bootMiniTls)
+      this.bootMiniTls.forEach((tl) => tl.kill && tl.kill());
     this.bootMiniTls = [];
     const grid = modal?.querySelector("#boot-anim-grid");
     if (grid) grid.innerHTML = "";
@@ -891,7 +963,8 @@ export class SessionManager {
     const container = this.container;
 
     const closeBtn = modal.querySelector("#session-settings-close");
-    if (closeBtn) closeBtn.addEventListener("click", () => this.closeSettingsModal());
+    if (closeBtn)
+      closeBtn.addEventListener("click", () => this.closeSettingsModal());
     modal.addEventListener("click", (e) => {
       if (e.target === modal) this.closeSettingsModal();
     });
@@ -919,7 +992,8 @@ export class SessionManager {
 
     modal.querySelectorAll("[data-section-toggle]").forEach((cb) => {
       cb.addEventListener("change", () => {
-        const sections = os.storage.get(StorageKeys.sessionSectionVisibility) || {};
+        const sections =
+          os.storage.get(StorageKeys.sessionSectionVisibility) || {};
         sections[cb.dataset.sectionToggle] = cb.checked;
         os.storage.set(StorageKeys.sessionSectionVisibility, sections);
         this.applySessionPreferences();
@@ -929,7 +1003,10 @@ export class SessionManager {
     const socialCb = modal.querySelector("[data-social-toggle]");
     if (socialCb) {
       socialCb.addEventListener("change", () => {
-        os.storage.set(StorageKeys.sessionShowSocial, socialCb.checked ? "true" : "false");
+        os.storage.set(
+          StorageKeys.sessionShowSocial,
+          socialCb.checked ? "true" : "false",
+        );
         this.applySessionPreferences();
       });
     }
@@ -937,7 +1014,10 @@ export class SessionManager {
     const bannerCb = modal.querySelector("[data-banner-toggle]");
     if (bannerCb) {
       bannerCb.addEventListener("change", () => {
-        os.storage.set(StorageKeys.sessionShowBanner, bannerCb.checked ? "true" : "false");
+        os.storage.set(
+          StorageKeys.sessionShowBanner,
+          bannerCb.checked ? "true" : "false",
+        );
         if (bannerCb.checked) {
           os.storage.remove(StorageKeys.electronBannerDismissed);
         }
@@ -949,7 +1029,8 @@ export class SessionManager {
   renderBootAnimGrid(modal) {
     const grid = modal.querySelector("#boot-anim-grid");
     if (!grid) return;
-    if (this.bootMiniTls) this.bootMiniTls.forEach((tl) => tl.kill && tl.kill());
+    if (this.bootMiniTls)
+      this.bootMiniTls.forEach((tl) => tl.kill && tl.kill());
     this.bootMiniTls = [];
     const savedId = os.storage.get(StorageKeys.selectedBootAnimation) || "";
     const brandLetters = "YukiOS"
@@ -964,7 +1045,10 @@ export class SessionManager {
           <div class="boot-version">preview</div>
         </div>
       </div>`;
-    const tiles = [{ id: "", label: "Random" }, ...BOOT_ANIMATIONS.map((a) => ({ id: a.id, label: a.label }))];
+    const tiles = [
+      { id: "", label: "Random" },
+      ...BOOT_ANIMATIONS.map((a) => ({ id: a.id, label: a.label })),
+    ];
     grid.innerHTML = tiles
       .map(
         (t) => `
@@ -972,7 +1056,7 @@ export class SessionManager {
           ${t.id ? miniStage : `<div class="boot-mini-stage boot-mini-random"><span class="boot-letter">?</span></div>`}
           <span class="boot-anim-name">${t.label}</span>
           <span class="boot-anim-hint">Preview and apply</span>
-        </button>`
+        </button>`,
       )
       .join("");
     grid.querySelectorAll("[data-boot-anim]").forEach((tile) => {
@@ -982,17 +1066,23 @@ export class SessionManager {
         const stage = tile.querySelector(".boot-mini-stage");
         if (anim && stage) {
           try {
-            const extEls = anim.createExtra ? anim.createExtra(stage) || {} : {};
+            const extEls = anim.createExtra
+              ? anim.createExtra(stage) || {}
+              : {};
             const els = {
               overlay: stage,
               container: stage.querySelector(".boot-logo-wrap"),
               logo: stage.querySelector(".boot-logo"),
               letters: Array.from(stage.querySelectorAll(".boot-letter")),
               version: stage.querySelector(".boot-version"),
-              extEls
+              extEls,
             };
             anim.setup(els);
-            const loop = gsap.timeline({ repeat: -1, repeatDelay: 0.9, onRepeat: () => anim.setup(els) });
+            const loop = gsap.timeline({
+              repeat: -1,
+              repeatDelay: 0.9,
+              onRepeat: () => anim.setup(els),
+            });
             anim.show(loop, els);
             this.bootMiniTls.push(loop);
           } catch {}
@@ -1070,11 +1160,11 @@ export class SessionManager {
                       <div class="session-news-item-desc">${desc}</div>
                     </div>
                   </div>
-                `
+                `,
               )
               .join("")}
           </div>
-        `
+        `,
       )
       .join("");
   }
@@ -1096,7 +1186,7 @@ export class SessionManager {
         this.fetchOnlineUsersCount();
       },
       60000,
-      300000
+      300000,
     );
   }
 
@@ -1108,7 +1198,10 @@ export class SessionManager {
     if (!this.container || !panel.isConnected) return;
     try {
       const { renderLiveStats } = await import("./shared/liveStats.js");
-      renderLiveStats(stats, panel, { showStats: false, onAppClick: (appId) => this.quickLaunch(appId) });
+      renderLiveStats(stats, panel, {
+        showStats: false,
+        onAppClick: (appId) => this.quickLaunch(appId),
+      });
     } catch {}
   }
 
@@ -1123,7 +1216,7 @@ export class SessionManager {
         this.loadSessionActivity();
       },
       60000,
-      300000
+      300000,
     );
   }
 
@@ -1145,7 +1238,9 @@ export class SessionManager {
     const restartBtn = this.container.querySelector("#restart-btn");
     const sleepBtn = this.container.querySelector("#sleep-btn");
     const avatarModal = this.container.querySelector("#avatar-edit-modal");
-    const avatarModalClose = this.container.querySelector("#avatar-modal-close");
+    const avatarModalClose = this.container.querySelector(
+      "#avatar-modal-close",
+    );
     const avatarGrid = this.container.querySelector("#avatar-grid");
 
     const statusWidget = this.container.querySelector("#session-status-widget");
@@ -1206,12 +1301,18 @@ export class SessionManager {
       const tile = e.target.closest(".avatar-tile");
       if (!tile) return;
 
-      avatarGrid.querySelectorAll(".avatar-tile").forEach((t) => t.classList.remove("active"));
+      avatarGrid
+        .querySelectorAll(".avatar-tile")
+        .forEach((t) => t.classList.remove("active"));
       tile.classList.add("active");
       selectedAvatar = tile.dataset.url;
 
       this.selectedUser.avatar = selectedAvatar;
-      await this.selectCarouselUser(this.selectedUser.key, this.selectedUser.name, selectedAvatar);
+      await this.selectCarouselUser(
+        this.selectedUser.key,
+        this.selectedUser.name,
+        selectedAvatar,
+      );
       avatarModal.style.display = "none";
     });
 
@@ -1242,14 +1343,16 @@ export class SessionManager {
       this.enterSleepMode();
     });
 
-    const sessionModes = this.container.querySelectorAll("#session-modes .session-mode-btn");
+    const sessionModes = this.container.querySelectorAll(
+      "#session-modes .session-mode-btn",
+    );
     const modeToSession = {
       reset: "Yuki Desktop(Default)",
       mac: "Yuki Mac Desktop",
       chromeos: "Yuki Chrome OS",
       tiling: "Yuki Tiling VM",
       "3d": "Yuki 3D Desktop",
-      steamdeck: "Yuki Deck Mode"
+      steamdeck: "Yuki Deck Mode",
     };
     const sessionToMode = {
       "Yuki Desktop(Default)": "reset",
@@ -1258,7 +1361,7 @@ export class SessionManager {
       "Yuki Tiling VM": "tiling",
       "Yuki 3D Desktop": "3d",
       "Yuki Deck Mode": "steamdeck",
-      tiling: "tiling"
+      tiling: "tiling",
     };
     const activeMode = sessionToMode[this.selectedSession] || "reset";
     sessionModes.forEach((btn) => {
@@ -1271,15 +1374,21 @@ export class SessionManager {
     });
     await this.bindCarouselEvents();
 
-    const electronDownloadBtn = this.container.querySelector("#electron-download-btn");
+    const electronDownloadBtn = this.container.querySelector(
+      "#electron-download-btn",
+    );
     if (electronDownloadBtn) {
-      electronDownloadBtn.addEventListener("click", () => this.handleElectronDownload());
+      electronDownloadBtn.addEventListener("click", () =>
+        this.handleElectronDownload(),
+      );
     }
 
     const supportBtn = this.container.querySelector("#session-support-btn");
     if (supportBtn) {
       supportBtn.addEventListener("click", () => {
-        import("./donationPopup.js").then(({ showDonationPopup }) => showDonationPopup());
+        import("./donationPopup.js").then(({ showDonationPopup }) =>
+          showDonationPopup(),
+        );
       });
     }
 
@@ -1291,8 +1400,12 @@ export class SessionManager {
   startLoginTips() {
     try {
       this.stopLoginTips();
-      const tipText = this.container ? this.container.querySelector("#login-tip-text") : null;
-      const tipBox = this.container ? this.container.querySelector("#login-tip") : null;
+      const tipText = this.container
+        ? this.container.querySelector("#login-tip-text")
+        : null;
+      const tipBox = this.container
+        ? this.container.querySelector("#login-tip")
+        : null;
       if (!tipText || !tipBox) return;
       const tipClose = this.container.querySelector("#login-tip-close");
       if (tipClose) {
@@ -1342,7 +1455,9 @@ export class SessionManager {
   dismissLoginTip() {
     try {
       this.stopLoginTips();
-      const tipBox = this.container ? this.container.querySelector("#login-tip") : null;
+      const tipBox = this.container
+        ? this.container.querySelector("#login-tip")
+        : null;
       if (tipBox) tipBox.classList.add("login-tip-hidden");
     } catch {}
   }
@@ -1356,9 +1471,12 @@ export class SessionManager {
     btn.style.opacity = "0.6";
 
     try {
-      const resp = await fetch("https://api.github.com/repos/reeyuki/yukios/releases/latest", {
-        headers: { Accept: "application/vnd.github.v3+json" }
-      });
+      const resp = await fetch(
+        "https://api.github.com/repos/reeyuki/yukios/releases/latest",
+        {
+          headers: { Accept: "application/vnd.github.v3+json" },
+        },
+      );
       if (!resp.ok) throw new Error(`GitHub API returned ${resp.status}`);
       const release = await resp.json();
 
@@ -1413,9 +1531,19 @@ export class SessionManager {
     await this.bindCarouselTileEvents();
 
     const carousel = this.container.querySelector("#user-carousel-row");
-    const selectedTile = carousel?.querySelector(".user-carousel-tile.selected");
+    const selectedTile = carousel?.querySelector(
+      ".user-carousel-tile.selected",
+    );
     if (selectedTile) {
-      setTimeout(() => selectedTile.scrollIntoView({ behavior: "instant", inline: "center", block: "nearest" }), 50);
+      setTimeout(
+        () =>
+          selectedTile.scrollIntoView({
+            behavior: "instant",
+            inline: "center",
+            block: "nearest",
+          }),
+        50,
+      );
     }
   }
 
@@ -1429,12 +1557,17 @@ export class SessionManager {
         const isSelected = tile.classList.contains("selected");
 
         if (avatarClicked && isSelected) {
-          const avatarModal = this.container.querySelector("#avatar-edit-modal");
+          const avatarModal =
+            this.container.querySelector("#avatar-edit-modal");
           avatarModal.style.display = "flex";
           return;
         }
 
-        this.selectCarouselUser(tile.dataset.key, tile.dataset.name, tile.dataset.avatar);
+        this.selectCarouselUser(
+          tile.dataset.key,
+          tile.dataset.name,
+          tile.dataset.avatar,
+        );
       });
     });
   }
@@ -1445,13 +1578,21 @@ export class SessionManager {
     os.storage.set(StorageKeys.username, name);
     os.storage.set(StorageKeys.profilePicture, avatar);
 
-    const existingIndex = this.userHistory.findIndex((u) => u.key === key || u.userId === key);
+    const existingIndex = this.userHistory.findIndex(
+      (u) => u.key === key || u.userId === key,
+    );
     if (existingIndex >= 0) {
       this.userHistory[existingIndex].avatar = avatar;
       this.userHistory[existingIndex].name = name;
       this.userHistory[existingIndex].userId = key;
     } else {
-      this.userHistory.unshift({ userId: key, key, name, avatar, lastLogin: Date.now() });
+      this.userHistory.unshift({
+        userId: key,
+        key,
+        name,
+        avatar,
+        lastLogin: Date.now(),
+      });
     }
     this.saveUserHistory();
 
@@ -1460,9 +1601,15 @@ export class SessionManager {
       carousel.innerHTML = await this.renderUserCarousel();
       this.bindCarouselTileEvents();
 
-      const selectedTile = carousel.querySelector(".user-carousel-tile.selected");
+      const selectedTile = carousel.querySelector(
+        ".user-carousel-tile.selected",
+      );
       if (selectedTile) {
-        selectedTile.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        selectedTile.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
       }
 
       const newEditBtn = carousel.querySelector("#avatar-edit-btn");
@@ -1503,12 +1650,18 @@ export class SessionManager {
       KeybindManager.matches(e, "session.navigateLeft") ||
       KeybindManager.matches(e, "session.navigateRight")
     ) {
-      const users = this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
+      const users =
+        this.userHistory.length > 0 ? this.userHistory : [this.selectedUser];
       if (users.length < 2) return;
 
-      const currentIndex = users.findIndex((u) => u.key === this.selectedUser?.key);
-      const direction = KeybindManager.matches(e, "session.navigateRight") ? 1 : -1;
-      const nextIndex = (currentIndex + direction + users.length) % users.length;
+      const currentIndex = users.findIndex(
+        (u) => u.key === this.selectedUser?.key,
+      );
+      const direction = KeybindManager.matches(e, "session.navigateRight")
+        ? 1
+        : -1;
+      const nextIndex =
+        (currentIndex + direction + users.length) % users.length;
       const next = users[nextIndex];
 
       await this.selectCarouselUser(next.key, next.name, next.avatar);
@@ -1523,7 +1676,10 @@ export class SessionManager {
     os.storage.set(StorageKeys.lastLaunchTime, Date.now().toString());
     if (!os.storage.get(StorageKeys.firstLaunchTime)) {
       const lastLaunch = os.storage.get(StorageKeys.lastLaunchTime);
-      os.storage.set(StorageKeys.firstLaunchTime, lastLaunch || Date.now().toString());
+      os.storage.set(
+        StorageKeys.firstLaunchTime,
+        lastLaunch || Date.now().toString(),
+      );
     }
     this.addToUserHistory(this.currentSession);
 
@@ -1540,7 +1696,10 @@ export class SessionManager {
       disableMacSettings();
     }
 
-    if (this.selectedSession === "Yuki Tiling VM" || this.selectedSession === "tiling") {
+    if (
+      this.selectedSession === "Yuki Tiling VM" ||
+      this.selectedSession === "tiling"
+    ) {
       applyTilingSettings();
     } else {
       disableTilingSettings();
@@ -1567,7 +1726,10 @@ export class SessionManager {
     os.window.setFileSystemManager(os.fileSystemManager);
     setTimeout(() => os.window.restoreSession(), 500);
 
-    if (!os.storage.get(StorageKeys.setupCompleted) && this.selectedSession === "Yuki Desktop(Default)") {
+    if (
+      !os.storage.get(StorageKeys.setupCompleted) &&
+      this.selectedSession === "Yuki Desktop(Default)"
+    ) {
       const setupApp = this.os.app.getInstance(ServiceKeys.SETUP);
       if (setupApp) setTimeout(() => setupApp.open(), 1000);
     }
@@ -1603,14 +1765,19 @@ export class SessionManager {
   launchStartupApps() {
     try {
       const startupApps = os.storage.get(StorageKeys.startupApps);
-      if (!startupApps || !Array.isArray(startupApps) || startupApps.length === 0) return;
+      if (
+        !startupApps ||
+        !Array.isArray(startupApps) ||
+        startupApps.length === 0
+      )
+        return;
       const delay = 800;
       startupApps.forEach((appId, i) => {
         setTimeout(
           () => {
             os.app.launch(appId).catch(() => {});
           },
-          (i + 1) * delay
+          (i + 1) * delay,
         );
       });
     } catch {}
@@ -1794,10 +1961,18 @@ export class SessionManager {
   startIdleDetection() {
     if (this.idleTimer) return;
     this.resetIdleTimer();
-    document.addEventListener("mousemove", this.boundResetIdle, { passive: true });
-    document.addEventListener("mousedown", this.boundResetIdle, { passive: true });
-    document.addEventListener("keydown", this.boundResetIdle, { passive: true });
-    document.addEventListener("touchstart", this.boundResetIdle, { passive: true });
+    document.addEventListener("mousemove", this.boundResetIdle, {
+      passive: true,
+    });
+    document.addEventListener("mousedown", this.boundResetIdle, {
+      passive: true,
+    });
+    document.addEventListener("keydown", this.boundResetIdle, {
+      passive: true,
+    });
+    document.addEventListener("touchstart", this.boundResetIdle, {
+      passive: true,
+    });
     document.addEventListener("scroll", this.boundResetIdle, { passive: true });
   }
 

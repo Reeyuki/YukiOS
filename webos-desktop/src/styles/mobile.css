@@ -1,7 +1,7 @@
 html.is-mobile {
   --taskbar-h: 3.6em;
   --icon-w: 72px;
-  --icon-h: 92px;
+  --icon-h: 100px;
   --icon-img-s: 56px;
   --icon-gap: 14px;
   --r: 8px;
@@ -12,7 +12,7 @@ html.is-mobile {
   html:not(.is-mobile) {
     --taskbar-h: 3.6em;
     --icon-w: 72px;
-    --icon-h: 92px;
+    --icon-h: 100px;
     --icon-img-s: 56px;
     --icon-gap: 14px;
   }
@@ -22,7 +22,7 @@ html.is-mobile {
   html:not(.is-mobile) {
     --taskbar-h: 3.8em;
     --icon-w: 64px;
-    --icon-h: 84px;
+    --icon-h: 92px;
     --icon-img-s: 48px;
     --icon-gap: 12px;
   }

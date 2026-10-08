@@ -10,16 +10,34 @@ class PerformanceManager {
           try {
             const parsed = JSON.parse(raw);
             if (typeof parsed === "string" && parsed) mode = parsed;
-            else if (raw === "performance" || raw === "balanced" || raw === "high") mode = raw;
+            else if (
+              raw === "performance" ||
+              raw === "balanced" ||
+              raw === "high"
+            )
+              mode = raw;
           } catch {
             const cleaned = raw.replace(/^"|"$/g, "");
-            if (cleaned === "performance" || cleaned === "balanced" || cleaned === "high") mode = cleaned;
+            if (
+              cleaned === "performance" ||
+              cleaned === "balanced" ||
+              cleaned === "high"
+            )
+              mode = cleaned;
           }
         }
       }
-      if (mode === "high" && os.storage.get(StorageKeys.performanceMode) == null) {
+      if (
+        mode === "high" &&
+        os.storage.get(StorageKeys.performanceMode) == null
+      ) {
         const legacy = os.storage.get(StorageKeys.powerMode);
-        if (legacy === "performance" || legacy === "balanced" || legacy === "high") mode = legacy;
+        if (
+          legacy === "performance" ||
+          legacy === "balanced" ||
+          legacy === "high"
+        )
+          mode = legacy;
       }
     } catch {
       mode = null;
@@ -42,7 +60,9 @@ class PerformanceManager {
       uaToken = /CrOS/i.test(ua);
     } catch {}
     try {
-      const platform = navigator.userAgentData ? navigator.userAgentData.platform || "" : "";
+      const platform = navigator.userAgentData
+        ? navigator.userAgentData.platform || ""
+        : "";
       clientHint = /chrome\s*os/i.test(platform);
     } catch {}
     return { is: uaToken || clientHint, uaToken, clientHint };
@@ -50,15 +70,17 @@ class PerformanceManager {
   probeSoftwareGL() {
     try {
       const canvas = document.createElement("canvas");
-      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      const gl =
+        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
       if (!gl) return { weak: true, renderer: "no-webgl" };
       const ext = gl.getExtension("WEBGL_debug_renderer_info");
       const renderer = ext
         ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || "")
         : String(gl.getParameter(gl.RENDERER) || "");
-      const weak = /swiftshader|llvmpipe|software|basic render|swangle|angle \(google.*(swiftshader|sw)/i.test(
-        renderer
-      );
+      const weak =
+        /swiftshader|llvmpipe|software|basic render|swangle|angle \(google.*(swiftshader|sw)/i.test(
+          renderer,
+        );
       return { weak, renderer: renderer || "unknown" };
     } catch {
       return { weak: false, renderer: "probe-failed" };
@@ -107,7 +129,11 @@ class PerformanceManager {
     let saver = false;
     try {
       const conn = navigator.connection || navigator.webkitConnection;
-      if (conn && (conn.saveData || /^(slow-2g|2g)$/i.test(conn.effectiveType || ""))) saver = true;
+      if (
+        conn &&
+        (conn.saveData || /^(slow-2g|2g)$/i.test(conn.effectiveType || ""))
+      )
+        saver = true;
     } catch {}
     if (saver) {
       votes.push("save-data");
@@ -119,7 +145,7 @@ class PerformanceManager {
       memory,
       glRenderer: gl.renderer,
       benchMs: bench.ms,
-      cros
+      cros,
     };
   }
   isChromebookDevice() {
@@ -130,7 +156,7 @@ class PerformanceManager {
         `cros=${result.cros.is} score=${result.score}/6 [${result.votes.join(", ") || "no weak signals"}] ` +
         `(cores=${result.cores}, mem=${result.memory}, gl=${result.glRenderer}, bench=${result.benchMs}ms)`;
       console.log(
-        `[PerformanceManager] Chromebook check: ${weak ? "weak device" : "not weak"} ${this.chromebookReason}`
+        `[PerformanceManager] Chromebook check: ${weak ? "weak device" : "not weak"} ${this.chromebookReason}`,
       );
       return weak;
     } catch {}
@@ -150,11 +176,7 @@ class PerformanceManager {
         const total = deltas.length || 1;
         const avg = Math.round(deltas.reduce((a, b) => a + b, 0) / total);
         const ratio = long / total;
-        console.log(
-          `[PerformanceManager] Jank watch: frames=${total} avg=${avg}ms long=${long} ratio=${ratio.toFixed(2)} (${reason})`
-        );
         if (total < 10 || (ratio < 0.2 && avg <= 34)) {
-          console.log("[PerformanceManager] Jank watch: smooth enough, staying Balanced");
           return;
         }
         this.currentMode = "performance";
@@ -163,10 +185,12 @@ class PerformanceManager {
           os.storage.set(StorageKeys.performanceAutoApplied, true);
         } catch {}
         try {
-          document.documentElement.setAttribute("data-performance", "performance");
+          document.documentElement.setAttribute(
+            "data-performance",
+            "performance",
+          );
           this.applyPerformanceMode("performance");
         } catch {}
-        console.log(`[PerformanceManager] Sending performance notification (reason: ${reason}, avg=${avg}ms)`);
         try {
           os.notify.send(
             "Performance mode enabled",
@@ -174,8 +198,8 @@ class PerformanceManager {
             {
               type: "info",
               duration: 6000,
-              icon: "fa-bolt"
-            }
+              icon: "fa-bolt",
+            },
           );
         } catch {}
       };
@@ -200,7 +224,8 @@ class PerformanceManager {
           } catch {}
         }, windowMs + 1500);
       };
-      if (typeof requestIdleCallback === "function") requestIdleCallback(begin, { timeout: 4000 });
+      if (typeof requestIdleCallback === "function")
+        requestIdleCallback(begin, { timeout: 4000 });
       else setTimeout(begin, 2500);
     } catch {}
   }
@@ -214,7 +239,9 @@ class PerformanceManager {
         `cros=${result.cros.is} score=${result.score}/6 [${result.votes.join(", ") || "no weak signals"}] ` +
         `(cores=${result.cores}, mem=${result.memory}, gl=${result.glRenderer}, bench=${result.benchMs}ms)`;
       this.chromebookReason = reason;
-      console.log(`[PerformanceManager] Boot capability check (staying Balanced): ${reason}`);
+      console.log(
+        `[PerformanceManager] Boot capability check (staying Balanced): ${reason}`,
+      );
       if (result.score < 2) return;
       this.watchJankThenDowngrade(reason);
     } catch {}
@@ -237,9 +264,15 @@ class PerformanceManager {
       this.dismissPerfToast();
       try {
         const video = document.querySelector("#wallpaper-video");
-        if (video && video.dataset.performancePaused === "true") {
-          delete video.dataset.performancePaused;
-          import("../system.js").then(({ SystemUtilities }) => SystemUtilities.loadWallpaper()).catch(() => {});
+        if (video) {
+          if (video.dataset.performancePaused === "true") {
+            delete video.dataset.performancePaused;
+            video.play();
+          }
+        } else {
+          import("../system.js")
+            .then(({ SystemUtilities }) => SystemUtilities.loadWallpaper())
+            .catch(() => {});
         }
       } catch {}
     }
@@ -270,15 +303,21 @@ class PerformanceManager {
       const isVanta = current.startsWith("vanta:");
       if (!isVanta) return;
       try {
-        const existingPrev = os.storage.get(StorageKeys.performancePrevWallpaper);
+        const existingPrev = os.storage.get(
+          StorageKeys.performancePrevWallpaper,
+        );
         if (existingPrev) return;
       } catch {}
       try {
         os.storage.set(StorageKeys.performancePrevWallpaper, current);
       } catch {}
-      const { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } = await import("../wallpaperConfig.js");
+      const { DEFAULT_WALLPAPER_FILES, WALLPAPER_STATIC_DIR } =
+        await import("../wallpaperConfig.js");
       if (!DEFAULT_WALLPAPER_FILES || !DEFAULT_WALLPAPER_FILES.length) return;
-      const randomFile = DEFAULT_WALLPAPER_FILES[Math.floor(Math.random() * DEFAULT_WALLPAPER_FILES.length)];
+      const randomFile =
+        DEFAULT_WALLPAPER_FILES[
+          Math.floor(Math.random() * DEFAULT_WALLPAPER_FILES.length)
+        ];
       const randomStatic = `${WALLPAPER_STATIC_DIR}${randomFile}`;
       try {
         const { SystemUtilities } = await import("../system.js");
@@ -309,7 +348,7 @@ class PerformanceManager {
         boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
         color: "var(--text-primary)",
         fontSize: "13px",
-        lineHeight: "1.4"
+        lineHeight: "1.4",
       });
       toast.innerHTML = `
         <div style="flex:1; min-width:0;">
@@ -328,7 +367,7 @@ class PerformanceManager {
         fontSize: "12px",
         fontWeight: "600",
         cursor: "pointer",
-        flexShrink: "0"
+        flexShrink: "0",
       });
       const keepBtn = createElement("button");
       keepBtn.textContent = "Keep";
@@ -341,7 +380,7 @@ class PerformanceManager {
         fontSize: "12px",
         fontWeight: "500",
         cursor: "pointer",
-        flexShrink: "0"
+        flexShrink: "0",
       });
       const closeBtn = createElement("button");
       closeBtn.textContent = "×";
@@ -352,7 +391,7 @@ class PerformanceManager {
         fontSize: "18px",
         cursor: "pointer",
         padding: "0 2px",
-        flexShrink: "0"
+        flexShrink: "0",
       });
       const dismiss = () => this.dismissPerfToast();
       restoreBtn.addEventListener("click", async () => {
@@ -366,7 +405,7 @@ class PerformanceManager {
             os.notify.send("Wallpaper restored", "Vanta wallpaper restored", {
               type: "success",
               duration: 2000,
-              icon: "fa-undo"
+              icon: "fa-undo",
             });
           } catch {}
         } catch {}

@@ -12,7 +12,11 @@ export class RunApp extends BaseApp {
 
   registerGlobalShortcut() {
     document.addEventListener("keydown", (e) => {
-      if (!KeybindManager.matches(e, "global.run") && !KeybindManager.matches(e, "global.runMeta")) return;
+      if (
+        !KeybindManager.matches(e, "global.run") &&
+        !KeybindManager.matches(e, "global.runMeta")
+      )
+        return;
       const seoOverlay = $("#seo-overlay");
       if (seoOverlay && !seoOverlay.classList.contains("hidden")) return;
       if ($("#session-overlay")) return;
@@ -31,7 +35,7 @@ export class RunApp extends BaseApp {
 
     this.win = os.window.create(this.winId, "Run", "420px", "210px", {
       icon: "fas fa-terminal",
-      appId: "runApp"
+      appId: "runApp",
     });
 
     this.win.classList.add("run-window");
@@ -66,8 +70,12 @@ export class RunApp extends BaseApp {
     const input = this.win.querySelector("#run-input");
     const suggestions = this.suggestionsEl;
 
-    this.win.querySelector("#run-btn-cancel").addEventListener("click", () => this.close());
-    this.win.querySelector("#run-btn-ok").addEventListener("click", () => this.execute());
+    this.win
+      .querySelector("#run-btn-cancel")
+      .addEventListener("click", () => this.close());
+    this.win
+      .querySelector("#run-btn-ok")
+      .addEventListener("click", () => this.execute());
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -113,7 +121,11 @@ export class RunApp extends BaseApp {
         const title = info?.title || id;
         const icon = info?.icon || "fas fa-terminal";
         const iconClass =
-          icon.startsWith("fas") || icon.startsWith("fab") || icon.startsWith("far") ? icon : "fas fa-terminal";
+          icon.startsWith("fas") ||
+          icon.startsWith("fab") ||
+          icon.startsWith("far")
+            ? icon
+            : "fas fa-terminal";
         return `<div class="run-suggestion-item" data-id="${id}"><i class="${iconClass}"></i><span>${title}</span></div>`;
       })
       .join("");
@@ -155,6 +167,8 @@ export class RunApp extends BaseApp {
 
     if (value.includes("://")) {
       if (/^https?:\/\//i.test(value)) {
+        os.app.launch("browserApp", { openUrl: value });
+      } else if (/^yuki:\/\//i.test(value)) {
         os.app.launch("browserApp", { openUrl: value });
       } else {
         window.open(value, "_blank");

@@ -1,5 +1,71 @@
 [
   {
+    "date": "October 10, 2026",
+    "label": "Browser Home",
+    "sections": [
+      {
+        "icon": "fa-house",
+        "title": "Classic Browser Home",
+        "items": [
+          [
+            "fa-house",
+            "Yuki Start Page",
+            "New tabs open the classic Yuki start page again."
+          ],
+          [
+            "fa-compass",
+            "Yuki Protocol Pages",
+            "History, bookmarks, downloads and settings live under yuki://."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "date": "October 9, 2026",
+    "label": "Single Layer Browser",
+    "sections": [
+      {
+        "icon": "fa-globe",
+        "title": "Single Layer Browser",
+        "items": [
+          [
+            "fa-window-maximize",
+            "No Nested Frame",
+            "Browser renders pages directly without a separate served page."
+          ],
+          [
+            "fa-shield-halved",
+            "Same Engine Everywhere",
+            "File and hosted modes share one browsing engine."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "date": "October 8, 2026",
+    "label": "File Ready Browser",
+    "sections": [
+      {
+        "icon": "fa-globe",
+        "title": "File Ready Browser",
+        "items": [
+          [
+            "fa-globe",
+            "Browse Without Server",
+            "Open the browser from local files and load pages through the relay."
+          ],
+          [
+            "fa-bolt",
+            "Web Apps Work Locally",
+            "Launch web apps from local files using the same browsing engine."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "date": "October 7, 2026",
     "label": "YukiOS V5.0.0",
     "sections": [
@@ -12,14 +78,22 @@
             "New Games",
             "Added Lethal Company, Rimworld, Azerun(Wow), Horo Knight3D, Goober Dash, EaglerCraft, LolBeans, Into Space 1, Into Space 2, Into Space 3, I Wanna Be The Guy, Knife Hit, La Madriguera, Lethal Ape, Machine Party, My Talking Baby Hippo, SCP Secret Laboratory, Shrimp.io, Skribbl.io, Webdashers, Windowkill, Worlds Hardest Game 4, Black Hole Fishing, Endacopia, Endoparasitic and Endoparasitic 2."
           ],
-          ["fa-bomb", "SpriteFusion Destroy", "Smash sprites while battle music loops in the background."]
+          [
+            "fa-bomb",
+            "SpriteFusion Destroy",
+            "Smash sprites while battle music loops in the background."
+          ]
         ]
       },
       {
         "icon": "fa-cubes",
         "title": "Eaglercraft Launcher",
         "items": [
-          ["fa-gamepad", "Play Minecraft in Browser", "Launch Eaglercraft versions and mods from your desktop."]
+          [
+            "fa-gamepad",
+            "Play Minecraft in Browser",
+            "Launch Eaglercraft versions and mods from your desktop."
+          ]
         ]
       },
       {
@@ -37,25 +111,49 @@
       {
         "icon": "fa-globe",
         "title": "Browser Fixed",
-        "items": [["fa-check-circle", "Pages Load Reliably", "Proxied pages and navigation work every time."]]
+        "items": [
+          [
+            "fa-check-circle",
+            "Pages Load Reliably",
+            "Proxied pages and navigation work every time."
+          ]
+        ]
       },
       {
         "icon": "fa-burst",
         "title": "Desktop Physics Chaos",
-        "items": [["fa-keyboard", "Gravity Shortcut", "Press Alt+G to drop every icon and window with gravity."]]
+        "items": [
+          [
+            "fa-keyboard",
+            "Gravity Shortcut",
+            "Press Alt+G to drop every icon and window with gravity."
+          ]
+        ]
       },
       {
         "icon": "fa-user-secret",
         "title": "Tab Cloak",
         "items": [
-          ["fa-mask", "Tab Cloaker", "Disguise your tab with Google Classroom or custom titles and icons."],
+          [
+            "fa-mask",
+            "Tab Cloaker",
+            "Disguise your tab with Google Classroom or custom titles and icons."
+          ],
           [
             "fa-shield-halved",
             "Automatic Boot Stealth",
             "Launch YukiOS in a clean about:blank tab automatically on boot."
           ],
-          ["fa-bolt", "Panic Key Escape", "Tap one key or send the original tab to your chosen decoy page."],
-          ["fa-lock", "Block Accidental Close", "Require confirmation before closing your session."]
+          [
+            "fa-bolt",
+            "Panic Key Escape",
+            "Tap one key or send the original tab to your chosen decoy page."
+          ],
+          [
+            "fa-lock",
+            "Block Accidental Close",
+            "Require confirmation before closing your session."
+          ]
         ]
       },
 
@@ -63,13 +161,41 @@
         "icon": "fa-folder-open",
         "title": "Explorer Tabs, Split and Drag and Drop",
         "items": [
-          ["fa-plus", "Tabbed Browsing", "Open folders in tabs and switch between them."],
-          ["fa-columns", "Split View", "Show two folders side by side at once."],
-          ["fa-keyboard", "Tab Shortcuts", "Find every tab shortcut under Desktop and Explorer Shortcuts."],
-          ["fa-folder-open", "Drop Into Folders", "Drag files onto folders to move them inside."],
-          ["fa-star", "Drop Onto Quick Access", "Drag files onto sidebar places to move them there."],
-          ["fa-trash", "Drop Onto Trash", "Drag files onto Trash to discard them."],
-          ["fa-copy", "Hold Ctrl To Copy", "Hold Ctrl while dropping to copy instead of moving."]
+          [
+            "fa-plus",
+            "Tabbed Browsing",
+            "Open folders in tabs and switch between them."
+          ],
+          [
+            "fa-columns",
+            "Split View",
+            "Show two folders side by side at once."
+          ],
+          [
+            "fa-keyboard",
+            "Tab Shortcuts",
+            "Find every tab shortcut under Desktop and Explorer Shortcuts."
+          ],
+          [
+            "fa-folder-open",
+            "Drop Into Folders",
+            "Drag files onto folders to move them inside."
+          ],
+          [
+            "fa-star",
+            "Drop Onto Quick Access",
+            "Drag files onto sidebar places to move them there."
+          ],
+          [
+            "fa-trash",
+            "Drop Onto Trash",
+            "Drag files onto Trash to discard them."
+          ],
+          [
+            "fa-copy",
+            "Hold Ctrl To Copy",
+            "Hold Ctrl while dropping to copy instead of moving."
+          ]
         ]
       },
       {
@@ -81,28 +207,68 @@
             "Unified Split Tabs",
             "Split view now shows both pages in a single tab with dual titles."
           ],
-          ["fa-spinner", "Independent Split Loading", "Navigating one split panel no longer freezes the other panel."],
-          ["fa-arrows-left-right", "Scroll to Switch Tabs", "Hover the tab strip and scroll to flip tabs."]
+          [
+            "fa-spinner",
+            "Independent Split Loading",
+            "Navigating one split panel no longer freezes the other panel."
+          ],
+          [
+            "fa-arrows-left-right",
+            "Scroll to Switch Tabs",
+            "Hover the tab strip and scroll to flip tabs."
+          ]
         ]
       },
       {
         "icon": "fa-keyboard",
         "title": "Desktop and Explorer Shortcuts",
         "items": [
-          ["fa-rectangle-list", "Ctrl+A Desktop Selection", "Press Ctrl+A to select all desktop icons at once."],
-          ["fa-plus", "New Explorer Tab", "Press Ctrl+Alt+T to open a fresh Explorer tab."],
-          ["fa-times", "Close Explorer Tab", "Press Alt+W to close the active tab."],
-          ["fa-arrow-right", "Cycle Explorer Tabs", "Press Ctrl+PageUp or Ctrl+PageDown to move between tabs."],
-          ["fa-columns", "Split View Toggle", "Press Ctrl+Shift+D to show two folders side by side."],
-          ["fa-clone", "Jump to Tab by Number", "Press Alt plus 1 through 9 to jump straight there."]
+          [
+            "fa-rectangle-list",
+            "Ctrl+A Desktop Selection",
+            "Press Ctrl+A to select all desktop icons at once."
+          ],
+          [
+            "fa-plus",
+            "New Explorer Tab",
+            "Press Ctrl+Alt+T to open a fresh Explorer tab."
+          ],
+          [
+            "fa-times",
+            "Close Explorer Tab",
+            "Press Alt+W to close the active tab."
+          ],
+          [
+            "fa-arrow-right",
+            "Cycle Explorer Tabs",
+            "Press Ctrl+PageUp or Ctrl+PageDown to move between tabs."
+          ],
+          [
+            "fa-columns",
+            "Split View Toggle",
+            "Press Ctrl+Shift+D to show two folders side by side."
+          ],
+          [
+            "fa-clone",
+            "Jump to Tab by Number",
+            "Press Alt plus 1 through 9 to jump straight there."
+          ]
         ]
       },
       {
         "icon": "fa-shield-halved",
         "title": "Browser Improvements",
         "items": [
-          ["fa-ban", "SW-Level Ad Blocker", "Block ads and trackers on proxied pages before they ever load."],
-          ["fa-laptop-code", "User-Agent Spoofing", "Switch browser user-agents across desktop and mobile presets."]
+          [
+            "fa-ban",
+            "SW-Level Ad Blocker",
+            "Block ads and trackers on proxied pages before they ever load."
+          ],
+          [
+            "fa-laptop-code",
+            "User-Agent Spoofing",
+            "Switch browser user-agents across desktop and mobile presets."
+          ]
         ]
       },
       {
@@ -120,33 +286,65 @@
         "icon": "fa-window-restore",
         "title": "Popup Windows Stay Inside",
         "items": [
-          ["fa-external-link-alt", "Links Open as Windows", "External app links open as titled YukiOS windows."],
-          ["fa-clone", "Titled App Sub Windows", "Popups carry the parent app name automatically."]
+          [
+            "fa-external-link-alt",
+            "Links Open as Windows",
+            "External app links open as titled YukiOS windows."
+          ],
+          [
+            "fa-clone",
+            "Titled App Sub Windows",
+            "Popups carry the parent app name automatically."
+          ]
         ]
       },
       {
         "icon": "fa-user-friends",
         "title": "Friend Favorites",
-        "items": [["fa-hand-pointer", "Drag to Favorites", "Drag friends into the favorites strip for quick access."]]
+        "items": [
+          [
+            "fa-hand-pointer",
+            "Drag to Favorites",
+            "Drag friends into the favorites strip for quick access."
+          ]
+        ]
       },
       {
         "icon": "fa-circle-play",
         "title": "Shittify Media Support",
-        "items": [["fa-sliders-h", "Seek Shittify Tracks", "Scrub Shittify tracks from the Media Player."]]
+        "items": [
+          [
+            "fa-sliders-h",
+            "Seek Shittify Tracks",
+            "Scrub Shittify tracks from the Media Player."
+          ]
+        ]
       },
       {
         "icon": "fa-thumbtack",
         "title": "Pin Every Tray Panel",
         "items": [
-          ["fa-thumbtack", "Pin Any Popup", "Pin audio, network, clipboard, calendar and notification panels open."]
+          [
+            "fa-thumbtack",
+            "Pin Any Popup",
+            "Pin audio, network, clipboard, calendar and notification panels open."
+          ]
         ]
       },
       {
         "icon": "fa-window-maximize",
         "title": "Cleaner Dialogs",
         "items": [
-          ["fa-expand", "Bigger Clearer Dialogs", "Read and complete Explorer prompts with ease."],
-          ["fa-i-cursor", "Selectable Dialog Text", "Copy messages and filenames directly from prompts."]
+          [
+            "fa-expand",
+            "Bigger Clearer Dialogs",
+            "Read and complete Explorer prompts with ease."
+          ],
+          [
+            "fa-i-cursor",
+            "Selectable Dialog Text",
+            "Copy messages and filenames directly from prompts."
+          ]
         ]
       },
       {
@@ -164,56 +362,120 @@
         "icon": "fa-folder-open",
         "title": "Files and Shortcuts",
         "items": [
-          ["fa-link", "Create Shortcuts", "Create double clickable shortcut files from any menu."],
-          ["fa-mouse-pointer", "Custom Cursor Files", "Apply cursor files as your pointer from right click."]
+          [
+            "fa-link",
+            "Create Shortcuts",
+            "Create double clickable shortcut files from any menu."
+          ],
+          [
+            "fa-mouse-pointer",
+            "Custom Cursor Files",
+            "Apply cursor files as your pointer from right click."
+          ]
         ]
       },
       {
         "icon": "fa-gamepad",
         "title": "Emulator Auto Resume",
-        "items": [["fa-play", "Games Resume Automatically", "Retro games reopen saves and last played ROM."]]
+        "items": [
+          [
+            "fa-play",
+            "Games Resume Automatically",
+            "Retro games reopen saves and last played ROM."
+          ]
+        ]
       },
       {
         "icon": "fa-table-cells-large",
         "title": "ChromeOS Shelf Refresh",
         "items": [
-          ["fa-grip", "Clearer Quick Settings", "Reach WiFi, Bluetooth, Cast and Focus from tiled grid."],
-          ["fa-pen", "Screen Drawing", "Draw over any window with pens and eraser."],
-          ["fa-camera", "Quick Capture", "Snap full screen or regions from the menu."],
-          ["fa-search-plus", "Magnifier", "Enlarge screen areas around your pointer."]
+          [
+            "fa-grip",
+            "Clearer Quick Settings",
+            "Reach WiFi, Bluetooth, Cast and Focus from tiled grid."
+          ],
+          [
+            "fa-pen",
+            "Screen Drawing",
+            "Draw over any window with pens and eraser."
+          ],
+          [
+            "fa-camera",
+            "Quick Capture",
+            "Snap full screen or regions from the menu."
+          ],
+          [
+            "fa-search-plus",
+            "Magnifier",
+            "Enlarge screen areas around your pointer."
+          ]
         ]
       },
       {
         "icon": "fa-keyboard",
         "title": "Palette",
-        "items": [["fa-bolt", "Palette animations removed", "Command palette animations are removed"]]
+        "items": [
+          [
+            "fa-bolt",
+            "Palette animations removed",
+            "Command palette animations are removed"
+          ]
+        ]
       },
       {
         "icon": "fa-desktop",
         "title": "Machines and Wallpapers",
-        "items": [["fa-computer", "XP Reborn Machine", "Boot a new Windows XP Reborn virtual machine."]]
+        "items": [
+          [
+            "fa-computer",
+            "XP Reborn Machine",
+            "Boot a new Windows XP Reborn virtual machine."
+          ]
+        ]
       },
       {
         "icon": "fa-rocket",
         "title": "Fresh Boot and About",
         "items": [
-          ["fa-pointer", "Click To Skip Boot", "Dismiss the boot screen with a click."],
+          [
+            "fa-pointer",
+            "Click To Skip Boot",
+            "Dismiss the boot screen with a click."
+          ],
           ["fa-font", "New Login Typeface", "Login screens use the new font."],
-          ["fa-circle-info", "Full Credits Page", "About lists authors and licenses in settings and about app"]
+          [
+            "fa-circle-info",
+            "Full Credits Page",
+            "About lists authors and licenses in settings and about app"
+          ]
         ]
       },
       {
         "icon": "fa-battery-full",
         "title": "Performance and Battery",
         "items": [
-          ["fa-gauge-high", "Auto Speed Mode", "Weak machines enable Performance mode with a notice."],
-          ["fa-pause", "Wallpaper Pauses Hidden", "Videos and effects pause when tab hides."]
+          [
+            "fa-gauge-high",
+            "Auto Speed Mode",
+            "Weak machines enable Performance mode with a notice."
+          ],
+          [
+            "fa-pause",
+            "Wallpaper Pauses Hidden",
+            "Videos and effects pause when tab hides."
+          ]
         ]
       },
       {
         "icon": "fa-list",
         "title": "Catalog Cleanup",
-        "items": [["fa-trash", "Retired Game Listings", "Antonblast, Class Of 09, Flipside, Re-Up and Vex 2 left."]]
+        "items": [
+          [
+            "fa-trash",
+            "Retired Game Listings",
+            "Antonblast, Class Of 09, Flipside, Re-Up and Vex 2 left."
+          ]
+        ]
       },
       {
         "icon": "fa-play",
@@ -224,14 +486,22 @@
             "New Boot Animations",
             "Pick Glitch Slice, Ring Pulse, Aurora Bloom, CRT Power and Ember Ignite."
           ],
-          ["fa-table-cells", "Live Preview Grid", "Watch every animation loop inside its own tile."]
+          [
+            "fa-table-cells",
+            "Live Preview Grid",
+            "Watch every animation loop inside its own tile."
+          ]
         ]
       },
       {
         "icon": "fa-gauge-high",
         "title": "Optimize Site and Reduce App Size",
         "items": [
-          ["fa-rocket", "Faster Loads", "Optimized builds ship smaller bundles and faster loads."],
+          [
+            "fa-rocket",
+            "Faster Loads",
+            "Optimized builds ship smaller bundles and faster loads."
+          ],
           [
             "fa-microchip",
             "Smart Low Power Mode",
@@ -265,7 +535,13 @@
       {
         "icon": "fa-cloud",
         "title": "Cloud Gaming",
-        "items": [["fa-cloud", "Geometry Today", "Play cloud games easily with Geometry Today."]]
+        "items": [
+          [
+            "fa-cloud",
+            "Geometry Today",
+            "Play cloud games easily with Geometry Today."
+          ]
+        ]
       }
     ]
   },
@@ -276,7 +552,13 @@
       {
         "icon": "fa-gamepad",
         "title": "New Games",
-        "items": [["fa-gamepad", "PTTR Webport & How To Fish Webport", "PTTR Webport & How To Fish Webport added."]]
+        "items": [
+          [
+            "fa-gamepad",
+            "PTTR Webport & How To Fish Webport",
+            "PTTR Webport & How To Fish Webport added."
+          ]
+        ]
       }
     ]
   },
@@ -307,59 +589,119 @@
         "icon": "fa-wrench",
         "title": "Fixed Games",
         "items": [
-          ["fa-gamepad", "Deltarune CH1-5", "Fixed scramjet launch for Deltarune chapters."],
-          ["fa-gamepad", "Geometry Dash + Minus B", "Updated Geometry Dash and Minus B URLs."],
-          ["fa-gamepad", "Cut The Rope 2", "Refreshed Cut The Rope 2 source link."],
-          ["fa-mountain", "PEAK Update", "Swapped PEAK WIP for stable PEAK port."]
+          [
+            "fa-gamepad",
+            "Deltarune CH1-5",
+            "Fixed scramjet launch for Deltarune chapters."
+          ],
+          [
+            "fa-gamepad",
+            "Geometry Dash + Minus B",
+            "Updated Geometry Dash and Minus B URLs."
+          ],
+          [
+            "fa-gamepad",
+            "Cut The Rope 2",
+            "Refreshed Cut The Rope 2 source link."
+          ],
+          [
+            "fa-mountain",
+            "PEAK Update",
+            "Swapped PEAK WIP for stable PEAK port."
+          ]
         ]
       },
       {
         "icon": "fa-steam",
         "title": "Steam Overlay Fix",
         "items": [
-          ["fa-steam", "Overlay Button Fixed", "Click the Steam button in game windows to open overlay instantly."]
+          [
+            "fa-steam",
+            "Overlay Button Fixed",
+            "Click the Steam button in game windows to open overlay instantly."
+          ]
         ]
       },
       {
         "icon": "fa-globe",
         "title": "File Protocol Fallback",
-        "items": [["fa-triangle-exclamation", "File Protocol Warning", "on file:///, add warning fallback for proxy"]]
+        "items": [
+          [
+            "fa-triangle-exclamation",
+            "File Protocol Warning",
+            "on file:///, add warning fallback for proxy"
+          ]
+        ]
       },
       {
         "icon": "fa-terminal",
         "title": "Terminal Upgrades",
         "items": [
           ["fa-user-shield", "Sudo Support", "Prefix any command with sudo."],
-          ["fa-desktop", "More Fetch Aliases", "Run fastfetch, hyfetch, archey, pfetch and five."]
+          [
+            "fa-desktop",
+            "More Fetch Aliases",
+            "Run fastfetch, hyfetch, archey, pfetch and five."
+          ]
         ]
       },
       {
         "icon": "fa-columns",
         "title": "Explorer Changes",
-        "items": [["fa-arrows-left-right", "Drag to Resize", "Drag Explorer sidebars to change width."]]
+        "items": [
+          [
+            "fa-arrows-left-right",
+            "Drag to Resize",
+            "Drag Explorer sidebars to change width."
+          ]
+        ]
       },
       {
         "icon": "fa-window-maximize",
         "title": "Fluid Windows",
         "items": [
-          ["fa-bolt", "Faster Animations", "Windows open and minimize twice as fast with smoother easing."],
-          ["fa-magnet", "Sharper Magnet", "Drag near any screen edge or taskbar to snap perfectly into place."],
-          ["fa-palette", "Theme Matched Headers", "Windows 7 and Vista headers now tint with your theme colors."]
+          [
+            "fa-bolt",
+            "Faster Animations",
+            "Windows open and minimize twice as fast with smoother easing."
+          ],
+          [
+            "fa-magnet",
+            "Sharper Magnet",
+            "Drag near any screen edge or taskbar to snap perfectly into place."
+          ],
+          [
+            "fa-palette",
+            "Theme Matched Headers",
+            "Windows 7 and Vista headers now tint with your theme colors."
+          ]
         ]
       },
       {
         "icon": "fa-search",
         "title": "Command Palette",
         "items": [
-          ["fa-wand-magic-sparkles", "Height Grows Smoothly", "Palette height animates smoothly when results change."]
+          [
+            "fa-wand-magic-sparkles",
+            "Height Grows Smoothly",
+            "Palette height animates smoothly when results change."
+          ]
         ]
       },
       {
         "icon": "fa-gamepad",
         "title": "Ruffle and Gaming",
         "items": [
-          ["fa-film", "Tweak Flash Player", "Tune letterbox, scale, and background for Flash in Ruffle settings."],
-          ["fa-trophy", "New Gaming Pane", "Explore new Gaming settings for ruffle and steam"]
+          [
+            "fa-film",
+            "Tweak Flash Player",
+            "Tune letterbox, scale, and background for Flash in Ruffle settings."
+          ],
+          [
+            "fa-trophy",
+            "New Gaming Pane",
+            "Explore new Gaming settings for ruffle and steam"
+          ]
         ]
       },
       {
@@ -371,24 +713,48 @@
             "Theme Hub Merged",
             "Theme app is removed, create and manage themes directly inside Settings appearance."
           ],
-          ["fa-star", "Featured Themes", "Apply curated themes from the new featured grid."]
+          [
+            "fa-star",
+            "Featured Themes",
+            "Apply curated themes from the new featured grid."
+          ]
         ]
       },
       {
         "icon": "fa-broom",
         "title": "Cleanup and Polish",
         "items": [
-          ["fa-bell-slash", "Quieter Alerts", "Duplicate popups collapse and excess Notification disappear."],
-          ["fa-sun", "Capped Brightness", "Brightness now caps at 100 percent when you press ctrl+alt+up arrow"],
-          ["fa-bars", "Sleeker Scrollbars", "Scrollbars look thinner and better across the system."],
-          ["fa-spinner", "Unified Loaders", "Emulator loaders share a cleaner style across apps."]
+          [
+            "fa-bell-slash",
+            "Quieter Alerts",
+            "Duplicate popups collapse and excess Notification disappear."
+          ],
+          [
+            "fa-sun",
+            "Capped Brightness",
+            "Brightness now caps at 100 percent when you press ctrl+alt+up arrow"
+          ],
+          [
+            "fa-bars",
+            "Sleeker Scrollbars",
+            "Scrollbars look thinner and better across the system."
+          ],
+          [
+            "fa-spinner",
+            "Unified Loaders",
+            "Emulator loaders share a cleaner style across apps."
+          ]
         ]
       },
       {
         "icon": "fa-window-restore",
         "title": "Popup to Tab Plugin For Browser",
         "items": [
-          ["fa-external-link", "Window.open in New Tab", "Sites in Popups now open as in-browser tabs automatically."]
+          [
+            "fa-external-link",
+            "Window.open in New Tab",
+            "Sites in Popups now open as in-browser tabs automatically."
+          ]
         ]
       },
       {
@@ -404,8 +770,16 @@
         "icon": "fa-fish",
         "title": "New App: Aquarium",
         "items": [
-          ["fa-fish", "Live 2D Aquarium", "Watch 90+ colorful fishes swim, chase food with sound effects."],
-          ["fa-cookie-bite", "Feed Interaction", "Click water to drop pellets and see fishes hunt them."]
+          [
+            "fa-fish",
+            "Live 2D Aquarium",
+            "Watch 90+ colorful fishes swim, chase food with sound effects."
+          ],
+          [
+            "fa-cookie-bite",
+            "Feed Interaction",
+            "Click water to drop pellets and see fishes hunt them."
+          ]
         ]
       },
       {
@@ -423,9 +797,21 @@
         "icon": "fa-star",
         "title": "Customization",
         "items": [
-          ["fa-palette", "Customize Start Icon", "Right-click Start to pick registry icon or upload"],
-          ["fa-upload", "Upload Custom Image", "Drop your own image and apply instantly"],
-          ["fa-pen", "Customize Any App", "Change icon and title for any Yuki app"]
+          [
+            "fa-palette",
+            "Customize Start Icon",
+            "Right-click Start to pick registry icon or upload"
+          ],
+          [
+            "fa-upload",
+            "Upload Custom Image",
+            "Drop your own image and apply instantly"
+          ],
+          [
+            "fa-pen",
+            "Customize Any App",
+            "Change icon and title for any Yuki app"
+          ]
         ]
       },
       {
@@ -449,7 +835,11 @@
         "icon": "fa-window-maximize",
         "title": "Fresh Look",
         "items": [
-          ["fa-windows", "New Header Styles", "Grab XP, Vista, Windows 7, GNOME, or KDE Plasma title bars."],
+          [
+            "fa-windows",
+            "New Header Styles",
+            "Grab XP, Vista, Windows 7, GNOME, or KDE Plasma title bars."
+          ],
           [
             "fa-layer-group",
             "Granular Transparency",
@@ -522,7 +912,11 @@
             "Reorganized Layout",
             "Settings now use a cleaner grouped sidebar with connectivity, wallpapers, appearance, animation speed slider, sound, apps, desktop, system, accounts, and privacy controls."
           ],
-          ["fa-power-off", "Autostart Manager", "Choose which system apps launch with YukiOS for quick management."],
+          [
+            "fa-power-off",
+            "Autostart Manager",
+            "Choose which system apps launch with YukiOS for quick management."
+          ],
           [
             "fa-hdd",
             "System Overview",
@@ -533,17 +927,37 @@
             "Window Animations",
             "Window animations move smarter in both ways for minimization and restoration."
           ],
-          ["fa-notepad", "Notepad Menubar Fix", "The Notepad menubar now has better padding."],
-          ["fa-keyboard", "Alt+Q Improvements", "Switching with Alt+Q now reveals minimized windows instantly."],
-          ["fa-sort", "Desktop Icons", "Desktop icon positioning is more stable."],
-          ["fa-layer-group", "Workspaces Fix", "Workspace creation now works reliably."]
+          [
+            "fa-notepad",
+            "Notepad Menubar Fix",
+            "The Notepad menubar now has better padding."
+          ],
+          [
+            "fa-keyboard",
+            "Alt+Q Improvements",
+            "Switching with Alt+Q now reveals minimized windows instantly."
+          ],
+          [
+            "fa-sort",
+            "Desktop Icons",
+            "Desktop icon positioning is more stable."
+          ],
+          [
+            "fa-layer-group",
+            "Workspaces Fix",
+            "Workspace creation now works reliably."
+          ]
         ]
       },
       {
         "icon": "fa-folder-tree",
         "title": "System Library Folder",
         "items": [
-          ["fa-file-code", "Browse OS Source", "Open the System folder in Files to explore every YukiOS source code!"]
+          [
+            "fa-file-code",
+            "Browse OS Source",
+            "Open the System folder in Files to explore every YukiOS source code!"
+          ]
         ]
       }
     ]
@@ -555,7 +969,13 @@
       {
         "icon": "fa-users",
         "title": "Live Steam Overviews",
-        "items": [["fa-users", "Live Steam Overviews", "Game pages now show live play counts and friends activity"]]
+        "items": [
+          [
+            "fa-users",
+            "Live Steam Overviews",
+            "Game pages now show live play counts and friends activity"
+          ]
+        ]
       },
       {
         "icon": "fa-layer-group",
@@ -572,7 +992,11 @@
         "icon": "fa-robot",
         "title": "CraxGPT Now Built In",
         "items": [
-          ["fa-infinity", "Unlimited Free AI", "Chat with every AI model, free and unlimited, right from your desktop."]
+          [
+            "fa-infinity",
+            "Unlimited Free AI",
+            "Chat with every AI model, free and unlimited, right from your desktop."
+          ]
         ]
       },
       {
@@ -584,8 +1008,16 @@
             "Full OS Themes",
             "Bundles colors, animations, fonts, density, and transparency into one shareable theme."
           ],
-          ["fa-compass", "Remix Favorites", "Tweak any community theme and make it your own."],
-          ["fa-share-nodes", "Publish in One Step", "Create, preview, and publish a theme without leaving the editor."]
+          [
+            "fa-compass",
+            "Remix Favorites",
+            "Tweak any community theme and make it your own."
+          ],
+          [
+            "fa-share-nodes",
+            "Publish in One Step",
+            "Create, preview, and publish a theme without leaving the editor."
+          ]
         ]
       },
       {
@@ -614,65 +1046,147 @@
         "icon": "fa-layer-group",
         "title": "New Games",
         "items": [
-          ["fa-spade", "Balatro Modded", "Play Balatro with a fully modded twist."],
-          ["fa-stopwatch", "60 Seconds", "Survive 60 seconds of atomic apocalypse chaos."],
-          ["fa-circle", "Zuma", "Match and pop colored balls in the classic Zuma puzzle."]
+          [
+            "fa-spade",
+            "Balatro Modded",
+            "Play Balatro with a fully modded twist."
+          ],
+          [
+            "fa-stopwatch",
+            "60 Seconds",
+            "Survive 60 seconds of atomic apocalypse chaos."
+          ],
+          [
+            "fa-circle",
+            "Zuma",
+            "Match and pop colored balls in the classic Zuma puzzle."
+          ]
         ]
       },
       {
         "icon": "fa-infinity",
         "title": "Unlimited AI",
         "items": [
-          ["fa-infinity", "Unlimited Crax AI", "Chat with every model, free and unlimited, on your desktop."],
-          ["fa-robot", "Enhanced AI Assistant", "The AI Assistant app is smarter and faster than before."]
+          [
+            "fa-infinity",
+            "Unlimited Crax AI",
+            "Chat with every model, free and unlimited, on your desktop."
+          ],
+          [
+            "fa-robot",
+            "Enhanced AI Assistant",
+            "The AI Assistant app is smarter and faster than before."
+          ]
         ]
       },
       {
         "icon": "fa-gamepad",
         "title": "New Web Games",
         "items": [
-          ["fa-gamepad", "Newgrounds", "Play thousands of Flash and HTML5 games from Newgrounds."],
-          ["fa-gamepad", "CrazyGames", "Launch instant browser games from CrazyGames."],
-          ["fa-gamepad", "itch.io", "Browse and play indie games from the itch.io storefront."]
+          [
+            "fa-gamepad",
+            "Newgrounds",
+            "Play thousands of Flash and HTML5 games from Newgrounds."
+          ],
+          [
+            "fa-gamepad",
+            "CrazyGames",
+            "Launch instant browser games from CrazyGames."
+          ],
+          [
+            "fa-gamepad",
+            "itch.io",
+            "Browse and play indie games from the itch.io storefront."
+          ]
         ]
       },
       {
         "icon": "fa-gear",
         "title": "Steam Settings",
-        "items": [["fa-gear", "Steam Settings Window", "A dedicated window with many new Steam setting categories."]]
+        "items": [
+          [
+            "fa-gear",
+            "Steam Settings Window",
+            "A dedicated window with many new Steam setting categories."
+          ]
+        ]
       },
       {
         "icon": "fa-users",
         "title": "Steam Overviews",
         "items": [
-          ["fa-users", "Detailed Game Overviews", "Game pages show richer detail UI with live player activity."]
+          [
+            "fa-users",
+            "Detailed Game Overviews",
+            "Game pages show richer detail UI with live player activity."
+          ]
         ]
       },
       {
         "icon": "fa-window-restore",
         "title": "Window & UI",
         "items": [
-          ["fa-expand", "Resize Cursor Effect", "Hover window corners to see a clear resize cursor guide."],
+          [
+            "fa-expand",
+            "Resize Cursor Effect",
+            "Hover window corners to see a clear resize cursor guide."
+          ],
           [
             "fa-up-right-and-down-left-from-center",
             "LuminSDK Fullscreen",
             "Fullscreen button added for every LuminSDK game."
           ],
-          ["fa-layer-group", "Mode Switcher App", "Preview and switch desktop modes from one handy app."],
-          ["fa-keyboard", "Command Palette", "The command palette ui is bigger."],
-          ["fa-image", "Wallpaper Engine", "Wallpaper Engine is simpler and more streamlined."]
+          [
+            "fa-layer-group",
+            "Mode Switcher App",
+            "Preview and switch desktop modes from one handy app."
+          ],
+          [
+            "fa-keyboard",
+            "Command Palette",
+            "The command palette ui is bigger."
+          ],
+          [
+            "fa-image",
+            "Wallpaper Engine",
+            "Wallpaper Engine is simpler and more streamlined."
+          ]
         ]
       },
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "Bug Fixes",
         "items": [
-          ["fa-wand-magic-sparkles", "SWF Games Fixed", "Every SWF game loads and runs without issues."],
-          ["fa-wand-magic-sparkles", "Web Apps Loading", "All web apps now load reliably every time."],
-          ["fa-wand-magic-sparkles", "Taskbar Shift", "Dragging windows no longer shifts the taskbar."],
-          ["fa-wand-magic-sparkles", "Game Overlays", "Game overlay panels render correctly."],
-          ["fa-wand-magic-sparkles", "MacOS Top Bar", "Windows no longer break against the top bar in Mac mode."],
-          ["fa-wand-magic-sparkles", "Restore Animations", "Page-load restores skip window animations."]
+          [
+            "fa-wand-magic-sparkles",
+            "SWF Games Fixed",
+            "Every SWF game loads and runs without issues."
+          ],
+          [
+            "fa-wand-magic-sparkles",
+            "Web Apps Loading",
+            "All web apps now load reliably every time."
+          ],
+          [
+            "fa-wand-magic-sparkles",
+            "Taskbar Shift",
+            "Dragging windows no longer shifts the taskbar."
+          ],
+          [
+            "fa-wand-magic-sparkles",
+            "Game Overlays",
+            "Game overlay panels render correctly."
+          ],
+          [
+            "fa-wand-magic-sparkles",
+            "MacOS Top Bar",
+            "Windows no longer break against the top bar in Mac mode."
+          ],
+          [
+            "fa-wand-magic-sparkles",
+            "Restore Animations",
+            "Page-load restores skip window animations."
+          ]
         ]
       }
     ]
@@ -771,7 +1285,13 @@
       {
         "icon": "fa-store",
         "title": "Profile Store",
-        "items": [["fa-store", "Profile Store", "Spend YukiCoins on profile banners, frames, name tags, and badges."]]
+        "items": [
+          [
+            "fa-store",
+            "Profile Store",
+            "Spend YukiCoins on profile banners, frames, name tags, and badges."
+          ]
+        ]
       },
       {
         "icon": "fa-clipboard-list",
@@ -782,8 +1302,16 @@
             "Daily Quests",
             "Complete quests each day to earn YukiCoins and keep your streak alive."
           ],
-          ["fa-fire", "Day Streaks", "Return daily to grow your streak and track it right on your profile."],
-          ["fa-coins", "YukiCoins", "Earn YukiCoins from quests and watch your balance on your profile."]
+          [
+            "fa-fire",
+            "Day Streaks",
+            "Return daily to grow your streak and track it right on your profile."
+          ],
+          [
+            "fa-coins",
+            "YukiCoins",
+            "Earn YukiCoins from quests and watch your balance on your profile."
+          ]
         ]
       }
     ]
@@ -800,7 +1328,11 @@
             "Add Friends",
             "Add friends from profiles and community, then accept requests in the Friends window."
           ],
-          ["fa-heart", "Profile Reactions", "React to profiles with hearts, fire, GG, stars, and thumbs up."],
+          [
+            "fa-heart",
+            "Profile Reactions",
+            "React to profiles with hearts, fire, GG, stars, and thumbs up."
+          ],
           [
             "fa-trophy",
             "Weekly Leaderboards",
@@ -892,8 +1424,16 @@
         "icon": "fa-panel-left",
         "title": "Browser Upgrades",
         "items": [
-          ["fa-columns", "Zen Sidebar Tabs", "Move tabs to a collapsible left sidebar and reclaim your space!"],
-          ["fa-columns", "Split View", "View two tabs side by side and middle-click links into the other pane."]
+          [
+            "fa-columns",
+            "Zen Sidebar Tabs",
+            "Move tabs to a collapsible left sidebar and reclaim your space!"
+          ],
+          [
+            "fa-columns",
+            "Split View",
+            "View two tabs side by side and middle-click links into the other pane."
+          ]
         ]
       },
       {
@@ -1006,8 +1546,16 @@
         "icon": "fa-th-large",
         "title": "File Associations",
         "items": [
-          ["fa-th-large", "Default Apps", "Set and manage the default program for every file type from one app."],
-          ["fa-share-alt", "Open With", "Right-click any file to launch it with any compatible app from a picker."]
+          [
+            "fa-th-large",
+            "Default Apps",
+            "Set and manage the default program for every file type from one app."
+          ],
+          [
+            "fa-share-alt",
+            "Open With",
+            "Right-click any file to launch it with any compatible app from a picker."
+          ]
         ]
       }
     ]
@@ -1252,7 +1800,11 @@
             "Grab and Move Objects",
             "Pick up game cases, furniture, and the rainbow ball by clicking or pressing E. Throw them, shelve them, or toss them in the bin."
           ],
-          ["fa-chair", "Sit Anywhere", "Walk up to any chair and press E to sit down with a smooth camera transition."],
+          [
+            "fa-chair",
+            "Sit Anywhere",
+            "Walk up to any chair and press E to sit down with a smooth camera transition."
+          ],
           [
             "fa-list",
             "Book-Shelving Minigame",
@@ -1305,7 +1857,11 @@
         "icon": "fa-terminal",
         "title": "Terminal Apps",
         "items": [
-          ["fa-fire", "Lavat", "Watch colorful metaballs dance in a lava lamp simulation right inside the terminal."],
+          [
+            "fa-fire",
+            "Lavat",
+            "Watch colorful metaballs dance in a lava lamp simulation right inside the terminal."
+          ],
           [
             "fa-chart-simple",
             "btop",
@@ -1348,8 +1904,16 @@
             "Hyprland-Inspired Tiling",
             "Press Alt+Space to toggle BSP tiling. Navigate with Alt+Arrow, resize with Ctrl+Alt+Arrow, swap with Alt+Shift+Arrow."
           ],
-          ["fa-sliders-h", "Live Config Editing", "Edit Config/yukiOs/tiling.conf to tweak gaps, borders."],
-          ["fa-keyboard", "Alt+Q to Close Windows", "Close the focused window instantly with Alt+Q in any mode."],
+          [
+            "fa-sliders-h",
+            "Live Config Editing",
+            "Edit Config/yukiOs/tiling.conf to tweak gaps, borders."
+          ],
+          [
+            "fa-keyboard",
+            "Alt+Q to Close Windows",
+            "Close the focused window instantly with Alt+Q in any mode."
+          ],
           [
             "fa-arrows-alt",
             "Drag to Swap Windows",
@@ -1567,7 +2131,13 @@
       {
         "icon": "fa-sort",
         "title": "Desktop Sorting",
-        "items": [["fa-sort-amount-down-alt", "Auto-Sort Toggle", "Right-click the desktop for sorting desktop items"]]
+        "items": [
+          [
+            "fa-sort-amount-down-alt",
+            "Auto-Sort Toggle",
+            "Right-click the desktop for sorting desktop items"
+          ]
+        ]
       }
     ]
   },
@@ -1675,7 +2245,11 @@
         "icon": "fa-clock",
         "title": "New Apps",
         "items": [
-          ["fa-clock", "Clock", "Digital and analog clocks with alarms, stopwatch, timer, and customizable settings."]
+          [
+            "fa-clock",
+            "Clock",
+            "Digital and analog clocks with alarms, stopwatch, timer, and customizable settings."
+          ]
         ]
       }
     ]
@@ -1687,7 +2261,11 @@
         "icon": "fa-code",
         "title": "New App",
         "items": [
-          ["fa-code", "Dev Tools (Eruda)", "Launch Eruda debugging tool for console, network, and element inspection."]
+          [
+            "fa-code",
+            "Dev Tools (Eruda)",
+            "Launch Eruda debugging tool for console, network, and element inspection."
+          ]
         ]
       }
     ]
@@ -1710,8 +2288,16 @@
         "icon": "fa-icons",
         "title": "Customization",
         "items": [
-          ["fa-icons", "Desktop Icon Size", "Resize desktop icons from 32px to 128px with a new slider in Settings."],
-          ["fa-expand", "Taskbar Scaling", "Scale the entire taskbar from 50% to 200% in Desktop settings."]
+          [
+            "fa-icons",
+            "Desktop Icon Size",
+            "Resize desktop icons from 32px to 128px with a new slider in Settings."
+          ],
+          [
+            "fa-expand",
+            "Taskbar Scaling",
+            "Scale the entire taskbar from 50% to 200% in Desktop settings."
+          ]
         ]
       }
     ]
@@ -1797,18 +2383,30 @@
       {
         "icon": "fa-star",
         "title": "Jump Effect",
-        "items": [["fa-star", "Cursor Jump Effect", "Added icon jump effect for app launches"]]
+        "items": [
+          [
+            "fa-star",
+            "Cursor Jump Effect",
+            "Added icon jump effect for app launches"
+          ]
+        ]
       },
       {
         "icon": "fa-star",
         "title": "Fixed Games",
-        "items": [["fa-star", "Fixed Games", "Fixed Terraria, GtaVC, Kindergarten"]]
+        "items": [
+          ["fa-star", "Fixed Games", "Fixed Terraria, GtaVC, Kindergarten"]
+        ]
       },
       {
         "icon": "fa-database",
         "title": "Explorer",
         "items": [
-          ["fa-database", "Storage Indicator", "Shows total used space in Explorer sidebar."],
+          [
+            "fa-database",
+            "Storage Indicator",
+            "Shows total used space in Explorer sidebar."
+          ],
           [
             "fa-object-group",
             "Selection Box",
@@ -1851,7 +2449,13 @@
       {
         "icon": "fa-terminal",
         "title": "Terminal",
-        "items": [["fa-terminal", "Improved terminal color and commands", "Improved terminal color and commands"]]
+        "items": [
+          [
+            "fa-terminal",
+            "Improved terminal color and commands",
+            "Improved terminal color and commands"
+          ]
+        ]
       },
       {
         "icon": "fa-wand-magic-sparkles",
@@ -1890,7 +2494,11 @@
             "Click to Minimize/Restore",
             "Click taskbar items to minimize active windows, click again to restore."
           ],
-          ["fa-arrows-alt", "Drag to Reorder", "Drag taskbar items to rearrange them however you want."],
+          [
+            "fa-arrows-alt",
+            "Drag to Reorder",
+            "Drag taskbar items to rearrange them however you want."
+          ],
           [
             "fa-window-restore",
             "New Window Option",
@@ -1902,7 +2510,11 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Bug Fixes",
         "items": [
-          ["fa-wand-magic-sparkles", "Window Display Fix", "Fixed height scaling issues when minimizing windows."],
+          [
+            "fa-wand-magic-sparkles",
+            "Window Display Fix",
+            "Fixed height scaling issues when minimizing windows."
+          ],
           [
             "fa-wand-magic-sparkles",
             "Preview Fixes",
@@ -1945,13 +2557,19 @@
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "New Features",
-        "items": [["fa-user", "Enchance login ui", "Redesigned login / lockscreen ui."]]
+        "items": [
+          ["fa-user", "Enchance login ui", "Redesigned login / lockscreen ui."]
+        ]
       },
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "New App",
         "items": [
-          ["fa-users", "Accounts", "Manage multiple user accounts with create, edit, delete, and switch functionality."]
+          [
+            "fa-users",
+            "Accounts",
+            "Manage multiple user accounts with create, edit, delete, and switch functionality."
+          ]
         ]
       }
     ]
@@ -1972,7 +2590,13 @@
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "New App",
-        "items": [["fa-globe", "Scramjet Browser", "Browse the web with built-in proxy support and tab management."]]
+        "items": [
+          [
+            "fa-globe",
+            "Scramjet Browser",
+            "Browse the web with built-in proxy support and tab management."
+          ]
+        ]
       }
     ]
   },
@@ -2031,7 +2655,13 @@
       {
         "icon": "fa-palette",
         "title": "Theming System",
-        "items": [["fa-save", "Custom Theme Saving", "Save and name your own themes with live color preview."]]
+        "items": [
+          [
+            "fa-save",
+            "Custom Theme Saving",
+            "Save and name your own themes with live color preview."
+          ]
+        ]
       }
     ]
   },
@@ -2041,7 +2671,13 @@
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "New App",
-        "items": [["fa-code", "Yuki Dev Tools", "Run IT Tools that look nice with yukios themes."]]
+        "items": [
+          [
+            "fa-code",
+            "Yuki Dev Tools",
+            "Run IT Tools that look nice with yukios themes."
+          ]
+        ]
       },
       {
         "icon": "fa-palette",
@@ -2063,7 +2699,11 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "New App",
         "items": [
-          ["fa-face-smile", "Emoji Selector", "Browse and copy every emoji with category organization and search."]
+          [
+            "fa-face-smile",
+            "Emoji Selector",
+            "Browse and copy every emoji with category organization and search."
+          ]
         ]
       },
       {
@@ -2091,9 +2731,21 @@
             "Alt + Q Window Switching",
             "Added Alt + Q behaviour for switching focused windows like alt+tab behaviour of desktops."
           ],
-          ["fa-gear", "Settings Reorganized", "Settings sections are now grouped more clearly for easier navigation."],
-          ["fa-robot", "Clippy Fixed", "Fixed Clippy assistant so it works reliably again."],
-          ["fa-sun", "Light Theme Text Colors", "Improved text contrast and readability across all light themes."],
+          [
+            "fa-gear",
+            "Settings Reorganized",
+            "Settings sections are now grouped more clearly for easier navigation."
+          ],
+          [
+            "fa-robot",
+            "Clippy Fixed",
+            "Fixed Clippy assistant so it works reliably again."
+          ],
+          [
+            "fa-sun",
+            "Light Theme Text Colors",
+            "Improved text contrast and readability across all light themes."
+          ],
           [
             "fa-arrow-pointer",
             "Miku Cursor Toggle",
@@ -2222,9 +2874,21 @@
             "Transparent UI Toggle",
             "Make your taskbar and start menu fully transparent with the new Transparent UI setting in the appearance options."
           ],
-          ["fa-bell", "Smart Notification Icons", "Notifications now automatically use app icons."],
-          ["fa-maximize", "GUI Scaling", "Adjust the scale of your user interface."],
-          ["fa-cubes", "App Creator Improvements", "Fixed URL validation to auto-add https://, improved proxy."]
+          [
+            "fa-bell",
+            "Smart Notification Icons",
+            "Notifications now automatically use app icons."
+          ],
+          [
+            "fa-maximize",
+            "GUI Scaling",
+            "Adjust the scale of your user interface."
+          ],
+          [
+            "fa-cubes",
+            "App Creator Improvements",
+            "Fixed URL validation to auto-add https://, improved proxy."
+          ]
         ]
       }
     ]
@@ -2279,14 +2943,22 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-cube", "Yuki Blender", "Added new blender app with enchanced 3d functionality."],
+          [
+            "fa-cube",
+            "Yuki Blender",
+            "Added new blender app with enchanced 3d functionality."
+          ],
           ["fa-database", "Storage Editor", "Added new Storage Editor app."],
           [
             "fa-film",
             "Window Animation System",
             "Added 35-effect window animation engine: customize open, close, and minimize animations plus click bubble feedback."
           ],
-          ["fa-window-maximize", "Improve taskbar previews", "Improved taskbar window previews."]
+          [
+            "fa-window-maximize",
+            "Improve taskbar previews",
+            "Improved taskbar window previews."
+          ]
         ]
       }
     ]
@@ -2298,11 +2970,31 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-gamepad", "Azahar Emulator", "Add azahar emulator with 3ds support"],
-          ["fa-rocket", "Setup Wizard", "Introduced first-time setup wizard for system personalization."],
-          ["fa-gamepad", "LuminSDK Catalog", "Added LuminSDK with 1000+ games catalog to steam app."],
-          ["fa-video", "Yuki Convert Upgrade", "Added video and audio format support for file conversion."],
-          ["fa-window-maximize", "Context Menu Fixes", "Fixed desktop context menu overflow issues."]
+          [
+            "fa-gamepad",
+            "Azahar Emulator",
+            "Add azahar emulator with 3ds support"
+          ],
+          [
+            "fa-rocket",
+            "Setup Wizard",
+            "Introduced first-time setup wizard for system personalization."
+          ],
+          [
+            "fa-gamepad",
+            "LuminSDK Catalog",
+            "Added LuminSDK with 1000+ games catalog to steam app."
+          ],
+          [
+            "fa-video",
+            "Yuki Convert Upgrade",
+            "Added video and audio format support for file conversion."
+          ],
+          [
+            "fa-window-maximize",
+            "Context Menu Fixes",
+            "Fixed desktop context menu overflow issues."
+          ]
         ]
       }
     ]
@@ -2314,8 +3006,16 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-thumbtack", "Taskbar Pinning Behaviour Improvement", "Improved taskbar pinning behaviour."],
-          ["fa-trophy", "Improve achievements app ui", "Improved achievements app styling."]
+          [
+            "fa-thumbtack",
+            "Taskbar Pinning Behaviour Improvement",
+            "Improved taskbar pinning behaviour."
+          ],
+          [
+            "fa-trophy",
+            "Improve achievements app ui",
+            "Improved achievements app styling."
+          ]
         ]
       }
     ]
@@ -2327,15 +3027,27 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-window-maximize", "Add Tray Bar", "Added a new tray bar managing background applications."],
+          [
+            "fa-window-maximize",
+            "Add Tray Bar",
+            "Added a new tray bar managing background applications."
+          ],
           [
             "fa-table-cells-large",
             "Start Menu Customization",
             "Add option to customize start menu categories and items."
           ],
           ["fa-rocket", "Performance Mode", "Added performance mode to os."],
-          ["fa-gear", "Settings App", "Reworked settings app interface and navigation."],
-          ["fa-minimize", "Window Animations", "Added smooth window drag animations."]
+          [
+            "fa-gear",
+            "Settings App",
+            "Reworked settings app interface and navigation."
+          ],
+          [
+            "fa-minimize",
+            "Window Animations",
+            "Added smooth window drag animations."
+          ]
         ]
       }
     ]
@@ -2346,7 +3058,9 @@
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
-        "items": [["fa-star", "Angry Birds 2", "Added angry birds 2 / Lobotomy Corp."]]
+        "items": [
+          ["fa-star", "Angry Birds 2", "Added angry birds 2 / Lobotomy Corp."]
+        ]
       }
     ]
   },
@@ -2393,8 +3107,16 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-wifi", "CDN Mirror Selection", "Added CDN Mirror Selection option."],
-          ["fa-gear", "Settings & UI Improvement", "Added setting categories and Theme Selection"]
+          [
+            "fa-wifi",
+            "CDN Mirror Selection",
+            "Added CDN Mirror Selection option."
+          ],
+          [
+            "fa-gear",
+            "Settings & UI Improvement",
+            "Added setting categories and Theme Selection"
+          ]
         ]
       }
     ]
@@ -2406,7 +3128,11 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-star", "Yuki Steam Improvement", "Improved Yuki Steam UI and added settings."],
+          [
+            "fa-star",
+            "Yuki Steam Improvement",
+            "Improved Yuki Steam UI and added settings."
+          ],
           ["fa-film", "Ruffle App", "Added ruffle."],
           ["fa-star", "Slime Rancher and TABS", "Added Slime Rancher and TABS."]
         ]
@@ -2426,12 +3152,32 @@
             "Improved Yuki Steam UI and settings, with a data pack install option and faster loading."
           ],
           ["fa-film", "Ruffle App", "Added ruffle."],
-          ["fa-mobile-screen", "PWA Support", "Added progressive web app support for YukiOS."],
-          ["fa-sliders", "Taskbar Customization support", "Added taskbar alignment options."],
-          ["fa-user", "Profile Customization support", "Added Customize Profile app."],
+          [
+            "fa-mobile-screen",
+            "PWA Support",
+            "Added progressive web app support for YukiOS."
+          ],
+          [
+            "fa-sliders",
+            "Taskbar Customization support",
+            "Added taskbar alignment options."
+          ],
+          [
+            "fa-user",
+            "Profile Customization support",
+            "Added Customize Profile app."
+          ],
           ["fa-arrow-pointer", "Cursor Support", "Added custom cursor support"],
-          ["fa-route", "Add proxy support for custom apps", "Added proxy support for created web apps"],
-          ["fa-wrench", "App Creator Improvements", "Improved the App Creator workflow and usability."],
+          [
+            "fa-route",
+            "Add proxy support for custom apps",
+            "Added proxy support for created web apps"
+          ],
+          [
+            "fa-wrench",
+            "App Creator Improvements",
+            "Improved the App Creator workflow and usability."
+          ],
           [
             "fa-gamepad",
             "New Games: Happy Room, Fez, TABS, Slime Rancher",
@@ -2443,10 +3189,26 @@
             "Added My Rusty Submarine and Upstream to the games collection."
           ],
           ["fa-rectangle-ad", "Ads", "Added ads integration."],
-          ["fa-chart-line", "Analytics Toggle", "Added a settings toggle to enable or disable analytics."],
-          ["fa-brands fa-youtube", "YouTube Utility App", "Added a YouTube utility app."],
-          ["fa-brands fa-spotify", "Spotify Utility App", "Added a Spotify utility app."],
-          ["fa-id-card", "Properties Page Improvements", "Improved the file/app properties page."],
+          [
+            "fa-chart-line",
+            "Analytics Toggle",
+            "Added a settings toggle to enable or disable analytics."
+          ],
+          [
+            "fa-brands fa-youtube",
+            "YouTube Utility App",
+            "Added a YouTube utility app."
+          ],
+          [
+            "fa-brands fa-spotify",
+            "Spotify Utility App",
+            "Added a Spotify utility app."
+          ],
+          [
+            "fa-id-card",
+            "Properties Page Improvements",
+            "Improved the file/app properties page."
+          ],
           [
             "fa-up-down-left-right",
             "Desktop Stretch Scroll",
@@ -2463,8 +3225,16 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-keyboard", "Start Menu Keybinds", "Open the start menu faster with Space, Tab, or Ctrl."],
-          ["fa-trophy", "Achievements Toggle", "Quickly enable or disable achievements from settings."]
+          [
+            "fa-keyboard",
+            "Start Menu Keybinds",
+            "Open the start menu faster with Space, Tab, or Ctrl."
+          ],
+          [
+            "fa-trophy",
+            "Achievements Toggle",
+            "Quickly enable or disable achievements from settings."
+          ]
         ]
       }
     ]
@@ -2476,10 +3246,26 @@
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-right-left", "Import / Export", "Back up or migrate your setup with the new data import/export system."],
-          ["fa-trophy", "Achievements UI Refresh", "Reworked the achievements interface for a cleaner experience."],
-          ["fa-house", "Yuki Steam Home Button", "Added a add to home button in the Yuki Steam app."],
-          ["fa-ellipsis", "Menus & Explorer Polish", "Improved context menus and refined explorer styling."]
+          [
+            "fa-right-left",
+            "Import / Export",
+            "Back up or migrate your setup with the new data import/export system."
+          ],
+          [
+            "fa-trophy",
+            "Achievements UI Refresh",
+            "Reworked the achievements interface for a cleaner experience."
+          ],
+          [
+            "fa-house",
+            "Yuki Steam Home Button",
+            "Added a add to home button in the Yuki Steam app."
+          ],
+          [
+            "fa-ellipsis",
+            "Menus & Explorer Polish",
+            "Improved context menus and refined explorer styling."
+          ]
         ]
       }
     ]
@@ -2496,7 +3282,11 @@
             "Yuki Steam Launch from Search",
             "Launch Yuki Steam apps directly from the search/query experience."
           ],
-          ["fa-book-open", "Game Descriptions", "Added game descriptions for better discovery."]
+          [
+            "fa-book-open",
+            "Game Descriptions",
+            "Added game descriptions for better discovery."
+          ]
         ]
       }
     ]
@@ -2544,10 +3334,26 @@
         "icon": "fa-rocket",
         "title": "New Apps",
         "items": [
-          ["fa-code", "Yuki Code", "A full code editor powered by VS Code, built right into your desktop."],
-          ["fa-file-lines", "Markdown Viewer", "Open and read Markdown files directly in the system."],
-          ["fa-file-word", "Full Office Suite", "Create and edit office documents right in your workspace."],
-          ["fa-calendar-days", "Events in Clock", "Track dates and events from the Clock app's Events tab."],
+          [
+            "fa-code",
+            "Yuki Code",
+            "A full code editor powered by VS Code, built right into your desktop."
+          ],
+          [
+            "fa-file-lines",
+            "Markdown Viewer",
+            "Open and read Markdown files directly in the system."
+          ],
+          [
+            "fa-file-word",
+            "Full Office Suite",
+            "Create and edit office documents right in your workspace."
+          ],
+          [
+            "fa-calendar-days",
+            "Events in Clock",
+            "Track dates and events from the Clock app's Events tab."
+          ],
           [
             "fa-note-sticky",
             "Notepad Enhancements",
@@ -2566,34 +3372,82 @@
             "New Titles",
             "Added gnmath game category and several new games including Earn to Die, Rotate, Slither/Yorg io, Angry Birds Series,Solar Smash, Trollface Quest, and more."
           ],
-          ["fa-floppy-disk", "Classic DOS Games", "Classic DOS games are now playable through jsdos integration."]
+          [
+            "fa-floppy-disk",
+            "Classic DOS Games",
+            "Classic DOS games are now playable through jsdos integration."
+          ]
         ]
       },
       {
         "icon": "fa-wand-magic-sparkles",
         "title": "Features & Improvements",
         "items": [
-          ["fa-bell", "Notification Center", "A centralized place to view system notifications."],
-          ["fa-music", "Audio Playback", "You can now play audio files directly."],
-          ["fa-globe", "HTML File Support", "HTML files can now be opened and rendered."],
+          [
+            "fa-bell",
+            "Notification Center",
+            "A centralized place to view system notifications."
+          ],
+          [
+            "fa-music",
+            "Audio Playback",
+            "You can now play audio files directly."
+          ],
+          [
+            "fa-globe",
+            "HTML File Support",
+            "HTML files can now be opened and rendered."
+          ],
           [
             "fa-file-zipper",
             "Archive Support",
             "Extract 7z and .tar.xz archives, in addition to zip files now available via right-click context menu."
           ],
-          ["fa-bolt", "File Download", "You can now download files from explorer right clicking to files."],
-          ["fa-image", "Dynamic Favicon", "The browser tab icon now updates to reflect what you're doing."],
-          ["fa-video", "Yuki Convert", "Convert any file to other formats fuly locally without uploading to a server."],
-          ["fa-window-restore", "Window Icons", "App windows now display their respective icons in the title bar."],
-          ["fa-bars", "Window Header Menu", "Right-click on a window header for quick actions."],
-          ["fa-i-cursor", "F2 Rename in Explorer", "Press F2 to rename files quickly, just like a native OS."],
-          ["fa-hand", "Drag to Desktop", "Drag files from apps directly to the desktop to save them."],
+          [
+            "fa-bolt",
+            "File Download",
+            "You can now download files from explorer right clicking to files."
+          ],
+          [
+            "fa-image",
+            "Dynamic Favicon",
+            "The browser tab icon now updates to reflect what you're doing."
+          ],
+          [
+            "fa-video",
+            "Yuki Convert",
+            "Convert any file to other formats fuly locally without uploading to a server."
+          ],
+          [
+            "fa-window-restore",
+            "Window Icons",
+            "App windows now display their respective icons in the title bar."
+          ],
+          [
+            "fa-bars",
+            "Window Header Menu",
+            "Right-click on a window header for quick actions."
+          ],
+          [
+            "fa-i-cursor",
+            "F2 Rename in Explorer",
+            "Press F2 to rename files quickly, just like a native OS."
+          ],
+          [
+            "fa-hand",
+            "Drag to Desktop",
+            "Drag files from apps directly to the desktop to save them."
+          ],
           [
             "fa-arrows-rotate",
             "Desktop Auto-Refresh",
             "The desktop now automatically reflects file changes without a manual refresh."
           ],
-          ["fa-film", "Video Performance", "Smoother video playback across the system."],
+          [
+            "fa-film",
+            "Video Performance",
+            "Smoother video playback across the system."
+          ],
           [
             "fa-star",
             "Custom Shortcuts",

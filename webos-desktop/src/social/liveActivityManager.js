@@ -5,7 +5,11 @@ import { PREDEFINED_AVATARS } from "../utils/avatarData.js";
 import { SteamSettings } from "../games/steamSettings.js";
 import { isSocialDisabled } from "./socialSettings.js";
 import { getLiveUserId, ensureLiveUserId } from "./userIdentity.js";
-import { SOCIAL_ACTIVITY_ENDPOINT, SOCIAL_NOW_PLAYING_ENDPOINT, SOCIAL_BASE } from "./endpoints.js";
+import {
+  SOCIAL_ACTIVITY_ENDPOINT,
+  SOCIAL_NOW_PLAYING_ENDPOINT,
+  SOCIAL_BASE,
+} from "./endpoints.js";
 import { isBroadcastAllowed, isPopupAllowed } from "./presence.js";
 import { areFriends } from "./friendsApi.js";
 
@@ -27,17 +31,6 @@ export class LiveActivityManager {
     this.pollTimer = null;
     this.nowPlayingCache = { data: null, time: 0 };
     this.recentPlayersCache = new Map();
-    this.onVisibilityChange = () => {
-      if (!this.isEnabled()) return;
-      if (document.hidden) {
-        if (this.pollTimer) {
-          clearInterval(this.pollTimer);
-          this.pollTimer = null;
-        }
-      } else {
-        this.startTimers();
-      }
-    };
     this.isShowingPopup = false;
     this.popupQueue = [];
   }
@@ -79,7 +72,9 @@ export class LiveActivityManager {
       if (enabled) this.popupQueue = [];
     });
     if (!this.isEnabled()) return;
-    os.events.on(BusEvents.APP_LAUNCHED, ({ appId }) => this.onAppLaunched(appId));
+    os.events.on(BusEvents.APP_LAUNCHED, ({ appId }) =>
+      this.onAppLaunched(appId),
+    );
     os.events.on(BusEvents.SETTINGS_CHANGED, (settings) => {
       if (settings.friendsLiveActivity !== undefined) {
         if (settings.friendsLiveActivity) {
@@ -107,7 +102,6 @@ export class LiveActivityManager {
     if (!this.isEnabled()) return;
     this.pollTimer = setInterval(() => this.poll(), POLL_INTERVAL);
     this.poll();
-    document.addEventListener("visibilitychange", this.onVisibilityChange);
   }
 
   stopTimers() {
@@ -119,7 +113,6 @@ export class LiveActivityManager {
       clearInterval(this.pollTimer);
       this.pollTimer = null;
     }
-    document.removeEventListener("visibilitychange", this.onVisibilityChange);
   }
 
   onAppLaunched(appId) {
@@ -144,10 +137,15 @@ export class LiveActivityManager {
       gameIcon: String(icon || "").slice(0, 512),
       avatarIndex: avatarIndex >= 0 ? avatarIndex : -1,
       event: "start",
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
-    if (isUrlPrefixed(item.username) || isUrlPrefixed(item.appId) || isUrlPrefixed(item.gameTitle)) return;
+    if (
+      isUrlPrefixed(item.username) ||
+      isUrlPrefixed(item.appId) ||
+      isUrlPrefixed(item.gameTitle)
+    )
+      return;
 
     this.queue.push(item);
 
@@ -182,7 +180,7 @@ export class LiveActivityManager {
       fetch(SOCIAL_ACTIVITY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: payload
+        body: payload,
       }).catch(() => {});
     }
   }
@@ -225,7 +223,8 @@ export class LiveActivityManager {
 
   async getNowPlaying() {
     const now = Date.now();
-    if (this.nowPlayingCache.data && now - this.nowPlayingCache.time < 30000) return this.nowPlayingCache.data;
+    if (this.nowPlayingCache.data && now - this.nowPlayingCache.time < 30000)
+      return this.nowPlayingCache.data;
     try {
       const res = await fetch(SOCIAL_NOW_PLAYING_ENDPOINT);
       if (!res.ok) return this.nowPlayingCache.data || [];
@@ -243,7 +242,9 @@ export class LiveActivityManager {
     const cached = this.recentPlayersCache.get(appId);
     if (cached && now - cached.time < 30000) return cached.data;
     try {
-      const res = await fetch(SOCIAL_BASE + "/live/recent-players?app=" + encodeURIComponent(appId));
+      const res = await fetch(
+        SOCIAL_BASE + "/live/recent-players?app=" + encodeURIComponent(appId),
+      );
       if (!res.ok) return cached?.data || [];
       const data = await res.json();
       const users = Array.isArray(data.users) ? data.users : [];
@@ -286,7 +287,9 @@ export class LiveActivityManager {
 
     const avatarIndex = user.avatarIndex;
     const avatarUrl =
-      typeof avatarIndex === "number" && avatarIndex >= 0 && avatarIndex < PREDEFINED_AVATARS.length
+      typeof avatarIndex === "number" &&
+      avatarIndex >= 0 &&
+      avatarIndex < PREDEFINED_AVATARS.length
         ? PREDEFINED_AVATARS[avatarIndex]
         : null;
 

@@ -20,19 +20,33 @@ function probeTransport(rawTransport, timeoutMs = 10000) {
   const probe = new Promise((resolve) => {
     try {
       rawTransport
-        .request(new URL("https://example.com/"), "GET", null, [], new AbortController().signal)
+        .request(
+          new URL("https://example.com/"),
+          "GET",
+          null,
+          [],
+          new AbortController().signal,
+        )
         .then(() => resolve({ ok: true }))
-        .catch((error) => resolve({ ok: false, error: String((error && error.message) || error) }));
+        .catch((error) =>
+          resolve({
+            ok: false,
+            error: String((error && error.message) || error),
+          }),
+        );
     } catch (error) {
       resolve({ ok: false, error: String((error && error.message) || error) });
     }
   });
-  const deadline = new Promise((resolve) => setTimeout(() => resolve({ ok: false, error: "timed out" }), timeoutMs));
+  const deadline = new Promise((resolve) =>
+    setTimeout(() => resolve({ ok: false, error: "timed out" }), timeoutMs),
+  );
   return Promise.race([probe, deadline]);
 }
 
 async function loadEpoxyTransport() {
-  const module = await import("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs");
+  const module =
+    await import("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs");
   return module.default;
 }
 
@@ -78,7 +92,13 @@ export async function fetchThroughWisp(url, options = {}) {
   const headersArr = options.headers ? Object.entries(options.headers) : [];
   let body = options.body || null;
   if (typeof body === "string") body = new TextEncoder().encode(body);
-  const res = await rawTransport.request(new URL(url), options.method || "GET", body, headersArr, new AbortController().signal);
+  const res = await rawTransport.request(
+    new URL(url),
+    options.method || "GET",
+    body,
+    headersArr,
+    new AbortController().signal,
+  );
   const headers = new Headers();
   if (Array.isArray(res.headers)) {
     for (const pair of res.headers) {
@@ -89,7 +109,15 @@ export async function fetchThroughWisp(url, options = {}) {
       headers.append(key, value);
     }
   }
-  return new Response(res.body, { status: res.status || 200, statusText: res.statusText || "", headers });
+  return new Response(res.body, {
+    status: res.status || 200,
+    statusText: res.statusText || "",
+    headers,
+  });
 }
 
 export { getWispTransport, probeTransport };
+
+export function resetWispTransport() {
+  transportPromise = null;
+}

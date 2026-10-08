@@ -16,7 +16,7 @@ export const OPEN_ANIMATIONS = {
   blurReveal: "blurReveal",
   perspective3D: "perspective3D",
   cornerUnfold: "cornerUnfold",
-  slideInGrowth: "slideInGrowth"
+  slideInGrowth: "slideInGrowth",
 };
 
 export const CLOSE_ANIMATIONS = {
@@ -29,7 +29,7 @@ export const CLOSE_ANIMATIONS = {
   shrinkToPoint: "shrinkToPoint",
   dissolveBlur: "dissolveBlur",
   zoomToDock: "zoomToDock",
-  fallApart: "fallApart"
+  fallApart: "fallApart",
 };
 
 export const MINIMIZE_ANIMATIONS = {
@@ -39,7 +39,7 @@ export const MINIMIZE_ANIMATIONS = {
   fadeToTaskbar: "fadeToTaskbar",
   instant: "instant",
   elasticStretch: "elasticStretch",
-  spiralDown: "spiralDown"
+  spiralDown: "spiralDown",
 };
 
 export const RESTORE_ANIMATIONS = {
@@ -48,23 +48,35 @@ export const RESTORE_ANIMATIONS = {
   fade: "fade",
   slideUp: "slideUp",
   instant: "instant",
-  genieFromDock: "genieFromDock"
+  genieFromDock: "genieFromDock",
 };
 
 function getOpenAnim() {
-  return getRawSetting(StorageKeys.windowOpenAnimation, OPEN_ANIMATIONS.scaleFromSource);
+  return getRawSetting(
+    StorageKeys.windowOpenAnimation,
+    OPEN_ANIMATIONS.scaleFromSource,
+  );
 }
 
 function getCloseAnim() {
-  return getRawSetting(StorageKeys.windowCloseAnimation, CLOSE_ANIMATIONS.scaleDownCenter);
+  return getRawSetting(
+    StorageKeys.windowCloseAnimation,
+    CLOSE_ANIMATIONS.scaleDownCenter,
+  );
 }
 
 function getMinimizeAnim() {
-  return getRawSetting(StorageKeys.windowMinimizeAnimation, MINIMIZE_ANIMATIONS.taskbarShrink);
+  return getRawSetting(
+    StorageKeys.windowMinimizeAnimation,
+    MINIMIZE_ANIMATIONS.taskbarShrink,
+  );
 }
 
 function getRestoreAnim() {
-  return getRawSetting(StorageKeys.windowRestoreAnimation, RESTORE_ANIMATIONS.fromTaskbar);
+  return getRawSetting(
+    StorageKeys.windowRestoreAnimation,
+    RESTORE_ANIMATIONS.fromTaskbar,
+  );
 }
 
 function getAnimationSpeed() {
@@ -133,8 +145,12 @@ function genieClipPath(winRect, targetRect, pos, t) {
   const M = 9;
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
   const lerp = (a, b, f) => a + (b - a) * f;
-  const dockX = clamp01((targetRect.left + targetRect.width / 2 - winRect.left) / W);
-  const dockY = clamp01((targetRect.top + targetRect.height / 2 - winRect.top) / H);
+  const dockX = clamp01(
+    (targetRect.left + targetRect.width / 2 - winRect.left) / W,
+  );
+  const dockY = clamp01(
+    (targetRect.top + targetRect.height / 2 - winRect.top) / H,
+  );
   const pts = [];
   if (pos === "left" || pos === "right") {
     const right = [],
@@ -207,11 +223,12 @@ function getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition) {
 function captureCurrentVisual(win) {
   const cs = getComputedStyle(win);
   return {
-    transform: cs.transform !== "none" ? cs.transform : "translate(0px, 0px) scale(1)",
+    transform:
+      cs.transform !== "none" ? cs.transform : "translate(0px, 0px) scale(1)",
     opacity: cs.opacity,
     filter: cs.filter !== "none" ? cs.filter : "none",
     clipPath: cs.clipPath !== "none" ? cs.clipPath : "none",
-    borderRadius: cs.borderRadius
+    borderRadius: cs.borderRadius,
   };
 }
 
@@ -221,7 +238,7 @@ function getOpenEndState() {
     opacity: "1",
     filter: "none",
     clipPath: "none",
-    borderRadius: "0px"
+    borderRadius: "0px",
   };
 }
 
@@ -229,13 +246,17 @@ function getMinimizeEndState(win) {
   const taskbarItem = $(`#taskbar-${win.id}`);
   if (taskbarItem) {
     const winRect = win.getBoundingClientRect();
-    const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, getTaskbarPosition());
+    const { dx, dy } = getSmartShrinkTarget(
+      taskbarItem,
+      winRect,
+      getTaskbarPosition(),
+    );
     return {
       transform: `translate(${dx}px, ${dy}px) scale(0.1)`,
       opacity: "0",
       filter: "none",
       clipPath: "none",
-      borderRadius: "10px"
+      borderRadius: "10px",
     };
   }
   return {
@@ -243,17 +264,33 @@ function getMinimizeEndState(win) {
     opacity: "0",
     filter: "none",
     clipPath: "none",
-    borderRadius: "0px"
+    borderRadius: "0px",
   };
 }
 
 export function animateWindowOpen(win, isRestoring = false) {
   if (isPerformanceMode()) return;
 
-  if (win.id && (win.id.startsWith("browser-app-") || win.id.startsWith("scramjet-window-"))) return;
+  if (
+    win.id &&
+    (win.id.startsWith("browser-app-") || win.id.startsWith("scramjet-window-"))
+  ) {
+    win.getAnimations().forEach((animation) => {
+      if (animation.id === "window-state") animation.cancel();
+    });
+    win.style.pointerEvents = "";
+    win.style.opacity = "";
+    win.style.transform = "";
+    win.style.filter = "";
+    win.style.clipPath = "";
+    win.style.borderRadius = "";
+    if (win.style.display === "none") win.style.display = "";
+    return;
+  }
 
   const wm = os.windowManager;
-  const isSessionRestoring = wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
+  const isSessionRestoring =
+    wm && wm.appRestorationService && wm.appRestorationService.isRestoring;
 
   if (isSessionRestoring) return;
 
@@ -272,12 +309,17 @@ export function restoreWindowAnimated(win) {
   });
 }
 
-function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) {
+function playWindowAnimation(
+  win,
+  { mode, isRestoring = false, onDone = null },
+) {
   win._lastAnimToken = ++animToken;
 
   if (mode === "open" && win.style.display === "none") win.style.display = "";
 
-  const running = win.getAnimations().find((a) => a.id === "window-state" && a.playState === "running");
+  const running = win
+    .getAnimations()
+    .find((a) => a.id === "window-state" && a.playState === "running");
   if (running) {
     const from = captureCurrentVisual(win);
     win.getAnimations().forEach((a) => a.cancel());
@@ -289,8 +331,11 @@ function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) 
 
     const animation = win.animate([from, to], {
       duration,
-      easing: mode === "open" ? "cubic-bezier(0.16,1,0.3,1)" : "cubic-bezier(0.3,0,1,1)",
-      fill: "forwards"
+      easing:
+        mode === "open"
+          ? "cubic-bezier(0.16,1,0.3,1)"
+          : "cubic-bezier(0.3,0,1,1)",
+      fill: "forwards",
     });
     animation.id = "window-state";
 
@@ -312,18 +357,24 @@ function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) 
 
   if (mode === "open") {
     const anim = isRestoring ? getRestoreAnim() : getOpenAnim();
-    if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant) return;
+    if (anim === OPEN_ANIMATIONS.instant || anim === RESTORE_ANIMATIONS.instant)
+      return;
     if (win.style.display === "none") win.style.display = "";
 
     const duration = 220 * getAnimationSpeed();
     win.getAnimations().forEach((a) => a.cancel());
 
-    const keyframes = isRestoring ? getRestoreKeyframes(anim, win) : getOpenKeyframes(anim, win, false);
+    const keyframes = isRestoring
+      ? getRestoreKeyframes(anim, win)
+      : getOpenKeyframes(anim, win, false);
 
     const animation = win.animate(keyframes, {
       duration,
-      easing: anim === OPEN_ANIMATIONS.elasticBounce ? "cubic-bezier(0.34,1.56,0.64,1)" : "cubic-bezier(0.16,1,0.3,1)",
-      fill: "forwards"
+      easing:
+        anim === OPEN_ANIMATIONS.elasticBounce
+          ? "cubic-bezier(0.34,1.56,0.64,1)"
+          : "cubic-bezier(0.16,1,0.3,1)",
+      fill: "forwards",
     });
     animation.id = "window-state";
 
@@ -346,8 +397,10 @@ function playWindowAnimation(win, { mode, isRestoring = false, onDone = null }) 
     const animation = win.animate(keyframes, {
       duration,
       easing:
-        anim === MINIMIZE_ANIMATIONS.elasticStretch ? "cubic-bezier(0.34,1.56,0.64,1)" : "cubic-bezier(0.3,0,1,1)",
-      fill: "forwards"
+        anim === MINIMIZE_ANIMATIONS.elasticStretch
+          ? "cubic-bezier(0.34,1.56,0.64,1)"
+          : "cubic-bezier(0.3,0,1,1)",
+      fill: "forwards",
     });
     animation.id = "window-state";
 
@@ -366,77 +419,110 @@ function getOpenKeyframes(animType, win, isRestoring = false) {
     case OPEN_ANIMATIONS.scaleCenter:
       return [
         { opacity: 0, transform: "scale(0.9)" },
-        { opacity: 1, transform: "scale(1)" }
+        { opacity: 1, transform: "scale(1)" },
       ];
     case OPEN_ANIMATIONS.scaleFromSource:
       if (!isRestoring) {
         return [
           { opacity: 0, transform: "scale(0.9)" },
-          { opacity: 1, transform: "scale(1)" }
+          { opacity: 1, transform: "scale(1)" },
         ];
       }
       const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
         const taskbarPosition = getTaskbarPosition();
-        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
+        const { dx, dy } = getSmartShrinkTarget(
+          taskbarItem,
+          winRect,
+          taskbarPosition,
+        );
         return [
           { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` },
-          { opacity: 1, transform: "translate(0, 0) scale(1)" }
+          { opacity: 1, transform: "translate(0, 0) scale(1)" },
         ];
       }
       return [
         { opacity: 0, transform: "scale(0.9)" },
-        { opacity: 1, transform: "scale(1)" }
+        { opacity: 1, transform: "scale(1)" },
       ];
     case OPEN_ANIMATIONS.slideUp:
       return [
         { opacity: 0, transform: "translateY(20px)" },
-        { opacity: 1, transform: "translateY(0)" }
+        { opacity: 1, transform: "translateY(0)" },
       ];
     case OPEN_ANIMATIONS.slideLeft:
       return [
         { opacity: 0, transform: "translateX(20px)" },
-        { opacity: 1, transform: "translateX(0)" }
+        { opacity: 1, transform: "translateX(0)" },
       ];
     case OPEN_ANIMATIONS.slideRight:
       return [
         { opacity: 0, transform: "translateX(-20px)" },
-        { opacity: 1, transform: "translateX(0)" }
+        { opacity: 1, transform: "translateX(0)" },
       ];
     case OPEN_ANIMATIONS.glassBlurin:
       return [
         { opacity: 0, filter: "blur(10px)", transform: "scale(0.95)" },
-        { opacity: 1, filter: "blur(0)", transform: "scale(1)" }
+        { opacity: 1, filter: "blur(0)", transform: "scale(1)" },
       ];
     case OPEN_ANIMATIONS.elasticBounce:
       return [
         { opacity: 0, transform: "scale(0.1)" },
         { opacity: 1, transform: "scale(1.3)", offset: 0.5 },
         { opacity: 1, transform: "scale(0.9)", offset: 0.75 },
-        { opacity: 1, transform: "scale(1)" }
+        { opacity: 1, transform: "scale(1)" },
       ];
     case OPEN_ANIMATIONS.blurReveal:
       return [
         { opacity: 0, filter: "blur(40px)", transform: "scale(0.5)" },
-        { opacity: 0.5, filter: "blur(20px)", transform: "scale(0.8)", offset: 0.5 },
-        { opacity: 1, filter: "blur(0)", transform: "scale(1)" }
+        {
+          opacity: 0.5,
+          filter: "blur(20px)",
+          transform: "scale(0.8)",
+          offset: 0.5,
+        },
+        { opacity: 1, filter: "blur(0)", transform: "scale(1)" },
       ];
     case OPEN_ANIMATIONS.perspective3D:
       return [
-        { opacity: 0, transform: "perspective(1000px) rotateX(-30deg) rotateY(-15deg) scale(0.5)" },
-        { opacity: 1, transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)" }
+        {
+          opacity: 0,
+          transform:
+            "perspective(1000px) rotateX(-30deg) rotateY(-15deg) scale(0.5)",
+        },
+        {
+          opacity: 1,
+          transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)",
+        },
       ];
     case OPEN_ANIMATIONS.cornerUnfold:
       return [
-        { opacity: 0, transform: "scale(0) rotate(-45deg)", transformOrigin: "top left" },
-        { opacity: 1, transform: "scale(1) rotate(0deg)", transformOrigin: "top left" }
+        {
+          opacity: 0,
+          transform: "scale(0) rotate(-45deg)",
+          transformOrigin: "top left",
+        },
+        {
+          opacity: 1,
+          transform: "scale(1) rotate(0deg)",
+          transformOrigin: "top left",
+        },
       ];
     case OPEN_ANIMATIONS.slideInGrowth:
       const targetW = parseFloat(win.style.width) || 300;
       return [
-        { opacity: 0, transform: "perspective(300px) scale(0.5) rotateY(-20deg)", width: "0px" },
-        { opacity: 1, transform: "perspective(300px) scale(1) rotateY(0deg)", width: `${targetW}px`, offset: 1 }
+        {
+          opacity: 0,
+          transform: "perspective(300px) scale(0.5) rotateY(-20deg)",
+          width: "0px",
+        },
+        {
+          opacity: 1,
+          transform: "perspective(300px) scale(1) rotateY(0deg)",
+          width: `${targetW}px`,
+          offset: 1,
+        },
       ];
     default:
       return [{ opacity: 0 }, { opacity: 1 }];
@@ -450,33 +536,38 @@ function getRestoreKeyframes(animType, win) {
       const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
+        const { dx, dy } = getSmartShrinkTarget(
+          taskbarItem,
+          winRect,
+          taskbarPosition,
+        );
         return [
           { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.5)` },
-          { opacity: 1, transform: "translate(0, 0) scale(1)" }
+          { opacity: 1, transform: "translate(0, 0) scale(1)" },
         ];
       }
       return [
         { opacity: 0, transform: "scale(0.9)" },
-        { opacity: 1, transform: "scale(1)" }
+        { opacity: 1, transform: "scale(1)" },
       ];
     }
     case RESTORE_ANIMATIONS.scaleCenter:
       return [
         { opacity: 0, transform: "scale(0.85)" },
-        { opacity: 1, transform: "scale(1)" }
+        { opacity: 1, transform: "scale(1)" },
       ];
     case RESTORE_ANIMATIONS.fade:
       return [{ opacity: 0 }, { opacity: 1 }];
     case RESTORE_ANIMATIONS.slideUp:
       return [
         { opacity: 0, transform: "translateY(20px)" },
-        { opacity: 1, transform: "translateY(0)" }
+        { opacity: 1, transform: "translateY(0)" },
       ];
     case RESTORE_ANIMATIONS.genieFromDock: {
       const dockRect = getDockItemRect(win);
       const tbItem = dockRect ? null : $(`#taskbar-${win.id}`);
-      const targetRect = dockRect || (tbItem ? tbItem.getBoundingClientRect() : null);
+      const targetRect =
+        dockRect || (tbItem ? tbItem.getBoundingClientRect() : null);
       if (targetRect) {
         const winRect = win.getBoundingClientRect();
         const pos = dockRect ? getTaskbarPosition() : taskbarPosition;
@@ -492,21 +583,28 @@ function getRestoreKeyframes(animType, win) {
           { p: 0.0, t: 1.0, sx: 0, sy: 0, sk: 0, op: 0 },
           { p: 0.1, t: 0.985, sx: 0.15, sy: 0.08, sk: 0, op: 0.3 },
           { p: 0.3, t: 0.9, sx: 0.4, sy: 0.3, sk: isVertical ? 0 : 9, op: 0.7 },
-          { p: 0.58, t: 0.68, sx: 0.72, sy: 0.6, sk: isVertical ? 0 : 5, op: 0.95 },
+          {
+            p: 0.58,
+            t: 0.68,
+            sx: 0.72,
+            sy: 0.6,
+            sk: isVertical ? 0 : 5,
+            op: 0.95,
+          },
           { p: 0.82, t: 0.35, sx: 0.92, sy: 0.86, sk: 0, op: 1 },
-          { p: 1.0, t: 0.0, sx: 1, sy: 1, sk: 0, op: 1 }
+          { p: 1.0, t: 0.0, sx: 1, sy: 1, sk: 0, op: 1 },
         ];
         return phases.map((ph) => ({
           transform: `translate(${(startX * ph.p).toFixed(2)}px, ${(startY * ph.p).toFixed(2)}px) scaleX(${ph.sx}) scaleY(${ph.sy}) skew${skewAxis}(${ph.sk}deg)`,
           borderRadius: ph.p === 1 ? "0px" : "10px",
           opacity: ph.op,
           clipPath: genieClipPath(winRect, targetRect, pos, ph.t),
-          offset: ph.p
+          offset: ph.p,
         }));
       }
       return [
         { opacity: 0, transform: "scale(0.9)" },
-        { opacity: 1, transform: "scale(1)" }
+        { opacity: 1, transform: "scale(1)" },
       ];
     }
     default:
@@ -544,7 +642,7 @@ export function animateWindowClose(win, onDone) {
   const animation = win.animate(keyframes, {
     duration: duration,
     easing: "cubic-bezier(0.3,0,1,1)",
-    fill: "forwards"
+    fill: "forwards",
   });
   animation.id = "window-close";
   animation.onfinish = finishOnce;
@@ -557,22 +655,26 @@ function getCloseKeyframes(animType, win) {
     case CLOSE_ANIMATIONS.scaleDownCenter:
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(0.85)" }
+        { opacity: 0, transform: "scale(0.85)" },
       ];
     case CLOSE_ANIMATIONS.scaleToOrigin:
       const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
         const taskbarPosition = getTaskbarPosition();
-        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
+        const { dx, dy } = getSmartShrinkTarget(
+          taskbarItem,
+          winRect,
+          taskbarPosition,
+        );
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
-          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` },
         ];
       }
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(0.1)" }
+        { opacity: 0, transform: "scale(0.1)" },
       ];
     case CLOSE_ANIMATIONS.zoomToDock: {
       const dockRect = getDockItemRect(win);
@@ -589,14 +691,14 @@ function getCloseKeyframes(animType, win) {
           {
             opacity: 0.6,
             transform: `translate(${(dx * 0.6).toFixed(2)}px, ${(dy * 0.6).toFixed(2)}px) scale(0.4)`,
-            offset: 0.6
+            offset: 0.6,
           },
-          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.05)` }
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.05)` },
         ];
       }
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(0.85)" }
+        { opacity: 0, transform: "scale(0.85)" },
       ];
     }
     case CLOSE_ANIMATIONS.fadeOut:
@@ -604,23 +706,36 @@ function getCloseKeyframes(animType, win) {
     case CLOSE_ANIMATIONS.slideDown:
       return [
         { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0, transform: "translateY(20px)" }
+        { opacity: 0, transform: "translateY(20px)" },
       ];
     case CLOSE_ANIMATIONS.burn:
       return [
-        { opacity: 1, filter: "brightness(1) blur(0px)", transform: "scaleY(1)" },
-        { opacity: 0.8, filter: "brightness(3) blur(2px)", transform: "scaleY(0.95)", offset: 0.3 },
-        { opacity: 0, filter: "brightness(0) blur(8px)", transform: "scaleY(0)" }
+        {
+          opacity: 1,
+          filter: "brightness(1) blur(0px)",
+          transform: "scaleY(1)",
+        },
+        {
+          opacity: 0.8,
+          filter: "brightness(3) blur(2px)",
+          transform: "scaleY(0.95)",
+          offset: 0.3,
+        },
+        {
+          opacity: 0,
+          filter: "brightness(0) blur(8px)",
+          transform: "scaleY(0)",
+        },
       ];
     case CLOSE_ANIMATIONS.shrinkToPoint:
       return [
         { opacity: 1, transform: "scale(1)", transformOrigin: "center center" },
-        { opacity: 0, transform: "scale(0)", transformOrigin: "center center" }
+        { opacity: 0, transform: "scale(0)", transformOrigin: "center center" },
       ];
     case CLOSE_ANIMATIONS.dissolveBlur:
       return [
         { opacity: 1, filter: "blur(0px)" },
-        { opacity: 0, filter: "blur(20px)" }
+        { opacity: 0, filter: "blur(20px)" },
       ];
     default:
       return [{ opacity: 1 }, { opacity: 0 }];
@@ -644,22 +759,27 @@ function getMinimizeKeyframes(animType, win) {
       const taskbarItem = $(`#taskbar-${win.id}`);
       if (taskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const { dx, dy } = getSmartShrinkTarget(taskbarItem, winRect, taskbarPosition);
+        const { dx, dy } = getSmartShrinkTarget(
+          taskbarItem,
+          winRect,
+          taskbarPosition,
+        );
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
-          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` },
         ];
       }
       return [{ opacity: 1 }, { opacity: 0 }];
     case MINIMIZE_ANIMATIONS.dockZoomShrink:
       return [
         { opacity: 1, transform: "scale(1)" },
-        { opacity: 0, transform: "scale(0)" }
+        { opacity: 0, transform: "scale(0)" },
       ];
     case MINIMIZE_ANIMATIONS.magicLamp: {
       const dockRect = getDockItemRect(win);
       const tbItem = dockRect ? null : $(`#taskbar-${win.id}`);
-      const targetRect = dockRect || (tbItem ? tbItem.getBoundingClientRect() : null);
+      const targetRect =
+        dockRect || (tbItem ? tbItem.getBoundingClientRect() : null);
       if (targetRect) {
         const winRect = win.getBoundingClientRect();
         const pos = dockRect ? getTaskbarPosition() : taskbarPosition;
@@ -674,17 +794,24 @@ function getMinimizeKeyframes(animType, win) {
         const phases = [
           { p: 0.0, t: 0.0, sx: 1, sy: 1, sk: 0, op: 1 },
           { p: 0.18, t: 0.35, sx: 0.92, sy: 0.86, sk: 0, op: 1 },
-          { p: 0.42, t: 0.68, sx: 0.72, sy: 0.6, sk: isVertical ? 0 : 5, op: 0.95 },
+          {
+            p: 0.42,
+            t: 0.68,
+            sx: 0.72,
+            sy: 0.6,
+            sk: isVertical ? 0 : 5,
+            op: 0.95,
+          },
           { p: 0.7, t: 0.9, sx: 0.4, sy: 0.3, sk: isVertical ? 0 : 9, op: 0.7 },
           { p: 0.9, t: 0.985, sx: 0.15, sy: 0.08, sk: 0, op: 0.3 },
-          { p: 1.0, t: 1.0, sx: 0, sy: 0, sk: 0, op: 0 }
+          { p: 1.0, t: 1.0, sx: 0, sy: 0, sk: 0, op: 0 },
         ];
         return phases.map((ph) => ({
           transform: `translate(${(endX * ph.p).toFixed(2)}px, ${(endY * ph.p).toFixed(2)}px) scaleX(${ph.sx}) scaleY(${ph.sy}) skew${skewAxis}(${ph.sk}deg)`,
           borderRadius: ph.p === 0 ? "0px" : "10px",
           opacity: ph.op,
           clipPath: genieClipPath(winRect, targetRect, pos, ph.t),
-          offset: ph.p
+          offset: ph.p,
         }));
       }
       return [{ opacity: 1 }, { opacity: 0 }];
@@ -695,12 +822,24 @@ function getMinimizeKeyframes(animType, win) {
       const elasticTaskbarItem = $(`#taskbar-${win.id}`);
       if (elasticTaskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const { dx, dy } = getSmartShrinkTarget(elasticTaskbarItem, winRect, taskbarPosition);
+        const { dx, dy } = getSmartShrinkTarget(
+          elasticTaskbarItem,
+          winRect,
+          taskbarPosition,
+        );
         return [
           { opacity: 1, transform: "translate(0, 0) scale(1)" },
-          { opacity: 1, transform: `translate(${dx * 0.4}px, ${dy * 0.4}px) scale(1.4)`, offset: 0.4 },
-          { opacity: 1, transform: `translate(${dx * 0.7}px, ${dy * 0.7}px) scale(0.8)`, offset: 0.7 },
-          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` }
+          {
+            opacity: 1,
+            transform: `translate(${dx * 0.4}px, ${dy * 0.4}px) scale(1.4)`,
+            offset: 0.4,
+          },
+          {
+            opacity: 1,
+            transform: `translate(${dx * 0.7}px, ${dy * 0.7}px) scale(0.8)`,
+            offset: 0.7,
+          },
+          { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0.1)` },
         ];
       }
       return [{ opacity: 1 }, { opacity: 0 }];
@@ -708,21 +847,32 @@ function getMinimizeKeyframes(animType, win) {
       const spiralTaskbarItem = $(`#taskbar-${win.id}`);
       if (spiralTaskbarItem) {
         const winRect = win.getBoundingClientRect();
-        const { dx, dy } = getSmartShrinkTarget(spiralTaskbarItem, winRect, taskbarPosition);
+        const { dx, dy } = getSmartShrinkTarget(
+          spiralTaskbarItem,
+          winRect,
+          taskbarPosition,
+        );
         return [
           { opacity: 1, transform: "translate(0, 0) rotate(0deg) scale(1)" },
           {
             opacity: 0.8,
             transform: `translate(${dx * 0.3}px, ${dy * 0.3}px) rotate(120deg) scale(0.7)`,
-            offset: 0.25
+            offset: 0.25,
           },
-          { opacity: 0.5, transform: `translate(${dx * 0.6}px, ${dy * 0.6}px) rotate(240deg) scale(0.4)`, offset: 0.5 },
+          {
+            opacity: 0.5,
+            transform: `translate(${dx * 0.6}px, ${dy * 0.6}px) rotate(240deg) scale(0.4)`,
+            offset: 0.5,
+          },
           {
             opacity: 0.2,
             transform: `translate(${dx * 0.8}px, ${dy * 0.8}px) rotate(360deg) scale(0.2)`,
-            offset: 0.75
+            offset: 0.75,
           },
-          { opacity: 0, transform: `translate(${dx}px, ${dy}px) rotate(480deg) scale(0.1)` }
+          {
+            opacity: 0,
+            transform: `translate(${dx}px, ${dy}px) rotate(480deg) scale(0.1)`,
+          },
         ];
       }
       return [{ opacity: 1 }, { opacity: 0 }];
@@ -749,7 +899,9 @@ export function applyZDepthLift(win, active) {
 export function initClickBubble() {
   Promise.resolve().then(() => {
     if (!isClickBubbleEnabled()) return;
-    document.addEventListener("pointerdown", handleClickBubble, { passive: true });
+    document.addEventListener("pointerdown", handleClickBubble, {
+      passive: true,
+    });
   });
 }
 
@@ -764,19 +916,34 @@ function handleClickBubble(e) {
   ripple.style.left = `${e.clientX}px`;
   ripple.style.top = `${e.clientY}px`;
   document.body.appendChild(ripple);
-  ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
+  ripple.addEventListener("animationend", () => ripple.remove(), {
+    once: true,
+  });
 }
 
 export function applyAnimationSettings(settings) {
-  if (settings.openAnimation) os.storage.set(StorageKeys.windowOpenAnimation, settings.openAnimation);
+  if (settings.openAnimation)
+    os.storage.set(StorageKeys.windowOpenAnimation, settings.openAnimation);
   if (settings.closeAnimation) {
     os.storage.set(StorageKeys.windowCloseAnimation, settings.closeAnimation);
   }
-  if (settings.minimizeAnimation) os.storage.set(StorageKeys.windowMinimizeAnimation, settings.minimizeAnimation);
-  if (settings.restoreAnimation) os.storage.set(StorageKeys.windowRestoreAnimation, settings.restoreAnimation);
-  if (settings.animationSpeed) os.storage.set(StorageKeys.windowAnimationSpeed, settings.animationSpeed);
+  if (settings.minimizeAnimation)
+    os.storage.set(
+      StorageKeys.windowMinimizeAnimation,
+      settings.minimizeAnimation,
+    );
+  if (settings.restoreAnimation)
+    os.storage.set(
+      StorageKeys.windowRestoreAnimation,
+      settings.restoreAnimation,
+    );
+  if (settings.animationSpeed)
+    os.storage.set(StorageKeys.windowAnimationSpeed, settings.animationSpeed);
   if (typeof settings.clickBubble === "boolean") {
-    os.storage.set(StorageKeys.clickBubbleFeedback, String(settings.clickBubble));
+    os.storage.set(
+      StorageKeys.clickBubbleFeedback,
+      String(settings.clickBubble),
+    );
     if (settings.clickBubble) {
       initClickBubble();
     } else {
@@ -841,7 +1008,7 @@ function anchors(w, h) {
     { ax: w / 3, ay: h },
     { ax: 0, ay: h },
     { ax: 0, ay: (2 * h) / 3 },
-    { ax: 0, ay: h / 3 }
+    { ax: 0, ay: h / 3 },
   ];
 }
 
@@ -887,7 +1054,7 @@ export function wobbleStart(win) {
     vx: 0,
     vy: 0,
     anchorX: ax,
-    anchorY: ay
+    anchorY: ay,
   }));
 
   /** @type {WobbleState} */
@@ -897,7 +1064,7 @@ export function wobbleStart(win) {
     dragging: true,
     lastTime: null,
     winW: w,
-    winH: h
+    winH: h,
   };
 
   wobbleMap.set(win, state);
@@ -960,18 +1127,37 @@ function wobbleRaf(win) {
       const dx = pt.anchorX - pt.x;
       const dy = pt.anchorY - pt.y;
 
-      const coupleX = getWobbleCoupleK() * (prev.x - prev.anchorX + (next.x - next.anchorX) - 2 * (pt.x - pt.anchorX));
-      const coupleY = getWobbleCoupleK() * (prev.y - prev.anchorY + (next.y - next.anchorY) - 2 * (pt.y - pt.anchorY));
+      const coupleX =
+        getWobbleCoupleK() *
+        (prev.x -
+          prev.anchorX +
+          (next.x - next.anchorX) -
+          2 * (pt.x - pt.anchorX));
+      const coupleY =
+        getWobbleCoupleK() *
+        (prev.y -
+          prev.anchorY +
+          (next.y - next.anchorY) -
+          2 * (pt.y - pt.anchorY));
 
-      const ax = (getWobbleSpringK() * dx - getWobbleDamping() * pt.vx + coupleX) / getWobbleMass();
-      const ay = (getWobbleSpringK() * dy - getWobbleDamping() * pt.vy + coupleY) / getWobbleMass();
+      const ax =
+        (getWobbleSpringK() * dx - getWobbleDamping() * pt.vx + coupleX) /
+        getWobbleMass();
+      const ay =
+        (getWobbleSpringK() * dy - getWobbleDamping() * pt.vy + coupleY) /
+        getWobbleMass();
 
       pt.vx += ax * dt;
       pt.vy += ay * dt;
       pt.x += pt.vx * dt;
       pt.y += pt.vy * dt;
 
-      if (Math.abs(dx) > 0.4 || Math.abs(dy) > 0.4 || Math.abs(pt.vx) > 0.4 || Math.abs(pt.vy) > 0.4) {
+      if (
+        Math.abs(dx) > 0.4 ||
+        Math.abs(dy) > 0.4 ||
+        Math.abs(pt.vx) > 0.4 ||
+        Math.abs(pt.vy) > 0.4
+      ) {
         settled = false;
       }
     });

@@ -1,10 +1,17 @@
 import "../styles/scramjet.css";
 import { BaseApp, StorageKeys, os, BusEvents } from "../framework.js";
 import { Achievements } from "../achievements.js";
-import { wobbleStart, wobbleMove, wobbleEnd } from "../windowManager/AnimationSystem.js";
-import { PROXIES } from "../proxies.js";
-import { $, setStyle, createElement, addClass, removeClass } from "../shared/domUtils.js";
-import { maybeTriggerSmartlink, shouldEnableAds } from "../ads.js";
+import {
+  $,
+  setStyle,
+  createElement,
+  bindEvent,
+  addClass,
+  removeClass,
+  setText,
+  setHTML,
+} from "../shared/domUtils.js";
+import { maybeTriggerSmartlink } from "../ads.js";
 import {
   buildFsInterceptScript,
   buildDirectoryHtml,
@@ -14,19 +21,27 @@ import {
   joinPath,
   parseLocalTarget,
   readOsTheme,
-  splitPath
+  splitPath,
 } from "../shared/virtualFsNet.js";
-import { buildDinoGameHtml, escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
+import { escapeDinoGameAttr } from "../shared/dino/dinoGame.js";
 import { escapeHtml } from "../utils/utils.js";
-import { getWispUrl } from "../shared/wispConfig.js";
-import { injectFileProtocolFallback, isFileProtocol } from "../shared/fileProtocolFallback.js";
+import { injectFileProtocolFallback } from "../shared/fileProtocolFallback.js";
+import {
+  renderFileProtocolUrl,
+  fetchViaWispRaw,
+} from "../shared/fileProtocolEngine.js";
+import { getLibraryUrl } from "../shared/cdnConfig.js";
 import { isFunction } from "../shared/functionUtils.js";
+import { KeybindManager } from "../keybindManager.js";
 import {
   isPluginEnabled as isWindowOpenPluginEnabled,
-  setPluginEnabled as setWindowOpenPluginEnabled
+  setPluginEnabled as setWindowOpenPluginEnabled,
 } from "./browser/plugins/windowOpenInNewTab.js";
-import { createPopupWindow, isPopupInterceptEnabled } from "../core/ScramjetPopupManager.js";
-
+import {
+  createPopupWindow,
+  isPopupInterceptEnabled,
+} from "../core/ScramjetPopupManager.js";
+import { buildBrowserView } from "./browser/browserView.js";
 const THEME_VARS = [
   "--brand",
   "--text-primary",
@@ -48,38 +63,63 @@ const THEME_VARS = [
   "--overlay-bg",
   "--surface-2",
   "--success",
-  "--warning"
+  "--warning",
 ];
-
 const DIRECT_LOAD_DOMAINS = ["reeyuki.github.io", "reeyuki.neocities.org"];
-const DEFAULT_BOOKMARK_URL = "https://reeyuki.github.io/YukiOS-AlphaHistorical/desktop/";
-const DEFAULT_BOOKMARK_NAME = "YukiOS Alpha Historical";
-
 function isDirectLoadUrl(url) {
   try {
     const host = new URL(url).hostname.toLowerCase();
-    return DIRECT_LOAD_DOMAINS.some((domain) => host === domain || host.endsWith("." + domain));
+    return DIRECT_LOAD_DOMAINS.some(
+      (domain) => host === domain || host.endsWith("." + domain),
+    );
   } catch {
     return false;
   }
 }
-
-function getBookmarksWithFirstRunSeed() {
-  const raw = os.storage.get(StorageKeys.browserBookmarks);
-  if (raw === null || raw === undefined) {
-    const seeded = [{ name: DEFAULT_BOOKMARK_NAME, url: DEFAULT_BOOKMARK_URL }];
-    try {
-      os.storage.set(StorageKeys.browserBookmarks, seeded);
-    } catch {}
-    return seeded;
-  }
-  return Array.isArray(raw) ? raw : [];
-}
-
 let scramjetInstanceCount = 0;
+const pdfScriptPromises = new Map();
+function loadRemoteScript(url) {
+  if (pdfScriptPromises.has(url)) return pdfScriptPromises.get(url);
+  const promise = new Promise((resolveLoad, rejectLoad) => {
+    const script = createElement("script", { attributes: { src: url } });
+    script.onload = () => resolveLoad();
+    script.onerror = () => rejectLoad(new Error("Failed to load " + url));
+    document.head.appendChild(script);
+  });
+  pdfScriptPromises.set(url, promise);
+  return promise;
+}
+function loadRemoteStylesheet(url) {
+  if (pdfScriptPromises.has(url)) return pdfScriptPromises.get(url);
+  const promise = new Promise((resolveLoad, rejectLoad) => {
+    const link = createElement("link", {
+      attributes: { rel: "stylesheet", href: url },
+    });
+    link.onload = () => resolveLoad();
+    link.onerror = () => rejectLoad(new Error("Failed to load " + url));
+    document.head.appendChild(link);
+  });
+  pdfScriptPromises.set(url, promise);
+  return promise;
+}
+let pdfjsLoadPromise = null;
+function loadPdfjs() {
+  if (pdfjsLoadPromise) return pdfjsLoadPromise;
+  pdfjsLoadPromise = (async () => {
+    await Promise.all([
+      loadRemoteScript(getLibraryUrl("pdfjs", "js")),
+      loadRemoteScript(getLibraryUrl("pdfjs", "viewer")),
+      loadRemoteStylesheet(getLibraryUrl("pdfjs", "viewerCss")),
+    ]);
+    const pdfjsLib = window.pdfjsLib;
+    if (!pdfjsLib) throw new Error("PDF library failed to load");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = getLibraryUrl("pdfjs", "worker");
+    return pdfjsLib;
+  })();
+  return pdfjsLoadPromise;
+}
 let cachedThemeVars = null;
 let cachedThemeVarsAt = 0;
-
 function getCachedThemeVars() {
   const now = Date.now();
   if (cachedThemeVars && now - cachedThemeVarsAt < 500) return cachedThemeVars;
@@ -92,11 +132,9 @@ function getCachedThemeVars() {
   cachedThemeVarsAt = now;
   return vars;
 }
-
 export class BrowserApp extends BaseApp {
   constructor(services) {
     super(services);
-    this.iframe = null;
     this.msgHandler = null;
     this.element = null;
     this.torEnabled = false;
@@ -104,220 +142,188 @@ export class BrowserApp extends BaseApp {
     this.torIframe = null;
     this.torOverlay = null;
     this.windowHandlers = new Map();
+    this.focusedWinId = null;
+    this.focusListener = null;
   }
-
   onClose(winId) {
     const entry = this.windowHandlers.get(winId);
     if (entry) {
       window.removeEventListener("message", entry.msgHandler);
-      if (entry.settingsChangedHandler) os.events.off(BusEvents.SETTINGS_CHANGED, entry.settingsChangedHandler);
+      if (entry.settingsChangedHandler)
+        os.events.off(BusEvents.SETTINGS_CHANGED, entry.settingsChangedHandler);
+      if (entry.docKeyHandler)
+        document.removeEventListener("keydown", entry.docKeyHandler);
       if (entry.observer) entry.observer.disconnect();
+      try {
+        entry.view?.tabsApi?.destroy?.();
+      } catch {}
       this.windowHandlers.delete(winId);
     }
     if (this.element && this.element.id === winId) {
       this.cleanupScramjet();
     }
+    try {
+      if (os.storage.get(StorageKeys.browserClearOnExit) === true) {
+        const openWindows = os.window.getOpenWindows();
+        let remaining = false;
+        if (openWindows) {
+          const keys =
+            typeof openWindows.keys === "function"
+              ? Array.from(openWindows.keys())
+              : Object.keys(openWindows);
+          remaining = keys.some((key) =>
+            String(key).startsWith("scramjet-window"),
+          );
+        }
+        if (!remaining) {
+          os.storage.set(StorageKeys.browserHistory, []);
+          os.storage.set(StorageKeys.browserBookmarks, []);
+          os.storage.set(StorageKeys.browserDownloads, []);
+        }
+      }
+    } catch {}
   }
-
   open(opts = {}) {
     const instanceNum = ++scramjetInstanceCount;
     const winId = "scramjet-window-" + instanceNum;
     const isIncognito = opts?.isIncognito || false;
-    const openUrl = opts?.openUrl || null;
+    const openUrl = opts?.openUrl || "yuki://home";
     const openStart = performance.now();
     try {
       performance.mark(`browser:open:${winId}`);
     } catch {}
-
-    const title = isIncognito ? "Scramjet Browser (Private)" : "Scramjet Browser";
+    const title = isIncognito
+      ? "Scramjet Browser (Private)"
+      : "Scramjet Browser";
     const win = os.window.create(winId, title, "1024px", "630px", {
       icon: "static/icons/chrome.webp",
       appId: "browserApp",
       skipHeader: true,
-      position: "center"
+      position: "center",
     });
     win.dataset.browserOpenStart = String(openStart);
-
-    win.innerHTML = `
-      <div class="scramjet-container" style="width:100%;height:100%;overflow:hidden;">
-        <iframe
-          class="scramjet-iframe"
-          style="width:100%;height:100%;border:none;"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
-        ></iframe>
-      </div>
-    `;
-
-    if (isFileProtocol()) {
-      const container = win.querySelector(".scramjet-container");
-      injectFileProtocolFallback(container, "browserApp", openUrl || window.location.href);
-      return win;
-    }
-
+    win.innerHTML = `<div class="browser-root"></div>`;
+    os.window.makeDraggable(win);
+    os.window.makeResizable(win);
     this.initScramjet(null, null, win, { isIncognito, openUrl });
     if (isIncognito) {
-      os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, { achievementId: Achievements.GhostMode });
+      os.events.emit(BusEvents.ACHIEVEMENT_TRIGGER, {
+        achievementId: Achievements.GhostMode,
+      });
     }
-
     return win;
   }
-
   async initScramjet(payload, vt, element, state) {
-    if (isFileProtocol()) {
-      const container = element.querySelector(".scramjet-container");
-      if (container) injectFileProtocolFallback(container, "browserApp", state?.openUrl || window.location.href);
-      return;
-    }
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const wispParam = params.get("wisp");
+      if (wispParam) {
+        const parsed = new URL(wispParam);
+        if (parsed.protocol === "ws:" || parsed.protocol === "wss:") {
+          os.storage.set(StorageKeys.wispServer, wispParam);
+        }
+      }
+    } catch {}
     this.element = element;
-    const iframe = element.querySelector(".scramjet-iframe");
-    this.iframe = iframe;
     const winId = element.id;
-
-    const isIncognito = state.isIncognito || false;
-    const incognitoParam = isIncognito ? "?incognito=true" : "";
-    const transportType = os.storage.get(StorageKeys.browserTransport) || "epoxy";
-    const outerStart = Number(element.dataset.browserOpenStart) || performance.now();
-    iframe.src =
-      window.location.origin +
-      "/s/index.html" +
-      incognitoParam +
-      (incognitoParam ? "&" : "?") +
-      "transport=" +
-      transportType;
-
+    let rootContainer = $(".browser-root", element);
+    if (!rootContainer) {
+      element.innerHTML = `<div class="browser-root"></div>`;
+      rootContainer = $(".browser-root", element);
+    }
     os.window.makeDraggable(element);
     os.window.makeResizable(element);
-
-    let dinoSent = false;
-    const getWindowOpenInterceptEnabled = () => isWindowOpenPluginEnabled(os.storage);
-    const sendDataToIframe = (opts = {}) => {
-      if (!iframe || !iframe.contentWindow) return;
-      const vars = getCachedThemeVars();
-      const bookmarks = getBookmarksWithFirstRunSeed();
-      const history = os.storage.get(StorageKeys.browserHistory) || [];
-      const wispUrl = getWispUrl();
-      const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
-      const includeDino = opts.includeDino ?? !dinoSent;
-      if (includeDino) dinoSent = true;
-      iframe.contentWindow.postMessage(
-        {
-          type: "scram:init",
-          vars,
-          bookmarks,
-          history,
-          wispUrl,
-          transport,
-          dinoGameHtml: includeDino ? buildDinoGameHtml() : "",
-          adsEnabled: shouldEnableAds(),
-          windowOpenInterceptEnabled: getWindowOpenInterceptEnabled()
-        },
-        "*"
-      );
-    };
-
+    const initialUrl = state?.openUrl || "yuki://home";
+    const parsedNum = Number(String(winId).split("-").pop());
+    const instanceNum =
+      Number.isFinite(parsedNum) && parsedNum > 0
+        ? parsedNum
+        : scramjetInstanceCount;
+    const getWindowOpenInterceptEnabled = () =>
+      isWindowOpenPluginEnabled(os.storage);
     const msgHandler = (e) => {
-      if (e.source !== iframe?.contentWindow && e.source !== this.torIframe?.contentWindow) return;
       const data = e.data;
       if (!data || !data.type) return;
-
-      if (data.type === "browser-perf") {
-        const total = (performance.now() - outerStart).toFixed(0);
-        const inner =
-          data.ms != null ? ` inner ${data.ms}ms (probe ${data.probeMs ?? "-"}ms wait ${data.waitMs ?? "-"}ms)` : "";
+      if (
+        data.type === "browser-navigate" ||
+        data.type === "navigate" ||
+        data.type === "scram-local-nav" ||
+        data.type === "scram:navigate"
+      ) {
+        if (data.url) this.navigateSingleLayer(winId, String(data.url));
+        return;
+      }
+      if (data.type === "browser-navigate-split") {
         try {
-          performance.mark(`browser:interactive:${winId}`);
-          performance.measure(
-            `browser:open→interactive:${winId}`,
-            `browser:open:${winId}`,
-            `browser:interactive:${winId}`
-          );
+          const splitUrl = data.url ? String(data.url) : "";
+          if (!splitUrl) return;
+          const entry = this.windowHandlers.get(winId);
+          const tabsApi = entry?.view?.tabsApi || null;
+          try {
+            if (tabsApi?.isSplitActive?.()) {
+              tabsApi.navigateSplit(splitUrl);
+              return;
+            }
+          } catch {}
+          try {
+            const tab = tabsApi?.addTab?.(splitUrl);
+            if (tab) this.navigateSingleLayer(winId, tab.url || splitUrl);
+            else this.navigateSingleLayer(winId, splitUrl);
+          } catch {
+            try {
+              this.navigateSingleLayer(winId, splitUrl);
+            } catch {}
+          }
         } catch {}
         return;
       }
-
-      if (data.type === "scram:getBookmarks" || data.type === "scram:getHistory") {
-        sendDataToIframe({ includeDino: false });
-      } else if (data.type === "scram:addBookmark") {
-        let bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
-        if (!bookmarks.some((b) => b.url === data.url)) {
-          bookmarks.push({ name: data.name || data.url, url: data.url });
-          os.storage.set(StorageKeys.browserBookmarks, bookmarks);
-        }
-      } else if (data.type === "scram:removeBookmark") {
-        let bookmarks = os.storage.get(StorageKeys.browserBookmarks) || [];
-        bookmarks = bookmarks.filter((b) => b.url !== data.url);
-        os.storage.set(StorageKeys.browserBookmarks, bookmarks);
-      } else if (data.type === "scram:setBookmarks") {
-        os.storage.set(StorageKeys.browserBookmarks, data.bookmarks || []);
-      } else if (data.type === "scram:addHistory") {
-        let history = os.storage.get(StorageKeys.browserHistory) || [];
-        history.push({ url: data.url, title: data.title || data.url, time: Date.now() });
-        if (history.length > 500) history = history.slice(-500);
-        os.storage.set(StorageKeys.browserHistory, history);
-      } else if (data.type === "scram:setHistory") {
-        os.storage.set(StorageKeys.browserHistory, data.history || []);
-      } else if (data.type === "browser-new-window") {
+      if (data.type === "browser-new-window") {
         os.app.launch("browserApp", { isIncognito: !!data.incognito });
       } else if (data.type === "scram:setTorMode") {
         this.torEnabled = data.active;
         if (!data.active) this.exitTorMode();
-      } else if (data.type === "scram:navigate") {
-        if (this.torEnabled && data.url) {
-          if (isDirectLoadUrl(data.url)) {
-            try {
-              iframe?.contentWindow?.postMessage({ type: "browser-create-tab", url: String(data.url) }, "*");
-            } catch {}
-          } else {
-            this.loadWithTor(data.url);
-          }
-        }
       } else if (data.type === "browser-tor-reconnect") {
         this.reconnectTor();
-      } else if (data.type === "browser-navigate") {
-        if (this.torEnabled && data.url) {
-          if (isDirectLoadUrl(data.url)) {
-            try {
-              iframe?.contentWindow?.postMessage({ type: "browser-create-tab", url: String(data.url) }, "*");
-            } catch {}
-          } else {
-            this.loadWithTor(data.url);
-          }
-        }
       } else if (data.type === "browser-tor-download") {
         if (this.torEnabled && data.url) {
           this.loadWithTor(data.url);
         }
       } else if (data.type === "scram:proxyConfigChange") {
         if (data.wispUrl) os.storage.set(StorageKeys.wispServer, data.wispUrl);
-        if (data.transport) os.storage.set(StorageKeys.browserTransport, data.transport);
+        if (data.transport)
+          os.storage.set(StorageKeys.browserTransport, data.transport);
       } else if (data.type === "scram:windowOpenInterceptGet") {
         try {
           e.source?.postMessage(
-            { type: "scram:windowOpenInterceptState", enabled: getWindowOpenInterceptEnabled() },
-            "*"
+            {
+              type: "scram:windowOpenInterceptState",
+              enabled: getWindowOpenInterceptEnabled(),
+            },
+            "*",
           );
         } catch {}
       } else if (data.type === "scram:setWindowOpenIntercept") {
         const enabled = !!data.enabled;
         setWindowOpenPluginEnabled(os.storage, enabled);
         try {
-          iframe?.contentWindow?.postMessage({ type: "scram:windowOpenInterceptState", enabled }, "*");
+          const activeView = this.element?.id
+            ? this.windowHandlers.get(this.element.id)?.view
+            : null;
+          activeView?.tabsApi
+            ?.getActive?.()
+            ?.viewport?.contentWindow?.postMessage(
+              { type: "scram:windowOpenInterceptState", enabled },
+              "*",
+            );
         } catch {}
       } else if (data.type === "browser-window-open") {
         const url = data.url;
-        if (url && iframe?.contentWindow) {
-          try {
-            iframe.contentWindow.postMessage({ type: "browser-create-tab", url: String(url) }, "*");
-          } catch {}
-        }
+        if (url) this.navigateSingleLayer(winId, String(url));
       } else if (data.type === "browser-popup-open") {
-        if (e.source !== iframe?.contentWindow) return;
         const targetUrl = data.url ? String(data.url) : "";
         if (!targetUrl) return;
         if (!isPopupInterceptEnabled()) {
-          try {
-            iframe.contentWindow.postMessage({ type: "browser-create-tab", url: targetUrl }, "*");
-          } catch {}
+          this.navigateSingleLayer(winId, targetUrl);
           return;
         }
         try {
@@ -327,261 +333,912 @@ export class BrowserApp extends BaseApp {
             parentIcon: "static/icons/chrome.webp",
             url: targetUrl,
             pageTitle: data.pageTitle || targetUrl,
-            features: data.specs || ""
+            features: data.specs || "",
           });
         } catch {}
       } else if (data.type === "scram:localRequest") {
         this.handleLocalRequest(data.url).then((result) => {
           try {
-            e.source?.postMessage({ type: "scram:localResponse", id: data.id, ...result }, "*");
+            e.source?.postMessage(
+              { type: "scram:localResponse", id: data.id, ...result },
+              "*",
+            );
           } catch {}
         });
       } else if (data.type === "scram:localDownload") {
         this.handleLocalDownload(data.url);
+      } else if (data.type === "browser-fetch-request") {
+        this.handleBridgeFetchRequest(winId, data);
+      } else if (data.type === "browser-open") {
+        const openUrl = data.url ? String(data.url) : "";
+        if (!openUrl) return;
+        let intercepted = false;
+        try {
+          intercepted = isWindowOpenPluginEnabled(os.storage);
+        } catch {
+          intercepted = true;
+        }
+        if (intercepted) {
+          try {
+            const openEntry = this.windowHandlers.get(winId);
+            const opened = openEntry?.view?.tabsApi?.addTab?.(openUrl);
+            if (opened) {
+              this.navigateSingleLayer(winId, opened.url || openUrl);
+              return;
+            }
+          } catch {}
+        }
+        this.navigateSingleLayer(winId, openUrl);
+      } else if (data.type === "browser-blocked") {
+        try {
+          const entry = this.windowHandlers.get(winId);
+          if (entry) {
+            entry.blockedCount = (entry.blockedCount || 0) + 1;
+            entry.blockedPageCount = (entry.blockedPageCount || 0) + 1;
+          }
+        } catch {}
+        let adblockOn = true;
+        try {
+          const stored = os.storage.get(StorageKeys.browserAdblockEnabled);
+          adblockOn = stored === undefined || stored === null ? true : !!stored;
+        } catch {
+          adblockOn = true;
+        }
+        if (!adblockOn) return;
+        os.notify.send(
+          "Browser",
+          "Blocked resource: " + String(data.url || data.kind || "unknown"),
+          {
+            type: "info",
+            duration: 3000,
+          },
+        );
+        try {
+          const entry = this.windowHandlers.get(winId);
+          const blockedTotal = entry?.blockedCount || 0;
+          const adButton = entry?.view?.els?.adBtn || null;
+          if (adButton && adButton.dataset) {
+            adButton.dataset.tooltip =
+              "Ad blocking is active. Blocked: " + blockedTotal;
+          }
+        } catch {}
+        try {
+          const entry = this.windowHandlers.get(winId);
+          entry.view?.tabsApi?.recordBlocked?.(data.url || data.kind);
+        } catch {}
+        try {
+          const blockedEntry = this.windowHandlers.get(winId);
+          const popup = blockedEntry?.view?.els?.adPopup || null;
+          if (popup && popup.classList.contains("open")) {
+            this.updateAdblockPopup(winId);
+          }
+        } catch {}
       }
     };
     this.msgHandler = msgHandler;
     window.addEventListener("message", msgHandler);
-    element.addEventListener("remove", () => this.onClose(winId), { once: true });
-
-    iframe.addEventListener("load", () => {
-      const loadMs = (performance.now() - outerStart).toFixed(0);
-      try {
-        performance.mark(`browser:iframe-load:${winId}`);
-        performance.measure(`browser:open→load:${winId}`, `browser:open:${winId}`, `browser:iframe-load:${winId}`);
-      } catch {}
-      sendDataToIframe({ includeDino: true });
-      const didSetup = this.trySetupIframe(iframe, element);
-      if (didSetup) {
-        const interactiveMs = (performance.now() - outerStart).toFixed(0);
-        try {
-          performance.mark(`browser:interactive:${winId}`);
-        } catch {}
-      } else {
-        const pending = this.windowHandlers.get(winId);
-        const origObserver = pending?.observer;
-        if (origObserver) {
-          let logged = false;
-          const origDisconnect = origObserver.disconnect.bind(origObserver);
-          origObserver.disconnect = () => {
-            if (!logged) {
-              logged = true;
-              const interactiveMs = (performance.now() - outerStart).toFixed(0);
-              if (Number(interactiveMs) < 1500) {
-              }
-              try {
-                performance.mark(`browser:interactive:${winId}`);
-              } catch {}
-            }
-            origDisconnect();
-          };
-        }
-      }
-      if (state.openUrl) this.navigateToUrl(iframe, state.openUrl);
+    element.addEventListener("remove", () => this.onClose(winId), {
+      once: true,
     });
-
     let settingsDebounce = null;
     const settingsChangedHandler = () => {
       if (settingsDebounce) return;
       settingsDebounce = setTimeout(() => {
         settingsDebounce = null;
         cachedThemeVars = null;
-        if (iframe.contentWindow) sendDataToIframe({ includeDino: false });
+        try {
+          getCachedThemeVars();
+        } catch {}
+        const current = this.windowHandlers.get(winId);
+        try {
+          current?.view?.tabsApi?.refresh?.();
+        } catch {}
       }, 100);
     };
     this.settingsChangedHandler = settingsChangedHandler;
     os.events.on(BusEvents.SETTINGS_CHANGED, settingsChangedHandler);
-    this.windowHandlers.set(winId, { msgHandler, settingsChangedHandler, observer: null });
-  }
-
-  trySetupIframe(iframe, element) {
-    const setup = () => {
+    if (!this.focusListener) {
+      this.focusListener = (data) => {
+        try {
+          this.focusedWinId = (data && data.winId) || null;
+        } catch {}
+      };
       try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        if (!iframeDoc || !iframeDoc.body) return false;
-        const controlsSlot = iframeDoc.getElementById("controls-slot");
-        const tabsContainer = iframeDoc.getElementById("tabs-container");
-        if (!controlsSlot || !tabsContainer) return false;
-        this.injectControls(iframeDoc, controlsSlot, element);
-        this.attachDragHandler(tabsContainer, iframe, element);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
-    if (setup()) return true;
-    try {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      if (!iframeDoc?.body) return false;
-      const entry = this.windowHandlers.get(element.id);
-      const obs = new MutationObserver(() => {
-        if (setup()) {
-          obs.disconnect();
-          if (entry) entry.observer = null;
-        }
-      });
-      obs.observe(iframeDoc.body, { childList: true, subtree: true });
-      if (entry) entry.observer = obs;
-      setTimeout(() => {
-        obs.disconnect();
-        if (entry && entry.observer === obs) entry.observer = null;
-      }, 3000);
-      return false;
-    } catch (e) {}
-    return false;
-  }
-
-  injectControls(iframeDoc, controlsSlot, element) {
-    const controlsHTML = `<div class="window-controls">
-      <button class="minimize-btn" title="Minimize"><svg viewBox="0 0 10 1" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10v1H0z"></path></svg></button>
-      <button class="external-btn" title="Open in New Tab">↗</button>
-      <button class="maximize-btn" title="Maximize"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 0v10h10V0H0zm1 1h8v8H1V1z"></path></svg></button>
-      <button class="close-btn" title="Close"><svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M10.2.7L9.5 0 5.1 4.4.7 0 0 .7l4.4 4.4L0 9.5l.7.7 4.4-4.4 4.4 4.4.7-.7-4.4-4.4z"></path></svg></button>
-    </div>`;
-    controlsSlot.innerHTML = controlsHTML;
-    const closeBtn = controlsSlot.querySelector(".close-btn");
-    const maxBtn = controlsSlot.querySelector(".maximize-btn");
-    const minBtn = controlsSlot.querySelector(".minimize-btn");
-    const externalBtn = controlsSlot.querySelector(".external-btn");
-    if (closeBtn)
-      closeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        os.window.close(element);
-      });
-    if (maxBtn)
-      maxBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        element.classList.add("snapping");
-        if (element.dataset.snapZone === "maximize") os.window.unsnap?.(element);
-        else os.window.applySnap(element, "maximize");
-      });
-    if (minBtn)
-      minBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        os.window.minimize(element);
-      });
-    if (externalBtn)
-      externalBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.open(window.location.origin + "/s/index.html", "blank");
-      });
-  }
-
-  attachDragHandler(tabsContainer, iframe, element) {
-    setStyle(tabsContainer, { cursor: "move" });
-    tabsContainer.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
-      if (
-        e.target.closest(".tab") ||
-        e.target.closest(".new-tab") ||
-        e.target.closest(".window-controls") ||
-        e.target.closest("button, input, select, textarea")
-      )
-        return;
-      this.startIframeDrag(e, iframe, element);
-    });
-  }
-
-  startIframeDrag(e, iframe, element) {
-    e.preventDefault();
-    os.window.bringToFront(element);
-    wobbleStart(element);
-    const wasSnapped = !!element.dataset.snapZone;
-    if (wasSnapped) os.windowManager.unsnap(element);
-    const disableStretch = os.storage.get(StorageKeys.disableDesktopStretchScroll) !== "false";
-    if (disableStretch) {
-      if (getComputedStyle(element).position !== "fixed") {
-        const rect = element.getBoundingClientRect();
-        setStyle(element, { left: `${rect.left}px`, top: `${rect.top}px`, position: "fixed" });
-      }
-    } else if (getComputedStyle(element).position === "fixed") {
-      const rect = element.getBoundingClientRect();
-      const desktop = $("#desktop");
-      const desktopRect = desktop.getBoundingClientRect();
-      const left = rect.left - desktopRect.left + desktop.scrollLeft;
-      const top = rect.top - desktopRect.top + desktop.scrollTop;
-      setStyle(element, { left: `${left}px`, top: `${top}px`, position: "absolute" });
+        os.events.on(BusEvents.WINDOW_FOCUSED, this.focusListener);
+      } catch {}
     }
-    const iframeRect = iframe.getBoundingClientRect();
-    const startX = e.clientX + iframeRect.left;
-    const startY = e.clientY + iframeRect.top;
-    const winRect = element.getBoundingClientRect();
-    const ox = startX - winRect.left;
-    const oy = startY - winRect.top;
-    os.windowManager.isDraggingWindow = true;
-    addClass(document.body, "is-dragging");
-    const onMouseMove = (moveEvent) => {
-      const newLeft = moveEvent.clientX - ox;
-      const newTop = moveEvent.clientY - oy;
-      setStyle(element, { left: `${newLeft}px`, top: `${newTop}px` });
-      const entry = os.windowManager.openWindows.get(element.id);
-      if (entry?.record) entry.record.setGeometry(newLeft, newTop);
-      wobbleMove(element, moveEvent.clientX - startX, moveEvent.clientY - startY);
-      const zone = os.windowManager.getSnapZone(moveEvent.clientX, moveEvent.clientY);
-      os.windowManager.activeSnapZone = zone;
-      if (zone) os.windowManager.showSnapGhost(zone);
-      else os.windowManager.hideSnapGhost();
-    };
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      os.windowManager.isDraggingWindow = false;
-      removeClass(document.body, "is-dragging");
-      wobbleEnd(element);
-      if (os.windowManager.activeSnapZone) {
-        os.windowManager.applySnap(element, os.windowManager.activeSnapZone);
-        os.windowManager.activeSnapZone = null;
-        os.windowManager.hideSnapGhost();
+    const docKeyHandler = (event) => {
+      try {
+        if (this.focusedWinId !== winId) return;
+      } catch {
+        return;
       }
-      if (os.windowManager.triggerSessionSave) os.windowManager.triggerSessionSave();
+      try {
+        if (
+          element &&
+          event.target instanceof Element &&
+          element.contains(event.target)
+        )
+          return;
+      } catch {}
+      const target = event.target;
+      if (target instanceof Element) {
+        const tag = (target.tagName || "").toUpperCase();
+        if (tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable)
+          return;
+      }
+      for (let tabNum = 1; tabNum <= 9; tabNum += 1) {
+        let matched = false;
+        try {
+          matched = KeybindManager.matches(event, "browser.tab" + tabNum);
+        } catch {
+          matched = false;
+        }
+        if (!matched) continue;
+        try {
+          event.preventDefault();
+        } catch {}
+        try {
+          const live = this.windowHandlers.get(winId);
+          const all = live?.view?.tabsApi?.getAll?.() || [];
+          const picked = all[tabNum - 1];
+          if (picked) live.view.tabsApi.switchTab(picked.id);
+        } catch {}
+        return;
+      }
     };
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("keydown", docKeyHandler);
+    this.windowHandlers.set(winId, {
+      root: rootContainer,
+      view: null,
+      win: element,
+      msgHandler,
+      settingsChangedHandler,
+      docKeyHandler,
+      lastUrl: initialUrl,
+      blockedCount: 0,
+      blockedPageCount: 0,
+      observer: null,
+    });
+    let view = null;
+    try {
+      view = buildBrowserView(rootContainer, {
+        initialUrl,
+        appId: "browserApp",
+        instanceNum,
+        onNavigate: (url) => this.navigateSingleLayer(winId, url),
+        onAction: (action) => this.handleBrowserAction(winId, action),
+      });
+    } catch {
+      view = null;
+    }
+    if (!view) {
+      try {
+        injectFileProtocolFallback(rootContainer, "browserApp", initialUrl);
+      } catch {}
+      return;
+    }
+    const stored = this.windowHandlers.get(winId);
+    if (stored) {
+      stored.view = view;
+      stored.root = view.root || rootContainer;
+    }
+    const header =
+      view.els?.header ||
+      view.header ||
+      $(".browser-tab-strip", view.root) ||
+      view.tabStrip ||
+      $(".browser-address-row", view.root);
+    if (header) {
+      bindEvent(header, "mousedown", () => {
+        try {
+          os.window.focus(winId);
+        } catch {}
+      });
+    }
+    os.window.makeDraggable(element);
+    os.window.makeResizable(element);
+    this.navigateSingleLayer(winId, initialUrl);
   }
-
-  sendDataToIframe() {
-    if (!this.iframe || !this.iframe.contentWindow) return;
-    const vars = getCachedThemeVars();
-    const bookmarks = getBookmarksWithFirstRunSeed();
-    const history = os.storage.get(StorageKeys.browserHistory) || [];
-    const wispUrl = getWispUrl();
-    const transport = os.storage.get(StorageKeys.browserTransport) || "epoxy";
-    this.iframe.contentWindow.postMessage(
-      {
-        type: "scram:init",
-        vars,
-        bookmarks,
-        history,
-        wispUrl,
-        transport,
-        dinoGameHtml: "",
-        adsEnabled: shouldEnableAds(),
-        windowOpenInterceptEnabled: isWindowOpenPluginEnabled(os.storage)
-      },
-      "*"
-    );
+  handleBrowserAction(winId, action) {
+    const entry = this.windowHandlers.get(winId);
+    if (!entry || !entry.view) return;
+    const view = entry.view;
+    const tabsApi = view.tabsApi;
+    const active = tabsApi?.getActive?.() || null;
+    const raw =
+      typeof action === "string"
+        ? action
+        : action?.id || action?.type || action?.action || "";
+    const id = String(raw || "").toLowerCase();
+    const payload = typeof action === "object" && action ? action : {};
+    const syncAddress = (value) => {
+      const target = value || active?.url || entry.lastUrl || "";
+      if (!target) return;
+      const field =
+        view.addressInput ||
+        $(".browser-address-input", view.root) ||
+        $(".browser-address-input", entry.root);
+      if (field) field.value = target;
+    };
+    const callBehavior = (names) => {
+      for (const name of names) {
+        try {
+          if (tabsApi && typeof tabsApi[name] === "function") {
+            tabsApi[name](active?.id);
+            return true;
+          }
+        } catch {}
+        try {
+          if (active && typeof active[name] === "function") {
+            active[name]();
+            return true;
+          }
+        } catch {}
+      }
+      return false;
+    };
+    if (id === "minimize") {
+      os.window.minimize(winId);
+      return;
+    }
+    if (id === "maximize" || id === "toggle-maximize" || id === "zoom-window") {
+      try {
+        const el =
+          (entry && entry.win) || document.getElementById(winId) || null;
+        const target = el && el.dataset ? el : null;
+        if (!target) {
+          os.window.maximize(winId);
+        } else if (target.dataset.snapZone === "maximize") {
+          os.window.unsnap(target);
+        } else {
+          os.window.applySnap(target, "maximize");
+        }
+      } catch {
+        try {
+          os.window.maximize(winId);
+        } catch {}
+      }
+      return;
+    }
+    if (id === "close" || id === "close-window") {
+      os.window.close(winId);
+      return;
+    }
+    if (id === "external" || id === "open-external") {
+      try {
+        const source = entry.win
+          ? entry.win.outerHTML
+          : document.documentElement.outerHTML;
+        const blob = new Blob([source], { type: "text/html" });
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, "_blank", "noopener");
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      } catch {}
+      return;
+    }
+    if (id === "new-tab") {
+      const url = payload.url || "yuki://home";
+      try {
+        const tab = tabsApi?.addTab?.(url);
+        if (tab) this.navigateSingleLayer(winId, tab.url || url);
+        else this.navigateSingleLayer(winId, url);
+      } catch {
+        this.navigateSingleLayer(winId, url);
+      }
+      syncAddress(url);
+      return;
+    }
+    if (id === "new-window") {
+      const url = payload.url || active?.url || "yuki://home";
+      os.app.launch("browserApp", { openUrl: url });
+      return;
+    }
+    if (id === "back") {
+      if (!callBehavior(["goBack", "back", "navigateBack"])) {
+        if (active && Array.isArray(active.navStack) && active.navIndex > 0) {
+          active.navIndex -= 1;
+          this.navigateSingleLayer(winId, active.navStack[active.navIndex]);
+        }
+      }
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "fwd" || id === "forward") {
+      if (!callBehavior(["goForward", "forward", "navigateForward"])) {
+        if (
+          active &&
+          Array.isArray(active.navStack) &&
+          active.navIndex < active.navStack.length - 1
+        ) {
+          active.navIndex += 1;
+          this.navigateSingleLayer(winId, active.navStack[active.navIndex]);
+        }
+      }
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "reload" || id === "refresh") {
+      if (!callBehavior(["reload", "refresh", "reloadTab"])) {
+        const url = active?.url || entry.lastUrl || "";
+        if (url) this.navigateSingleLayer(winId, url);
+      }
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "home") {
+      if (!callBehavior(["goHome", "home"])) {
+        let homeUrl = "yuki://home";
+        try {
+          const storedHome = os.storage.get(StorageKeys.browserHomepage);
+          if (storedHome) homeUrl = String(storedHome);
+        } catch {}
+        this.navigateSingleLayer(winId, homeUrl);
+        syncAddress(homeUrl);
+        return;
+      }
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "google-lens") {
+      this.navigateSingleLayer(winId, "https://www.google.com/imghp");
+      syncAddress("https://www.google.com/imghp");
+      return;
+    }
+    if (id === "new-private-window") {
+      os.app.launch("browserApp", { isIncognito: true });
+      return;
+    }
+    if (id === "star" || id === "toggle-bookmark") {
+      try {
+        tabsApi?.handleMenuAction?.("toggle-bookmark");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "bookmarks") {
+      try {
+        tabsApi?.handleMenuAction?.("bookmarks");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "history" || id === "show-history") {
+      try {
+        tabsApi?.handleMenuAction?.("history");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "downloads" || id === "show-downloads") {
+      try {
+        tabsApi?.handleMenuAction?.("downloads");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "reopen-tab" || id === "reopen") {
+      try {
+        tabsApi?.handleMenuAction?.("reopen-tab");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "save-page") {
+      try {
+        tabsApi?.handleMenuAction?.("save-page");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "screenshot") {
+      try {
+        tabsApi?.handleMenuAction?.("screenshot");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "devtools") {
+      try {
+        tabsApi?.handleMenuAction?.("devtools");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "clear-data" || id === "clear-browsing-data") {
+      try {
+        tabsApi?.handleMenuAction?.("clear-data");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "darkmode" || id === "dark-mode" || id === "toggle-darkmode") {
+      try {
+        tabsApi?.handleMenuAction?.("darkmode");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "zoom-in") {
+      try {
+        tabsApi?.handleMenuAction?.("zoom-in");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "zoom-out") {
+      try {
+        tabsApi?.handleMenuAction?.("zoom-out");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "wisp-settings" || id === "wisp" || id === "proxy-settings") {
+      try {
+        tabsApi?.handleMenuAction?.("wisp-settings");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "adblock") {
+      this.showAdblockPopup(winId);
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "adblock-toggle") {
+      const next = this.setAdblockEnabled(winId, !this.isAdblockEnabled());
+      os.notify.send(
+        "Browser",
+        next ? "Ad blocking enabled." : "Ad blocking disabled.",
+        {
+          type: "info",
+          duration: 3000,
+        },
+      );
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "open-blocking-log") {
+      this.navigateSingleLayer(winId, "yuki://blocking-log");
+      syncAddress("yuki://blocking-log");
+      return;
+    }
+    if (id === "find" || id === "find-in-page") {
+      try {
+        tabsApi?.handleMenuAction?.("find");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "split" || id === "split-view") {
+      try {
+        tabsApi?.handleMenuAction?.("split");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "toggle-bookmarkbar") {
+      try {
+        tabsApi?.handleMenuAction?.("toggle-bookmarkbar");
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "palette" || id === "command-palette") {
+      try {
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "p",
+            ctrlKey: true,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      } catch {}
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "sidebar" || id === "toggle-sidebar") {
+      callBehavior(["toggleSidebar", "sidebar"]);
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "sidebar-collapse" || id === "collapse-sidebar") {
+      if (!callBehavior(["collapseSidebar", "toggleSidebar", "sidebar"])) {
+        try {
+          tabsApi?.refresh?.();
+        } catch {}
+      }
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "fullscreen" || id === "toggle-fullscreen") {
+      if (!callBehavior(["toggleFullscreen", "fullscreen"])) {
+        try {
+          os.window.toggleFullscreen(winId);
+        } catch {}
+      }
+      syncAddress(active?.url);
+      return;
+    }
+    if (
+      id === "menu" ||
+      id === "menu-open" ||
+      id === "menu-close" ||
+      id === "open-menu"
+    ) {
+      callBehavior(["toggleMenu", "openMenu", "menu"]);
+      syncAddress(active?.url);
+      return;
+    }
+    if (id === "pdf-close") {
+      this.closePdfViewer(winId);
+      syncAddress(active?.url);
+      return;
+    }
+    callBehavior([id]);
+    syncAddress(active?.url);
   }
-
+  isAdblockEnabled() {
+    try {
+      const stored = os.storage.get(StorageKeys.browserAdblockEnabled);
+      return stored === undefined || stored === null ? true : !!stored;
+    } catch {
+      return true;
+    }
+  }
+  setAdblockEnabled(winId, enabled) {
+    const next = enabled === true;
+    try {
+      os.storage.set(StorageKeys.browserAdblockEnabled, next);
+    } catch {}
+    const entry = this.windowHandlers.get(winId);
+    const adBtn = entry?.view?.els?.adBtn || null;
+    if (adBtn) {
+      adBtn.classList.toggle("active", next);
+      adBtn.classList.toggle("inactive", !next);
+      if (adBtn.dataset) {
+        adBtn.dataset.tooltip = next
+          ? "Ad blocking is active. Blocked: " + (entry?.blockedCount || 0)
+          : "Ad blocking is off";
+      }
+    }
+    this.updateAdblockPopup(winId);
+    return next;
+  }
+  showAdblockPopup(winId) {
+    const entry = this.windowHandlers.get(winId);
+    const popup = entry?.view?.els?.adPopup || null;
+    if (!popup) {
+      return;
+    }
+    popup.classList.toggle("open");
+    this.updateAdblockPopup(winId);
+  }
+  updateAdblockPopup(winId) {
+    const entry = this.windowHandlers.get(winId);
+    const els = entry?.view?.els || null;
+    if (!els || !els.adPopup) {
+      return;
+    }
+    const enabled = this.isAdblockEnabled();
+    if (els.adPageNum) {
+      setText(els.adPageNum, String(entry.blockedPageCount || 0));
+    }
+    if (els.adTotalNum) {
+      setText(els.adTotalNum, String(entry.blockedCount || 0));
+    }
+    if (els.adPowerBtn) {
+      els.adPowerBtn.classList.toggle("active", enabled);
+      els.adPowerBtn.classList.toggle("inactive", !enabled);
+      if (els.adPowerBtn.dataset) {
+        els.adPowerBtn.dataset.tooltip = enabled
+          ? "Turn ad blocking off"
+          : "Turn ad blocking on";
+      }
+    }
+  }
+  closePdfViewer(winId) {
+    try {
+      const targetEntry = this.windowHandlers.get(winId);
+      if (!targetEntry || !targetEntry.view || !targetEntry.view.els) return;
+      const els = targetEntry.view.els;
+      if (els.pdfViewer) removeClass(els.pdfViewer, "active");
+      if (els.pdfBody) setHTML(els.pdfBody, "");
+      if (els.pdfTitle) setText(els.pdfTitle, "PDF Document");
+      if (els.pdfInfo) setText(els.pdfInfo, "-");
+    } catch {}
+  }
+  async openPdfViewer(winId, entry, active, viewport, urlText) {
+    const els = entry?.view?.els || null;
+    if (!els || !els.pdfViewer || !els.pdfBody)
+      throw new Error("PDF viewer unavailable");
+    let filename = String(urlText || "");
+    try {
+      const parsed = new URL(String(urlText));
+      const last = parsed.pathname.split("/").pop();
+      if (last) filename = last;
+    } catch {
+      const parts = String(urlText).split(/[?#]/)[0].split("/");
+      const last = parts.pop();
+      if (last) filename = last;
+    }
+    try {
+      filename = decodeURIComponent(filename);
+    } catch {}
+    addClass(els.pdfViewer, "active");
+    if (els.pdfTitle) setText(els.pdfTitle, filename);
+    if (els.pdfBody) setHTML(els.pdfBody, "");
+    if (els.pdfInfo) setText(els.pdfInfo, "-");
+    try {
+      const pdfjsLib = await loadPdfjs();
+      const fetched = await fetchViaWispRaw(urlText);
+      const buffer = fetched?.buffer || null;
+      if (!buffer) throw new Error("Empty PDF response");
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
+        .promise;
+      if (els.pdfInfo) setText(els.pdfInfo, pdf.numPages + " pages");
+      const scale = Math.min(window.devicePixelRatio || 1, 2);
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const pageViewport = page.getViewport({ scale });
+        const canvas = createElement("canvas");
+        canvas.width = Math.floor(pageViewport.width);
+        canvas.height = Math.floor(pageViewport.height);
+        await page.render({
+          canvasContext: canvas.getContext("2d"),
+          viewport: pageViewport,
+        }).promise;
+        els.pdfBody.appendChild(canvas);
+      }
+    } catch (err) {
+      try {
+        this.closePdfViewer(winId);
+      } catch {}
+      throw err;
+    }
+  }
+  async handleBridgeFetchRequest(winId, data) {
+    const entry = this.windowHandlers.get(winId);
+    if (!entry || !entry.view) return;
+    const active = entry.view?.tabsApi?.getActive?.() || null;
+    const viewport = active?.viewport || null;
+    if (!viewport) return;
+    try {
+      const { fetchViaWisp } = await import("../shared/fileProtocolEngine.js");
+      const result = await fetchViaWisp(data.url, {
+        method: data.method || "GET",
+        headers: data.headers || {},
+      });
+      const text = result.text || "";
+      viewport.contentWindow?.postMessage(
+        {
+          type: "browser-fetch-response",
+          id: data.id,
+          ok: true,
+          status: result.status || 200,
+          text,
+          contentType: result.contentType || "text/plain",
+        },
+        "*",
+      );
+    } catch (err) {
+      try {
+        viewport.contentWindow?.postMessage(
+          {
+            type: "browser-fetch-response",
+            id: data.id,
+            ok: false,
+            status: 0,
+            text: "",
+            contentType: "text/plain",
+            error: err?.message || String(err),
+          },
+          "*",
+        );
+      } catch {}
+    }
+  }
+  async navigateSingleLayer(winId, rawUrl) {
+    const entry = this.windowHandlers.get(winId);
+    if (!entry) return;
+    entry.blockedPageCount = 0;
+    try {
+      const navPopup = entry.view?.els?.adPopup || null;
+      if (navPopup && navPopup.classList.contains("open")) {
+        this.updateAdblockPopup(winId);
+      }
+    } catch {}
+    const urlText = String(rawUrl || "");
+    if (!urlText) return;
+    entry.lastUrl = urlText;
+    maybeTriggerSmartlink();
+    if (!isDirectLoadUrl(urlText) && this.isTorUrl(urlText)) {
+      this.loadWithTor(urlText);
+      return;
+    }
+    let active = entry.view?.tabsApi?.getActive?.() || null;
+    if (!active) {
+      try {
+        active = entry.view?.tabsApi?.addTab?.(urlText) || null;
+      } catch {
+        active = null;
+      }
+    }
+    if (!active) return;
+    const viewport = active.viewport || null;
+    if (!viewport) return;
+    try {
+      this.closePdfViewer(winId);
+    } catch {}
+    try {
+      const previewed = entry.view?.tabsApi?.previewNavigate?.(
+        active.id,
+        urlText,
+      );
+      if (previewed) active = previewed;
+    } catch {}
+    const reportDone = () => {
+      try {
+        entry.view?.tabsApi?.setProgress?.(100);
+      } catch {}
+      try {
+        entry.view?.tabsApi?.clearStatus?.();
+      } catch {}
+    };
+    try {
+      entry.view?.tabsApi?.setStatusFor?.(urlText);
+    } catch {}
+    try {
+      entry.view?.tabsApi?.setProgress?.(10);
+    } catch {}
+    const syncViewAddress = (value, title) => {
+      const field =
+        entry.view?.addressInput ||
+        $(".browser-address-input", entry.view?.root) ||
+        $(".browser-address-input", entry.root);
+      if (field) field.value = value;
+      active.url = value;
+      if (title) active.title = title;
+      else if (value) active.title = value;
+      if (Array.isArray(active.navStack)) {
+        const last = active.navStack[active.navIndex];
+        if (last !== value) {
+          active.navStack = active.navStack
+            .slice(0, active.navIndex + 1)
+            .concat([value]);
+          active.navIndex = active.navStack.length - 1;
+        }
+      }
+      try {
+        entry.view?.tabsApi?.refresh?.();
+      } catch {}
+    };
+    if (/^yuki:/i.test(urlText)) {
+      active = entry.view?.tabsApi?.getActive?.() || active;
+      let moved = null;
+      try {
+        moved = await entry.view?.tabsApi?.navigateTab?.(active?.id, urlText);
+      } catch {}
+      const settled = moved && moved.url ? moved : active;
+      entry.lastUrl = (settled && settled.url) || urlText;
+      syncViewAddress(
+        entry.lastUrl,
+        (settled && settled.title) || entry.lastUrl,
+      );
+      try {
+        entry.view?.tabsApi?.refresh?.();
+      } catch {}
+      return;
+    }
+    if (/^(blob:|data:|about:)/i.test(urlText)) {
+      try {
+        viewport.removeAttribute("srcdoc");
+        viewport.src = urlText;
+      } catch {}
+      syncViewAddress(urlText, urlText);
+      reportDone();
+      return;
+    }
+    if (isDirectLoadUrl(urlText)) {
+      try {
+        viewport.removeAttribute("srcdoc");
+        viewport.src = urlText;
+      } catch {}
+      syncViewAddress(urlText, urlText);
+      reportDone();
+      return;
+    }
+    const localTarget = parseLocalTarget(urlText);
+    if (localTarget) {
+      try {
+        const result = await this.handleLocalRequest(urlText);
+        const title = result.title || urlText;
+        if (result.blobUrl) {
+          viewport.removeAttribute("srcdoc");
+          viewport.src = result.blobUrl;
+        } else if (result.html != null) {
+          viewport.src = "about:blank";
+          viewport.srcdoc = result.html;
+        } else if (result.text != null) {
+          viewport.src = "about:blank";
+          viewport.srcdoc =
+            "<!DOCTYPE html><html><body><pre>" +
+            escapeHtml(String(result.text)) +
+            "</pre></body></html>";
+        }
+        syncViewAddress(urlText, title);
+        reportDone();
+        return;
+      } catch {}
+    }
+    if (/^https?:\/\//i.test(urlText)) {
+      const cleanPath = String(urlText).split(/[?#]/)[0];
+      if (cleanPath.toLowerCase().endsWith(".pdf")) {
+        try {
+          let filename = urlText;
+          try {
+            const parsed = new URL(urlText);
+            const last = parsed.pathname.split("/").pop();
+            if (last) filename = last;
+          } catch {
+            const parts = cleanPath.split("/");
+            const last = parts.pop();
+            if (last) filename = last;
+          }
+          try {
+            filename = decodeURIComponent(filename);
+          } catch {}
+          await this.openPdfViewer(winId, entry, active, viewport, urlText);
+          entry.lastUrl = urlText;
+          syncViewAddress(urlText, filename);
+          reportDone();
+          return;
+        } catch {}
+      }
+    }
+    try {
+      const outcome = await renderFileProtocolUrl(viewport, urlText);
+      const finalUrl = outcome?.url || urlText;
+      entry.lastUrl = finalUrl;
+      syncViewAddress(finalUrl, outcome?.title || finalUrl);
+      reportDone();
+    } catch {
+      try {
+        viewport.src = "about:blank";
+        viewport.srcdoc = this.buildLocalErrorPage(
+          urlText,
+          "Page failed to load",
+          { dino: true },
+        );
+        syncViewAddress(urlText, urlText);
+      } catch {}
+      reportDone();
+    }
+  }
   isWindowOpenInterceptEnabled() {
     return isWindowOpenPluginEnabled(os.storage);
   }
-
   setWindowOpenInterceptEnabled(enabled) {
     setWindowOpenPluginEnabled(os.storage, !!enabled);
     try {
-      this.iframe?.contentWindow?.postMessage({ type: "scram:windowOpenInterceptState", enabled: !!enabled }, "*");
+      const activeViewport = this.element?.id
+        ? this.windowHandlers.get(this.element.id)?.view?.tabsApi?.getActive?.()
+            ?.viewport
+        : null;
+      activeViewport?.contentWindow?.postMessage(
+        { type: "scram:windowOpenInterceptState", enabled: !!enabled },
+        "*",
+      );
     } catch {}
     return !!enabled;
   }
-
   getWindowOpenPluginStatus() {
-    return { id: "windowOpenInNewTab", enabled: this.isWindowOpenInterceptEnabled() };
+    return {
+      id: "windowOpenInNewTab",
+      enabled: this.isWindowOpenInterceptEnabled(),
+    };
   }
-
   cleanupScramjet() {
     if (this.settingsChangedHandler) {
       os.events.off(BusEvents.SETTINGS_CHANGED, this.settingsChangedHandler);
@@ -592,63 +1249,30 @@ export class BrowserApp extends BaseApp {
       this.msgHandler = null;
     }
     this.exitTorMode();
-    this.iframe = null;
+    this.torIframe = null;
     this.element = null;
   }
-
   openHtml(content, name, path) {
     const blob = new Blob([content], { type: "text/html" });
     const blobUrl = URL.createObjectURL(blob);
-
-    if (this.iframe) {
-      this.navigateToUrl(this.iframe, blobUrl);
+    const activeId = this.element?.id || [...this.windowHandlers.keys()].pop();
+    if (activeId && this.windowHandlers.has(activeId)) {
+      this.navigateSingleLayer(activeId, blobUrl);
     } else {
       os.app.launch("browserApp", { openUrl: blobUrl });
     }
   }
-
-  navigateToUrl(iframe, url) {
-    if (isFileProtocol() || String(url || "").startsWith("file:")) {
-      const container =
-        iframe?.closest?.(".scramjet-container") || this.element?.querySelector?.(".scramjet-container");
-      if (container) {
-        injectFileProtocolFallback(container, "browserApp", url);
-        return;
-      }
-    }
-    maybeTriggerSmartlink();
-    const bypassProxy = isDirectLoadUrl(url);
-    if (!bypassProxy && this.isTorUrl(url)) {
-      this.loadWithTor(url);
-      return;
-    }
-    const tryNav = () => {
-      try {
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        const container = doc.getElementById("iframe-container");
-        if (!container) return false;
-        const activeFrame = container.querySelector("iframe:not(.hidden)");
-        if (!activeFrame) return false;
-        activeFrame.src = url;
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
-    if (tryNav()) return;
-    try {
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      if (!doc || !doc.body) return;
-      const obs = new MutationObserver(() => {
-        if (tryNav()) {
-          obs.disconnect();
-        }
-      });
-      obs.observe(doc.body, { childList: true, subtree: true });
-      setTimeout(() => obs.disconnect(), 2000);
-    } catch {}
+  navigateToUrl(target, url) {
+    const rawUrl = url ?? target;
+    let winId = null;
+    if (typeof target === "string" && this.windowHandlers.has(target))
+      winId = target;
+    else if (this.element?.id && this.windowHandlers.has(this.element.id))
+      winId = this.element.id;
+    else winId = [...this.windowHandlers.keys()].pop() || null;
+    if (!winId) return;
+    this.navigateSingleLayer(winId, rawUrl);
   }
-
   async handleLocalRequest(url) {
     const target = parseLocalTarget(url);
     if (!target) {
@@ -656,43 +1280,49 @@ export class BrowserApp extends BaseApp {
         status: 400,
         contentType: "text/html",
         html: this.buildLocalErrorPage(url, "Unsupported local address"),
-        title: "Error"
+        title: "Error",
       };
     }
     if (target.kind === "port") {
-      const entry = os.ports.get(target.port);
-      if (!entry) {
+      const portEntry = os.ports.get(target.port);
+      if (!portEntry) {
         const cleanUrl = String(url).replace(/\/+$/, "");
         const refusedUrl = cleanUrl || "localhost:" + target.port;
         return {
           status: 404,
           contentType: "text/html",
-          html: this.buildLocalErrorPage(refusedUrl, "This site can't be reached", {
-            title: "This site can't be reached",
-            detail: refusedUrl + " refused to connect.",
-            code: "ERR_CONNECTION_REFUSED",
-            dino: true
-          }),
-          title: "This site can't be reached"
+          html: this.buildLocalErrorPage(
+            refusedUrl,
+            "This site cannot be reached",
+            {
+              title: "This site cannot be reached",
+              detail: refusedUrl + " refused to connect.",
+              code: "ERR_CONNECTION_REFUSED",
+              dino: true,
+            },
+          ),
+          title: "This site cannot be reached",
         };
       }
       try {
         const request = { method: "GET", url: target.path, headers: {} };
-        const response = await entry.handler(request);
-        return await this.convertLocalResponse(response, target, entry);
+        const response = await portEntry.handler(request);
+        return await this.convertLocalResponse(response, target, portEntry);
       } catch (err) {
         return {
           status: 500,
           contentType: "text/html",
-          html: this.buildLocalErrorPage(url, "Server error: " + String(err?.message || err)),
-          title: "Server error"
+          html: this.buildLocalErrorPage(
+            url,
+            "Server error: " + String(err?.message || err),
+          ),
+          title: "Server error",
         };
       }
     }
     return await this.resolveVirtualPath(target.path);
   }
-
-  async convertLocalResponse(response, target, entry) {
+  async convertLocalResponse(response, target, portEntry) {
     const status = response?.status ?? 200;
     let contentType = "application/octet-stream";
     const headers = response?.headers;
@@ -700,18 +1330,26 @@ export class BrowserApp extends BaseApp {
       const ct = headers.get("content-type");
       if (ct) contentType = ct;
     } else if (headers && typeof headers === "object") {
-      contentType = headers["content-type"] || headers["Content-Type"] || contentType;
+      contentType =
+        headers["content-type"] || headers["Content-Type"] || contentType;
     }
     const base = contentType.split(";")[0].trim();
     const title = "localhost:" + target.port;
     if (base.includes("html")) {
-      const text = isFunction(response.text) ? await response.text() : String(response?.body ?? "");
-      const fsBase = [...(entry?.root || []), ...splitPath(target.path).slice(0, -1)];
+      const text = isFunction(response.text)
+        ? await response.text()
+        : String(response?.body ?? "");
+      const fsBase = [
+        ...(portEntry?.root || []),
+        ...splitPath(target.path).slice(0, -1),
+      ];
       const html = await this.processHtmlContent(text, fsBase);
       return { status, contentType: base, html, title };
     }
     if (isTextContentType(base) && !base.startsWith("image/")) {
-      const text = isFunction(response.text) ? await response.text() : String(response?.body ?? "");
+      const text = isFunction(response.text)
+        ? await response.text()
+        : String(response?.body ?? "");
       return { status, contentType: base, text, title };
     }
     try {
@@ -719,7 +1357,10 @@ export class BrowserApp extends BaseApp {
       if (clone && isFunction(clone.text)) {
         const probe = await clone.text();
         if (/^\s*<!DOCTYPE\s+html|^\s*<html[\s>]/i.test(probe)) {
-          const fsBase = [...(entry?.root || []), ...splitPath(target.path).slice(0, -1)];
+          const fsBase = [
+            ...(portEntry?.root || []),
+            ...splitPath(target.path).slice(0, -1),
+          ];
           const html = await this.processHtmlContent(probe, fsBase);
           return { status, contentType: "text/html", html, title };
         }
@@ -737,12 +1378,16 @@ export class BrowserApp extends BaseApp {
         status: 500,
         contentType: "text/html",
         html: this.buildLocalErrorPage(target.path, "Server returned no body"),
-        title
+        title,
       };
     }
-    return { status, contentType: base, blobUrl: URL.createObjectURL(blob), title };
+    return {
+      status,
+      contentType: base,
+      blobUrl: URL.createObjectURL(blob),
+      title,
+    };
   }
-
   async resolveVirtualPath(inputPath) {
     const segments = splitPath(inputPath);
     const pathStr = joinPath(segments);
@@ -756,40 +1401,58 @@ export class BrowserApp extends BaseApp {
       return {
         status: 404,
         contentType: "text/html",
-        html: this.buildLocalErrorPage(inputPath, "Directory not found: /" + dirStr),
-        title: "Not Found"
+        html: this.buildLocalErrorPage(
+          inputPath,
+          "Directory not found: /" + dirStr,
+        ),
+        title: "Not Found",
       };
     }
     const entries = await os.fs.readdir(dirStr || "/");
-    const entry = entries[name];
-    if (!entry) {
+    const found = entries[name];
+    if (!found) {
       return {
         status: 404,
         contentType: "text/html",
-        html: this.buildLocalErrorPage(inputPath, "File not found: /" + pathStr),
-        title: "Not Found"
+        html: this.buildLocalErrorPage(
+          inputPath,
+          "File not found: /" + pathStr,
+        ),
+        title: "Not Found",
       };
     }
-    if (isDirEntry(entry)) {
+    if (isDirEntry(found)) {
       return await this.serveVirtualDirectory(segments, pathStr);
     }
     return await this.serveVirtualFile(segments, dirSegments, name, pathStr);
   }
-
   async serveVirtualDirectory(segments, pathStr) {
     const entries = await os.fs.readdir(pathStr || "/");
     const base = "fs:///" + (pathStr ? pathStr + "/" : "");
-    const html = buildDirectoryHtml(pathStr, entries, null, { theme: readOsTheme(), base });
-    return { status: 200, contentType: "text/html", html, title: "Index of /" + pathStr };
+    const html = buildDirectoryHtml(pathStr, entries, null, {
+      theme: readOsTheme(),
+      base,
+    });
+    return {
+      status: 200,
+      contentType: "text/html",
+      html,
+      title: "Index of /" + pathStr,
+    };
   }
-
   async serveVirtualFile(segments, dirSegments, name, pathStr) {
     const mime = getMimeType(name);
     const isMedia =
-      mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/") || mime === "application/pdf";
+      mime.startsWith("image/") ||
+      mime.startsWith("video/") ||
+      mime.startsWith("audio/") ||
+      mime === "application/pdf";
     if (mime.includes("html")) {
       const text = await os.fs.read(pathStr);
-      const html = await this.processHtmlContent(text || "", segments.slice(0, -1));
+      const html = await this.processHtmlContent(
+        text || "",
+        segments.slice(0, -1),
+      );
       return { status: 200, contentType: mime, html, title: name };
     }
     if (!isMedia && isTextContentType(mime)) {
@@ -800,19 +1463,28 @@ export class BrowserApp extends BaseApp {
     let blob = await os.fs.readBinaryFile(dirStr, name);
     if (!blob) {
       const content = await os.fs.getFileContent(dirStr, name);
-      blob = content instanceof Blob ? content : content != null ? new Blob([String(content)], { type: mime }) : null;
+      blob =
+        content instanceof Blob
+          ? content
+          : content != null
+            ? new Blob([String(content)], { type: mime })
+            : null;
     }
     if (!blob) {
       return {
         status: 500,
         contentType: "text/html",
         html: this.buildLocalErrorPage(pathStr, "Could not read file: " + name),
-        title: "Read error"
+        title: "Read error",
       };
     }
-    return { status: 200, contentType: mime, blobUrl: URL.createObjectURL(blob), title: name };
+    return {
+      status: 200,
+      contentType: mime,
+      blobUrl: URL.createObjectURL(blob),
+      title: name,
+    };
   }
-
   async processHtmlContent(html, baseSegments) {
     let doc;
     try {
@@ -822,14 +1494,29 @@ export class BrowserApp extends BaseApp {
     }
     if (!doc.documentElement) return html;
     const base = baseSegments || [];
-    const tags = ["img", "script", "link", "video", "audio", "source", "track", "iframe", "embed"];
+    const tags = [
+      "img",
+      "script",
+      "link",
+      "video",
+      "audio",
+      "source",
+      "track",
+      "iframe",
+      "embed",
+    ];
     for (const tag of tags) {
       const attr = tag === "link" ? "href" : "src";
       const elements = doc.querySelectorAll(tag + "[" + attr + "]");
       for (const element of elements) {
         const value = element.getAttribute(attr);
         if (!value) continue;
-        if (/^(https?:|data:|blob:|mailto:|#|javascript:|about:)/i.test(value.trim())) continue;
+        if (
+          /^(https?:|data:|blob:|mailto:|#|javascript:|about:)/i.test(
+            value.trim(),
+          )
+        )
+          continue;
         const target = this.resolveHtmlReference(base, value);
         if (!target) continue;
         const blobUrl = await this.htmlResourceToBlobUrl(target);
@@ -838,12 +1525,13 @@ export class BrowserApp extends BaseApp {
     }
     if (html.indexOf("scram-local-nav") === -1) {
       const script = doc.createElement("script");
-      script.textContent = buildFsInterceptScript("fs:///" + (base.length ? base.join("/") + "/" : ""));
+      script.textContent = buildFsInterceptScript(
+        "fs:///" + (base.length ? base.join("/") + "/" : ""),
+      );
       (doc.head || doc.documentElement).appendChild(script);
     }
     return "<!DOCTYPE html>" + doc.documentElement.outerHTML;
   }
-
   resolveHtmlReference(baseSegments, ref) {
     let clean = ref.split(/[?#]/)[0];
     if (!clean) return null;
@@ -858,7 +1546,6 @@ export class BrowserApp extends BaseApp {
     }
     return result;
   }
-
   async htmlResourceToBlobUrl(segments) {
     const pathStr = joinPath(segments);
     const dirSegments = segments.slice(0, -1);
@@ -866,7 +1553,10 @@ export class BrowserApp extends BaseApp {
     if (!name) return null;
     const mime = getMimeType(name);
     const isMedia =
-      mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/") || mime === "application/pdf";
+      mime.startsWith("image/") ||
+      mime.startsWith("video/") ||
+      mime.startsWith("audio/") ||
+      mime === "application/pdf";
     try {
       if (!isMedia && isTextContentType(mime)) {
         const text = await os.fs.read(pathStr);
@@ -877,7 +1567,12 @@ export class BrowserApp extends BaseApp {
       let blob = await os.fs.readBinaryFile(dirStr, name);
       if (!blob) {
         const content = await os.fs.getFileContent(dirStr, name);
-        blob = content instanceof Blob ? content : content != null ? new Blob([String(content)], { type: mime }) : null;
+        blob =
+          content instanceof Blob
+            ? content
+            : content != null
+              ? new Blob([String(content)], { type: mime })
+              : null;
       }
       if (!blob) return null;
       return URL.createObjectURL(blob);
@@ -885,7 +1580,6 @@ export class BrowserApp extends BaseApp {
       return null;
     }
   }
-
   buildLocalErrorPage(url, message, options = {}) {
     const theme = readOsTheme();
     const title = escapeHtml(String(options.title || "Error"));
@@ -906,12 +1600,18 @@ export class BrowserApp extends BaseApp {
         ";margin-top:16px;text-align:left}</style></head><body><div class='offline'><div class='dino'><iframe class='dino-frame' srcdoc='" +
         escapeDinoGameAttr() +
         "' title='T-Rex Runner' loading='lazy'></iframe></div><div class='offline-msg'>There is no Internet connection.</div><div class='offline-try'>Try:<ul><li>Checking the network cables, modem and router</li><li>Reconnecting to Wi-Fi</li></ul></div><div class='offline-code'>" +
-        (options.code ? escapeHtml(String(options.code)) : "ERR_CONNECTION_REFUSED") +
+        (options.code
+          ? escapeHtml(String(options.code))
+          : "ERR_CONNECTION_REFUSED") +
         "</div></div></body></html>"
       );
     }
-    const detail = options.detail ? '<div class="detail">' + escapeHtml(String(options.detail)) + "</div>" : "";
-    const code = options.code ? '<div class="code">' + escapeHtml(String(options.code)) + "</div>" : "";
+    const detail = options.detail
+      ? '<div class="detail">' + escapeHtml(String(options.detail)) + "</div>"
+      : "";
+    const code = options.code
+      ? '<div class="code">' + escapeHtml(String(options.code)) + "</div>"
+      : "";
     return (
       '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
       title +
@@ -943,7 +1643,6 @@ export class BrowserApp extends BaseApp {
       "</div></body></html>"
     );
   }
-
   async handleLocalDownload(url) {
     const result = await this.handleLocalRequest(url);
     try {
@@ -951,43 +1650,51 @@ export class BrowserApp extends BaseApp {
         const blob = await (await fetch(result.blobUrl)).blob();
         this.triggerDownload(blob, url);
       } else if (result.text != null) {
-        this.triggerDownload(new Blob([result.text], { type: result.contentType || "text/plain" }), url);
+        this.triggerDownload(
+          new Blob([result.text], { type: result.contentType || "text/plain" }),
+          url,
+        );
       }
     } catch {}
   }
-
   enterTorMode() {
     if (this.torOverlay) return;
-    const container = this.element?.querySelector(".scramjet-container");
+    const container = $(".browser-root", this.element);
     if (!container) return;
-
     const overlay = createElement("div", { className: "tor-overlay" });
     overlay.innerHTML = `
       <div class="tor-bar">
         <span class="tor-bar-label"><i class="fas fa-shield-halved"></i> Tor Active</span>
-        <button class="tor-exit-btn" id="tor-exit-btn">Exit Tor</button>
+        <button class="tor-exit-btn">Exit Tor</button>
       </div>
-      <div class="tor-loading yuki-loading-indicator" id="tor-loading">
-        <div class="loading-spinner" style="animation-duration:1.4s;opacity:0.7"></div>
-        <div class="tor-loading-text" id="tor-loading-text">Starting Tor...</div>
+      <div class="tor-loading yuki-loading-indicator">
+        <div class="loading-spinner"></div>
+        <div class="tor-loading-text">Starting Tor...</div>
       </div>
       <iframe class="tor-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
     `;
-    const exitBtn = overlay.querySelector("#tor-exit-btn");
+    const exitBtn = $(".tor-exit-btn", overlay);
     if (exitBtn) {
       exitBtn.addEventListener("click", () => {
         this.exitTorMode();
         this.torEnabled = false;
         try {
-          this.iframe?.contentWindow?.postMessage({ type: "scram:torMode", active: false }, "*");
+          const activeView = this.element?.id
+            ? this.windowHandlers.get(this.element.id)?.view
+            : null;
+          activeView?.tabsApi
+            ?.getActive?.()
+            ?.viewport?.contentWindow?.postMessage(
+              { type: "scram:torMode", active: false },
+              "*",
+            );
         } catch {}
       });
     }
     container.appendChild(overlay);
     this.torOverlay = overlay;
-    this.torIframe = overlay.querySelector(".tor-iframe");
+    this.torIframe = $(".tor-iframe", overlay);
   }
-
   exitTorMode() {
     if (this.torOverlay) {
       this.torOverlay.remove();
@@ -999,19 +1706,16 @@ export class BrowserApp extends BaseApp {
       this.torClient = null;
     }
   }
-
   showTorLoading(text) {
-    const el = this.torOverlay?.querySelector("#tor-loading");
-    const txt = this.torOverlay?.querySelector("#tor-loading-text");
+    const el = $(".tor-loading", this.torOverlay);
+    const txt = $(".tor-loading-text", this.torOverlay);
     if (el) setStyle(el, { display: "flex" });
     if (txt) txt.textContent = text || "Starting Tor...";
   }
-
   hideTorLoading() {
-    const el = this.torOverlay?.querySelector("#tor-loading");
+    const el = $(".tor-loading", this.torOverlay);
     if (el) setStyle(el, { display: "none" });
   }
-
   async startTorWithStatus() {
     const tm = os.tor;
     try {
@@ -1033,64 +1737,76 @@ export class BrowserApp extends BaseApp {
     } catch (e) {
       unsubLog();
       this.hideTorLoading();
-      os.notify.send("Tor Error", "Failed to start Tor: " + e.message, { type: "error", duration: 5000 });
+      os.notify.send("Tor Error", "Failed to start Tor: " + e.message, {
+        type: "error",
+        duration: 5000,
+      });
       return false;
     }
   }
-
   async reconnectTor() {
     try {
       await os.tor.reconnect();
-      os.notify.send("Tor", "Tor reconnected.", { type: "success", duration: 3000 });
+      os.notify.send("Tor", "Tor reconnected.", {
+        type: "success",
+        duration: 3000,
+      });
       if (this.torClient) {
         this.torClient.close();
         this.torClient = null;
       }
     } catch {
-      os.notify.send("Tor", "Reconnect failed. Try again.", { type: "error", duration: 5000 });
+      os.notify.send("Tor", "Reconnect failed. Try again.", {
+        type: "error",
+        duration: 5000,
+      });
     }
   }
-
   async loadWithTor(url) {
     this.enterTorMode();
     this.showTorLoading("Preparing Tor connection...");
-
     try {
       if (!this.torClient) {
         const torReady = await this.startTorWithStatus();
         if (!torReady) {
-          this.writeTorErrorPage(url, "Tor could not start. Check your connection.");
+          this.writeTorErrorPage(
+            url,
+            "Tor could not start. Check your connection.",
+          );
           return;
         }
         this.torClient = await os.tor.createClient();
       }
-
       this.showTorLoading("Fetching " + url);
-
       const resp = await Promise.race([
         this.torClient.fetch(url),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Tor fetch timed out")), 30000))
+        new Promise((resolveFn, rejectFn) =>
+          setTimeout(() => rejectFn(new Error("Tor fetch timed out")), 30000),
+        ),
       ]);
-      if (!resp || resp.status >= 400) throw new Error("HTTP " + (resp?.status || "error"));
-
+      if (!resp || resp.status >= 400)
+        throw new Error("HTTP " + (resp?.status || "error"));
       const ct =
         typeof resp.headers === "object" && resp.headers
-          ? resp.headers["content-type"] || resp.headers.get?.("content-type") || ""
+          ? resp.headers["content-type"] ||
+            resp.headers.get?.("content-type") ||
+            ""
           : "";
-
       const isBinary =
         ct.includes("application/octet-stream") ||
         ct.includes("application/zip") ||
         ct.includes("application/pdf") ||
-        (ct && !ct.includes("text") && !ct.includes("json") && !ct.includes("html") && !ct.includes("xml"));
-
+        (ct &&
+          !ct.includes("text") &&
+          !ct.includes("json") &&
+          !ct.includes("html") &&
+          !ct.includes("xml"));
       if (isBinary) {
         const blob = new Blob([resp.body], { type: ct });
         this.triggerDownload(blob, url);
         this.hideTorLoading();
         return;
       }
-
       let html;
       if (ct.includes("application/json")) {
         const json = await resp.json();
@@ -1099,9 +1815,7 @@ export class BrowserApp extends BaseApp {
       } else {
         html = await resp.text();
       }
-
       if (!html || html.trim().length === 0) throw new Error("Empty response");
-
       const baseUrl = (() => {
         try {
           const u = new URL(url);
@@ -1110,19 +1824,15 @@ export class BrowserApp extends BaseApp {
           return url;
         }
       })();
-
       const interceptScript = this.buildInterceptScripts(url);
-
       let finalHtml = html;
       const baseTag = `<base href="${baseUrl}">`;
       const injection = baseTag + interceptScript;
-
       if (/<head[^>]*>/i.test(finalHtml)) {
         finalHtml = finalHtml.replace(/(<head[^>]*>)/i, "$1" + injection);
       } else {
         finalHtml = "<head>" + injection + "</head>" + finalHtml;
       }
-
       this.hideTorLoading();
       const torIframe = this.torIframe;
       if (torIframe) {
@@ -1137,12 +1847,13 @@ export class BrowserApp extends BaseApp {
       const fc = this.torClient?.getFetchCount?.() || 0;
       this.writeTorErrorPage(
         url,
-        fc > 5 ? "Tor connection may be stale (" + fc + " fetches served)." : "Tor failed to load this page.",
-        true
+        fc > 5
+          ? "Tor connection may be stale (" + fc + " fetches served)."
+          : "Tor failed to load this page.",
+        true,
       );
     }
   }
-
   buildInterceptScripts(pageUrl) {
     return `<script>
 (function() {
@@ -1186,39 +1897,58 @@ export class BrowserApp extends BaseApp {
 })();
 <\/script>`;
   }
-
   writeTorErrorPage(url, message, showReconnect) {
     const iframe = this.torIframe;
     if (!iframe) return;
     const reconnectHtml = showReconnect
-      ? "<button onclick=\"parent.postMessage({type:'browser-tor-reconnect'},'*')\" style=\"margin-top:8px;padding:8px 20px;background:var(--brand);border:none;border-radius:6px;color:var(--text-on-brand);cursor:pointer;font-size:13px\">Reconnect Tor</button>"
+      ? '<button class="tor-reconnect-btn">Reconnect Tor</button>'
       : "";
     iframe.srcdoc =
-      '<html><body style="background:var(--bg-primary);color:var(--text-primary);font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px"><div style="font-size:48px"><i class="fas fa-exclamation-triangle"></i></div><div style="font-size:16px">' +
+      "<html><body><div>" +
       (message || "All proxies failed to load this page.") +
-      '</div><div style="font-size:12px;color:var(--text-secondary)">' +
+      "</div><div>" +
       url +
       "</div>" +
       reconnectHtml +
       "</body></html>";
+    if (showReconnect) {
+      const onLoad = () => {
+        iframe.onload = null;
+        try {
+          const btn = $(".tor-reconnect-btn", iframe.contentDocument);
+          if (btn) btn.addEventListener("click", () => this.reconnectTor());
+        } catch {}
+      };
+      iframe.onload = onLoad;
+    }
   }
-
   triggerDownload(blob, url) {
     let name = "download";
     try {
       name = new URL(url).pathname.split("/").pop() || "download";
     } catch {}
     const objectUrl = URL.createObjectURL(blob);
-    const a = createElement("a", { attributes: { href: objectUrl, download: name } });
+    const a = createElement("a", {
+      attributes: { href: objectUrl, download: name },
+    });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
   }
-
   isTorUrl(url) {
-    return (
-      this.torEnabled && url && !url.startsWith("about:") && !url.startsWith("blob:") && !url.startsWith("yuki://")
-    );
+    if (
+      !url ||
+      url.startsWith("about:") ||
+      url.startsWith("blob:") ||
+      url.startsWith("yuki://")
+    )
+      return false;
+    if (this.torEnabled) return true;
+    try {
+      return os.storage.get(StorageKeys.browserTorEnabled) === true;
+    } catch {
+      return false;
+    }
   }
 }

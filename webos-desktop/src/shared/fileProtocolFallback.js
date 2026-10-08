@@ -1,8 +1,14 @@
 import { readOsTheme } from "./virtualFsNet.js";
+import { createElement } from "./domUtils.js";
+import { mountFileProtocolView } from "./fileProtocolEngine.js";
 
 export function isFileProtocol() {
   try {
-    return location.protocol === "file:" || window.location.origin === "null" || !window.location.origin;
+    return (
+      location.protocol === "file:" ||
+      window.location.origin === "null" ||
+      !window.location.origin
+    );
   } catch {
     return false;
   }
@@ -26,15 +32,20 @@ export function buildFileProtocolFallbackHtml(appId, targetUrl) {
 </style></head><body><div class="card"><div class="badge">!</div><div class="title">Can't open in file://</div><p class="desc">YukiOS Browser and web apps need a web server. Service Worker and Wisp can't run from <code>file://</code> (origin is <code>null</code>).</p><div class="actions"><button class="btn btn-primary" onclick='window.open(${JSON.stringify(pagesUrl)}, "_blank", "noopener")'>Open from YukiOS</button></div></div></body></html>`;
 }
 
-export function injectFileProtocolFallback(container, appId, targetUrl) {
+export async function injectFileProtocolFallback(container, appId, targetUrl) {
   if (!container) return;
-  const html = buildFileProtocolFallbackHtml(appId, targetUrl);
-  container.innerHTML = "";
-  const iframe = document.createElement("iframe");
-  iframe.style.width = "100%";
-  iframe.style.height = "100%";
-  iframe.style.border = "none";
-  iframe.style.display = "block";
-  iframe.srcdoc = html;
-  container.appendChild(iframe);
+  try {
+    await mountFileProtocolView(container, {
+      targetUrl,
+      appId,
+      showChrome: appId === "browserApp",
+    });
+    return;
+  } catch {}
+  container.replaceChildren();
+  const fallbackFrame = createElement("iframe", {
+    styles: { width: "100%", height: "100%", border: "none", display: "block" },
+  });
+  fallbackFrame.srcdoc = buildFileProtocolFallbackHtml(appId, targetUrl);
+  container.appendChild(fallbackFrame);
 }

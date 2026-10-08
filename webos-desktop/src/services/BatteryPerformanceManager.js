@@ -36,7 +36,9 @@ class BatteryPerformanceManager {
         this.battery = await navigator.getBattery();
         this.checkBattery();
         this.battery.addEventListener("levelchange", () => this.checkBattery());
-        this.battery.addEventListener("chargingchange", () => this.checkBattery());
+        this.battery.addEventListener("chargingchange", () =>
+          this.checkBattery(),
+        );
       } catch (e) {
         console.warn("[BatteryPerformanceManager] Battery API error:", e);
       }
@@ -85,7 +87,7 @@ class BatteryPerformanceManager {
     os.notify.send("Battery saver", `${level}% — power saver on`, {
       type: "warning",
       duration: 3000,
-      icon: "fa-battery-quarter"
+      icon: "fa-battery-quarter",
     });
   }
 
@@ -99,7 +101,7 @@ class BatteryPerformanceManager {
     os.notify.send("Battery saver", "Battery saver off", {
       type: "info",
       duration: 3000,
-      icon: "fa-battery-half"
+      icon: "fa-battery-half",
     });
   }
 
@@ -122,7 +124,7 @@ class BatteryPerformanceManager {
     os.notify.send("Battery saver", `${level}% — reduced effects`, {
       type: "warning",
       duration: 3000,
-      icon: "fa-battery-quarter"
+      icon: "fa-battery-quarter",
     });
   }
 
@@ -131,12 +133,15 @@ class BatteryPerformanceManager {
 
     document.documentElement.classList.remove("battery-saver");
 
-    SystemUtilities.loadWallpaper();
-
     const vid = $("#wallpaper-video");
-    if (vid && parseBool(vid.dataset.batterySaverPaused)) {
-      vid.play();
-      delete vid.dataset.batterySaverPaused;
+    const vantaContainer = $("#vanta-container");
+    if (vid) {
+      if (parseBool(vid.dataset.batterySaverPaused)) {
+        delete vid.dataset.batterySaverPaused;
+        vid.play();
+      }
+    } else if (!vantaContainer) {
+      SystemUtilities.loadWallpaper();
     }
 
     if (this.previousMode) {
@@ -145,12 +150,15 @@ class BatteryPerformanceManager {
 
     this.saverActive = false;
 
-    const msg = reason === "Charging" ? "Charging — full performance" : "Battery saver off";
+    const msg =
+      reason === "Charging"
+        ? "Charging — full performance"
+        : "Battery saver off";
 
     os.notify.send("Battery saver", msg, {
       type: "success",
       duration: 3000,
-      icon: "fa-bolt"
+      icon: "fa-bolt",
     });
   }
 }

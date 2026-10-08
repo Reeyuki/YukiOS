@@ -68,7 +68,7 @@
   --window-bg: var(--bg-elev-1);
 
   --icon-w: 80px;
-  --icon-h: 80px;
+  --icon-h: 92px;
   --icon-img-s: 48px;
   --icon-gap: calc(10px * var(--spacing-scale));
 
@@ -317,7 +317,11 @@ html[data-theme="crt"]::after {
   height: 100%;
   pointer-events: none;
   z-index: 999998;
-  background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
 }
 
 html[data-theme="crt"] * {
@@ -429,7 +433,11 @@ html[data-theme="frutiger-aero"] .am-slider::-moz-range-thumb {
 }
 
 html[data-theme="frutiger-aero"] .docked {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.95)) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(240, 240, 255, 0.95)
+  ) !important;
   border: 2px solid #4810dc !important;
   box-shadow: 0 0 20px rgba(72, 16, 220, 0.25) !important;
 }
@@ -439,11 +447,13 @@ html[data-theme="frutiger-aero"] .settings-btn.danger {
   color: white !important;
 }
 
-html[data-theme="frutiger-aero"] .settings-card-header[style*="color: #ff4d4f"] {
+html[data-theme="frutiger-aero"]
+  .settings-card-header[style*="color: #ff4d4f"] {
   color: #ff4d4f !important;
 }
 
-html[data-theme="frutiger-aero"] .settings-label-title[style*="color: #ff4d4f"] {
+html[data-theme="frutiger-aero"]
+  .settings-label-title[style*="color: #ff4d4f"] {
   color: #ff4d4f !important;
 }
 
@@ -538,7 +548,9 @@ html[data-theme="frutiger-aero"] .settings-btn[data-alignment].active {
   color: white !important;
 }
 
-html[data-theme="frutiger-aero"] .settings-btn[data-alignment].active i:first-child {
+html[data-theme="frutiger-aero"]
+  .settings-btn[data-alignment].active
+  i:first-child {
   color: white !important;
 }
 
@@ -1564,7 +1576,9 @@ html.transparent-ui.tp-tray #network-tray-popup .network-settings-btn,
 html.transparent-ui.tp-tray #network-tray-popup .network-item,
 html.transparent-ui.tp-tray #clipboard-tray-popup .clipboard-popup-header,
 html.transparent-ui.tp-tray #clipboard-tray-popup .clipboard-item,
-html.transparent-ui.tp-tray #display-performance-tray-popup .display-performance-popup-content,
+html.transparent-ui.tp-tray
+  #display-performance-tray-popup
+  .display-performance-popup-content,
 html.transparent-ui.tp-tray .calendar-popup .calendar-body,
 html.transparent-ui.tp-tray .calendar-popup .calendar-header {
   background: transparent !important;
@@ -1588,11 +1602,13 @@ html.transparent-ui.tp-window-header[data-theme="cherry"] .window-header,
 html.transparent-ui.tp-window-header[data-theme="github-light"] .window-header,
 html.transparent-ui.tp-window-header[data-theme="minimal-gray"] .window-header,
 html.transparent-ui.tp-window-header[data-theme="paper"] .window-header,
-html.transparent-ui.tp-window-header[data-theme="windows-fluent"] .window-header,
+html.transparent-ui.tp-window-header[data-theme="windows-fluent"]
+  .window-header,
 html.transparent-ui.tp-window-header[data-theme="material-you"] .window-header,
 html.transparent-ui.tp-window-header[data-theme="sepia"] .window-header,
 html.transparent-ui.tp-window-header[data-theme="sakura"] .window-header,
-html.transparent-ui.tp-window-header[data-theme="solarized-light"] .window-header {
+html.transparent-ui.tp-window-header[data-theme="solarized-light"]
+  .window-header {
   background: rgba(255, 255, 255, 0.35) !important;
 }
 
@@ -1605,7 +1621,8 @@ html.transparent-ui.tp-window-body[data-theme="windows-fluent"] .window-content,
 html.transparent-ui.tp-window-body[data-theme="material-you"] .window-content,
 html.transparent-ui.tp-window-body[data-theme="sepia"] .window-content,
 html.transparent-ui.tp-window-body[data-theme="sakura"] .window-content,
-html.transparent-ui.tp-window-body[data-theme="solarized-light"] .window-content {
+html.transparent-ui.tp-window-body[data-theme="solarized-light"]
+  .window-content {
   background: rgba(255, 255, 255, 0.35) !important;
 }
 

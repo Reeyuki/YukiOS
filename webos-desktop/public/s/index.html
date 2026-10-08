@@ -3580,9 +3580,20 @@
     const WISP_SERVERS = [
       { name: "Probuilding Wisp", url: "wss://probuildingsupplies.com/w/" },
       { name: "Mercury Wisp", url: "wss://wisp.mercurywork.shop/" },
-      { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
-      { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
+      { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" }
     ];
+    try {
+      if (localStorage.getItem("proxServer") === "wss://reeyukiwisp.onrender.com/") {
+        localStorage.setItem("proxServer", DEFAULT_WISP);
+      }
+      var storedCustomWisps = JSON.parse(localStorage.getItem("customWisps") || "[]");
+      var keptWisps = storedCustomWisps.filter(function (w) {
+        return w && w.url !== "wss://reeyukiwisp.onrender.com/";
+      });
+      if (keptWisps.length !== storedCustomWisps.length) {
+        localStorage.setItem("customWisps", JSON.stringify(keptWisps));
+      }
+    } catch (retiredMigrationErr) {}
 
     const TRANSPORT_TYPES = {
       epoxy: { name: "Epoxy (Wisp)", desc: "Default WebSocket-based transport" },

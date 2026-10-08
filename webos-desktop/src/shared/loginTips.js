@@ -9,6 +9,7 @@ export const LOGIN_TIPS = [
   "In tiling mode, Alt+Space toggles tiling and Alt+Arrows move focus between tiles.",
   "Press Ctrl+Shift+S for a full screenshot, Ctrl+Alt+S for an area shot.",
   "Press Alt+H to sample any pixel color with a magnified preview.",
+  "Hop to the next wallpaper anytime with Alt+N.",
   "Right-click any file to convert formats entirely on your device.",
   "Double-click an EXE file. BoxedWine runs Windows apps in your browser.",
   "Disguise the tab as Google Classroom with Tab Cloak, then set a panic key.",
@@ -25,16 +26,19 @@ export const LOGIN_TIPS = [
   "You can browse the YukiOS source code from inside YukiOS itself.",
   "Right-click the Start button to pick a custom Start icon or upload your own.",
   "Windows can wobble, shatter with Fall Apart, or wear XP and Vista headers.",
-  "Set any TTF or OTF as your system font from the font preview.",
+  "Set any TTF or OTF as your system font from the font preview. (Minecraft theme!)",
   "Type yuki in Terminal to control power, themes, wallpaper, and workspaces.",
   "Type neofetch in Terminal for a full readout of your virtual machine.",
   "The 3D room is a walkable world. Grab a game case and press F to launch it.",
   {
     text: "Did you know YukiOS has an early version?",
     linkUrl: "https://reeyuki.github.io/YukiOS-AlphaHistorical/desktop/",
-    linkLabel: "Play the alpha"
+    linkLabel: "Play the alpha",
   },
-  "Press Shift+Tab in any game for playtime, friends, screenshots, and a built-in browser."
+  "Press Shift+Tab in any game for playtime, friends, screenshots, and a built-in browser.",
+  "Turn any website into a desktop app with App Creator.",
+  "Back up your system and restore it anywhere with Import and Export in Settings.",
+  "Right-click the desktop, taskbar icons, and window headers for hidden actions.",
 ];
 
 export function pickLoginTip() {

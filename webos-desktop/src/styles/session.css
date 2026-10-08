@@ -1260,7 +1260,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: min(420px, calc(100vw - 40px));
   max-width: 420px;
+  min-height: 52px;
+  box-sizing: border-box;
   padding: 8px 14px;
   font-size: 12px;
   color: var(--text-secondary);
@@ -1270,11 +1273,14 @@
   border-radius: 10px;
   backdrop-filter: blur(32px);
   text-align: center;
+  overflow: hidden;
+  contain: layout paint;
   transition: opacity 0.15s ease;
   animation: tipMount 0.4s ease-out both;
 }
 
 .login-tip i {
+  flex-shrink: 0;
   color: var(--brand);
   font-size: 12px;
   animation: tipBulbGlow 2.4s ease-in-out infinite;
@@ -1284,6 +1290,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 18px;
   height: 18px;
   padding: 0;
@@ -1319,7 +1326,15 @@
 }
 
 .login-tip-text {
-  display: inline-block;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(2 * 1.45em);
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+  overflow: hidden;
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
@@ -1353,11 +1368,9 @@
 @keyframes tipSwapIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

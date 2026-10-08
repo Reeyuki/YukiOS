@@ -4,7 +4,7 @@ const MODIFIER_ALIASES = {
   ctrl: ["ctrl", "control"],
   shift: ["shift"],
   alt: ["alt", "option"],
-  meta: ["meta", "cmd", "command", "windows", "super"]
+  meta: ["meta", "cmd", "command", "windows", "super"],
 };
 
 export const KEYBIND_DEFINITIONS = [
@@ -13,63 +13,63 @@ export const KEYBIND_DEFINITIONS = [
     defaultKeys: ["Ctrl", "Alt", "R"],
     desc: "Open Run dialog",
     cat: "global",
-    icon: "papirus:apps/utilities-terminal"
+    icon: "papirus:apps/utilities-terminal",
   },
   {
     id: "global.runMeta",
     defaultKeys: ["Meta", "R"],
     desc: "Open Run dialog (Win+R)",
     cat: "global",
-    icon: "papirus:apps/utilities-terminal"
+    icon: "papirus:apps/utilities-terminal",
   },
   {
     id: "global.commandPalette.k",
     defaultKeys: ["Ctrl", "K"],
     desc: "Open Unified Command Palette",
     cat: "global",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "global.commandPalette.p",
     defaultKeys: ["Ctrl", "P"],
     desc: "Open Unified Command Palette",
     cat: "global",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "global.commandPalette.f1",
     defaultKeys: ["F1"],
     desc: "Open Unified Command Palette",
     cat: "global",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "global.showDesktop",
     defaultKeys: ["Ctrl", "D"],
     desc: "Show / Hide Desktop (Minimize or restore all windows)",
     cat: "global",
-    icon: "papirus:devices/computer"
+    icon: "papirus:devices/computer",
   },
   {
     id: "global.snapLeft",
     defaultKeys: ["Ctrl", "ArrowLeft"],
     desc: "Snap active window to the left half of the screen",
     cat: "global",
-    icon: "papirus:actions/window-maximize"
+    icon: "papirus:actions/window-maximize",
   },
   {
     id: "global.snapRight",
     defaultKeys: ["Ctrl", "ArrowRight"],
     desc: "Snap active window to the right half of the screen",
     cat: "global",
-    icon: "papirus:actions/window-maximize"
+    icon: "papirus:actions/window-maximize",
   },
   {
     id: "global.maximize",
     defaultKeys: ["Ctrl", "ArrowUp"],
     desc: "Maximize active window",
     cat: "global",
-    icon: "papirus:actions/window-maximize"
+    icon: "papirus:actions/window-maximize",
   },
   {
     id: "global.startMenu.ctrl",
@@ -77,98 +77,98 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Toggle Start Menu (when desktop is focused)",
     cat: "global",
     icon: "papirus:actions/view-list",
-    hidden: true
+    hidden: true,
   },
   {
     id: "chromeos.launcher",
     defaultKeys: ["Meta"],
     desc: "Toggle Chrome OS Launcher",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "boot.skip",
     defaultKeys: ["Escape", "Enter", "Space"],
     desc: "Skip boot animation",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "global.windowSwitcher",
     defaultKeys: ["Alt", "Q"],
     desc: "Cycle forward through open windows",
     cat: "global",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "global.windowSwitcherReverse",
     defaultKeys: ["Shift", "Alt", "Q"],
     desc: "Cycle backward through open windows",
     cat: "global",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "global.screenshot.full",
     defaultKeys: ["Ctrl", "Shift", "S"],
     desc: "Capture full screen and auto-save to Pictures",
     cat: "global",
-    icon: "papirus:apps/accessories-camera"
+    icon: "papirus:apps/accessories-camera",
   },
   {
     id: "global.screenshot.area",
     defaultKeys: ["Ctrl", "Alt", "S"],
     desc: "Capture area screenshot and auto-save to Pictures",
     cat: "global",
-    icon: "papirus:actions/transform-crop"
+    icon: "papirus:actions/transform-crop",
   },
   {
     id: "global.screenshot.record",
     defaultKeys: ["Ctrl", "Shift", "R"],
     desc: "Start / stop screen recording",
     cat: "global",
-    icon: "papirus:devices/camera-video"
+    icon: "papirus:devices/camera-video",
   },
   {
     id: "global.screenshot.deck",
     defaultKeys: ["F9"],
     desc: "Capture screenshot and auto-save (game-tagged on Steam Deck)",
     cat: "global",
-    icon: "papirus:apps/accessories-camera"
+    icon: "papirus:apps/accessories-camera",
   },
   {
     id: "global.colorPicker",
     defaultKeys: ["Alt", "H"],
     desc: "Open color picker and start picking",
     cat: "global",
-    icon: "papirus:actions/color-select"
+    icon: "papirus:actions/color-select",
   },
   {
     id: "global.brightness.up",
     defaultKeys: ["Ctrl", "Alt", "ArrowUp"],
     desc: "Increase display brightness",
     cat: "global",
-    icon: "papirus:status/weather-clear"
+    icon: "papirus:status/weather-clear",
   },
   {
     id: "global.brightness.down",
     defaultKeys: ["Ctrl", "Alt", "ArrowDown"],
     desc: "Decrease display brightness",
     cat: "global",
-    icon: "papirus:status/weather-clear"
+    icon: "papirus:status/weather-clear",
   },
   {
     id: "global.temperature.left",
     defaultKeys: ["Ctrl", "Alt", "ArrowLeft"],
     desc: "Decrease color temperature (warmer)",
     cat: "global",
-    icon: "papirus:status/weather-clear"
+    icon: "papirus:status/weather-clear",
   },
   {
     id: "global.temperature.right",
     defaultKeys: ["Ctrl", "Alt", "ArrowRight"],
     desc: "Increase color temperature (cooler)",
     cat: "global",
-    icon: "papirus:status/weather-clear"
+    icon: "papirus:status/weather-clear",
   },
   {
     id: "global.closePalette",
@@ -176,7 +176,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close command palette",
     cat: "global",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "global.paletteUp",
@@ -184,7 +184,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate up in command palette",
     cat: "global",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "global.paletteDown",
@@ -192,7 +192,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate down in command palette",
     cat: "global",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "global.paletteEnter",
@@ -200,14 +200,14 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Execute selected item in command palette",
     cat: "global",
     icon: "papirus:actions/object-select",
-    hidden: true
+    hidden: true,
   },
   {
     id: "steam.overlay",
     defaultKeys: ["Shift", "Tab"],
     desc: "Open Yuki Steam overlay while in-game",
     cat: "games",
-    icon: "papirus:apps/steam"
+    icon: "papirus:apps/steam",
   },
   {
     id: "global.closeDialog",
@@ -215,7 +215,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close dialog",
     cat: "global",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "global.confirmDialog",
@@ -223,7 +223,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Confirm dialog",
     cat: "global",
     icon: "papirus:actions/object-select",
-    hidden: true
+    hidden: true,
   },
   {
     id: "global.resizeWindow",
@@ -231,28 +231,28 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Resize window instead of drag",
     cat: "global",
     icon: "papirus:actions/view-fullscreen",
-    hidden: true
+    hidden: true,
   },
   {
     id: "desktop.copy",
     defaultKeys: ["Ctrl", "C"],
     desc: "Copy selected files or folders",
     cat: "desktop",
-    icon: "papirus:actions/edit-copy"
+    icon: "papirus:actions/edit-copy",
   },
   {
     id: "desktop.cut",
     defaultKeys: ["Ctrl", "X"],
     desc: "Cut selected files or folders",
     cat: "desktop",
-    icon: "papirus:actions/edit-cut"
+    icon: "papirus:actions/edit-cut",
   },
   {
     id: "desktop.paste",
     defaultKeys: ["Ctrl", "V"],
     desc: "Paste copied or cut files/folders into desktop or explorer",
     cat: "desktop",
-    icon: "papirus:actions/edit-paste"
+    icon: "papirus:actions/edit-paste",
   },
   {
     id: "desktop.delete",
@@ -260,42 +260,42 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Delete selected icons/files on the desktop",
     cat: "desktop",
     icon: "papirus:actions/entry-delete",
-    hidden: true
+    hidden: true,
   },
   {
     id: "desktop.rename",
     defaultKeys: ["F2"],
     desc: "Start inline renaming of selected file/folder",
     cat: "desktop",
-    icon: "papirus:actions/edit"
+    icon: "papirus:actions/edit",
   },
   {
     id: "notepad.open",
     defaultKeys: ["Ctrl", "O"],
     desc: "Open file inside Notepad",
     cat: "notepad",
-    icon: "papirus:places/folder-blue-open"
+    icon: "papirus:places/folder-blue-open",
   },
   {
     id: "notepad.save",
     defaultKeys: ["Ctrl", "S"],
     desc: "Save active file in Notepad",
     cat: "notepad",
-    icon: "papirus:actions/document-save"
+    icon: "papirus:actions/document-save",
   },
   {
     id: "notepad.saveAs",
     defaultKeys: ["Ctrl", "Shift", "S"],
     desc: "Save active file as new file in Notepad",
     cat: "notepad",
-    icon: "papirus:actions/document-new"
+    icon: "papirus:actions/document-new",
   },
   {
     id: "notepad.find",
     defaultKeys: ["Ctrl", "F"],
     desc: "Open Find Text search dialog in Notepad",
     cat: "notepad",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "notepad.findNext",
@@ -303,7 +303,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Find next occurrence of matched text",
     cat: "notepad",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "notepad.findPrev",
@@ -311,42 +311,42 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Find previous occurrence of matched text",
     cat: "notepad",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "notepad.replace",
     defaultKeys: ["Ctrl", "H"],
     desc: "Open Replace dialog in Notepad",
     cat: "notepad",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "notepad.goto",
     defaultKeys: ["Ctrl", "G"],
     desc: "Go to line dialog in Notepad",
     cat: "notepad",
-    icon: "papirus:actions/tag"
+    icon: "papirus:actions/tag",
   },
   {
     id: "notepad.zoomIn",
     defaultKeys: ["Ctrl", "="],
     desc: "Zoom in text editor",
     cat: "notepad",
-    icon: "papirus:actions/zoom-in"
+    icon: "papirus:actions/zoom-in",
   },
   {
     id: "notepad.zoomOut",
     defaultKeys: ["Ctrl", "-"],
     desc: "Zoom out text editor",
     cat: "notepad",
-    icon: "papirus:actions/zoom-out"
+    icon: "papirus:actions/zoom-out",
   },
   {
     id: "notepad.zoomReset",
     defaultKeys: ["Ctrl", "0"],
     desc: "Reset zoom factor to default in Notepad",
     cat: "notepad",
-    icon: "papirus:actions/view-restore"
+    icon: "papirus:actions/view-restore",
   },
   {
     id: "notepad.closeDialog",
@@ -354,105 +354,175 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close active Notepad dialogs / popups",
     cat: "notepad",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "browser.tab1",
     defaultKeys: ["Alt", "1"],
     desc: "Switch directly to browser Tab 1",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab2",
     defaultKeys: ["Alt", "2"],
     desc: "Switch directly to browser Tab 2",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab3",
     defaultKeys: ["Alt", "3"],
     desc: "Switch directly to browser Tab 3",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab4",
     defaultKeys: ["Alt", "4"],
     desc: "Switch directly to browser Tab 4",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab5",
     defaultKeys: ["Alt", "5"],
     desc: "Switch directly to browser Tab 5",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab6",
     defaultKeys: ["Alt", "6"],
     desc: "Switch directly to browser Tab 6",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab7",
     defaultKeys: ["Alt", "7"],
     desc: "Switch directly to browser Tab 7",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab8",
     defaultKeys: ["Alt", "8"],
     desc: "Switch directly to browser Tab 8",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.tab9",
     defaultKeys: ["Alt", "9"],
     desc: "Switch directly to browser Tab 9",
     cat: "browser",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "browser.focusUrl",
     defaultKeys: ["Ctrl", "L"],
     desc: "Focus browser address/URL bar & select",
     cat: "browser",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "browser.newTab",
-    defaultKeys: ["Ctrl", "T"],
+    defaultKeys: ["Alt", "T"],
     desc: "Create new browser tab",
     cat: "browser",
-    icon: "papirus:actions/list-add"
+    icon: "papirus:actions/list-add",
   },
   {
     id: "browser.closeTab",
-    defaultKeys: ["Ctrl", "W"],
+    defaultKeys: ["Alt", "W"],
     desc: "Close active browser tab",
     cat: "browser",
-    icon: "papirus:actions/list-remove"
+    icon: "papirus:actions/list-remove",
+  },
+  {
+    id: "browser.reloadPage",
+    defaultKeys: ["Alt", "R"],
+    desc: "Reload active browser page",
+    cat: "browser",
+    icon: "papirus:actions/window-restore",
+  },
+  {
+    id: "browser.bookmarkPage",
+    defaultKeys: ["Alt", "D"],
+    desc: "Bookmark active browser page",
+    cat: "browser",
+    icon: "papirus:actions/list-add",
   },
   {
     id: "browser.reopenTab",
     defaultKeys: ["Ctrl", "Shift", "T"],
     desc: "Reopen last closed browser tab",
     cat: "browser",
-    icon: "papirus:actions/document-open-recent"
+    icon: "papirus:actions/document-open-recent",
+  },
+  {
+    id: "browser.find",
+    defaultKeys: ["Ctrl", "F"],
+    desc: "Find in browser page",
+    cat: "browser",
+    icon: "papirus:actions/edit-find",
+  },
+  {
+    id: "browser.history",
+    defaultKeys: ["Ctrl", "H"],
+    desc: "Open browser history",
+    cat: "browser",
+    icon: "papirus:actions/document-open-recent",
+  },
+  {
+    id: "browser.downloads",
+    defaultKeys: ["Ctrl", "J"],
+    desc: "Open browser downloads",
+    cat: "browser",
+    icon: "papirus:actions/edit-download",
+  },
+  {
+    id: "browser.toggleBookmarkBar",
+    defaultKeys: ["Ctrl", "Shift", "B"],
+    desc: "Toggle browser bookmark bar",
+    cat: "browser",
+    icon: "papirus:actions/bookmark-new",
+  },
+  {
+    id: "browser.savePage",
+    defaultKeys: ["Ctrl", "S"],
+    desc: "Save current browser page",
+    cat: "browser",
+    icon: "papirus:actions/document-save",
+  },
+  {
+    id: "browser.palette",
+    defaultKeys: ["Ctrl", "Shift", "P"],
+    desc: "Open command palette",
+    cat: "browser",
+    icon: "papirus:actions/configure",
+  },
+  {
+    id: "browser.split",
+    defaultKeys: ["Ctrl", "Shift", "S"],
+    desc: "Toggle browser split view",
+    cat: "browser",
+    icon: "papirus:actions/swap-panels",
+  },
+  {
+    id: "browser.toggleSidebar",
+    defaultKeys: ["Ctrl", "Shift", "Y"],
+    desc: "Toggle browser sidebar tabs",
+    cat: "browser",
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "calc.paste",
     defaultKeys: ["Ctrl", "V"],
     desc: "Paste & evaluate math expression from clipboard",
     cat: "calc",
-    icon: "papirus:actions/edit-paste"
+    icon: "papirus:actions/edit-paste",
   },
   {
     id: "calc.evaluate",
@@ -460,7 +530,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Equals / Evaluate calculations",
     cat: "calc",
     icon: "papirus:apps/accessories-calculator",
-    hidden: true
+    hidden: true,
   },
   {
     id: "calc.backspace",
@@ -468,7 +538,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Backspace / delete last digit in Calculator",
     cat: "calc",
     icon: "papirus:actions/edit-clear",
-    hidden: true
+    hidden: true,
   },
   {
     id: "calc.clear",
@@ -476,7 +546,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Clear calculator (AC button)",
     cat: "calc",
     icon: "papirus:actions/edit-clear",
-    hidden: true
+    hidden: true,
   },
   {
     id: "calendar.close",
@@ -484,7 +554,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close calendar popup",
     cat: "calendar",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "calendar.prevMonth",
@@ -492,7 +562,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate previous month in Calendar",
     cat: "calendar",
     icon: "papirus:actions/go-previous",
-    hidden: true
+    hidden: true,
   },
   {
     id: "calendar.nextMonth",
@@ -500,7 +570,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate next month in Calendar",
     cat: "calendar",
     icon: "papirus:actions/go-next",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.execute",
@@ -508,7 +578,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Execute command in Terminal",
     cat: "terminal",
     icon: "papirus:apps/utilities-terminal",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.historyUp",
@@ -516,7 +586,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Previous command in Terminal history",
     cat: "terminal",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.historyDown",
@@ -524,7 +594,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Next command in Terminal history",
     cat: "terminal",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.tabComplete",
@@ -532,7 +602,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Tab completion in Terminal",
     cat: "terminal",
     icon: "papirus:devices/input-keyboard",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.clear",
@@ -540,7 +610,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Clear Terminal screen",
     cat: "terminal",
     icon: "papirus:actions/edit-clear",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.interrupt",
@@ -548,7 +618,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Interrupt command in Terminal",
     cat: "terminal",
     icon: "papirus:actions/media-playback-stop",
-    hidden: true
+    hidden: true,
   },
   {
     id: "terminal.close",
@@ -556,133 +626,133 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close Terminal window",
     cat: "terminal",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "office.new",
     defaultKeys: ["Ctrl", "N"],
     desc: "New document in Office",
     cat: "office",
-    icon: "papirus:mimetypes/text-x-generic"
+    icon: "papirus:mimetypes/text-x-generic",
   },
   {
     id: "office.print",
     defaultKeys: ["Ctrl", "P"],
     desc: "Print in Office",
     cat: "office",
-    icon: "papirus:actions/document-print"
+    icon: "papirus:actions/document-print",
   },
   {
     id: "office.undo",
     defaultKeys: ["Ctrl", "Z"],
     desc: "Undo in Office",
     cat: "office",
-    icon: "papirus:actions/edit-undo"
+    icon: "papirus:actions/edit-undo",
   },
   {
     id: "office.redo",
     defaultKeys: ["Ctrl", "Y"],
     desc: "Redo in Office",
     cat: "office",
-    icon: "papirus:actions/edit-redo"
+    icon: "papirus:actions/edit-redo",
   },
   {
     id: "office.cut",
     defaultKeys: ["Ctrl", "X"],
     desc: "Cut in Office",
     cat: "office",
-    icon: "papirus:actions/edit-cut"
+    icon: "papirus:actions/edit-cut",
   },
   {
     id: "office.copy",
     defaultKeys: ["Ctrl", "C"],
     desc: "Copy in Office",
     cat: "office",
-    icon: "papirus:actions/edit-copy"
+    icon: "papirus:actions/edit-copy",
   },
   {
     id: "office.selectAll",
     defaultKeys: ["Ctrl", "A"],
     desc: "Select all in Office",
     cat: "office",
-    icon: "papirus:actions/object-group"
+    icon: "papirus:actions/object-group",
   },
   {
     id: "office.bold",
     defaultKeys: ["Ctrl", "B"],
     desc: "Bold text in Office",
     cat: "office",
-    icon: "papirus:actions/format-text-bold"
+    icon: "papirus:actions/format-text-bold",
   },
   {
     id: "office.italic",
     defaultKeys: ["Ctrl", "I"],
     desc: "Italic text in Office",
     cat: "office",
-    icon: "papirus:actions/format-text-italic"
+    icon: "papirus:actions/format-text-italic",
   },
   {
     id: "office.underline",
     defaultKeys: ["Ctrl", "U"],
     desc: "Underline text in Office",
     cat: "office",
-    icon: "papirus:actions/format-text-underline"
+    icon: "papirus:actions/format-text-underline",
   },
   {
     id: "office.insertLink",
     defaultKeys: ["Ctrl", "K"],
     desc: "Insert link in Office",
     cat: "office",
-    icon: "papirus:actions/insert-link"
+    icon: "papirus:actions/insert-link",
   },
   {
     id: "office.zoomIn",
     defaultKeys: ["Ctrl", "="],
     desc: "Zoom in in Office",
     cat: "office",
-    icon: "papirus:actions/zoom-in"
+    icon: "papirus:actions/zoom-in",
   },
   {
     id: "office.zoomOut",
     defaultKeys: ["Ctrl", "-"],
     desc: "Zoom out in Office",
     cat: "office",
-    icon: "papirus:actions/zoom-out"
+    icon: "papirus:actions/zoom-out",
   },
   {
     id: "office.zoomReset",
     defaultKeys: ["Ctrl", "0"],
     desc: "Reset zoom in Office",
     cat: "office",
-    icon: "papirus:actions/view-restore"
+    icon: "papirus:actions/view-restore",
   },
   {
     id: "office.find",
     defaultKeys: ["Ctrl", "F"],
     desc: "Find in Office",
     cat: "office",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "office.replace",
     defaultKeys: ["Ctrl", "H"],
     desc: "Replace in Office",
     cat: "office",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "office.open",
     defaultKeys: ["Ctrl", "O"],
     desc: "Open document in Office",
     cat: "office",
-    icon: "papirus:places/folder-blue-open"
+    icon: "papirus:places/folder-blue-open",
   },
   {
     id: "office.fullscreen",
     defaultKeys: ["F11"],
     desc: "Toggle fullscreen in Office",
     cat: "office",
-    icon: "papirus:actions/view-fullscreen"
+    icon: "papirus:actions/view-fullscreen",
   },
   {
     id: "games.search",
@@ -690,7 +760,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Search in games",
     cat: "games",
     icon: "papirus:actions/edit-find",
-    hidden: true
+    hidden: true,
   },
   {
     id: "startMenu.arrowUp",
@@ -698,7 +768,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate up in start menu",
     cat: "global",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "startMenu.arrowDown",
@@ -706,7 +776,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate down in start menu",
     cat: "global",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "startMenu.arrowLeft",
@@ -714,7 +784,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Switch to categories in start menu",
     cat: "global",
     icon: "papirus:actions/go-previous",
-    hidden: true
+    hidden: true,
   },
   {
     id: "startMenu.arrowRight",
@@ -722,7 +792,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Switch to apps in start menu",
     cat: "global",
     icon: "papirus:actions/go-next",
-    hidden: true
+    hidden: true,
   },
   {
     id: "startMenu.enter",
@@ -730,7 +800,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Launch selected item in start menu",
     cat: "global",
     icon: "papirus:actions/object-select",
-    hidden: true
+    hidden: true,
   },
   {
     id: "explorer.enter",
@@ -738,7 +808,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to typed path / confirm save dialog",
     cat: "desktop",
     icon: "papirus:actions/object-select",
-    hidden: true
+    hidden: true,
   },
   {
     id: "explorer.escape",
@@ -746,21 +816,21 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Cancel / close dialog in Explorer",
     cat: "desktop",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "explorer.copy",
     defaultKeys: ["Ctrl", "C"],
     desc: "Copy selected files in Explorer",
     cat: "desktop",
-    icon: "papirus:actions/edit-copy"
+    icon: "papirus:actions/edit-copy",
   },
   {
     id: "explorer.cut",
     defaultKeys: ["Ctrl", "X"],
     desc: "Cut selected files in Explorer",
     cat: "desktop",
-    icon: "papirus:actions/edit-cut"
+    icon: "papirus:actions/edit-cut",
   },
   {
     id: "desktop.deleteSelected",
@@ -768,28 +838,28 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Delete selected desktop item",
     cat: "desktop",
     icon: "papirus:actions/entry-delete",
-    hidden: true
+    hidden: true,
   },
   {
     id: "global.temperature.warmer",
     defaultKeys: ["Ctrl", "Alt", "ArrowRight"],
     desc: "Increase color temperature",
     cat: "global",
-    icon: "papirus:status/weather-clear"
+    icon: "papirus:status/weather-clear",
   },
   {
     id: "global.temperature.cooler",
     defaultKeys: ["Ctrl", "Alt", "ArrowLeft"],
     desc: "Decrease color temperature",
     cat: "global",
-    icon: "papirus:status/weather-clear"
+    icon: "papirus:status/weather-clear",
   },
   {
     id: "monaco.toggleTerminal",
     defaultKeys: ["Ctrl", "`"],
     desc: "Toggle terminal panel in code editor",
     cat: "monaco",
-    icon: "papirus:apps/utilities-terminal"
+    icon: "papirus:apps/utilities-terminal",
   },
   {
     id: "session.confirm",
@@ -797,7 +867,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Confirm action in session / login screen",
     cat: "global",
     icon: "papirus:actions/object-select",
-    hidden: true
+    hidden: true,
   },
   {
     id: "session.cancel",
@@ -805,7 +875,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Cancel / close modal in session screen",
     cat: "global",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "session.navigateLeft",
@@ -813,7 +883,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to previous user in session carousel",
     cat: "global",
     icon: "papirus:actions/go-previous",
-    hidden: true
+    hidden: true,
   },
   {
     id: "session.navigateRight",
@@ -821,7 +891,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to next user in session carousel",
     cat: "global",
     icon: "papirus:actions/go-next",
-    hidden: true
+    hidden: true,
   },
   {
     id: "taskbar.dismissMenu",
@@ -829,7 +899,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Dismiss taskbar context menu",
     cat: "global",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "workspace.closeOverview",
@@ -837,336 +907,336 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close workspace overview",
     cat: "global",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "tiling.focusLeft",
     defaultKeys: ["Alt", "ArrowLeft"],
     desc: "Move tiling focus left",
     cat: "global",
-    icon: "papirus:actions/go-previous"
+    icon: "papirus:actions/go-previous",
   },
   {
     id: "tiling.focusRight",
     defaultKeys: ["Alt", "ArrowRight"],
     desc: "Move tiling focus right",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.focusUp",
     defaultKeys: ["Alt", "ArrowUp"],
     desc: "Move tiling focus up",
     cat: "global",
-    icon: "papirus:actions/go-up"
+    icon: "papirus:actions/go-up",
   },
   {
     id: "tiling.focusDown",
     defaultKeys: ["Alt", "ArrowDown"],
     desc: "Move tiling focus down",
     cat: "global",
-    icon: "papirus:actions/go-down"
+    icon: "papirus:actions/go-down",
   },
   {
     id: "tiling.fullscreen",
     defaultKeys: ["Alt", "Enter"],
     desc: "Toggle fullscreen on focused tiled window",
     cat: "global",
-    icon: "papirus:actions/view-fullscreen"
+    icon: "papirus:actions/view-fullscreen",
   },
   {
     id: "tiling.floating",
     defaultKeys: ["Alt", "F"],
     desc: "Toggle floating on focused tiled window",
     cat: "global",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "tiling.terminal",
     defaultKeys: ["Alt", "T"],
     desc: "Spawn a new terminal window",
     cat: "global",
-    icon: "papirus:apps/utilities-terminal"
+    icon: "papirus:apps/utilities-terminal",
   },
   {
     id: "tiling.resizeLeft",
     defaultKeys: ["Ctrl", "Alt", "ArrowLeft"],
     desc: "Resize tiling split left",
     cat: "global",
-    icon: "papirus:actions/resizerow"
+    icon: "papirus:actions/resizerow",
   },
   {
     id: "tiling.resizeRight",
     defaultKeys: ["Ctrl", "Alt", "ArrowRight"],
     desc: "Resize tiling split right",
     cat: "global",
-    icon: "papirus:actions/resizerow"
+    icon: "papirus:actions/resizerow",
   },
   {
     id: "tiling.resizeUp",
     defaultKeys: ["Ctrl", "Alt", "ArrowUp"],
     desc: "Resize tiling split up",
     cat: "global",
-    icon: "papirus:actions/resizecol"
+    icon: "papirus:actions/resizecol",
   },
   {
     id: "tiling.resizeDown",
     defaultKeys: ["Ctrl", "Alt", "ArrowDown"],
     desc: "Resize tiling split down",
     cat: "global",
-    icon: "papirus:actions/resizecol"
+    icon: "papirus:actions/resizecol",
   },
   {
     id: "tiling.swapLeft",
     defaultKeys: ["Alt", "Shift", "ArrowLeft"],
     desc: "Swap tiled window with neighbor left",
     cat: "global",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "tiling.swapRight",
     defaultKeys: ["Alt", "Shift", "ArrowRight"],
     desc: "Swap tiled window with neighbor right",
     cat: "global",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "tiling.swapUp",
     defaultKeys: ["Alt", "Shift", "ArrowUp"],
     desc: "Swap tiled window with neighbor up",
     cat: "global",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "tiling.swapDown",
     defaultKeys: ["Alt", "Shift", "ArrowDown"],
     desc: "Swap tiled window with neighbor down",
     cat: "global",
-    icon: "papirus:actions/swap-panels"
+    icon: "papirus:actions/swap-panels",
   },
   {
     id: "tiling.toggleMode",
     defaultKeys: ["Alt", "Space"],
     desc: "Toggle tiling mode on/off",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.closeWindow",
     defaultKeys: ["Alt", "Q"],
     desc: "Close focused window",
     cat: "global",
-    icon: "papirus:actions/window-close"
+    icon: "papirus:actions/window-close",
   },
   {
     id: "tiling.cycleNext",
     defaultKeys: ["Alt", "W"],
     desc: "Cycle focus to next tiled window",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.openRofi",
     defaultKeys: ["Alt", "D"],
     desc: "Open Rofi app launcher (tiling mode)",
     cat: "global",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "tiling.cyclePrev",
     defaultKeys: ["Alt", "K"],
     desc: "Cycle focus to previous tiled window",
     cat: "global",
-    icon: "papirus:actions/go-previous"
+    icon: "papirus:actions/go-previous",
   },
   {
     id: "tiling.focusWorkspace1",
     defaultKeys: ["Alt", "1"],
     desc: "Switch to workspace 1",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace2",
     defaultKeys: ["Alt", "2"],
     desc: "Switch to workspace 2",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace3",
     defaultKeys: ["Alt", "3"],
     desc: "Switch to workspace 3",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace4",
     defaultKeys: ["Alt", "4"],
     desc: "Switch to workspace 4",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace5",
     defaultKeys: ["Alt", "5"],
     desc: "Switch to workspace 5",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace6",
     defaultKeys: ["Alt", "6"],
     desc: "Switch to workspace 6",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace7",
     defaultKeys: ["Alt", "7"],
     desc: "Switch to workspace 7",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace8",
     defaultKeys: ["Alt", "8"],
     desc: "Switch to workspace 8",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "tiling.focusWorkspace9",
     defaultKeys: ["Alt", "9"],
     desc: "Switch to workspace 9",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "global.nextWallpaper",
     defaultKeys: ["Alt", "N"],
     desc: "Cycle to next wallpaper",
     cat: "global",
-    icon: "papirus:mimetypes/image-x-generic"
+    icon: "papirus:mimetypes/image-x-generic",
   },
   {
     id: "global.launchBrowser",
     defaultKeys: ["Alt", "F"],
     desc: "Open Yuki Browser",
     cat: "global",
-    icon: "papirus:apps/internet-web-browser"
+    icon: "papirus:apps/internet-web-browser",
   },
   {
     id: "tiling.toggleFloatingAlt",
     defaultKeys: ["Alt", "V"],
     desc: "Toggle floating/tiled mode on focused window",
     cat: "global",
-    icon: "papirus:actions/window-restore"
+    icon: "papirus:actions/window-restore",
   },
   {
     id: "tiling.logout",
     defaultKeys: ["Alt", "M"],
     desc: "Log out of session",
     cat: "global",
-    icon: "papirus:actions/window-close"
+    icon: "papirus:actions/window-close",
   },
   {
     id: "tiling.moveToWorkspace1",
     defaultKeys: ["Alt", "Shift", "1"],
     desc: "Move active window to workspace 1",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace2",
     defaultKeys: ["Alt", "Shift", "2"],
     desc: "Move active window to workspace 2",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace3",
     defaultKeys: ["Alt", "Shift", "3"],
     desc: "Move active window to workspace 3",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace4",
     defaultKeys: ["Alt", "Shift", "4"],
     desc: "Move active window to workspace 4",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace5",
     defaultKeys: ["Alt", "Shift", "5"],
     desc: "Move active window to workspace 5",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace6",
     defaultKeys: ["Alt", "Shift", "6"],
     desc: "Move active window to workspace 6",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace7",
     defaultKeys: ["Alt", "Shift", "7"],
     desc: "Move active window to workspace 7",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace8",
     defaultKeys: ["Alt", "Shift", "8"],
     desc: "Move active window to workspace 8",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "tiling.moveToWorkspace9",
     defaultKeys: ["Alt", "Shift", "9"],
     desc: "Move active window to workspace 9",
     cat: "global",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "explorer.refresh",
     defaultKeys: ["F5"],
     desc: "Refresh current directory in Explorer",
     cat: "desktop",
-    icon: "papirus:actions/view-refresh"
+    icon: "papirus:actions/view-refresh",
   },
   {
     id: "explorer.search",
     defaultKeys: ["Ctrl", "F"],
     desc: "Focus search input in Explorer",
     cat: "desktop",
-    icon: "papirus:actions/edit-find"
+    icon: "papirus:actions/edit-find",
   },
   {
     id: "explorer.selectAll",
     defaultKeys: ["Ctrl", "A"],
     desc: "Select all items in Explorer",
     cat: "desktop",
-    icon: "papirus:actions/object-group"
+    icon: "papirus:actions/object-group",
   },
   {
     id: "desktop.selectAll",
     defaultKeys: ["Ctrl", "A"],
     desc: "Select all icons on the desktop",
     cat: "desktop",
-    icon: "papirus:actions/object-group"
+    icon: "papirus:actions/object-group",
   },
   {
     id: "desktop.physicsChaos",
     defaultKeys: ["Alt", "G"],
     desc: "Toggle desktop physics chaos",
     cat: "desktop",
-    icon: "fa-burst"
+    icon: "fa-burst",
   },
   {
     id: "explorer.navigateUp",
@@ -1174,7 +1244,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate up in Explorer file list",
     cat: "desktop",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "explorer.navigateDown",
@@ -1182,7 +1252,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate down in Explorer file list",
     cat: "desktop",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "explorer.deleteItem",
@@ -1190,91 +1260,91 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Delete selected file in Explorer",
     cat: "desktop",
     icon: "papirus:actions/entry-delete",
-    hidden: true
+    hidden: true,
   },
   {
     id: "explorer.rename",
     defaultKeys: ["F2"],
     desc: "Rename selected file in Explorer",
     cat: "desktop",
-    icon: "papirus:actions/edit"
+    icon: "papirus:actions/edit",
   },
   {
     id: "explorer.closeTab",
     defaultKeys: ["Alt", "W"],
     desc: "Close active tab in Explorer",
     cat: "desktop",
-    icon: "fa-times"
+    icon: "fa-times",
   },
   {
     id: "explorer.toggleSplit",
     defaultKeys: ["Ctrl", "Shift", "D"],
     desc: "Toggle split view in Explorer",
     cat: "desktop",
-    icon: "fa-columns"
+    icon: "fa-columns",
   },
   {
     id: "explorer.tab1",
     defaultKeys: ["Alt", "1"],
     desc: "Switch to Explorer tab 1",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab2",
     defaultKeys: ["Alt", "2"],
     desc: "Switch to Explorer tab 2",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab3",
     defaultKeys: ["Alt", "3"],
     desc: "Switch to Explorer tab 3",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab4",
     defaultKeys: ["Alt", "4"],
     desc: "Switch to Explorer tab 4",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab5",
     defaultKeys: ["Alt", "5"],
     desc: "Switch to Explorer tab 5",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab6",
     defaultKeys: ["Alt", "6"],
     desc: "Switch to Explorer tab 6",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab7",
     defaultKeys: ["Alt", "7"],
     desc: "Switch to Explorer tab 7",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab8",
     defaultKeys: ["Alt", "8"],
     desc: "Switch to Explorer tab 8",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "explorer.tab9",
     defaultKeys: ["Alt", "9"],
     desc: "Switch to Explorer tab 9",
     cat: "desktop",
-    icon: "fa-clone"
+    icon: "fa-clone",
   },
   {
     id: "calendar.prevYear",
@@ -1282,7 +1352,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to previous year in Calendar",
     cat: "calendar",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "calendar.nextYear",
@@ -1290,7 +1360,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to next year in Calendar",
     cat: "calendar",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "selectMenu.close",
@@ -1298,7 +1368,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close select dropdown",
     cat: "global",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "selectMenu.navigateDown",
@@ -1306,7 +1376,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to next option in select dropdown",
     cat: "global",
     icon: "papirus:actions/go-down",
-    hidden: true
+    hidden: true,
   },
   {
     id: "selectMenu.navigateUp",
@@ -1314,7 +1384,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Navigate to previous option in select dropdown",
     cat: "global",
     icon: "papirus:actions/go-up",
-    hidden: true
+    hidden: true,
   },
   {
     id: "selectMenu.select",
@@ -1322,7 +1392,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Select highlighted option in dropdown",
     cat: "global",
     icon: "papirus:actions/object-select",
-    hidden: true
+    hidden: true,
   },
   {
     id: "rangeSlider.increment",
@@ -1330,7 +1400,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Increment range slider value",
     cat: "global",
     icon: "papirus:actions/list-add",
-    hidden: true
+    hidden: true,
   },
   {
     id: "rangeSlider.decrement",
@@ -1338,7 +1408,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Decrement range slider value",
     cat: "global",
     icon: "papirus:actions/list-remove",
-    hidden: true
+    hidden: true,
   },
   {
     id: "rangeSlider.max",
@@ -1346,7 +1416,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Set range slider to maximum value",
     cat: "global",
     icon: "papirus:actions/go-next",
-    hidden: true
+    hidden: true,
   },
   {
     id: "rangeSlider.min",
@@ -1354,7 +1424,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Set range slider to minimum value",
     cat: "global",
     icon: "papirus:apps/application-default-icon",
-    hidden: true
+    hidden: true,
   },
 
   {
@@ -1362,7 +1432,7 @@ export const KEYBIND_DEFINITIONS = [
     defaultKeys: ["F4"],
     desc: "Open Launchpad app grid",
     cat: "global",
-    icon: "papirus:actions/view-grid"
+    icon: "papirus:actions/view-grid",
   },
   {
     id: "mac.about",
@@ -1370,7 +1440,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Open About YukiOS",
     cat: "mac",
     icon: "papirus:actions/help-about",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.settings",
@@ -1378,7 +1448,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Open Settings",
     cat: "mac",
     icon: "papirus:actions/configure",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.commandPalette",
@@ -1386,7 +1456,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Open Command Palette",
     cat: "mac",
     icon: "papirus:actions/edit-find",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.hideOthers",
@@ -1394,7 +1464,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Hide other windows",
     cat: "mac",
     icon: "papirus:actions/view-hidden",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.lock",
@@ -1402,7 +1472,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Lock screen",
     cat: "mac",
     icon: "papirus:actions/object-locked",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.logout",
@@ -1410,7 +1480,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Log out",
     cat: "mac",
     icon: "papirus:actions/system-log-out",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.newWindow",
@@ -1418,7 +1488,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "New window",
     cat: "mac",
     icon: "papirus:actions/list-add",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.closeWindow",
@@ -1426,7 +1496,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Close window",
     cat: "mac",
     icon: "papirus:actions/window-close",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.minimize",
@@ -1434,7 +1504,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Minimize window",
     cat: "mac",
     icon: "papirus:actions/window-minimize",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.fullscreen",
@@ -1442,7 +1512,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Toggle fullscreen",
     cat: "mac",
     icon: "papirus:actions/view-fullscreen",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.emoji",
@@ -1450,7 +1520,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Open emoji picker",
     cat: "mac",
     icon: "papirus:emotes/face-smile",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.guide",
@@ -1458,7 +1528,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Open YukiOS Guide",
     cat: "mac",
     icon: "papirus:apps/accessories-dictionary",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.shortcuts",
@@ -1466,7 +1536,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Open Keyboard Shortcuts",
     cat: "mac",
     icon: "papirus:devices/input-keyboard",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.screenshot",
@@ -1474,7 +1544,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Take screenshot",
     cat: "mac",
     icon: "papirus:apps/accessories-camera",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.goHome",
@@ -1482,7 +1552,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Go to Home folder",
     cat: "mac",
     icon: "papirus:places/user-home",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.goDesktop",
@@ -1490,7 +1560,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Go to Desktop",
     cat: "mac",
     icon: "papirus:devices/computer",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.goDocuments",
@@ -1498,7 +1568,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Go to Documents",
     cat: "mac",
     icon: "papirus:mimetypes/text-x-generic",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.goDownloads",
@@ -1506,7 +1576,7 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Go to Downloads",
     cat: "mac",
     icon: "papirus:actions/edit-download",
-    hidden: true
+    hidden: true,
   },
   {
     id: "mac.goFolder",
@@ -1514,141 +1584,141 @@ export const KEYBIND_DEFINITIONS = [
     desc: "Go to Folder",
     cat: "mac",
     icon: "papirus:places/folder-blue",
-    hidden: true
+    hidden: true,
   },
   {
     id: "dock.launch1",
     defaultKeys: ["Alt", "1"],
     desc: "Launch or focus dock item 1",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch2",
     defaultKeys: ["Alt", "2"],
     desc: "Launch or focus dock item 2",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch3",
     defaultKeys: ["Alt", "3"],
     desc: "Launch or focus dock item 3",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch4",
     defaultKeys: ["Alt", "4"],
     desc: "Launch or focus dock item 4",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch5",
     defaultKeys: ["Alt", "5"],
     desc: "Launch or focus dock item 5",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch6",
     defaultKeys: ["Alt", "6"],
     desc: "Launch or focus dock item 6",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch7",
     defaultKeys: ["Alt", "7"],
     desc: "Launch or focus dock item 7",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch8",
     defaultKeys: ["Alt", "8"],
     desc: "Launch or focus dock item 8",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "dock.launch9",
     defaultKeys: ["Alt", "9"],
     desc: "Launch or focus dock item 9",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "global.magnifier",
     defaultKeys: ["Ctrl", "M"],
     desc: "Toggle screen magnifier",
     cat: "global",
-    icon: "papirus:actions/zoom-in"
+    icon: "papirus:actions/zoom-in",
   },
   {
     id: "dock.launch10",
     defaultKeys: ["Alt", "0"],
     desc: "Launch or focus dock item 10",
     cat: "dock",
-    icon: "papirus:apps/rocketchat"
+    icon: "papirus:apps/rocketchat",
   },
   {
     id: "steamdeck.openQuickAccess",
     defaultKeys: ["Ctrl", "Shift", "Q"],
     desc: "Open Yuki Deck Quick Access panel",
     cat: "steamdeck",
-    icon: "papirus:status/battery-020"
+    icon: "papirus:status/battery-020",
   },
   {
     id: "steamdeck.home",
     defaultKeys: ["Ctrl", "Shift", "H"],
     desc: "Return to Yuki Deck Home",
     cat: "steamdeck",
-    icon: "papirus:actions/go-home"
+    icon: "papirus:actions/go-home",
   },
   {
     id: "steamdeck.moveUp",
     defaultKeys: ["ArrowUp"],
     desc: "Move focus up in Yuki Deck",
     cat: "steamdeck",
-    icon: "papirus:actions/go-up"
+    icon: "papirus:actions/go-up",
   },
   {
     id: "steamdeck.moveDown",
     defaultKeys: ["ArrowDown"],
     desc: "Move focus down in Yuki Deck",
     cat: "steamdeck",
-    icon: "papirus:actions/go-down"
+    icon: "papirus:actions/go-down",
   },
   {
     id: "steamdeck.moveLeft",
     defaultKeys: ["ArrowLeft"],
     desc: "Move focus left in Yuki Deck",
     cat: "steamdeck",
-    icon: "papirus:actions/go-previous"
+    icon: "papirus:actions/go-previous",
   },
   {
     id: "steamdeck.moveRight",
     defaultKeys: ["ArrowRight"],
     desc: "Move focus right in Yuki Deck",
     cat: "steamdeck",
-    icon: "papirus:actions/go-next"
+    icon: "papirus:actions/go-next",
   },
   {
     id: "steamdeck.confirm",
     defaultKeys: ["Enter"],
     desc: "Confirm selection in Yuki Deck",
     cat: "steamdeck",
-    icon: "papirus:actions/object-select"
+    icon: "papirus:actions/object-select",
   },
   {
     id: "steamdeck.back",
     defaultKeys: ["Escape"],
     desc: "Go back in Yuki Deck",
     cat: "steamdeck",
-    icon: "papirus:actions/go-previous"
-  }
+    icon: "papirus:actions/go-previous",
+  },
 ];
 
 export class KeybindManager {
@@ -1666,20 +1736,25 @@ export class KeybindManager {
   }
 
   static save() {
-    os.storage.set(StorageKeys.keybindCustomizations, JSON.stringify(this.customizations));
+    os.storage.set(
+      StorageKeys.keybindCustomizations,
+      JSON.stringify(this.customizations),
+    );
   }
 
   static getAll() {
     this.ensureLoaded();
     this.ensureCustomActionsLoaded();
-    const builtin = KEYBIND_DEFINITIONS.filter((def) => !def.hidden).map((def) => ({
-      ...def,
-      currentKeys: this.customizations[def.id] || def.defaultKeys
-    }));
+    const builtin = KEYBIND_DEFINITIONS.filter((def) => !def.hidden).map(
+      (def) => ({
+        ...def,
+        currentKeys: this.customizations[def.id] || def.defaultKeys,
+      }),
+    );
     const custom = Object.values(this.customActions).map((def) => ({
       ...def,
       cat: "custom",
-      currentKeys: this.customizations[def.id] || def.defaultKeys
+      currentKeys: this.customizations[def.id] || def.defaultKeys,
     }));
     return [...builtin, ...custom];
   }
@@ -1691,7 +1766,7 @@ export class KeybindManager {
     if (def) {
       return {
         ...def,
-        currentKeys: this.customizations[id] || def.defaultKeys
+        currentKeys: this.customizations[id] || def.defaultKeys,
       };
     }
     const custom = this.customActions[id];
@@ -1699,7 +1774,7 @@ export class KeybindManager {
       return {
         ...custom,
         cat: "custom",
-        currentKeys: this.customizations[id] || custom.defaultKeys
+        currentKeys: this.customizations[id] || custom.defaultKeys,
       };
     }
     return null;
@@ -1793,7 +1868,8 @@ export class KeybindManager {
   static saveCustomAction(definition) {
     this.ensureCustomActionsLoaded();
     if (!definition.id) {
-      definition.id = "custom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+      definition.id =
+        "custom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
     }
     definition.cat = "custom";
     if (!definition.icon) definition.icon = "papirus:actions/bookmark-new";
@@ -1833,7 +1909,7 @@ export class KeybindManager {
         case "notify":
           if (config.title) {
             os.notify.send(config.title, config.message || "", {
-              icon: action.icon || "papirus:actions/bookmark-new"
+              icon: action.icon || "papirus:actions/bookmark-new",
             });
           }
           break;
@@ -1907,12 +1983,36 @@ export class KeybindManager {
 
     if (eventLower === targetLower) return true;
 
-    if (targetLower === "space" && (eventKey === " " || eventLower === "spacebar")) return true;
-    if (targetLower === "spacebar" && (eventKey === " " || eventLower === "space")) return true;
-    if (targetLower === "arrowleft" && (eventKey === "ArrowLeft" || eventKey === "←")) return true;
-    if (targetLower === "arrowright" && (eventKey === "ArrowRight" || eventKey === "→")) return true;
-    if (targetLower === "arrowup" && (eventKey === "ArrowUp" || eventKey === "↑")) return true;
-    if (targetLower === "arrowdown" && (eventKey === "ArrowDown" || eventKey === "↓")) return true;
+    if (
+      targetLower === "space" &&
+      (eventKey === " " || eventLower === "spacebar")
+    )
+      return true;
+    if (
+      targetLower === "spacebar" &&
+      (eventKey === " " || eventLower === "space")
+    )
+      return true;
+    if (
+      targetLower === "arrowleft" &&
+      (eventKey === "ArrowLeft" || eventKey === "←")
+    )
+      return true;
+    if (
+      targetLower === "arrowright" &&
+      (eventKey === "ArrowRight" || eventKey === "→")
+    )
+      return true;
+    if (
+      targetLower === "arrowup" &&
+      (eventKey === "ArrowUp" || eventKey === "↑")
+    )
+      return true;
+    if (
+      targetLower === "arrowdown" &&
+      (eventKey === "ArrowDown" || eventKey === "↓")
+    )
+      return true;
 
     return false;
   }

@@ -5,16 +5,20 @@ export const DEFAULT_WISP_URL = "wss://probuildingsupplies.com/w/";
 export const WISP_SERVERS = [
   { name: "Probuilding Wisp", url: DEFAULT_WISP_URL },
   { name: "Mercury Wisp", url: "wss://wisp.mercurywork.shop/" },
-  { name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" },
-  { name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" }
+  {
+    name: "Reeyuki Wisp",
+    url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
+  },
 ];
+
+const RETIRED_WISP_URLS = ["wss://reeyukiwisp.onrender.com/"];
 
 export function getWispUrl() {
   let stored = os.storage.get(StorageKeys.wispServer);
   if (stored && !stored.endsWith("/")) {
     stored += "/";
   }
-  if (!stored) {
+  if (!stored || RETIRED_WISP_URLS.indexOf(stored) !== -1) {
     stored = DEFAULT_WISP_URL;
     os.storage.set(StorageKeys.wispServer, stored);
   }
