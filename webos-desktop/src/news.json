@@ -1,71 +1,5 @@
 [
   {
-    "date": "October 10, 2026",
-    "label": "Browser Home",
-    "sections": [
-      {
-        "icon": "fa-house",
-        "title": "Classic Browser Home",
-        "items": [
-          [
-            "fa-house",
-            "Yuki Start Page",
-            "New tabs open the classic Yuki start page again."
-          ],
-          [
-            "fa-compass",
-            "Yuki Protocol Pages",
-            "History, bookmarks, downloads and settings live under yuki://."
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "date": "October 9, 2026",
-    "label": "Single Layer Browser",
-    "sections": [
-      {
-        "icon": "fa-globe",
-        "title": "Single Layer Browser",
-        "items": [
-          [
-            "fa-window-maximize",
-            "No Nested Frame",
-            "Browser renders pages directly without a separate served page."
-          ],
-          [
-            "fa-shield-halved",
-            "Same Engine Everywhere",
-            "File and hosted modes share one browsing engine."
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "date": "October 8, 2026",
-    "label": "File Ready Browser",
-    "sections": [
-      {
-        "icon": "fa-globe",
-        "title": "File Ready Browser",
-        "items": [
-          [
-            "fa-globe",
-            "Browse Without Server",
-            "Open the browser from local files and load pages through the relay."
-          ],
-          [
-            "fa-bolt",
-            "Web Apps Work Locally",
-            "Launch web apps from local files using the same browsing engine."
-          ]
-        ]
-      }
-    ]
-  },
-  {
     "date": "October 7, 2026",
     "label": "YukiOS V5.0.0",
     "sections": [
@@ -116,6 +50,11 @@
             "fa-check-circle",
             "Pages Load Reliably",
             "Proxied pages and navigation work every time."
+          ],
+          [
+            "fa-window-maximize",
+            "File:// Support for Browser",
+            "Browser now works on file://"
           ]
         ]
       },
