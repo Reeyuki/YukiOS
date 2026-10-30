@@ -1,4 +1,10 @@
 export const appMap = {
+  angryBirdsStarWars2: {
+    type: "game",
+    url: "https://nawsif.github.io/absw2/",
+    icon: "/static/icons/absw2.webp",
+    title: "Angry Birds Star Wars 2",
+  },
   angryBirds2: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/NaoTomori1/AngryBirds2@main/index.html",
@@ -261,6 +267,13 @@ export const appMap = {
     url: "https://pacman-e281c.firebaseapp.com",
     icon: "/static/icons/pac-man.webp",
     title: "Pac-Man",
+  },
+  papersPlease: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/dashiellbenton/wasm.rip@cfd5d0fa090c76d43792ce2568c460d92911b7c0/files/papersplease/index.html",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/6/6a/October_Labor_Lottery_Papers%2C_Please_Remade_Graphic.png",
+    title: "Papers Please",
+    skipRewrite: true,
   },
   sonic: {
     type: "swf",
