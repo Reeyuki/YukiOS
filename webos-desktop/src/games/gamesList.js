@@ -299,6 +299,12 @@ export const appMap = {
     icon: "/static/icons/undertale.png",
     title: "Undertale",
   },
+  icebound: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/reeyuki/icebound2webport@main/index.html",
+    icon: "/static/icons/icebound.webp",
+    title: "Icebound",
+  },
   balatro: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/NaoTomori1/yukios-games@main/gnmath/balatro/balatro.html",
