@@ -9,7 +9,7 @@ import {
 export { PAPIRUS_AVAILABLE, PAPIRUS_SYMLINKS, papirusReady, ensurePapirusData };
 
 export const PAPIRUS_CDN_BASE =
-  "https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master";
+  "https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master";
 export const PAPIRUS_VARIANT = "Papirus";
 export const PAPIRUS_SIZES = [16, 22, 24, 32, 48, 64];
 

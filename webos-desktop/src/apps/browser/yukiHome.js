@@ -422,35 +422,35 @@ export function buildYukiHomeSrcdoc() {
       <a class="shortcut preset-shortcut" data-url="https://youtube.com">
         <span class="shortcut-close" data-url="https://youtube.com">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" />
         </div>
         <span class="shortcut-label">YouTube</span>
       </a>
       <a class="shortcut preset-shortcut" data-url="https://github.com">
         <span class="shortcut-close" data-url="https://github.com">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg" />
         </div>
         <span class="shortcut-label">GitHub</span>
       </a>
       <a class="shortcut preset-shortcut" data-url="https://discord.com">
         <span class="shortcut-close" data-url="https://discord.com">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" />
         </div>
         <span class="shortcut-label">Discord</span>
       </a>
       <a class="shortcut preset-shortcut" data-url="https://twitter.com">
         <span class="shortcut-close" data-url="https://twitter.com">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" />
         </div>
         <span class="shortcut-label">Twitter</span>
       </a>
       <a class="shortcut preset-shortcut" data-url="https://play.geforcenow.com/mall/">
         <span class="shortcut-close" data-url="https://play.geforcenow.com/mall/">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nvidia.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/nvidia.svg" />
         </div>
         <span class="shortcut-label">Geforce Now</span>
       </a>
@@ -464,14 +464,14 @@ export function buildYukiHomeSrcdoc() {
       <a class="shortcut preset-shortcut" data-url="https://netflix.com">
         <span class="shortcut-close" data-url="https://netflix.com">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/netflix.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/netflix.svg" />
         </div>
         <span class="shortcut-label">Netflix</span>
       </a>
       <a class="shortcut preset-shortcut" data-url="https://twitch.tv">
         <span class="shortcut-close" data-url="https://twitch.tv">&times;</span>
         <div class="shortcut-icon">
-          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg" />
+          <img src="https://fastly.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitch.svg" />
         </div>
         <span class="shortcut-label">Twitch</span>
       </a>

@@ -2,7 +2,7 @@ import { createElement } from "../shared/domUtils.js";
 
 const CDN_THREE =
   "https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js";
-const CDN_VANTA = "https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta";
+const CDN_VANTA = "https://fastly.jsdelivr.net/npm/vanta@0.5.24/dist/vanta";
 
 const EFFECT_FILES = {
   WAVES: "waves",

@@ -1,7 +1,7 @@
 let entry = null;
 let gameZip = null;
 
-const GAMES_BASE = "https://cdn.jsdelivr.net/gh/NaoTomori1/yukios-games@main/";
+const GAMES_BASE = "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main/";
 const RAW_GAMES_BASE = "https://raw.githubusercontent.com/NaoTomori1/yukios-games/main/";
 const HTDOCS = "flashpointarchive/infinity.unstable.life/Flashpoint/Legacy/htdocs/";
 const ZIPS = "flashpointarchive/download.unstable.life/gib-roms/Games/";
@@ -16,7 +16,7 @@ const nativeFetch = window.fetch;
 const redirect = async (requestUrl) => {
   let url = {
     original: new URL(
-      [location.origin, "https://cdn.jsdelivr.net", "https://raw.githubusercontent.com", LEGACY_URL.origin].some(
+      [location.origin, "https://fastly.jsdelivr.net", "https://raw.githubusercontent.com", LEGACY_URL.origin].some(
         (origin) => origin == requestUrl.origin,
       )
         ? requestUrl.pathname.substring(1)

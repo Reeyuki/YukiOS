@@ -108,7 +108,7 @@ export class AchievementsApp extends BaseApp {
             <div class="achievements-hero__bg"></div>
             <div class="achievements-hero__content">
               <div class="achievements-hero__icon-wrapper">
-                <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/games-achievements.svg" class="papirus-icon papirus-icon--22" alt="" />
+                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/games-achievements.svg" class="papirus-icon papirus-icon--22" alt="" />
               </div>
               <h1 class="achievements-hero__title">Achievements</h1>
               <p class="achievements-hero__subtitle">Track your progress in YukiOS</p>
@@ -142,15 +142,15 @@ export class AchievementsApp extends BaseApp {
           </div>
           <div class="achievements-toggle">
             <button class="achievements-toggle__btn achievements-toggle__btn--active" data-filter="all">
-              <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/view-list.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/view-list.svg" class="papirus-icon papirus-icon--22" alt="" />
               <span>All</span>
             </button>
             <button class="achievements-toggle__btn" data-filter="unlocked">
-              <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-select.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-select.svg" class="papirus-icon papirus-icon--22" alt="" />
               <span>Unlocked</span>
             </button>
             <button class="achievements-toggle__btn" data-filter="locked">
-              <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-locked.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-locked.svg" class="papirus-icon papirus-icon--22" alt="" />
               <span>Locked</span>
             </button>
           </div>
@@ -450,7 +450,7 @@ export class AchievementsApp extends BaseApp {
       <div class="achievements-hero__bg"></div>
       <div class="achievements-hero__content">
         <div class="achievements-hero__icon-wrapper">
-          <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/games-achievements.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/games-achievements.svg" class="papirus-icon papirus-icon--22" alt="" />
         </div>
         <h1 class="achievements-hero__title">Achievements</h1>
         <p class="achievements-hero__subtitle">Track your progress in YukiOS</p>
@@ -458,7 +458,7 @@ export class AchievementsApp extends BaseApp {
           disabled
             ? `
           <div class="achievements-disabled-banner">
-            <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/im-ban-user.svg" class="papirus-icon papirus-icon--22" alt="" />
+            <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/im-ban-user.svg" class="papirus-icon papirus-icon--22" alt="" />
             Achievements are currently disabled in Settings
           </div>
         `
@@ -500,15 +500,15 @@ export class AchievementsApp extends BaseApp {
         <div class="achievement-card ${unlocked ? "achievement-card--unlocked" : ""} ${disabled ? "achievement-card--disabled" : ""}" data-rarity="${a.rarity}">
           <div class="achievement-card__icon-wrapper">
             <div class="achievement-card__icon-bg"></div>
-            ${a.icon.startsWith("papirus:") ? `<img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/${a.icon.slice(8)}.svg" class="papirus-icon papirus-icon--22 achievement-card__icon" alt="" />` : `<i class="fas ${a.icon} achievement-card__icon"></i>`}
-            ${unlocked ? '<div class="achievement-card__checkmark"><img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-select.svg" class="papirus-icon papirus-icon--22" alt="" /></div>' : ""}
+            ${a.icon.startsWith("papirus:") ? `<img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/${a.icon.slice(8)}.svg" class="papirus-icon papirus-icon--22 achievement-card__icon" alt="" />` : `<i class="fas ${a.icon} achievement-card__icon"></i>`}
+            ${unlocked ? '<div class="achievement-card__checkmark"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-select.svg" class="papirus-icon papirus-icon--22" alt="" /></div>' : ""}
           </div>
           <div class="achievement-card__content">
             <div class="achievement-card__header">
               <h3 class="achievement-card__title">${a.title}</h3>
               <div class="achievement-card__badges">
                 <span class="achievement-card__rarity achievement-card__rarity--${a.rarity}">${a.rarity}</span>
-                ${!unlocked ? '<div class="achievement-card__lock"><img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-locked.svg" class="papirus-icon papirus-icon--22" alt="" /></div>' : ""}
+                ${!unlocked ? '<div class="achievement-card__lock"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-locked.svg" class="papirus-icon papirus-icon--22" alt="" /></div>' : ""}
               </div>
             </div>
             <p class="achievement-card__desc">${a.desc}</p>
@@ -562,7 +562,7 @@ export class AchievementsApp extends BaseApp {
             class="achievements-toggle__btn ${current === o.val ? "achievements-toggle__btn--active" : ""}"
             data-filter="${o.val}"
           >
-            ${o.icon.startsWith("papirus:") ? `<img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/${o.icon.slice(8)}.svg" class="papirus-icon papirus-icon--22" alt="" />` : `<i class="fas ${o.icon}"></i>`}
+            ${o.icon.startsWith("papirus:") ? `<img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/${o.icon.slice(8)}.svg" class="papirus-icon papirus-icon--22" alt="" />` : `<i class="fas ${o.icon}"></i>`}
             <span>${o.label}</span>
           </button>
         `,
@@ -659,7 +659,7 @@ export class AchievementsApp extends BaseApp {
         if (!this.s1) {
           this.s1 = new Audio(
             resolveGhUrl(
-              "https://cdn.jsdelivr.net/gh/NaoTomori1/yukios@main/static/audio/steam.opus",
+              "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/static/audio/steam.opus",
             ),
           );
         }
@@ -678,11 +678,11 @@ export class AchievementsApp extends BaseApp {
     popup.innerHTML = `
     <div class="achievement-popup__icon-wrapper">
       <div class="achievement-popup__icon-bg"></div>
-      ${achievement.icon.startsWith("papirus:") ? `<img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/${achievement.icon.slice(8)}.svg" class="papirus-icon papirus-icon--22 achievement-popup__icon" alt="" />` : `<i class="fas ${achievement.icon} achievement-popup__icon"></i>`}
+      ${achievement.icon.startsWith("papirus:") ? `<img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/${achievement.icon.slice(8)}.svg" class="papirus-icon papirus-icon--22 achievement-popup__icon" alt="" />` : `<i class="fas ${achievement.icon} achievement-popup__icon"></i>`}
     </div>
     <div class="achievement-popup__content">
       <div class="achievement-popup__badge">
-        <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/games-achievements.svg" class="papirus-icon papirus-icon--22" alt="" />
+        <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/games-achievements.svg" class="papirus-icon papirus-icon--22" alt="" />
         Achievement Unlocked
       </div>
       <div class="achievement-popup__title">${achievement.title}</div>
@@ -743,7 +743,7 @@ export class AchievementsApp extends BaseApp {
       ${this.renderProgress()}
       ${this.renderToggle(filter)}
       <button type="button" class="achievements-unlock-all">
-        <img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/bookmark-new.svg" class="papirus-icon papirus-icon--22" alt="" />
+        <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/bookmark-new.svg" class="papirus-icon papirus-icon--22" alt="" />
         <span>Unlock All</span>
       </button>
       <div class="achievements-grid">

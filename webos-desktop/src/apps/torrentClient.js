@@ -566,7 +566,7 @@ export class TorrentClientApp extends BaseApp {
     }
 
     const CDN_URLS = [
-      "https://cdn.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js",
+      "https://fastly.jsdelivr.net/npm/webtorrent@0.108.6/webtorrent.debug.js",
       "https://cdnjs.cloudflare.com/ajax/libs/webtorrent/0.108.6/webtorrent.debug.js",
     ];
 

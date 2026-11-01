@@ -309,11 +309,11 @@ export class LiveActivityManager {
 
     const avatarHtml = avatarUrl
       ? `<img src="${avatarUrl}" class="activity-popup__avatar" />`
-      : `<div class="activity-popup__avatar activity-popup__avatar--default"><img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/system-users.svg" class="papirus-icon papirus-icon--22" alt="" /></div>`;
+      : `<div class="activity-popup__avatar activity-popup__avatar--default"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/system-users.svg" class="papirus-icon papirus-icon--22" alt="" /></div>`;
 
     const gameIconHtml = gameIcon
       ? `<img src="${gameIcon}" class="activity-popup__game-icon" />`
-      : `<img src="https://cdn.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/preferences-desktop-gaming.svg" class="papirus-icon papirus-icon--22" alt="" />`;
+      : `<img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/preferences-desktop-gaming.svg" class="papirus-icon papirus-icon--22" alt="" />`;
 
     popup.innerHTML = `
       <div class="activity-popup__avatar-col">

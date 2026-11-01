@@ -4,7 +4,7 @@ import { SYSTEM_LIBRARY_FILES } from "../generated/systemLibraryManifest.js";
 export const SYSTEM_FOLDER = "System";
 
 const LIBRARY_RAW_BASE =
-  "https://cdn.jsdelivr.net/gh/NaoTomori1/yukios@main/webos-desktop/src";
+  "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/webos-desktop/src";
 const LIBRARY_FA_ICONS = {
   ".js": "papirus:mimetypes/application-x-javascript",
   ".mjs": "papirus:mimetypes/application-x-javascript",

@@ -46,7 +46,7 @@ export class AICore {
 
     try {
       const webLLMModule =
-        await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/lib/index.js");
+        await import("https://fastly.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/lib/index.js");
       if (webLLMModule && webLLMModule.CreateMLCEngine) {
         window.CreateMLCEngine = webLLMModule.CreateMLCEngine;
         this.webLLMModule = webLLMModule;

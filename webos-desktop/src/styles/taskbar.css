@@ -314,7 +314,7 @@
   flex-shrink: 0;
   background: var(
       --start-logo-url,
-      url("https://cdn.jsdelivr.net/gh/NaoTomori1/yukios@main/static/icons/logo.png")
+      url("https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/static/icons/logo.png")
     )
     no-repeat center / 48px;
   cursor: pointer;

@@ -46,7 +46,7 @@ function probeTransport(rawTransport, timeoutMs = 10000) {
 
 async function loadEpoxyTransport() {
   const module =
-    await import("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs");
+    await import("https://fastly.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs");
   return module.default;
 }
 

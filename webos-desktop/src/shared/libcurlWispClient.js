@@ -3,7 +3,7 @@ import { createElement } from "./domUtils.js";
 import { StorageKeys } from "../StorageKeys.js";
 
 const scriptSources = [
-  "https://cdn.jsdelivr.net/npm/libcurl.js@0.7.4/libcurl_full.js",
+  "https://fastly.jsdelivr.net/npm/libcurl.js@0.7.4/libcurl_full.js",
   "https://unpkg.com/libcurl.js@0.7.4/libcurl_full.js",
 ];
 

@@ -885,11 +885,11 @@ export async function ensureFFmpegWasm() {
   if (ffmpegModulePromise) return ffmpegModulePromise;
   ffmpegModulePromise = (async () => {
     const { createFFmpeg } =
-      await import("https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js");
+      await import("https://fastly.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js");
     const ffmpeg = createFFmpeg({
       log: false,
       corePath:
-        "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js",
+        "https://fastly.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js",
     });
     await ffmpeg.load();
     ffmpegModuleInstance = ffmpeg;

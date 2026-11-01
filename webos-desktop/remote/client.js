@@ -110,7 +110,7 @@ async function decodeQR(imageUrl) {
   }
 
   const script = document.createElement("script");
-  script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+  script.src = "https://fastly.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
   await new Promise((resolve, reject) => {
     script.onload = resolve;
     script.onerror = reject;

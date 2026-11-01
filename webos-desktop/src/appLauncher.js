@@ -57,7 +57,7 @@ import {
 } from "./proxies.js";
 import { trigger as triggerCursorEffect } from "./cursorEffect.js";
 const STATICALLY_BASE = resolveGhUrl(
-  "https://cdn.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
+  "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
 );
 
 export class AppLauncher {
@@ -569,7 +569,7 @@ export class AppLauncher {
 <head>
 <meta charset="UTF-8">
 <title>${gameName}</title>
-<script src="${getLibraryUrl("ruffle") || "https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle@0.2.0-nightly.2026.5.15/ruffle.js"}"></script>
+<script src="${getLibraryUrl("ruffle") || "https://fastly.jsdelivr.net/npm/@ruffle-rs/ruffle@0.2.0-nightly.2026.5.15/ruffle.js"}"></script>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;background:${ruffleConfig.backgroundColor || "#000"};overflow:hidden;}#player{width:100%;height:100%;}</style>
 </head>
 <body>
