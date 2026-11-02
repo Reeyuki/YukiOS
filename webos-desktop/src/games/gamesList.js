@@ -171,6 +171,27 @@ export const appMap = {
     icon: "/static/icons/star.webp",
     title: "In Stars And Time",
   },
+  dealersLife: {
+    type: "game",
+    url: "https://cdn.statically.io/gh/Reeyuki/dealers-life-webport@main/1/index.html",
+    icon: "https://cdn.cloudflare.steamstatic.com/steam/apps/982270/header.jpg",
+    title: "Dealer's Life",
+    skipRewrite: true,
+  },
+  dealersLife2: {
+    type: "game",
+    url: "https://cdn.statically.io/gh/Reeyuki/dealers-life-webport@main/2/index.html",
+    icon: "https://cdn.cloudflare.steamstatic.com/steam/apps/1343670/header.jpg",
+    title: "Dealer's Life 2",
+    skipRewrite: true,
+  },
+  classroomAquatic: {
+    type: "game",
+    url: "https://cdn.jsdelivr.net/gh/Reeyuki/ClassroomAquaticWebport@main/game.html",
+    icon: "/static/icons/harold.webp",
+    title: "Classroom Aquatic",
+    skipRewrite: true,
+  },
   sixSeconds: {
     type: "game",
     url: "https://gcore.jsdelivr.net/gh/usheje883-maker/60-Seconds-Webport@main/index.html",
@@ -2022,19 +2043,5 @@ export const appMap = {
     url: "https://cdn.statically.io/gh/gn-math/html/main/183.html",
     icon: "https://cdn.statically.io/gh/gn-math/covers/main/183.png",
     title: "Minecraft 1.21.4",
-  },
-  dealersLife: {
-    type: "game",
-    url: "https://cdn.statically.io/gh/Reeyuki/dealers-life-webport@main/1/index.html",
-    icon: "https://cdn.cloudflare.steamstatic.com/steam/apps/982270/header.jpg",
-    title: "Dealer's Life",
-    skipRewrite: true,
-  },
-  dealersLife2: {
-    type: "game",
-    url: "https://cdn.statically.io/gh/Reeyuki/dealers-life-webport@main/2/index.html",
-    icon: "https://cdn.cloudflare.steamstatic.com/steam/apps/1343670/header.jpg",
-    title: "Dealer's Life 2",
-    skipRewrite: true,
   },
 };
