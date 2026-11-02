@@ -12,7 +12,7 @@ import {
 } from "../shared/fileKindDetector.js";
 import { ROM_EXTS } from "../shared/coreMap.js";
 
-const CDN_BASE = "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main";
+const CDN_BASE = "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main";
 
 export const APP_MANIFESTS = [
   {
@@ -1947,7 +1947,7 @@ export const APP_MANIFESTS = [
     targetUrl: "https://destroy.spritefusion.com/",
     windowSize: ["90vw", "85vh"],
     musicUrl:
-      "https://fastly.jsdelivr.net/gh/NaoTomori1/AngryBirds2Port/gomp3.mp3",
+      "https://gcore.jsdelivr.net/gh/NaoTomori1/AngryBirds2Port/gomp3.mp3",
     startMaximized: true,
   },
   {

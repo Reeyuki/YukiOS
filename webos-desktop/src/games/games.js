@@ -139,7 +139,7 @@ function patchAppMap(appMap) {
     if (app.icon && app.icon.startsWith("/static/")) {
       if (key.startsWith("subwaySurfers")) {
         app.icon = resolveGhUrl(
-          `https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main/subwaySurfers/${app.icon.split("/").pop()}`,
+          `https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main/subwaySurfers/${app.icon.split("/").pop()}`,
         );
       } else {
         app.icon = `${getCdnBase()}${app.icon}`;

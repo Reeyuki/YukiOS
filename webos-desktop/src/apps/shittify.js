@@ -11,7 +11,7 @@ import {
 const SHITTIFY_ICON = resolveIconUrl("/static/icons/shittify.webp");
 
 const SHITTIFY_CDN_URL =
-  "https://fastly.jsdelivr.net/gh/Reeyuki/shittifylol@master/shittify21.html";
+  "https://gcore.jsdelivr.net/gh/Reeyuki/shittifylol@master/shittify21.html";
 
 const SHITTIFY_BRIDGE_SCRIPT = `
 <script>

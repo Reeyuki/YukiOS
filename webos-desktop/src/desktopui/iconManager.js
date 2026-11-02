@@ -61,7 +61,7 @@ const HARDCODED_DESKTOP_ICONS = [
   {
     app: "infaredYoutubeApp",
     name: "Infared Youtube",
-    icon: "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/static/icons/favicons/youtube.webp",
+    icon: "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/static/icons/favicons/youtube.webp",
   },
   {
     app: "spriteFusionApp",

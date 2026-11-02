@@ -86,7 +86,7 @@ export const defaultStorage = {
     "Monocraft.ttf": {
       type: "file",
       content:
-        "https://fastly.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
+        "https://gcore.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf",
       kind: FileKind.FONT,
       icon: "fas fa-font",
     },
@@ -257,11 +257,11 @@ export const defaultStorage = {
     "serial-experiments-lain.mp4": {
       type: "file",
       content: resolveIconUrl(
-        "https://fastly.jsdelivr.net/gh/Reeyuki/ringracers@main/l.mp4",
+        "https://gcore.jsdelivr.net/gh/Reeyuki/ringracers@main/l.mp4",
       ),
       kind: FileKind.VIDEO,
       icon: resolveIconUrl(
-        "https://fastly.jsdelivr.net/gh/Yangmoooo/lain-sddm-theme@master/VisLain.gif",
+        "https://gcore.jsdelivr.net/gh/Yangmoooo/lain-sddm-theme@master/VisLain.gif",
       ),
     },
   },

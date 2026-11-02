@@ -981,7 +981,7 @@ export class SteamDeckLayout {
           </head>
           <body>
             <div id="games"></div>
-            <script src="https://fastly.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"><\/script>
+            <script src="https://gcore.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"><\/script>
             <script>
               Lumin.init({
                 container: '#games',

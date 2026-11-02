@@ -66,7 +66,7 @@ export class TilingRofi {
     this.overlay.innerHTML = `
       <div class="rofi-input-wrapper">
         <div class="rofi-mode-indicator" id="rofi-mode-indicator">
-          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/application-default-icon.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/application-default-icon.svg" class="papirus-icon papirus-icon--22" alt="" />
           <span>Apps</span>
         </div>
         <input type="text" id="rofi-search" placeholder="Search apps..." autocomplete="off" spellcheck="false">

@@ -882,7 +882,7 @@ class AudioMixer {
       const soundPath = SystemAudio[audioKey] || audioKey;
       const audio = new Audio(
         resolveGhUrl(
-          `https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/${soundPath}`,
+          `https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/${soundPath}`,
         ),
       );
       audio.volume = this.masterVolume * this.systemVolume;

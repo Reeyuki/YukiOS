@@ -21,9 +21,9 @@ import { shouldEnableAds } from "../../ads.js";
 const FALLBACK_HOME = "yuki://home";
 const FALLBACK_APP_ID = "browserApp";
 const TAB_SOUND_ICON =
-  "https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/32x32/status/audio-volume-high.svg";
+  "https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/32x32/status/audio-volume-high.svg";
 const TAB_MUTED_ICON =
-  "https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/32x32/status/audio-volume-muted.svg";
+  "https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/32x32/status/audio-volume-muted.svg";
 function makeId(base, suffix) {
   return base + "-" + suffix;
 }
@@ -76,7 +76,7 @@ function buildSidebar(suffix, fireAction, els) {
   const brandIcon = createElement("img", {
     className: "sidebar-brand-icon",
     attributes: {
-      src: "https://fastly.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png",
+      src: "https://gcore.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png",
       alt: "Yuki Browser",
     },
   });

@@ -77,7 +77,7 @@ const USER_AGENT_PRESETS = [
   },
 ];
 const YUKI_HOME_ICON =
-  "https://fastly.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png";
+  "https://gcore.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png";
 const VIEWPORT_SANDBOX =
   "allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation-by-user-activation allow-modals";
 const FALLBACK_WISP = "wss://racialequityleadership.com/ws?reconnect=1";

@@ -104,7 +104,7 @@ const PAPIRUS_TO_FA = {
 };
 
 const PAPIRUS_CDN_BASE =
-  "https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master";
+  "https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master";
 
 export function resolvePapirusUrl(papirusIcon, size = 48) {
   if (typeof papirusIcon !== "string") return papirusIcon;
@@ -188,8 +188,8 @@ export const CDN_MIRRORS = [
   {
     id: "jsdelivr",
     name: "jsDelivr (Default)",
-    ghTemplate: "https://fastly.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
-    npmTemplate: "https://fastly.jsdelivr.net/npm/${p}",
+    ghTemplate: "https://gcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://gcore.jsdelivr.net/npm/${p}",
   },
   {
     id: "quantil",
@@ -200,8 +200,8 @@ export const CDN_MIRRORS = [
   {
     id: "originfastly",
     name: "Fastly (jsDelivr Mirror)",
-    ghTemplate: "https://originfastly.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
-    npmTemplate: "https://originfastly.jsdelivr.net/npm/${p}",
+    ghTemplate: "https://origingcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}",
+    npmTemplate: "https://origingcore.jsdelivr.net/npm/${p}",
   },
   {
     id: "gcore",
@@ -320,21 +320,21 @@ const CDN_PROVIDERS = {
   jsdelivr: {
     get GAMES() {
       return resolveGhUrl(
-        "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
+        "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
       );
     },
     get MAIN() {
-      return resolveGhUrl("https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main");
+      return resolveGhUrl("https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main");
     },
     get NPM() {
-      return resolveNpmUrl("https://fastly.jsdelivr.net/npm");
+      return resolveNpmUrl("https://gcore.jsdelivr.net/npm");
     },
     PATTERN:
       /^https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\//,
     HOSTNAMES: [
-      "fastly.jsdelivr.net",
+      "gcore.jsdelivr.net",
       "quantil.jsdelivr.net",
-      "originfastly.jsdelivr.net",
+      "origingcore.jsdelivr.net",
       "gcore.jsdelivr.net",
       "esm.sh",
       "cdn.statically.io",
@@ -347,7 +347,7 @@ const CDN_PROVIDERS = {
 export function initializeMirrors(appMap) {
   try {
     const base = $("base");
-    if (base && base.href.includes("fastly.jsdelivr.net/gh/")) {
+    if (base && base.href.includes("gcore.jsdelivr.net/gh/")) {
       base.href = resolveGhUrl(base.href);
     }
 
@@ -369,7 +369,7 @@ export function initializeMirrors(appMap) {
     if (appMap) {
       Object.values(appMap).forEach((app) => {
         if (app.icon && typeof app.icon === "string") {
-          if (app.icon.includes("fastly.jsdelivr.net/gh/")) {
+          if (app.icon.includes("gcore.jsdelivr.net/gh/")) {
             app.icon = resolveGhUrl(app.icon);
           } else if (
             app.icon.startsWith("/static/") ||
@@ -379,7 +379,7 @@ export function initializeMirrors(appMap) {
           }
         }
         if (app.url && typeof app.url === "string") {
-          if (app.url.includes("fastly.jsdelivr.net/gh/")) {
+          if (app.url.includes("gcore.jsdelivr.net/gh/")) {
             app.url = resolveGhUrl(app.url);
           } else if (
             app.url.startsWith("/static/") ||
@@ -424,8 +424,8 @@ export const isCdnGhUrl = (url) => {
 
 export const isJsdelivrGhUrl = (url) =>
   typeof url === "string" &&
-  (url.startsWith("https://fastly.jsdelivr.net/gh/") ||
-    url.startsWith("http://fastly.jsdelivr.net/gh/"));
+  (url.startsWith("https://gcore.jsdelivr.net/gh/") ||
+    url.startsWith("http://gcore.jsdelivr.net/gh/"));
 
 export function isCdnHostname(hostname) {
   if (typeof hostname !== "string") return false;
@@ -653,8 +653,8 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     const dirPath = path.replace(/[^/]*$/, "");
     const provider = getCdnProvider(urlObj) || CDN_PROVIDERS.jsdelivr;
     const baseUrl = provider.HOSTNAMES[0].includes("jsdelivr")
-      ? "https://fastly.jsdelivr.net"
-      : "https://fastly.jsdelivr.net";
+      ? "https://gcore.jsdelivr.net"
+      : "https://gcore.jsdelivr.net";
     const repoBase = `${baseUrl}${provider.GH_PATH}${user}/${repoWithRef}/`;
     assetDirBase = `${repoBase}${dirPath}`;
     rootBase = repoBase;
@@ -777,8 +777,8 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
   } catch {}
   const ROOT_BASE = "${rootBase}";
   const ASSET_DIR_BASE = "${assetDirBase}";
-  const JSDELIVR_GH_BASE = "https://fastly.jsdelivr.net/gh/";
-  const STATICALLY_GH_BASE = "https://fastly.jsdelivr.net/gh/";
+  const JSDELIVR_GH_BASE = "https://gcore.jsdelivr.net/gh/";
+  const STATICALLY_GH_BASE = "https://gcore.jsdelivr.net/gh/";
 
   function resolve(url) {
     if (typeof url !== 'string' || !url) return url;

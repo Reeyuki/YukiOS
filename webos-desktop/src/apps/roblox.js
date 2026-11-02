@@ -4,10 +4,10 @@ import { $, $$ } from "../framework.js";
 import { resolveIconUrl, resolveGhUrl } from "../shared/assetResolver.js";
 
 const CDN = resolveGhUrl(
-  "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main/html/roblox",
+  "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main/html/roblox",
 );
 const CDN_ROBLOX = resolveGhUrl(
-  "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main/roblox",
+  "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main/roblox",
 );
 
 const COVER_MAP = {

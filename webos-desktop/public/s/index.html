@@ -14,15 +14,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print"
     onload="this.media='all'" />
   <link rel="preload" as="fetch" crossorigin href="/s/set.wasm" />
-  <link rel="modulepreload" href="https://fastly.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs" />
+  <link rel="modulepreload" href="https://gcore.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs" />
   <link rel="modulepreload"
-    href="https://fastly.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs" />
+    href="https://gcore.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs" />
   <script src="/s/set.js" defer></script>
   <script src="/s/adblock.js" defer></script>
   <script src="/s/controller.api.js" defer></script>
   <script type="module">
-    import { default as EpoxyTransport } from "https://fastly.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
-    import { default as LibcurlTransport } from "https://fastly.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs";
+    import { default as EpoxyTransport } from "https://gcore.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs";
+    import { default as LibcurlTransport } from "https://gcore.jsdelivr.net/npm/@mercuryworkshop/libcurl-transport@2.0.5/dist/index.mjs";
     window.EpoxyTransport = EpoxyTransport;
     window.LibcurlTransport = LibcurlTransport;
   </script>
@@ -4648,7 +4648,7 @@
         <div class="browser-shell" id="browser-shell">
         <div class="tab-sidebar" id="tab-sidebar">
           <div class="sidebar-header">
-            <img src="https://fastly.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png" class="sidebar-brand-icon" alt="Yuki Browser" />
+            <img src="https://gcore.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png" class="sidebar-brand-icon" alt="Yuki Browser" />
             <span class="sidebar-title">Yuki Browser</span>
             <div class="sidebar-header-actions">
               <button class="sidebar-action-btn" id="sidebar-collapse-btn" data-tooltip="Collapse sidebar to icons"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="m16 15-3-3 3-3"></path></svg></button>
@@ -5464,7 +5464,7 @@
       return url;
     }
 
-    const DEFAULT_FAVICON = "https://fastly.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png";
+    const DEFAULT_FAVICON = "https://gcore.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png";
 
     function decodeFrameUrl(tab) {
       try {
@@ -8117,7 +8117,7 @@
         return;
       }
       const script = win.document.createElement("script");
-      script.src = "https://fastly.jsdelivr.net/npm/eruda";
+      script.src = "https://gcore.jsdelivr.net/npm/eruda";
       script.onload = () => {
         win.eruda.init();
         win.eruda.show();

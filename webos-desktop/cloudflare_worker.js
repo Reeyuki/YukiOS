@@ -324,7 +324,7 @@ async function fetchAppList(env) {
 function isTrustedIconUrl(url) {
   if (typeof url !== "string") return false;
   return (
-    url.startsWith("https://fastly.jsdelivr.net/gh/Reeyuki/") ||
+    url.startsWith("https://gcore.jsdelivr.net/gh/Reeyuki/") ||
     url.startsWith("https://yukios.netlify.app/") ||
     url.startsWith("/")
   );

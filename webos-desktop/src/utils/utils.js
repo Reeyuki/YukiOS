@@ -311,9 +311,9 @@ export async function downloadPage(showStatus) {
   const f = "";
 
   const gitMirrors = [
-    `https://fastly.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
+    `https://gcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
     `https://quantil.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
-    `https://originfastly.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
+    `https://origingcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
     `https://gcore.jsdelivr.net/gh/${u}/${r}@${b}/${p}${f}`,
     `https://esm.sh/gh/${u}/${r}@${b}/${p}${f}`,
     `https://cdn.statically.io/gh/${u}/${r}@${b}/${p}${f}`,

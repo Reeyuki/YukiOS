@@ -4,7 +4,7 @@ let capturing = false;
 let stdoutBuffer = "";
 let stderrBuffer = "";
 
-const PYODIDE_URL = "https://fastly.jsdelivr.net/pyodide/v0.25.0/full/pyodide.mjs";
+const PYODIDE_URL = "https://gcore.jsdelivr.net/pyodide/v0.25.0/full/pyodide.mjs";
 
 import { os } from "../os/index.js";
 

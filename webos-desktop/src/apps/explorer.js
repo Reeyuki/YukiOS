@@ -2613,7 +2613,7 @@ export class ExplorerApp extends BaseApp {
       thumbnailSrc = resolveIconUrl("static/flymetothemoon-preview.webp");
     } else if (name === "serial-experiments-lain.mp4") {
       thumbnailSrc = resolveIconUrl(
-        "https://fastly.jsdelivr.net/gh/Yangmoooo/lain-sddm-theme@master/VisLain.gif",
+        "https://gcore.jsdelivr.net/gh/Yangmoooo/lain-sddm-theme@master/VisLain.gif",
       );
     } else if (isImageFile(name) && !inSystem) {
       const cacheKey = inst.currentPath.join("/") + "/" + name;

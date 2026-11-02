@@ -46,7 +46,7 @@ export class AquariumWidget extends WidgetBase {
         <div class="widget-aquarium-glass" style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg, rgba(125,211,252,0.12) 0%, transparent 24%, transparent 80%, rgba(56,189,248,0.08) 100%);border-left:1px solid rgba(125,211,252,0.12);"></div>
       </div>
       <div class="widget-aquarium-bar" style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:rgba(12,72,130,0.28);border-top:1px solid rgba(125,211,252,0.18);backdrop-filter:blur(10px);font-size:11px;color:#bae6fd;">
-        <span class="widget-aquarium-count"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/fish.svg" class="papirus-icon papirus-icon--22" alt="" /> <span>${this.fishes.length}</span> fish</span>
+        <span class="widget-aquarium-count"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/fish.svg" class="papirus-icon papirus-icon--22" alt="" /> <span>${this.fishes.length}</span> fish</span>
         <button class="widget-aquarium-add" style="appearance:none;border:1px solid rgba(125,211,252,0.28);background:rgba(14,95,160,0.32);color:#e0f2fe;padding:3px 8px;border-radius:10px;font-size:11px;cursor:pointer;">Add</button>
       </div>
     `;

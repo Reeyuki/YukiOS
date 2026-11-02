@@ -4,10 +4,10 @@ export const CDN_CONFIG = {
     get games() {
       return {
         base: resolveGhUrl(
-          "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
+          "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
         ),
         archiveBase: resolveGhUrl(
-          "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7",
+          "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7",
         ),
         ref: "main",
       };
@@ -15,14 +15,14 @@ export const CDN_CONFIG = {
     get main() {
       return {
         base: resolveGhUrl(
-          "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main",
+          "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main",
         ),
         ref: "main",
       };
     },
     get npm() {
       return {
-        base: resolveNpmUrl("https://fastly.jsdelivr.net/npm"),
+        base: resolveNpmUrl("https://gcore.jsdelivr.net/npm"),
       };
     },
   },

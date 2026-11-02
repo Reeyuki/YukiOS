@@ -12,7 +12,7 @@ function extractApps() {
     resolve(ROOT, "src/registry/AppManifest.js"),
     "utf-8",
   );
-  const APP_CDN = "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main";
+  const APP_CDN = "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main";
   const entries = [];
   let depth = 0,
     current = "",
@@ -89,7 +89,7 @@ function extractGames(gameDescs) {
     let icon = iconM ? iconM[1] : "";
     if (icon && (icon.startsWith("/") || icon.startsWith("static/"))) {
       const clean = icon.startsWith("/") ? icon.slice(1) : icon;
-      icon = `https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/${clean}`;
+      icon = `https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/${clean}`;
     }
     const title = titleM ? titleM[1] : key;
     const desc = (gameDescs && gameDescs[key]) || "";
@@ -134,7 +134,7 @@ function extractGameDescriptions() {
 
 async function fetchArchiveGames() {
   const archiveBase =
-    "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7/archive/";
+    "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7/archive/";
   const url = `${archiveBase}games.json`;
 
   return new Promise((resolve, reject) => {
@@ -822,8 +822,8 @@ const featurePages = [
   },
 ];
 
-const GH = "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/.github";
-const GAMES_CDN = "https://fastly.jsdelivr.net/gh/NaoTomori1/yukios-games@main";
+const GH = "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/.github";
+const GAMES_CDN = "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main";
 
 function resolveGameUrl(url, type) {
   if (!url) return "";
@@ -1326,7 +1326,7 @@ function makeMinimalGamePage(
       .trim()
       .toLowerCase()
       .replace(/\s+/g, "");
-    finalGameIcon = `https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/subwaySurfers/${gameName}.webp`;
+    finalGameIcon = `https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/subwaySurfers/${gameName}.webp`;
   }
 
   let gamePlayerHtml = "";
@@ -1759,7 +1759,7 @@ function makeCatalogPage(title, description, items, itemType, imageSize) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/.github/yuki-deck.png">
+<meta property="og:image" content="https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/.github/yuki-deck.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://yukios.netlify.app/${itemType}s.html">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">

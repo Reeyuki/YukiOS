@@ -65,7 +65,7 @@ export class SteamDeckAudio {
   playAudio(file) {
     if (os.storage.get(StorageKeys.steamDeckAudioEnabled) === "false") return;
     const url = resolveGhUrl(
-      `https://fastly.jsdelivr.net/gh/NaoTomori1/yukios@main/static/audio/deck/${file}`,
+      `https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/static/audio/deck/${file}`,
     );
     const audio = new Audio(url);
     audio.preload = "auto";

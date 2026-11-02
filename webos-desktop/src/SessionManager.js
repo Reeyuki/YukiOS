@@ -309,19 +309,19 @@ export class SessionManager {
 
         <div class="session-extra">
         <div class="session-support-btn" id="session-support-btn" title="Support YukiOS">
-          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/emotes/face-smile.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/emotes/face-smile.svg" class="papirus-icon papirus-icon--22" alt="" />
         </div>
         <a class="session-github-btn" href="https://github.com/Reeyuki/YukiOS" target="_blank" rel="noopener" title="Star Us On Github">
-          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/github.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/github.svg" class="papirus-icon papirus-icon--22" alt="" />
         </a>
         <a class="session-discord-btn" href="https://discord.gg/wufbWFwr4G" target="_blank" rel="noopener" title="Join Discord">
-          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/discord.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/discord.svg" class="papirus-icon papirus-icon--22" alt="" />
         </a>
         <div class="session-status-widget" id="session-status-widget">
           <button class="session-status-toggle" id="session-status-toggle" title="System status" type="button">
-            <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/help-about.svg" class="papirus-icon papirus-icon--22" alt="" />
+            <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/help-about.svg" class="papirus-icon papirus-icon--22" alt="" />
             <span>Status</span>
-            <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/go-down.svg" class="papirus-icon papirus-icon--22" alt="" />
+            <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/go-down.svg" class="papirus-icon papirus-icon--22" alt="" />
           </button>
           <div class="session-status-panel" id="session-status-panel">
             <div class="status-info-row">
@@ -338,12 +338,12 @@ export class SessionManager {
             </div>
             <div class="status-block" data-block="online">
               <div class="status-divider"></div>
-              <div class="online-users-count"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/system-users.svg" class="papirus-icon papirus-icon--22" alt="" /><span id="online-users-count">--</span> online</div>
+              <div class="online-users-count"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/system-users.svg" class="papirus-icon papirus-icon--22" alt="" /><span id="online-users-count">--</span> online</div>
             </div>
             <div class="status-block" data-block="live">
               <div class="status-divider"></div>
               <button type="button" class="session-live-toggle" id="session-activity-toggle">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/preferences-desktop-gaming.svg" class="papirus-icon papirus-icon--22" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/preferences-desktop-gaming.svg" class="papirus-icon papirus-icon--22" alt="" />
                 <span>Live Activity</span>
               </button>
               <div class="session-activity-panel" id="session-activity-panel">
@@ -366,13 +366,13 @@ export class SessionManager {
 
           <div class="system-actions-row">
             <button class="system-icon" id="power-btn" title="Shutdown">
-              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/system-shutdown.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/system-shutdown.svg" class="papirus-icon papirus-icon--22" alt="" />
             </button>
             <button class="system-icon" id="restart-btn" title="Restart">
-              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/view-refresh.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/view-refresh.svg" class="papirus-icon papirus-icon--22" alt="" />
             </button>
             <button class="system-icon" id="sleep-btn" title="Sleep">
-              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/48x48/status/weather-clear-night.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/48x48/status/weather-clear-night.svg" class="papirus-icon papirus-icon--22" alt="" />
             </button>
           </div>
 
@@ -403,23 +403,23 @@ export class SessionManager {
           <div class="session-modes" id="session-modes">
             <div class="session-modes-grid">
               <button type="button" class="session-mode-btn" data-mode="reset">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/48x48/status/weather-snow.svg" class="papirus-icon papirus-icon--32" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/48x48/status/weather-snow.svg" class="papirus-icon papirus-icon--32" alt="" />
                 <span>YukiOS</span>
               </button>
               <button type="button" class="session-mode-btn" data-mode="mac">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/apple-music.svg" class="papirus-icon papirus-icon--32" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/apple-music.svg" class="papirus-icon papirus-icon--32" alt="" />
                 <span>Mac</span>
               </button>
               <button type="button" class="session-mode-btn" data-mode="chromeos">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/google-chrome.svg" class="papirus-icon papirus-icon--32" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/google-chrome.svg" class="papirus-icon papirus-icon--32" alt="" />
                 <span>Chrome OS</span>
               </button>
               <button type="button" class="session-mode-btn" data-mode="tiling">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/view-grid.svg" class="papirus-icon papirus-icon--32" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/view-grid.svg" class="papirus-icon papirus-icon--32" alt="" />
                 <span>Tiling</span>
               </button>
               <button type="button" class="session-mode-btn" data-mode="steamdeck">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/steam.svg" class="papirus-icon papirus-icon--32" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/steam.svg" class="papirus-icon papirus-icon--32" alt="" />
                 <span>Deck</span>
               </button>
               ${`<button type="button" class="session-mode-btn" data-mode="win11">
@@ -427,7 +427,7 @@ export class SessionManager {
                 <span>Windows 11</span>
               </button>`}
               <button type="button" class="session-mode-btn" data-mode="3d">
-                <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/kjumpingcube.svg" class="papirus-icon papirus-icon--32" alt="" />
+                <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/kjumpingcube.svg" class="papirus-icon papirus-icon--32" alt="" />
                 <span>3D Fps Game</span>
               </button>
             </div>
@@ -436,19 +436,19 @@ export class SessionManager {
 
         <div class="session-electron-banner" id="session-electron-banner">
           <button class="session-electron-banner__close" id="electron-banner-close" aria-label="Dismiss" title="Dismiss">
-            <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/window-close.svg" class="papirus-icon papirus-icon--22" alt="" />
+            <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/window-close.svg" class="papirus-icon papirus-icon--22" alt="" />
           </button>
-          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/edit-download.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/edit-download.svg" class="papirus-icon papirus-icon--22" alt="" />
           <span><strong>YukiOS desktop app</strong> Persistent storage, system tray, remote desktop, and faster performance.</span>
           <div class="electron-banner-actions">
-            <span class="electron-download-link" id="electron-download-btn"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/edit-download.svg" class="papirus-icon papirus-icon--22" alt="" /> Download</span>
+            <span class="electron-download-link" id="electron-download-btn"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/edit-download.svg" class="papirus-icon papirus-icon--22" alt="" /> Download</span>
             <a href="https://github.com/reeyuki/yukios/releases" target="_blank" class="electron-releases-link">View all releases</a>
           </div>
         </div>
         <a href="/features.html" class="session-features-link">Explore Features</a>
         </div>
         <button class="session-settings-btn" id="session-settings-btn" title="Login settings" type="button">
-          <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/configure.svg" class="papirus-icon papirus-icon--22" alt="" />
+          <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/configure.svg" class="papirus-icon papirus-icon--22" alt="" />
         </button>
       </div>
 
@@ -457,7 +457,7 @@ export class SessionManager {
           <div class="modal-header">
             <h3>Edit Avatar</h3>
             <button class="modal-close" id="avatar-modal-close">
-              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/window-close.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/window-close.svg" class="papirus-icon papirus-icon--22" alt="" />
             </button>
           </div>
           <div class="modal-body">
@@ -479,16 +479,16 @@ export class SessionManager {
           <div class="modal-header">
             <h3>Login Screen</h3>
             <button class="modal-close" id="session-settings-close">
-              <img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/window-close.svg" class="papirus-icon papirus-icon--22" alt="" />
+              <img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/window-close.svg" class="papirus-icon papirus-icon--22" alt="" />
             </button>
           </div>
           <div class="modal-body">
             <div class="settings-card">
-              <div class="settings-card-header"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/media-playback-start.svg" class="papirus-icon papirus-icon--22" alt="" /> Boot Animation</div>
+              <div class="settings-card-header"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/media-playback-start.svg" class="papirus-icon papirus-icon--22" alt="" /> Boot Animation</div>
               <div class="boot-anim-grid" id="boot-anim-grid"></div>
             </div>
             <div class="settings-card">
-              <div class="settings-card-header"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/preferences-system-time.svg" class="papirus-icon papirus-icon--22" alt="" /> Clock</div>
+              <div class="settings-card-header"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/preferences-system-time.svg" class="papirus-icon papirus-icon--22" alt="" /> Clock</div>
               <div class="settings-row">
                 <div class="settings-label-group">
                   <span class="settings-label-title">12-Hour Format</span>
@@ -512,7 +512,7 @@ export class SessionManager {
             </div>
 
             <div class="settings-card">
-              <div class="settings-card-header"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/utilities-tweak-tool.svg" class="papirus-icon papirus-icon--22" alt="" /> Session Modes</div>
+              <div class="settings-card-header"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/utilities-tweak-tool.svg" class="papirus-icon papirus-icon--22" alt="" /> Session Modes</div>
               <div class="settings-row">
                 <div class="settings-label-group">
                   <span class="settings-label-title">YukiOS</span>
@@ -576,7 +576,7 @@ export class SessionManager {
             </div>
 
             <div class="settings-card">
-              <div class="settings-card-header"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/utilities-system-monitor.svg" class="papirus-icon papirus-icon--22" alt="" /> Status Panel</div>
+              <div class="settings-card-header"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/utilities-system-monitor.svg" class="papirus-icon papirus-icon--22" alt="" /> Status Panel</div>
               <div class="settings-row">
                 <div class="settings-label-group">
                   <span class="settings-label-title">Online Count</span>
@@ -610,7 +610,7 @@ export class SessionManager {
             </div>
 
             <div class="settings-card">
-              <div class="settings-card-header"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/system-users.svg" class="papirus-icon papirus-icon--22" alt="" /> Community</div>
+              <div class="settings-card-header"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/apps/system-users.svg" class="papirus-icon papirus-icon--22" alt="" /> Community</div>
               <div class="settings-row">
                 <div class="settings-label-group">
                   <span class="settings-label-title">Social Buttons</span>
@@ -624,7 +624,7 @@ export class SessionManager {
             </div>
 
             <div class="settings-card">
-              <div class="settings-card-header"><img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/edit-download.svg" class="papirus-icon papirus-icon--22" alt="" /> Desktop App</div>
+              <div class="settings-card-header"><img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/edit-download.svg" class="papirus-icon papirus-icon--22" alt="" /> Desktop App</div>
               <div class="settings-row">
                 <div class="settings-label-group">
                   <span class="settings-label-title">Show Download Banner</span>
@@ -1572,14 +1572,14 @@ export class SessionManager {
       a.click();
       document.body.removeChild(a);
 
-      btn.innerHTML = `<img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-select.svg" class="papirus-icon papirus-icon--22" alt="" /> Downloaded`;
+      btn.innerHTML = `<img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/actions/object-select.svg" class="papirus-icon papirus-icon--22" alt="" /> Downloaded`;
       setTimeout(() => {
         btn.innerHTML = originalText;
         btn.style.pointerEvents = "";
         btn.style.opacity = "";
       }, 3000);
     } catch (e) {
-      btn.innerHTML = `<img src="https://fastly.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/status/dialog-warning.svg" class="papirus-icon papirus-icon--22" alt="" /> Failed`;
+      btn.innerHTML = `<img src="https://gcore.jsdelivr.net/gh/PapirusDevelopmentTeam/papirus-icon-theme@master/Papirus/22x22/status/dialog-warning.svg" class="papirus-icon papirus-icon--22" alt="" /> Failed`;
       setTimeout(() => {
         btn.innerHTML = originalText;
         btn.style.pointerEvents = "";
