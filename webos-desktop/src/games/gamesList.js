@@ -194,10 +194,9 @@ export const appMap = {
   },
   agroundWebport: {
     type: "game",
-    url: "https://fastly.jsdelivr.net/gh/reeyuki/AgroundWebport@main/index.html",
+    url: "https://gcore.jsdelivr.net/gh/reeyuki/AgroundWebport@main/index.html",
     icon: "/static/icons/aground.webp",
     title: "Aground (Webport)",
-    skipRewrite: true,
   },
   sixSeconds: {
     type: "game",

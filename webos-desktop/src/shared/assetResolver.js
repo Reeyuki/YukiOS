@@ -744,6 +744,16 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
         /\burl\(\s*([\"']?)(?!https?:|data:|blob:|\/\/|#|\/)/g,
         `url($1${assetDirBase}`,
       );
+    rewritten = rewritten.replace(
+      /<img\b([^>]*?)\bsrc=([\"'])(https?:)/gi,
+      (m, attrs, quote) => {
+        const hasCrossOrigin = /crossorigin\s*=/i.test(attrs);
+        if (!hasCrossOrigin) {
+          return `<img${attrs} crossorigin="anonymous" src=${quote}`;
+        }
+        return m;
+      },
+    );
   }
 
   const looksLikeUnityWebgl =
@@ -780,12 +790,14 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
   } catch {}
   const ROOT_BASE = "${rootBase}";
   const ASSET_DIR_BASE = "${assetDirBase}";
-  const JSDELIVR_GH_BASE = "https://gcore.jsdelivr.net/gh/";
-  const STATICALLY_GH_BASE = "https://gcore.jsdelivr.net/gh/";
 
   function resolve(url) {
     if (typeof url !== 'string' || !url) return url;
-    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) return url;
+    if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+    if (url.startsWith('//')) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url.replace(/https?:\/\/cdn\.jsdelivr\.net\/gh\//i, 'https://gcore.jsdelivr.net/gh/');
+    }
     let p = url;
     if (p.startsWith('/')) {
       p = p.slice(1);
@@ -834,29 +846,6 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     }
     return setAttribute.call(this, name, value);
   };
-
-  document.addEventListener('click', function(e) {
-    const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-    if (!a) return;
-    const rawHref = a.getAttribute('href');
-    if (!rawHref || rawHref[0] === '#' || /^javascript:/i.test(rawHref)) return;
-    if (typeof url === 'string' && (url.startsWith(JSDELIVR_GH_BASE) || url.startsWith(STATICALLY_GH_BASE) || url.startsWith('blob:'))) {
-      e.preventDefault();
-      postNavigate(url);
-    }
-  }, true);
-
-  document.addEventListener('submit', function(e) {
-    const form = e.target;
-    if (!form || !form.getAttribute) return;
-    const action = form.getAttribute('action') || document.baseURI;
-    let url = null;
-    try { url = new URL(action, document.baseURI).href; } catch { return; }
-    if (typeof url === 'string' && (url.startsWith(JSDELIVR_GH_BASE) || url.startsWith(STATICALLY_GH_BASE) || url.startsWith('blob:'))) {
-      e.preventDefault();
-      postNavigate(url);
-    }
-  }, true);
 })();
 <\/script>${unityDocumentUrlShim}`;
 
