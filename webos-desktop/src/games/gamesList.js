@@ -2,7 +2,7 @@ export const appMap = {
   angryBirdsStarWars2: {
     type: "game",
     url: "https://nawsif.github.io/absw2/",
-    icon: "/static/icons/absw2.webp",
+    icon: "https://images.launchbox-app.com/c45bbd7e-bf3e-426a-8ef1-c770dd49f827.jpg",
     title: "Angry Birds Star Wars 2",
   },
   angryBirds2: {
@@ -188,8 +188,15 @@ export const appMap = {
   classroomAquatic: {
     type: "game",
     url: "https://cdn.jsdelivr.net/gh/Reeyuki/ClassroomAquaticWebport@main/game.html",
-    icon: "/static/icons/harold.webp",
+    icon: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/293800/header.jpg?t=1483390264",
     title: "Classroom Aquatic",
+    skipRewrite: true,
+  },
+  agroundWebport: {
+    type: "game",
+    url: "https://fastly.jsdelivr.net/gh/reeyuki/AgroundWebport@main/index.html",
+    icon: "/static/icons/aground.webp",
+    title: "Aground (Webport)",
     skipRewrite: true,
   },
   sixSeconds: {
@@ -1146,6 +1153,12 @@ export const appMap = {
     url: "/static/games/html/angryBirdsChrome.html",
     icon: "/static/icons/angryBirdsChrome.webp",
     title: "Angry Birds Chrome",
+  },
+  nfsMostWanted: {
+    type: "remote",
+    url: "https://nfsmw-port-2-web.netlify.app/",
+    icon: "https://images.launchbox-app.com/2704cf5a-7aa6-480f-9af7-e74833bf423f.jpg",
+    title: "Need for Speed: Most Wanted",
   },
   angryBirdsSd: {
     type: "game",

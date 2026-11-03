@@ -269,7 +269,7 @@ export function setCdnMirror(id) {
 export function resolveGhUrl(url) {
   if (typeof url !== "string") return url;
   const match = url.match(
-    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\/gh\/([^/]+)\/([^/@]+)(?:@([^/]+))?(?:\/(.*))?/i,
+    /https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com|fastly\.jsdelivr\.net)\/gh\/([^/]+)\/([^/@]+)(?:@([^/]+))?(?:\/(.*))?/i,
   );
   if (!match) return url;
 
@@ -324,13 +324,15 @@ const CDN_PROVIDERS = {
       );
     },
     get MAIN() {
-      return resolveGhUrl("https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main");
+      return resolveGhUrl(
+        "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main",
+      );
     },
     get NPM() {
       return resolveNpmUrl("https://gcore.jsdelivr.net/npm");
     },
     PATTERN:
-      /^https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com)\//,
+      /^https?:\/\/(cdn\.jsdelivr\.net|quantil\.jsdelivr\.net|originfastly\.jsdelivr\.net|gcore\.jsdelivr\.net|esm\.sh|cdn\.statically\.io|cdn\.staticdelivr\.com|fastly\.jsdelivr\.net)\//,
     HOSTNAMES: [
       "gcore.jsdelivr.net",
       "quantil.jsdelivr.net",
@@ -339,6 +341,7 @@ const CDN_PROVIDERS = {
       "esm.sh",
       "cdn.statically.io",
       "cdn.staticdelivr.com",
+      "fastly.jsdelivr.net",
     ],
     GH_PATH: "/gh/",
   },

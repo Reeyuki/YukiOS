@@ -22,10 +22,28 @@ export const STORE_GAMES = [
     tags: ["Strategy", "Simulation", "War"],
   },
   {
+    app: "nfsMostWanted",
+    icon: "https://images.launchbox-app.com/2704cf5a-7aa6-480f-9af7-e74833bf423f.jpg",
+    title: "Need for Speed: Most Wanted",
+    tags: ["Racing", "Open World", "Action"],
+  },
+  {
     app: "catGoesFishing",
     icon: resolveIconUrl("static/icons/cat.webp"),
     title: "Cat Goes Fishing",
     tags: ["Fishing", "Simulation", "Relaxing", "Casual"],
+  },
+  {
+    app: "dealersLife2",
+    icon: "https://cdn.cloudflare.steamstatic.com/steam/apps/1343670/header.jpg",
+    title: "Dealer's Life 2",
+    tags: ["Simulation", "Management", "Tycoon"],
+  },
+  {
+    app: "dealersLife",
+    icon: "https://cdn.cloudflare.steamstatic.com/steam/apps/982270/header.jpg",
+    title: "Dealer's Life",
+    tags: ["Simulation", "Management", "Tycoon"],
   },
   {
     app: "angryBirds2",
@@ -34,16 +52,34 @@ export const STORE_GAMES = [
     tags: ["Slingshot", "Physics", "Puzzle"],
   },
   {
+    app: "agroundWebport",
+    icon: resolveIconUrl("static/icons/aground.webp"),
+    title: "Aground (Webport)",
+    tags: ["Survival", "Crafting", "RPG", "Exploration"],
+  },
+  {
     app: "slimeRancher",
     icon: resolveIconUrl("static/icons/slime.webp"),
     title: "Slime Rancher",
     tags: ["Farming Sim", "Exploration", "First-Person"],
   },
   {
+    app: "classroomAquatic",
+    icon: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/293800/header.jpg?t=1483390264",
+    title: "Classroom Aquatic",
+    tags: ["Horror", "Stealth", "School", "VR"],
+  },
+  {
     app: "lobotomyCorporation",
     icon: resolveIconUrl("static/icons/lobotomy.webp"),
     title: "Lobotomy Corporation,",
     tags: ["Strategy", "Simulation"],
+  },
+  {
+    app: "icebound",
+    icon: resolveIconUrl("static/icons/icebound.webp"),
+    title: "Icebound",
+    tags: ["Adventure", "Puzzle", "Atmospheric"],
   },
   {
     app: "plagueIncEvolved",
