@@ -788,64 +788,19 @@ export async function fetchHtmlAsBlobUrl(url, options = {}) {
     history.replaceState = function(s,t,u){ try{ return _rs(s,t,u);}catch(e){ if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:")) return; throw e; } };
     history.pushState = function(s,t,u){ try{ return _ps(s,t,u);}catch(e){ if(String(e).includes("SecurityError")&&String(u||"").startsWith("blob:")) return; throw e; } };
   } catch {}
-  const ROOT_BASE = "${rootBase}";
-  const ASSET_DIR_BASE = "${assetDirBase}";
-
-  function resolve(url) {
-    if (typeof url !== 'string' || !url) return url;
-    if (url.startsWith('blob:') || url.startsWith('data:')) return url;
-    if (url.startsWith('//')) return url;
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url.replace(/https?:\/\/cdn\.jsdelivr\.net\/gh\//i, 'https://gcore.jsdelivr.net/gh/');
-    }
-    let p = url;
-    if (p.startsWith('/')) {
-      p = p.slice(1);
-      if (p.startsWith('next/')) return ASSET_DIR_BASE + p;
-      if (p.startsWith('static/games/')) p = p.replace('static/games/', '');
-      return ROOT_BASE + p;
-    }
-    return ASSET_DIR_BASE + url;
-  }
-
-  function postNavigate(url) {
-    try { parent.postMessage({ __yukios: 'navigate', url }, '*'); } catch {}
-  }
-
-  const createElement = document.createElement.bind(document);
-  document.createElement = function(tag) {
-    const el = createElement(tag);
-    const tagName = tag.toLowerCase();
-    if (tagName === 'script') {
-      let src = '';
-      Object.defineProperty(el, 'src', {
-        get() { return src; },
-        set(val) {
-          src = resolve(val);
+  try {
+    var _ImgSrcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+    if (_ImgSrcDesc && _ImgSrcDesc.set) {
+      Object.defineProperty(HTMLImageElement.prototype, 'src', {
+        set: function(v) {
+          this.crossOrigin = 'anonymous';
+          _ImgSrcDesc.set.call(this, v);
         },
-        configurable: true
-      });
-    } else if (tagName === 'iframe' || tagName === 'frame') {
-      Object.defineProperty(el, 'src', {
-        get() { return el.getAttribute('src'); },
-        set(val) { el.setAttribute('src', resolve(val)); },
+        get: function() { return _ImgSrcDesc.get ? _ImgSrcDesc.get.call(this) : undefined; },
         configurable: true
       });
     }
-    return el;
-  };
-
-  const setAttribute = Element.prototype.setAttribute;
-  Element.prototype.setAttribute = function(name, value) {
-    const tagName = this.tagName.toLowerCase();
-    const attrName = name.toLowerCase();
-    if ((tagName === 'iframe' || tagName === 'frame' || tagName === 'script' || tagName === 'img') && attrName === 'src') {
-      value = resolve(value);
-    } else if ((tagName === 'link' || tagName === 'a') && attrName === 'href') {
-      value = resolve(value);
-    }
-    return setAttribute.call(this, name, value);
-  };
+  } catch {}
 })();
 <\/script>${unityDocumentUrlShim}`;
 
