@@ -194,7 +194,7 @@ export const appMap = {
   },
   agroundWebport: {
     type: "game",
-    url: "https://gcore.jsdelivr.net/gh/reeyuki/AgroundWebport@main/index.html",
+    url: "https://reeyuki.github.io/AgroundWebport/",
     icon: "/static/icons/aground.webp",
     title: "Aground (Webport)",
   },
