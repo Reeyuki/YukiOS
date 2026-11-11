@@ -35,6 +35,7 @@ import logoImg from "./assets/logo.png";
 import { initializeOSBridge, setDialogExplorerApp } from "./os/index.js";
 import { loadApps } from "./AppLoader.js";
 import { init } from "./cursorEffect.js";
+import { initParticleEffects } from "./desktopEffects/particleEffects.js";
 import { versionChecker } from "./versionChecker.js";
 import { $, createElement } from "./shared/domUtils.js";
 import { StorageKeys } from "./StorageKeys.js";
@@ -220,6 +221,7 @@ async function start() {
   await Promise.allSettled([
     clipboardManager.init(),
     SystemUtilities.loadWallpaper(),
+    initParticleEffects(),
   ]);
   windowManager.restorePinnedItems();
   desktopPeekManager.setupPeekButton();

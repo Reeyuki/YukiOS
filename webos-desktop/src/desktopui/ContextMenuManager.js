@@ -1260,6 +1260,18 @@ export class DesktopContextMenuManager {
       );
       menu.appendChild(
         item(
+          "Desktop particles",
+          () => {
+            os.app.launch("settingsApp", {
+              section: "pane-appearance",
+              target: "sc-particles",
+            });
+          },
+          "fa-snowflake",
+        ),
+      );
+      menu.appendChild(
+        item(
           "Open in Terminal",
           () => {
             const storedUsername = os.storage.get(StorageKeys.username);

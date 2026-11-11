@@ -232,7 +232,7 @@ class WallpaperManager {
       left: "0",
       width: "100%",
       height: "100%",
-      zIndex: "-1",
+      zIndex: "-2",
       pointerEvents: "none",
       userSelect: "none",
     });
@@ -642,7 +642,7 @@ class WallpaperManager {
       height: "100%",
       objectFit: "cover",
       transform: "translate(-50%, -50%)",
-      zIndex: "-1",
+      zIndex: "-2",
       pointerEvents: "none",
       userSelect: "none",
     });

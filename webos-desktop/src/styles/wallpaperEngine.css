@@ -1425,3 +1425,105 @@ html.win11-mode .we-win11-fav:hover {
 html.win11-mode .we-win11-fav i {
   font-size: 15px;
 }
+
+.we-card-effect-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at 50% 30%,
+    var(--brand-dim),
+    var(--bg-base)
+  );
+}
+.we-card-effect-icon i {
+  font-size: 30px;
+  color: var(--brand);
+  opacity: 0.75;
+  transition: var(--we-trans);
+}
+.we-card-effect-icon.is-active i {
+  opacity: 1;
+  filter: drop-shadow(0 0 12px var(--brand-glow));
+}
+.we-card-effect-active {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--we-r-s);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: 11px;
+}
+
+.we-preview-effect {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: radial-gradient(
+    circle at 50% 35%,
+    var(--brand-dim),
+    var(--bg-base)
+  );
+}
+.we-preview-effect i {
+  font-size: 48px;
+  color: var(--brand);
+  opacity: 0.8;
+}
+.we-preview-effect.is-active i {
+  opacity: 1;
+  filter: drop-shadow(0 0 18px var(--brand-glow));
+}
+
+.we-effect-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+.we-effect-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.we-effect-upload-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+
+.we-fs-effect {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 240px;
+  height: 240px;
+  border-radius: var(--we-r-l);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--we-shadow);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+.we-fs-effect i {
+  font-size: 56px;
+  color: var(--brand);
+}

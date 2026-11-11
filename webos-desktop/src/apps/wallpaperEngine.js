@@ -32,6 +32,13 @@ import {
 } from "../shared/selectMenu.js";
 import { showContextMenu } from "../shared/contextMenu.js";
 import { isBlobLike } from "../utils/utils.js";
+import {
+  PARTICLE_EFFECTS,
+  getParticleEffect,
+  setParticleEffect,
+  getParticleOptions,
+  setParticleOptions,
+} from "../desktopEffects/particleEffects.js";
 
 const WE_KEYS = {
   favorites: StorageKeys.wallpaperEngineFavorites,
@@ -294,6 +301,7 @@ export class WallpaperEngineApp extends BaseApp {
       { id: "chromeos", icon: "fab fa-chrome", label: "ChromeOS" },
       { id: "video", icon: "fas fa-film", label: "Live Video" },
       { id: "vanta", icon: "fas fa-magic", label: "Animated" },
+      { id: "effect", icon: "fas fa-snowflake", label: "Effects" },
       {
         id: "uploaded",
         icon: "fas fa-cloud-upload-alt",
@@ -530,6 +538,7 @@ export class WallpaperEngineApp extends BaseApp {
     items.push(...this.getChromeOsWallpapers());
     items.push(...this.getVideoWallpapers());
     items.push(...this.getVantaWallpapers());
+    items.push(...this.getParticleWallpapers());
     items.push(...(await this.getUserWallpapers()));
     this.wallpaperItems = items;
     this.updateStats();
@@ -601,6 +610,35 @@ export class WallpaperEngineApp extends BaseApp {
       isVideo: false,
       meta: { source: "Vanta.js", effect: p.effect },
     }));
+  }
+
+  getParticleWallpapers() {
+    return [
+      {
+        id: "effect_none",
+        name: "No Effects",
+        type: "effect",
+        effectId: "none",
+        icon: "fas fa-ban",
+        description: "Turn off all desktop particles",
+        src: "effect:none",
+        thumbnail: null,
+        isVideo: false,
+        meta: { source: "Desktop Effects" },
+      },
+      ...PARTICLE_EFFECTS.map((preset) => ({
+        id: `effect_${preset.id}`,
+        name: preset.name,
+        type: "effect",
+        effectId: preset.id,
+        icon: preset.icon,
+        description: preset.description,
+        src: `effect:${preset.id}`,
+        thumbnail: null,
+        isVideo: false,
+        meta: { source: "Desktop Effects" },
+      })),
+    ];
   }
 
   async getUserWallpapers() {
@@ -746,28 +784,35 @@ export class WallpaperEngineApp extends BaseApp {
     card.classList.remove("we-card-placeholder");
 
     const isFav = this.favorites.includes(item.id);
+    const isEffect = item.type === "effect";
+    const effectActive =
+      isEffect && (getParticleEffect() || "none") === (item.effectId || "none");
     const badge = item.isVideo
       ? "Video"
       : item.type === "vanta"
         ? "Vanta"
-        : item.type === "static"
-          ? "Static"
-          : "";
+        : isEffect
+          ? "Effect"
+          : item.type === "static"
+            ? "Static"
+            : "";
     const thumb = item.thumbnail || (item.type === "vanta" ? "" : "");
 
     card.innerHTML = `
       <div class="we-card-thumb">
         ${thumb ? `<img src="${thumb}" alt="${item.name}" loading="lazy" />` : ""}
         ${!thumb && item.type === "vanta" ? `<div class="we-card-vanta-bg"></div>` : ""}
-        ${!thumb && item.type !== "vanta" ? `<div class="we-card-img-placeholder"><i class="fas fa-image"></i></div>` : ""}
+        ${!thumb && isEffect ? `<div class="we-card-effect-icon ${effectActive ? "is-active" : ""}"><i class="${item.icon}"></i></div>` : ""}
+        ${!thumb && !isEffect && item.type !== "vanta" ? `<div class="we-card-img-placeholder"><i class="fas fa-image"></i></div>` : ""}
         ${badge ? `<span class="we-card-badge">${badge}</span>` : ""}
         ${item.isVideo ? `<div class="we-card-play-badge">\u25B6</div>` : ""}
+        ${effectActive ? `<span class="we-card-effect-active"><i class="fas fa-check"></i></span>` : ""}
         <button class="we-card-fav ${isFav ? "favorited" : ""}" data-fav="${item.id}"><i class="fas fa-star"></i></button>
       </div>
       <div class="we-card-name">${item.name}</div>
       <div class="we-card-actions">
-        <button class="we-card-action primary" data-action="set" data-id="${item.id}" title="Set Desktop"><i class="fas fa-desktop"></i></button>
-        <button class="we-card-action" data-action="login" data-id="${item.id}" title="Set Login"><i class="fas fa-lock"></i></button>
+        <button class="we-card-action primary" data-action="set" data-id="${item.id}" title="${isEffect ? "Enable Effect" : "Set Desktop"}"><i class="fas ${isEffect ? "fa-check" : "fa-desktop"}"></i></button>
+        ${isEffect ? "" : `<button class="we-card-action" data-action="login" data-id="${item.id}" title="Set Login"><i class="fas fa-lock"></i></button>`}
       </div>`;
 
     const img = card.querySelector(".we-card-thumb img");
@@ -865,6 +910,18 @@ export class WallpaperEngineApp extends BaseApp {
 
   async setDesktop(item) {
     try {
+      if (item.type === "effect") {
+        setParticleEffect(item.effectId || "none");
+        this.addToHistory(item.id);
+        this.notify(
+          item.effectId === "none"
+            ? "Desktop effects disabled"
+            : `${item.name} enabled`,
+        );
+        this.renderGrid();
+        if (this.previewItem?.id === item.id) this.showPreview(item);
+        return;
+      }
       if (item.type === "vanta") {
         await SystemUtilities.setWallpaper(item.src);
       } else if (item.isUserUpload) {
@@ -883,6 +940,7 @@ export class WallpaperEngineApp extends BaseApp {
   }
 
   async setLogin(item) {
+    if (item.type === "effect") return;
     try {
       if (item.isUserUpload) {
         const content = await this.fs.getFileContent(
@@ -918,26 +976,37 @@ export class WallpaperEngineApp extends BaseApp {
 
     const isFav = this.favorites.includes(item.id);
     const thumbSrc = item.thumbnail || "";
+    const isEffect = item.type === "effect";
+    const effectActive =
+      isEffect && (getParticleEffect() || "none") === (item.effectId || "none");
 
     setHTML(
       panel,
       `
       <div class="we-preview-media-wrap">
-        ${thumbSrc ? `<img src="${thumbSrc}" alt="${item.name}" />` : `<div class="we-preview-placeholder"><i class="fas fa-magic"></i></div>`}
+        ${
+          isEffect
+            ? `<div class="we-preview-effect ${effectActive ? "is-active" : ""}"><i class="${item.icon}"></i></div>`
+            : thumbSrc
+              ? `<img src="${thumbSrc}" alt="${item.name}" />`
+              : `<div class="we-preview-placeholder"><i class="fas fa-magic"></i></div>`
+        }
         <button class="we-preview-close" id="we-preview-close"><i class="fas fa-times"></i></button>
       </div>
       <div class="we-preview-info">
         <div class="we-preview-name">${item.name}</div>
         <div class="we-preview-meta">
-          <span><i class="fas fa-tag"></i> ${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
+          <span><i class="fas fa-tag"></i> ${isEffect ? "Desktop Effect" : item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
           <span><i class="fas fa-globe"></i> ${item.meta?.source || "Unknown"}</span>
           ${item.isVideo ? '<span><i class="fas fa-video"></i> Video</span>' : ""}
           ${item.type === "vanta" && item.vantaPreset ? `<span><i class="fas fa-cog"></i> ${item.vantaPreset.effect}</span>` : ""}
+          ${isEffect && item.description ? `<span><i class="fas fa-circle-info"></i> ${item.description}</span>` : ""}
         </div>
         <div class="we-preview-actions">
           ${item.type === "vanta" ? '<button class="we-preview-btn" id="we-preview-customize"><i class="fas fa-sliders-h"></i> Customize</button>' : ""}
-          <button class="we-preview-btn primary" id="we-preview-set"><i class="fas fa-desktop"></i> Set Desktop</button>
-          <button class="we-preview-btn" id="we-preview-login"><i class="fas fa-lock"></i> Set Login</button>
+          ${isEffect && item.effectId !== "none" ? '<button class="we-preview-btn" id="we-preview-effect-customize"><i class="fas fa-sliders-h"></i> Customize</button>' : ""}
+          <button class="we-preview-btn primary" id="we-preview-set"><i class="fas fa-desktop"></i> ${isEffect ? (effectActive ? "Enabled" : "Enable Effect") : "Set Desktop"}</button>
+          ${isEffect ? "" : '<button class="we-preview-btn" id="we-preview-login"><i class="fas fa-lock"></i> Set Login</button>'}
           <button class="we-preview-btn fav" id="we-preview-fav"><i class="fas fa-star"></i> ${isFav ? "Favorited" : "Add to Favorites"}</button>
         </div>
       </div>
@@ -950,9 +1019,10 @@ export class WallpaperEngineApp extends BaseApp {
     bindEvent($("#we-preview-set", this.host), "click", () =>
       this.setDesktop(item),
     );
-    bindEvent($("#we-preview-login", this.host), "click", () =>
-      this.setLogin(item),
-    );
+    const loginBtn = $("#we-preview-login", this.host);
+    if (loginBtn) {
+      bindEvent(loginBtn, "click", () => this.setLogin(item));
+    }
     bindEvent($("#we-preview-fav", this.host), "click", () =>
       this.toggleFavorite(item.id),
     );
@@ -964,6 +1034,13 @@ export class WallpaperEngineApp extends BaseApp {
       );
     }
 
+    const effectCustomizeBtn = $("#we-preview-effect-customize", this.host);
+    if (effectCustomizeBtn) {
+      bindEvent(effectCustomizeBtn, "click", () =>
+        this.showEffectCustomize(item),
+      );
+    }
+
     bindEvent(panel, "contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -971,16 +1048,30 @@ export class WallpaperEngineApp extends BaseApp {
       const pvItems = [
         {
           id: "pv-set",
-          label: "Set Desktop",
+          label: isEffect ? "Enable Effect" : "Set Desktop",
           action: "setDesktop",
-          icon: "fa-desktop",
+          icon: isEffect ? "fa-check" : "fa-desktop",
         },
-        {
-          id: "pv-login",
-          label: "Set Login",
-          action: "setLogin",
-          icon: "fa-lock",
-        },
+        ...(isEffect
+          ? []
+          : [
+              {
+                id: "pv-login",
+                label: "Set Login",
+                action: "setLogin",
+                icon: "fa-lock",
+              },
+            ]),
+        ...(isEffect && item.effectId !== "none"
+          ? [
+              {
+                id: "pv-effect-customize",
+                label: "Customize Effect",
+                action: "customizeEffect",
+                icon: "fa-sliders-h",
+              },
+            ]
+          : []),
         "hr",
         {
           id: "pv-fav",
@@ -1004,6 +1095,7 @@ export class WallpaperEngineApp extends BaseApp {
       showContextMenu(e, pvItems, {
         setDesktop: () => this.setDesktop(item),
         setLogin: () => this.setLogin(item),
+        customizeEffect: () => this.showEffectCustomize(item),
         toggleFav: () => this.toggleFavorite(item.id),
         fullscreen: () => this.showFullscreenPreview(item),
         copyName: () =>
@@ -1126,6 +1218,96 @@ export class WallpaperEngineApp extends BaseApp {
     };
   }
 
+  showEffectCustomize(item) {
+    const preset = PARTICLE_EFFECTS.find((p) => p.id === item.effectId);
+    if (!preset) return;
+
+    if ((getParticleEffect() || "none") !== preset.id) {
+      setParticleEffect(preset.id);
+    }
+
+    const options = getParticleOptions();
+    const controls = [
+      {
+        key: "density",
+        label: "Density",
+        min: 10,
+        max: 200,
+        step: 5,
+        value: Math.round(options.density),
+      },
+      {
+        key: "speed",
+        label: "Speed",
+        min: 0.2,
+        max: 3,
+        step: 0.1,
+        value: options.speed,
+      },
+      {
+        key: "size",
+        label: "Size",
+        min: 0.5,
+        max: 2,
+        step: 0.1,
+        value: options.size,
+      },
+    ];
+
+    const overlay = createElement("div", {
+      className: "we-vanta-customize-dialog",
+    });
+
+    setHTML(
+      overlay,
+      `
+      <div class="we-vanta-customize-inner">
+        <div class="we-customize-header">
+          <div class="we-customize-title">Customize ${preset.name}</div>
+          <button class="we-customize-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="we-customize-content">
+          ${controls
+            .map(
+              (c) => `<div class="we-control-group">
+              <label class="we-control-label">${c.label}</label>
+              ${renderRangeSlider(`pe_${c.key}`, c.min, c.max, c.step, c.value)}
+              <span class="we-control-value" id="pe_val_${c.key}">${c.value}</span>
+            </div>`,
+            )
+            .join("")}
+        </div>
+        <div class="we-customize-footer">
+          <button class="we-customize-btn we-customize-apply"><i class="fas fa-check"></i> Done</button>
+        </div>
+      </div>
+    `,
+    );
+
+    document.body.appendChild(overlay);
+    bindRangeSlider(overlay);
+
+    controls.forEach((control) => {
+      const slider = $(`#pe_${control.key}`, overlay);
+      if (!slider) return;
+      bindEvent(slider, "input", () => {
+        const value = getRangeSliderValue(`pe_${control.key}`, overlay);
+        const display = $(`#pe_val_${control.key}`, overlay);
+        if (display) setText(display, value);
+        setParticleOptions({ [control.key]: value });
+      });
+    });
+
+    const closeOverlay = () => {
+      overlay.remove();
+      this.renderGrid();
+      if (this.previewItem) this.showPreview(this.previewItem);
+    };
+
+    overlay.querySelector(".we-customize-close").onclick = closeOverlay;
+    overlay.querySelector(".we-customize-apply").onclick = closeOverlay;
+  }
+
   getVantaControls(preset) {
     const controls = [];
     const o = preset.options;
@@ -1190,19 +1372,35 @@ export class WallpaperEngineApp extends BaseApp {
       const item = this.wallpaperItems.find((i) => i.id === card.dataset.id);
       if (!item) return;
       const isFav = this.favorites.includes(item.id);
+      const isEffect = item.type === "effect";
       const menuItems = [
         {
           id: "ctx-" + item.id + "-set",
-          label: "Set Desktop",
+          label: isEffect ? "Enable Effect" : "Set Desktop",
           action: "setDesktop",
-          icon: "fa-desktop",
+          icon: isEffect ? "fa-check" : "fa-desktop",
         },
-        {
-          id: "ctx-" + item.id + "-login",
-          label: "Set Login",
-          action: "setLogin",
-          icon: "fa-lock",
-        },
+        ...(isEffect
+          ? []
+          : [
+              {
+                id: "ctx-" + item.id + "-login",
+                label: "Set Login",
+                action: "setLogin",
+                icon: "fa-lock",
+              },
+            ]),
+        ...(isEffect && item.effectId !== "none"
+          ? [
+              "hr",
+              {
+                id: "ctx-" + item.id + "-customize",
+                label: "Customize Effect",
+                action: "customizeEffect",
+                icon: "fa-sliders-h",
+              },
+            ]
+          : []),
         "hr",
         {
           id: "ctx-" + item.id + "-fav",
@@ -1235,6 +1433,7 @@ export class WallpaperEngineApp extends BaseApp {
       showContextMenu(e, menuItems, {
         setDesktop: () => this.setDesktop(item),
         setLogin: () => this.setLogin(item),
+        customizeEffect: () => this.showEffectCustomize(item),
         toggleFav: () => this.toggleFavorite(item.id),
         fullscreen: () => this.showFullscreenPreview(item),
         copyName: () =>
@@ -1266,9 +1465,12 @@ export class WallpaperEngineApp extends BaseApp {
     const overlay = createElement("div", { className: "we-fs-overlay" });
     const isVideo = item.isVideo;
     const isVanta = item.type === "vanta";
+    const isEffect = item.type === "effect";
 
     let mediaHtml = "";
-    if (isVanta) {
+    if (isEffect) {
+      mediaHtml = `<div class="we-fs-effect"><i class="${item.icon}"></i><span>${item.name}</span></div>`;
+    } else if (isVanta) {
       mediaHtml = `<div class="we-fs-vanta-container" id="we-fs-vanta"></div>`;
     } else if (isVideo && !item.isUserUpload && item.src) {
       const poster = item.thumbnail || "";

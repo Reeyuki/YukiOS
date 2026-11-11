@@ -73,6 +73,12 @@ import { getStoredCustomColors } from "../shared/customColorsDialog.js";
 import { applyAnimationSettings } from "../windowManager/AnimationSystem.js";
 import { getResolutionLabel } from "../resolution/resolutionManager.js";
 import { downloadPage } from "../utils/utils.js";
+import {
+  getParticleEffect,
+  setParticleEffect,
+  getParticleOptions,
+  setParticleOptions,
+} from "../desktopEffects/particleEffects.js";
 export function bindNavigation(win) {
   const layout = $(".yuki-settings-layout", win);
   const navItems = $$(".yuki-settings-nav li[data-target]", win);
@@ -2124,8 +2130,73 @@ export function bindQuickSettings(
     });
   }
 
+  bindParticleSettings(win, showSaved);
   bindIconPackChooser(win, settings, showSaved);
   bindContextMenuStyleChooser(win, showSaved);
+}
+
+function bindParticleSettings(win, showSaved) {
+  const effectSelect = $("#settingsParticleEffect", win);
+  if (!effectSelect) return;
+
+  bindEvent(effectSelect, "change", () => {
+    setParticleEffect(getSelectMenuValue("settingsParticleEffect", win));
+    showSaved?.();
+  });
+
+  const bindRange = (id, valueId, key, format = (v) => String(v)) => {
+    const slider = $(`#${id}`, win);
+    if (!slider) return;
+    const valueEl = $(`#${valueId}`, win);
+    bindEvent(slider, "input", () => {
+      const val = getRangeSliderValue(id, win);
+      if (valueEl) setText(valueEl, format(val));
+    });
+    bindEvent(slider, "change", () => {
+      const val = getRangeSliderValue(id, win);
+      setParticleOptions({ [key]: val });
+      showSaved?.();
+    });
+  };
+
+  bindRange(
+    "settingsParticleDensity",
+    "settingsParticleDensityValue",
+    "density",
+    (v) => String(Math.round(v)),
+  );
+  bindRange("settingsParticleSpeed", "settingsParticleSpeedValue", "speed");
+  bindRange("settingsParticleSize", "settingsParticleSizeValue", "size");
+
+  const fpsSelect = $("#settingsParticleFps", win);
+  if (fpsSelect) {
+    bindEvent(fpsSelect, "change", () => {
+      setParticleOptions({
+        fps: Number(getSelectMenuValue("settingsParticleFps", win)),
+      });
+      showSaved?.();
+    });
+  }
+
+  const resSelect = $("#settingsParticleResolution", win);
+  if (resSelect) {
+    bindEvent(resSelect, "change", () => {
+      setParticleOptions({
+        resolution: Number(
+          getSelectMenuValue("settingsParticleResolution", win),
+        ),
+      });
+      showSaved?.();
+    });
+  }
+
+  const adaptiveToggle = $("#settingsParticleAdaptive", win);
+  if (adaptiveToggle) {
+    bindEvent(adaptiveToggle, "change", () => {
+      setParticleOptions({ adaptive: adaptiveToggle.checked ? 1 : 0 });
+      showSaved?.();
+    });
+  }
 }
 
 export function bindAutostartCategory(win) {

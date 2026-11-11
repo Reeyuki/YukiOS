@@ -10,6 +10,11 @@ import { KeybindManager } from "./keybindManager.js";
 
 import { StorageKeys, os, ServiceKeys } from "./framework.js";
 import {
+  PARTICLE_EFFECTS,
+  getParticleEffect,
+  setParticleEffect,
+} from "./desktopEffects/particleEffects.js";
+import {
   SETTINGS_CATEGORIES,
   launchSettingsPane,
 } from "./settings/settingsNav.js";
@@ -223,6 +228,7 @@ export class CommandPalette {
           this.renderResults();
         },
       },
+      ...this.getParticleEffectActions(),
       {
         title: "Theme: Dark Mode",
         subtitle: "Switch to sleek dark UI appearance",
@@ -676,6 +682,43 @@ export class CommandPalette {
     }
 
     this.renderItems(items);
+  }
+
+  getParticleEffectActions() {
+    const activeEffect = getParticleEffect() || "none";
+    return [
+      {
+        title: "Particles: Off",
+        subtitle:
+          activeEffect === "none"
+            ? "Desktop particles are already disabled"
+            : "Disable all falling particle effects",
+        tag: "effects",
+        icon: "fas fa-ban",
+        execute: () => this.applyParticleEffect("none"),
+      },
+      ...PARTICLE_EFFECTS.map((effect) => ({
+        title: `Particles: ${effect.name}`,
+        subtitle:
+          activeEffect === effect.id
+            ? `Active. ${effect.description}`
+            : effect.description,
+        tag: "effects",
+        icon: effect.icon,
+        execute: () => this.applyParticleEffect(effect.id),
+      })),
+      {
+        title: "Particles: Customize",
+        subtitle: "Tune density, speed, size, and custom particle images",
+        tag: "effects",
+        icon: "fas fa-sliders-h",
+        execute: () => os.app.launch("wallpaperEngineApp"),
+      },
+    ];
+  }
+
+  applyParticleEffect(effectId) {
+    setParticleEffect(effectId);
   }
 
   renderFileSearchSubpalette(search) {

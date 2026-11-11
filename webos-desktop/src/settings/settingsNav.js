@@ -34,6 +34,13 @@ export const SETTINGS_GROUPS = [
         target: "sc-wallpaper",
       },
       {
+        id: "particles",
+        title: "Particles",
+        icon: "fas fa-snowflake",
+        pane: "pane-appearance",
+        target: "sc-particles",
+      },
+      {
         id: "colors-themes",
         title: "Colors & Themes",
         icon: "fas fa-palette",

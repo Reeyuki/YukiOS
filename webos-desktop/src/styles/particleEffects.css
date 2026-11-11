@@ -1,0 +1,84 @@
+:root {
+  --particle-snow: rgba(255, 255, 255, 0.92);
+  --particle-petal-a: #f7b8d0;
+  --particle-petal-b: #f9cfe0;
+  --particle-petal-c: #f2a0c0;
+  --particle-leaf-a: #e0913f;
+  --particle-leaf-b: #c86a3a;
+  --particle-leaf-c: #e5b55a;
+  --particle-star-a: #f4f1ff;
+  --particle-star-b: #cabdf7;
+  --particle-rain: #b9c8e8;
+  --particle-bubble: #a8c6eb;
+  --particle-firefly-a: #d9ff6a;
+  --particle-firefly-b: #ffe98a;
+  --particle-ember-a: #ff7a2a;
+  --particle-ember-b: #ffb03a;
+  --particle-ember-c: #ff4d1f;
+  --particle-mist: #c3d0ea;
+  --particle-bokeh-a: #fff1d0;
+  --particle-bokeh-b: #ffd9a0;
+  --particle-bokeh-c: #bcd6ff;
+  --particle-bokeh-d: #ffc9e3;
+  --particle-confetti-a: #ff5d73;
+  --particle-confetti-b: #ffb02e;
+  --particle-confetti-c: #ffe14d;
+  --particle-confetti-d: #4cd98b;
+  --particle-confetti-e: #4db8ff;
+  --particle-confetti-f: #b184ff;
+  --particle-code: #22d65f;
+  --particle-code-head: #d7ffe3;
+  --particle-aurora-a: #3dffb0;
+  --particle-aurora-b: #34d3ee;
+  --particle-aurora-c: #8f6cff;
+  --particle-aurora-d: #ff6fc8;
+  --particle-custom-fallback: rgba(230, 224, 255, 0.85);
+}
+
+html[data-theme="light"] {
+  --particle-snow: rgba(150, 170, 200, 0.85);
+  --particle-petal-a: #e28ab0;
+  --particle-petal-b: #eaa6c3;
+  --particle-petal-c: #d9759f;
+  --particle-leaf-a: #c97a30;
+  --particle-leaf-b: #ad5427;
+  --particle-leaf-c: #cda049;
+  --particle-star-a: #6b5bb0;
+  --particle-star-b: #8d7fd0;
+  --particle-rain: #7b8db5;
+  --particle-bubble: #6b8fc0;
+  --particle-firefly-a: #d4c21a;
+  --particle-firefly-b: #e8a317;
+  --particle-ember-a: #e8530f;
+  --particle-ember-b: #f08a1c;
+  --particle-ember-c: #d13a12;
+  --particle-mist: #8896b3;
+  --particle-bokeh-a: #f2b45a;
+  --particle-bokeh-b: #e98fb0;
+  --particle-bokeh-c: #7fa8e6;
+  --particle-bokeh-d: #f0d27a;
+  --particle-confetti-a: #ec3f5a;
+  --particle-confetti-b: #f09a10;
+  --particle-confetti-c: #e8c200;
+  --particle-confetti-d: #2fb872;
+  --particle-confetti-e: #2a9fe8;
+  --particle-confetti-f: #8f62e8;
+  --particle-code: #0d7d36;
+  --particle-code-head: #043d19;
+  --particle-aurora-a: #1fbf86;
+  --particle-aurora-b: #2aa6c9;
+  --particle-aurora-c: #7a5ce0;
+  --particle-aurora-d: #e0589f;
+  --particle-custom-fallback: rgba(90, 80, 140, 0.8);
+}
+
+#particle-effects-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+  contain: strict;
+}

@@ -1,5 +1,27 @@
 [
   {
+    "date": "November 11, 2026",
+    "label": "Desktop Particle Effects",
+    "sections": [
+      {
+        "icon": "fas fa-snowflake",
+        "title": "Desktop Particle Effects",
+        "items": [
+          [
+            "fas fa-wand-magic-sparkles",
+            "Expanded Presets",
+            "Choose snow, petals, leaves, shooting stars, rain, bubbles, fireflies, embers, mist, bokeh, confetti, code rain, or aurora."
+          ],
+          [
+            "fas fa-sliders-h",
+            "Performance Controls",
+            "Tune density, speed, size, frame rate, resolution, and adaptive quality from context menu and settings"
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "date": "October 25, 2026",
     "label": "Windows 11 UI and System Update",
     "sections": [

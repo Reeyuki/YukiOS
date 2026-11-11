@@ -213,7 +213,6 @@ export const videos2 = [
   "https://motionbgs.com/media/9556/bridge-to-cloud-temple.1920x1080.mp4",
   "https://motionbgs.com/media/9575/fantasy-ocean-home.1920x1080.mp4",
   "https://motionbgs.com/media/9578/mystic-ghost-forest.1920x1080.mp4",
-  "https://motionbgs.com/media/9593/skyline-r34-trackside-meet.1920x1080.mp4",
   "https://motionbgs.com/media/9596/trueno-ae86-tokyo-street.1920x1080.mp4",
   "https://motionbgs.com/media/9597/midnight-fuel-stop.1920x1080.mp4",
   "https://motionbgs.com/media/9603/imperial-rest.1920x1080.mp4",

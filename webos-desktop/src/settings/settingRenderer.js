@@ -51,6 +51,11 @@ import {
 } from "../shared/iconPack.js";
 import { CM_STYLES, getContextMenuStyle } from "../shared/contextMenuStyle.js";
 import {
+  PARTICLE_EFFECTS,
+  getParticleEffect,
+  getParticleOptions,
+} from "../desktopEffects/particleEffects.js";
+import {
   EXTERNAL_SERVICES,
   getBrowserInfo,
   getConnectionInfo,
@@ -74,6 +79,97 @@ function sysinfoSection(icon, title, rows) {
         ${rows.join("")}
       </div>
     </div>`;
+}
+
+function renderParticleSettingsCard() {
+  const active = getParticleEffect() || "none";
+  const options = getParticleOptions();
+  const effectOptions = [
+    { value: "none", label: "None" },
+    ...PARTICLE_EFFECTS.map((p) => ({ value: p.id, label: p.name })),
+  ];
+
+  return `
+      <div class="settings-card" id="sc-particles" style="margin-top: 16px;">
+        <div class="settings-card-header"><i class="fas fa-snowflake"></i> Desktop Particles</div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Effect</span>
+            <span class="settings-label-desc">Show animated particles over the desktop wallpaper</span>
+          </div>
+          ${renderSelectMenu("settingsParticleEffect", effectOptions, active)}
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Density</span>
+            <span class="settings-label-desc">Number of particles on screen</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsParticleDensity", 10, 200, 5, Math.round(options.density))}
+            <span id="settingsParticleDensityValue" class="settings-range-value">${Math.round(options.density)}</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Speed</span>
+            <span class="settings-label-desc">How fast particles move</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsParticleSpeed", 0.2, 3, 0.1, options.speed)}
+            <span id="settingsParticleSpeedValue" class="settings-range-value">${options.speed}</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Size</span>
+            <span class="settings-label-desc">Scale particle size</span>
+          </div>
+          <div class="settings-range-group">
+            ${renderRangeSlider("settingsParticleSize", 0.5, 2, 0.1, options.size)}
+            <span id="settingsParticleSizeValue" class="settings-range-value">${options.size}</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Frame Rate</span>
+            <span class="settings-label-desc">Limit particle animation frame rate</span>
+          </div>
+          ${renderSelectMenu(
+            "settingsParticleFps",
+            [
+              { value: "30", label: "30 FPS" },
+              { value: "60", label: "60 FPS" },
+            ],
+            String(options.fps >= 60 ? 60 : 30),
+          )}
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Resolution</span>
+            <span class="settings-label-desc">Maximum render pixel ratio</span>
+          </div>
+          ${renderSelectMenu(
+            "settingsParticleResolution",
+            [
+              { value: "0.5", label: "0.5x" },
+              { value: "1", label: "1x" },
+              { value: "1.5", label: "1.5x" },
+              { value: "2", label: "2x" },
+            ],
+            String(options.resolution),
+          )}
+        </div>
+        <div class="settings-row">
+          <div class="settings-label-group">
+            <span class="settings-label-title">Adaptive Quality</span>
+            <span class="settings-label-desc">Automatically reduce quality to keep performance smooth</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsParticleAdaptive" ${options.adaptive ? "checked" : ""}/>
+            <span class="settings-track"><span class="settings-thumb"></span></span>
+          </label>
+        </div>
+      </div>`;
 }
 
 function renderSystemInfo() {
@@ -1291,6 +1387,8 @@ export function renderAppearanceSettings(s) {
         </div>
         <div id="wallpaper-engine-host" class="we-host"></div>
       </div>
+
+      ${renderParticleSettingsCard()}
 
       <div class="settings-card" id="sc-style" style="margin-top: 16px;">
         <div class="settings-card-header"><i class="fas fa-palette"></i> Style &amp; Transparency</div>
