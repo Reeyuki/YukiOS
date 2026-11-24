@@ -282,7 +282,7 @@ export const SteamDataManager = {
   getCollapsed: () => {
     const stored = os.storage.get(StorageKeys.steamCollapsed);
     if (stored === null) {
-      const defaultExpanded = ["Webports/Html games"];
+      const defaultExpanded = ["Ports", "Flash", "Emulators", "FNF", "IO"];
       os.storage.set(StorageKeys.steamCollapsed, defaultExpanded);
       return defaultExpanded;
     }
@@ -630,6 +630,7 @@ class GameWindowRenderer {
     this.historyIndex = 0;
     this.sortBy = "relevant";
     this.sortReverse = false;
+    this.activeTag = "";
     this.currentGame = null;
     this.currentArchiveGame = null;
     this.archiveGamesCache = [];

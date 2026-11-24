@@ -58,7 +58,6 @@ export const videos = [
 
 export const videos2 = [
   "https://motionbgs.com/media/35/irlandbeach.1920x1080.mp4",
-  "https://motionbgs.com/media/118/spider-man.1920x1080.mp4",
   "https://motionbgs.com/media/129/sarkaz-arknights.1920x1080.mp4",
   "https://motionbgs.com/media/184/fenrir-ragnorak-from-god-of-war.1920x1080.mp4",
   "https://motionbgs.com/media/339/aesthetic-ferrari-f40-forza-horizon.1920x1080.mp4",

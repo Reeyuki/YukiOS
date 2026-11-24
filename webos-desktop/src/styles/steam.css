@@ -831,15 +831,19 @@
   text-transform: uppercase;
 }
 
-.steam-sort-select {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+.steam-grid-filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.steam-sort-menu {
+  min-width: 150px;
+}
+
+.steam-sort-menu .select-menu__trigger {
   font-size: 12px;
-  padding: 4px 8px;
-  outline: none;
-  cursor: pointer;
-  border-radius: 2px;
+  padding: 4px 10px;
 }
 
 .steam-sort-order-btn {
@@ -857,8 +861,11 @@
 
 .steam-game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(var(--steam-grid-min, 108px), 1fr)
+  );
+  gap: 18px;
 }
 
 .steam-game-card {
@@ -874,12 +881,11 @@
 }
 
 .steam-game-img-wrap {
-  aspect-ratio: 2/3;
+  aspect-ratio: 1/1;
   background: #1b2838;
   border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  height: 200px;
   position: relative;
 }
 
@@ -1069,7 +1075,7 @@
 }
 
 :root {
-  --steam-grid-min: 140px;
+  --steam-grid-min: 108px;
 }
 
 .steam-game-grid,
@@ -2050,5 +2056,63 @@ html[data-theme] .window-header.steam-popup-header,
 .steam-overview-note {
   color: var(--text-secondary);
   font-style: italic;
+  font-size: 13px;
+}
+
+.steam-tag-filters {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 2px 4px 0 0;
+  margin-bottom: 10px;
+}
+
+.steam-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+  outline: none;
+}
+
+.steam-tag-chip:hover {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.steam-tag-chip.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.steam-tag-chip.active i {
+  color: var(--brand);
+}
+
+.steam-tag-chip i {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.steam-tag-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
   font-size: 13px;
 }

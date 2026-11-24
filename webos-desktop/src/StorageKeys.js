@@ -79,6 +79,7 @@ export const StorageKeys = {
   steamCollapsed: "yukiOS_steam_collapsed",
   steamLastPage: "yukiOS_steam_last_page",
   steamVisited: "yukiOS_steam_visited",
+  steamActiveTag: "yukiOS_steam_active_tag",
   achievementsDisabled: "yukiOS_achievements_disabled",
   steamSettings: "yukiOS_steam_settings",
   windowSessionPersistence: "yukiOS_window_session_persistence",

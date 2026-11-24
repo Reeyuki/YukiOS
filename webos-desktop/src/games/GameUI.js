@@ -542,6 +542,30 @@ export class GameUI {
       e.preventDefault();
       e.stopPropagation();
       const appId = card.dataset.app;
+      const cardUrl = card.dataset.url || null;
+      if (cardUrl) {
+        const title =
+          card.querySelector(".steam-game-title")?.textContent || appId;
+        const gameId = cardUrl
+          .split("?")[0]
+          .replace(/\/index\.html$/, "")
+          .replace(/\.html$/, "")
+          .split("/")
+          .filter(Boolean)
+          .pop()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "");
+        const analyticsBase = getAnalyticsBase(gameId);
+        this.showContextMenu(e, appId, container, () => {
+          sendLaunchAnalytics(gameId);
+          os.app.launchGame(gameId, false, {
+            source: cardUrl,
+            originalName: title,
+            analyticsBase,
+          });
+        });
+        return;
+      }
       this.showContextMenu(e, appId, container, onLaunch);
     });
 
@@ -1130,8 +1154,10 @@ export class GameUI {
     sidebarSearch.addEventListener("input", () => {
       const query = sidebarSearch.value.toLowerCase().trim();
       const sidebarList = container.querySelector(".sidebar-game-list");
+      const gameRenderer = this.renderer.gameRenderer;
 
       if (!query) {
+        gameRenderer.searchQuery = "";
         this.renderSidebarChunked(container, visibleGames, onLaunch);
         this.appendArchiveSidebarGames(container, onLaunch);
         const gridCards = container.querySelectorAll(".steam-game-card");
@@ -1140,6 +1166,8 @@ export class GameUI {
         });
         return;
       }
+
+      gameRenderer.searchQuery = query;
 
       const matchedGames = visibleGames.filter((g) =>
         g.title.toLowerCase().includes(query),
@@ -1190,6 +1218,8 @@ export class GameUI {
           .textContent.toLowerCase();
         card.style.display = title.includes(query) ? "" : "none";
       });
+
+      gameRenderer.expandSectionsMatchingQuery(container);
     });
 
     this.renderSidebarChunked(container, visibleGames, onLaunch);

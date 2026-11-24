@@ -29,7 +29,8 @@
     "electron:build": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --config",
     "electron:build:win": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --win --config",
     "electron:build:linux": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --linux --config",
-    "electron:build:mac": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --mac --config"
+    "electron:build:mac": "pnpm build:electron && node -e \"require('fs').existsSync('dist/favicon.ico')&&require('fs').unlinkSync('dist/favicon.ico')\" && electron-builder --mac --config",
+    "build:archive-games": "node scripts/buildArchiveGames.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -38,6 +39,7 @@
     "electron-builder": "^25.1.8",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
+    "playwright": "^1.65.1",
     "prettier": "^3.9.6",
     "rollup-plugin-visualizer": "^7.1.1",
     "sharp": "^0.33.4",

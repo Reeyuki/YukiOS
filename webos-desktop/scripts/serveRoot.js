@@ -117,6 +117,7 @@ const mimeTypes = {
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Cross-Origin-Resource-Policy": "cross-origin",
   "Access-Control-Allow-Methods":
     "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "*",

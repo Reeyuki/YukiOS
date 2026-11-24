@@ -227,14 +227,6 @@ export function getRuntimeInfo() {
 
 export const EXTERNAL_SERVICES = [
   {
-    name: "Infared",
-    detail: "Alternative YouTube frontend",
-    credit: "by maacy",
-    contact: "ihatecamouflage@hotmail.com",
-    url: "https://youtube-liard-ten.vercel.app/",
-    icon: "static/icons/favicons/youtube.webp",
-  },
-  {
     name: "CraxGPT",
     detail: "Free AI chat backend",
     credit: "by Crax",

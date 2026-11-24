@@ -51,7 +51,6 @@ import { RemoteHostApp } from "./apps/RemoteHostApp.js";
 import { IntroTourApp } from "./apps/introTour.js";
 import { ModeSwitcherApp } from "./apps/modeSwitcher.js";
 import { AquariumApp } from "./apps/aquarium.js";
-import { InfaredYoutubeApp } from "./apps/infaredYoutube.js";
 import { BoxedWineApp } from "./apps/boxedWine.js";
 import { CodeRedApp } from "./apps/codeRed.js";
 import { ClippyApp } from "./apps/clippy.js";
@@ -102,8 +101,6 @@ const APP_CLASS_MAP = {
   notepadApp: NotepadApp,
   modeSwitcherApp: ModeSwitcherApp,
   aquariumApp: AquariumApp,
-  infaredYoutubeApp: InfaredYoutubeApp,
-
   lavatApp: LavatApp,
   btopApp: BtopApp,
   cmatrixApp: CmatrixApp,

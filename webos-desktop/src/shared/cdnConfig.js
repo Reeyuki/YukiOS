@@ -7,7 +7,7 @@ export const CDN_CONFIG = {
           "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@main",
         ),
         archiveBase: resolveGhUrl(
-          "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@1a4843dd9c0eb267d802625234e54fd6f9a6c9b7",
+          "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios-games@642364dd3a8fceaa3552ac6d782a9b8a544b8f52",
         ),
         ref: "main",
       };

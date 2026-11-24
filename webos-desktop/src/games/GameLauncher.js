@@ -4,6 +4,7 @@ import {
   fetchGamePlayCounts,
   getCachedPlayCounts,
 } from "../analytics.js";
+import { gameMatchesTag } from "./gameTags.js";
 import { CDN_CONFIG } from "../shared/cdnConfig.js";
 import {
   lazyImg,
@@ -223,6 +224,16 @@ export class GameLauncher {
         return { appId, title: name, url: fullUrl, thumb };
       });
 
+      const activeTag = this.renderer.activeTag || "";
+      const renderGames = activeTag
+        ? this.renderer.archiveGamesCache.filter((g) =>
+            gameMatchesTag(g, activeTag),
+          )
+        : this.renderer.archiveGamesCache;
+
+      const archiveExpanded =
+        isExpanded || (renderGames.length > 0 && Boolean(activeTag));
+
       const CHUNK = 50;
       let archiveIndex = 0;
 
@@ -255,11 +266,34 @@ export class GameLauncher {
 
       renderArchiveChunk();
 
-      const cards = this.renderer.archiveGamesCache
-        .map(({ appId, title, url: fullUrl, thumb }) => {
-          const normalizedApp = appId.toLowerCase().trim();
-          const playCount = this.playCounts[normalizedApp] || 0;
-          return `
+      placeholder.innerHTML = `
+        <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: var(--text-secondary);"></i>
+          <div class="steam-section-title">${sectionTitle}</div>
+          <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
+          <span style="font-size: 11px; color: var(--text-secondary); margin-left: 8px;">${renderGames.length} games</span>
+        </div>
+        <div class="steam-game-grid steam-archive-grid" style="display: ${archiveExpanded ? "grid" : "none"}"></div>
+      `;
+
+      const gridEl = placeholder.querySelector(".steam-archive-grid");
+      if (archiveExpanded && gridEl) {
+        gridEl.style.display = "grid";
+      }
+      const CARD_CHUNK = 40;
+      let gridIndex = 0;
+      const renderChunk = (deadline) => {
+        let hasBudget =
+          !deadline || gridIndex === 0 || deadline.timeRemaining() > 1;
+        while (gridIndex < renderGames.length && hasBudget) {
+          const end = Math.min(gridIndex + CARD_CHUNK, renderGames.length);
+          const tmp = document.createElement("div");
+          tmp.innerHTML = renderGames
+            .slice(gridIndex, end)
+            .map(({ appId, title, url: fullUrl, thumb }) => {
+              const normalizedApp = appId.toLowerCase().trim();
+              const playCount = this.playCounts[normalizedApp] || 0;
+              return `
           <div class="steam-game-card steam-archive-card" data-app="${appId}" data-url="${fullUrl}" title="${title}">
             <div class="steam-game-img-wrap">
               ${
@@ -274,22 +308,21 @@ export class GameLauncher {
             </div>
             <div class="steam-game-title">${title}</div>
           </div>`;
-        })
-        .join("");
-
-      placeholder.innerHTML = `
-        <div class="steam-section-header" id="${sectionId}" data-title="${sectionTitle}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <i class="fas ${isExpanded ? "fa-chevron-down" : "fa-chevron-right"}" style="font-size: 10px; color: var(--text-secondary);"></i>
-          <div class="steam-section-title">${sectionTitle}</div>
-          <div style="height: 1px; flex: 1; background: var(--glass); margin-left: 10px;"></div>
-          <span style="font-size: 11px; color: var(--text-secondary); margin-left: 8px;">${allGames.length} games</span>
-        </div>
-        <div class="steam-game-grid steam-archive-grid" style="display: ${isExpanded ? "grid" : "none"}">
-          ${cards}
-        </div>
-      `;
-
-      observeLazyImages(placeholder);
+            })
+            .join("");
+          gridEl.append(...tmp.children);
+          observeLazyImages(gridEl);
+          gridIndex = end;
+          if (!deadline) break;
+          hasBudget = deadline.timeRemaining() > 1;
+        }
+        if (gridIndex < renderGames.length) {
+          requestIdleCallback(renderChunk, { timeout: 500 });
+        }
+      };
+      if (archiveExpanded && gridEl) {
+        requestIdleCallback(renderChunk, { timeout: 500 });
+      }
 
       placeholder.querySelector(".steam-section-header").onclick = () => {
         SteamDataManager.toggleCollapsed(sectionTitle);
@@ -298,124 +331,14 @@ export class GameLauncher {
         const nowExpanded =
           SteamDataManager.getCollapsed().includes(sectionTitle);
         grid.style.display = nowExpanded ? "grid" : "none";
+        if (nowExpanded && grid.children.length === 0) {
+          requestIdleCallback(renderChunk, { timeout: 500 });
+        }
         if (icon) {
           icon.className = `fas ${nowExpanded ? "fa-chevron-down" : "fa-chevron-right"}`;
           icon.style.cssText = "font-size: 10px; color: var(--text-secondary);";
         }
       };
-
-      const popover = container.querySelector(".steam-game-popover");
-      const stats = SteamDataManager.getStats();
-
-      placeholder.querySelectorAll(".steam-archive-card").forEach((card) => {
-        const appId = card.dataset.app;
-        const cardUrl = card.dataset.url;
-        const cardTitle =
-          card.querySelector(".steam-game-title")?.textContent || appId;
-        const thumbImg =
-          card.querySelector("img")?.dataset.src ||
-          card.querySelector("img")?.src ||
-          "";
-        const archiveGame = {
-          appId,
-          title: cardTitle,
-          url: cardUrl,
-          thumb: thumbImg,
-        };
-
-        card.addEventListener("click", () => {
-          popover.style.display = "none";
-          steamAudio.playSelect();
-          this.renderer.gameRenderer.renderArchiveGameOverview(
-            container,
-            archiveGame,
-            onLaunch,
-          );
-        });
-
-        card.addEventListener("dblclick", async () => {
-          const gameId = cardUrl
-            .split("?")[0]
-            .replace(/\/index\.html$/, "")
-            .replace(/\.html$/, "")
-            .split("/")
-            .filter(Boolean)
-            .pop()
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "");
-          const analyticsBase = getAnalyticsBase(gameId);
-          sendLaunchAnalytics(gameId);
-          await os.app.launchGame(gameId, false, {
-            source: cardUrl,
-            originalName: cardTitle,
-            analyticsBase,
-          });
-        });
-
-        card.oncontextmenu = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const gameId = cardUrl
-            .split("?")[0]
-            .replace(/\/index\.html$/, "")
-            .replace(/\.html$/, "")
-            .split("/")
-            .filter(Boolean)
-            .pop()
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "");
-          const analyticsBase = getAnalyticsBase(gameId);
-          this.renderer.gameUI.showContextMenu(e, appId, container, () => {
-            sendLaunchAnalytics(gameId);
-            os.app.launchGame(gameId, false, {
-              source: cardUrl,
-              originalName: cardTitle,
-              analyticsBase,
-            });
-          });
-        };
-
-        card.addEventListener("mouseenter", () => {
-          steamAudio.playHover();
-          const rect = card.getBoundingClientRect();
-          const totalMin = Number(stats[appId]?.totalMin) || 0;
-          const recentMin = SteamDataManager.getRecentMinutes(appId);
-
-          popover.innerHTML = `
-            <img class="popover-banner" src="${thumbImg}" />
-            <div class="popover-content">
-              <div class="popover-title">${cardTitle}</div>
-              <div class="popover-stats">
-                <div class="popover-stat-item">
-                  <span class="popover-stat-label">Last two weeks:</span>
-                  <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(recentMin)}</span>
-                </div>
-                <div class="popover-stat-item">
-                  <span class="popover-stat-label">Total played:</span>
-                  <span class="popover-stat-value">${this.renderer.gameRenderer.formatTime(totalMin)}</span>
-                </div>
-              </div>
-            </div>
-          `;
-
-          popover.style.display = "block";
-          const containerRect = container.getBoundingClientRect();
-          popover.style.left = `${rect.right - containerRect.left + 10}px`;
-          popover.style.top = `${rect.top - containerRect.top}px`;
-
-          const popRect = popover.getBoundingClientRect();
-          if (popRect.right > window.innerWidth) {
-            popover.style.left = `${rect.left - popRect.width - 10}px`;
-          }
-          if (popRect.bottom > window.innerHeight) {
-            popover.style.top = `${window.innerHeight - popRect.height - 10}px`;
-          }
-        });
-
-        card.addEventListener("mouseleave", () => {
-          popover.style.display = "none";
-        });
-      });
     } catch (err) {
       console.error("Archive load failed:", err);
       placeholder.innerHTML = `<div style="color:var(--text-secondary);font-size:13px;padding:10px 0;">Failed to load archive games.</div>`;

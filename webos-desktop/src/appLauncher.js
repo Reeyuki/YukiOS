@@ -14,6 +14,7 @@ import { getLibraryUrl } from "./shared/cdnConfig.js";
 import { StorageKeys, os, $ } from "./framework.js";
 import { buildPlayerConfig } from "./ruffle/ruffleSettings.js";
 import { getWispUrl } from "./shared/wispConfig.js";
+import { toIsolatedUrl } from "./shared/isolatedEmbed.js";
 import { parseBool } from "./utils/utils.js";
 import {
   fetchHtmlAsBlobUrl,
@@ -371,7 +372,9 @@ export class AppLauncher {
       game: async () => {
         let source = info.url;
 
-        if (info?.scramjetEnabled) {
+        if (info?.isolated) {
+          source = await toIsolatedUrl(source);
+        } else if (info?.scramjetEnabled) {
           const wispUrl = getWispUrl();
           source = `/sapps/set-template.html?wisp=${encodeURIComponent(wispUrl)}&target=${encodeURIComponent(info.url)}`;
         } else if (
@@ -414,6 +417,7 @@ export class AppLauncher {
           source,
           originalName: app,
           analyticsBase,
+          ...(info?.isolated ? { externalUrl: info.url } : {}),
           ...appExtra,
         });
       },
@@ -705,6 +709,7 @@ player.load("${swfPath}");
 
       if (type === "game") {
         const displayTitle = this.appMap[appId]?.title || originalName;
+        const shareUrl = extra.externalUrl || resolvedSource;
         const isGame = this.isTransparencyBlocked(appId, { type });
         const gameIcon = this.appMap[appId]?.icon || "fas fa-gamepad";
         const resolvedGameIcon = resolveIconUrl(gameIcon);
@@ -756,7 +761,7 @@ player.load("${swfPath}");
 
         Object.assign(win.dataset, {
           appType: type,
-          externalUrl: resolvedSource || "",
+          externalUrl: shareUrl || "",
           appId: appId || "",
           swf: type === "swf" ? source : "",
           isGame,
@@ -773,7 +778,7 @@ player.load("${swfPath}");
             gameIconHtml,
             displayTitle,
             overlayBtnHtml,
-            os.window.getWindowControls(resolvedSource, true),
+            os.window.getWindowControls(shareUrl, true),
           )}
           <div class="window-content" style="width:100%; height:100%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1a1a;">
             <div class="modern-loader">
@@ -794,7 +799,7 @@ player.load("${swfPath}");
           });
 
         win.querySelector(".external-btn")?.addEventListener("click", () => {
-          window.open(resolvedSource, "blank");
+          window.open(shareUrl, "blank");
         });
 
         if (resolvedSource.startsWith("blob:")) {

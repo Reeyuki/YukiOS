@@ -3,11 +3,20 @@ import { SteamDataManager } from "./games.js";
 import { popularityMap } from "./games.js";
 import { SteamSettings } from "./steamSettings.js";
 import { lazyImg, observeLazyImages } from "./games.js";
+import { GAME_TAGS, gameMatchesTag } from "./gameTags.js";
+import { os } from "../framework.js";
+import { StorageKeys } from "../StorageKeys.js";
 import { resolveIconHtml } from "../shared/iconUtils.js";
 import { resolveIconUrl } from "../shared/assetResolver.js";
 import { getEffectiveIcon } from "../shared/iconPack.js";
 import { fetchGamePlayCounts, getCachedPlayCounts } from "../analytics.js";
-import { $, $$, createElement } from "../shared/domUtils.js";
+import { $, $$, createElement, bindEvent } from "../shared/domUtils.js";
+import {
+  renderSelectMenu,
+  bindSelectMenu,
+  getSelectMenuValue,
+  setSelectMenuValue,
+} from "../shared/selectMenu.js";
 import {
   injectAdsterraAd,
   injectNativeAd,
@@ -24,6 +33,14 @@ import {
   buildAvatarStrip,
 } from "./steamOverviewData.js";
 
+const SORT_OPTIONS = [
+  { value: "relevant", label: "Relevant" },
+  { value: "popularity", label: "Popularity" },
+  { value: "alphabetical", label: "Alphabetical" },
+  { value: "hours", label: "Hours Played" },
+  { value: "lastPlayed", label: "Last Played" },
+];
+
 function getPapirusHtml(papirus, style) {
   const eff = getEffectiveIcon(papirus);
   if (eff.startsWith("papirus:"))
@@ -37,6 +54,63 @@ export class GameRenderer {
   constructor(renderer) {
     this.renderer = renderer;
     this.playCounts = getCachedPlayCounts();
+    this.activeTag = os.storage.get(StorageKeys.steamActiveTag) || "";
+    this.renderer.activeTag = this.activeTag;
+    this.searchQuery = "";
+    this.currentSections = [];
+  }
+
+  shouldAutoExpandSection(title, games) {
+    if (!games || games.length === 0) return false;
+    if (this.activeTag) return true;
+    const query = (this.searchQuery || "").trim().toLowerCase();
+    if (!query) return false;
+    return (
+      title.toLowerCase().includes(query) ||
+      games.some((g) => g.title.toLowerCase().includes(query))
+    );
+  }
+
+  dropAllGamesOverlap(sections) {
+    const activeTagLabel = this.activeTag
+      ? GAME_TAGS.find((t) => t.id === this.activeTag)?.label
+      : "";
+    if (!activeTagLabel) return;
+    const tagSection = sections.find((s) => s.title === activeTagLabel);
+    const allGamesSection = sections.find((s) => s.title === "All Games");
+    if (!tagSection || !allGamesSection) return;
+    const shown = new Set(tagSection.games.map((g) => g.app));
+    allGamesSection.games = allGamesSection.games.filter(
+      (g) => !shown.has(g.app),
+    );
+    if (allGamesSection.games.length === 0) {
+      sections.splice(sections.indexOf(allGamesSection), 1);
+    }
+  }
+
+  expandSectionsMatchingQuery(container) {
+    const query = (this.searchQuery || "").trim().toLowerCase();
+    if (!query || !this.currentSections) return;
+    const sectionsHost = container.querySelector("#steam-sections-host");
+    if (!sectionsHost) return;
+    this.currentSections.forEach(({ title, games }) => {
+      const matching = games.filter((g) =>
+        g.title.toLowerCase().includes(query),
+      );
+      if (matching.length === 0) return;
+      const wrapper = Array.from(
+        sectionsHost.querySelectorAll("[data-section-wrapper]"),
+      ).find((el) => el.dataset.sectionWrapper === title);
+      if (!wrapper) return;
+      const grid = wrapper.querySelector(".steam-game-grid");
+      const header = wrapper.querySelector(".steam-section-header");
+      if (grid && header && grid.style.display === "none") {
+        grid.style.display = "grid";
+        const icon = header.querySelector("i");
+        if (icon) icon.className = "fas fa-chevron-down";
+        this.fillGridLazy(grid, matching);
+      }
+    });
   }
 
   loadPlayCounts() {
@@ -563,8 +637,15 @@ export class GameRenderer {
     const settings = SteamSettings.load();
     const showRecent = settings.recentlyPlayedRow !== false;
 
+    const visibleGames = this.activeTag
+      ? sortedGames.filter((g) => gameMatchesTag(g, this.activeTag))
+      : sortedGames;
+    const filteredByTag = this.activeTag
+      ? filteredGames.filter((g) => gameMatchesTag(g, this.activeTag))
+      : filteredGames;
+
     const recentGames = showRecent
-      ? filteredGames
+      ? filteredByTag
           .filter((g) => stats[g.app]?.lastPlayed)
           .sort((a, b) => stats[b.app].lastPlayed - stats[a.app].lastPlayed)
           .slice(0, 5)
@@ -577,19 +658,17 @@ export class GameRenderer {
 
     const shellHtml = `
       <div class="steam-grid-controls-bar" style="margin-bottom: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
-        <div class="steam-grid-filters" style="display: flex; align-items: center; gap: 15px;">
+        <div class="steam-grid-filters">
           <span class="steam-control-label">Sort by</span>
-          <select class="steam-sort-select">
-            <option value="relevant" ${this.renderer.sortBy === "relevant" ? "selected" : ""}>Relevant</option>
-            <option value="popularity" ${this.renderer.sortBy === "popularity" ? "selected" : ""}>Popularity</option>
-            <option value="alphabetical" ${this.renderer.sortBy === "alphabetical" ? "selected" : ""}>Alphabetical</option>
-            <option value="hours" ${this.renderer.sortBy === "hours" ? "selected" : ""}>Hours Played</option>
-            <option value="lastPlayed" ${this.renderer.sortBy === "lastPlayed" ? "selected" : ""}>Last Played</option>
-          </select>
+          ${renderSelectMenu("steam-sort-select", SORT_OPTIONS, this.renderer.sortBy, "steam-sort-menu")}
           <button class="steam-sort-order-btn">
             <i class="fas ${this.renderer.sortReverse ? "fa-sort-amount-up" : "fa-sort-amount-down"}"></i>
           </button>
         </div>
+      </div>
+      <div class="steam-tag-filters" aria-label="Filter by tag">
+        <button class="steam-tag-chip${this.activeTag === "" ? " active" : ""}" data-tag=""><i class="fas fa-gamepad"></i>All games</button>
+        ${GAME_TAGS.map((t) => `<button class="steam-tag-chip${this.activeTag === t.id ? " active" : ""}" data-tag="${t.id}"><i class="${t.icon}"></i>${t.label}</button>`).join("")}
       </div>
       <div class="store-ad-block"><div class="store-ad-label">Advertisement</div><div id="ad-library-top"></div></div>
       <div class="steam-yukios-content">
@@ -615,45 +694,54 @@ export class GameRenderer {
           </div>
         </div>
         <div id="steam-sections-host" style="min-height:200px;content-visibility:auto"></div>
+        <div class="steam-tag-empty" ${visibleGames.length ? 'style="display:none"' : ""}>No games match this filter</div>
         <div class="store-ad-block" style="margin-top:20px;"><div class="store-ad-label">Advertisement</div><div id="ad-library-bottom"></div></div>
       </div>
     `;
 
     target.innerHTML = shellHtml;
 
+    target.querySelectorAll(".steam-tag-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        this.activeTag = chip.getAttribute("data-tag") || "";
+        this.renderer.activeTag = this.activeTag;
+        os.storage.set(StorageKeys.steamActiveTag, this.activeTag);
+        this.renderGrid(container, onLaunch, focusCollection);
+      });
+    });
+
     const sectionsHost = target.querySelector("#steam-sections-host");
 
-    const webIds = collections["Webports/Html games"] || [];
-    const flashIds = collections["Flash Games"] || [];
+    const tagSections = GAME_TAGS.map((t) => ({
+      title: t.label,
+      games: visibleGames.filter((g) => gameMatchesTag(g, t.id)),
+    }));
 
     const sections = [
       { title: "Recent", games: recentGames },
       {
         title: "Favorites",
-        games: sortedGames.filter((g) => favorites.includes(g.app)),
+        games: visibleGames.filter((g) => favorites.includes(g.app)),
       },
-      {
-        title: "Webports/Html games",
-        games: sortedGames.filter((g) => webIds.includes(g.app)),
-      },
-      {
-        title: "Flash Games",
-        games: sortedGames.filter((g) => flashIds.includes(g.app)),
-      },
+      ...tagSections,
       ...Object.entries(collections)
         .filter(
           ([name]) => name !== "Webports/Html games" && name !== "Flash Games",
         )
         .map(([name, ids]) => ({
           title: name,
-          games: sortedGames.filter((g) => ids.includes(g.app)),
+          games: visibleGames.filter((g) => ids.includes(g.app)),
         })),
-      { title: "All Games", games: sortedGames },
+      { title: "All Games", games: visibleGames },
     ].filter((s) => s.games.length > 0);
+
+    this.dropAllGamesOverlap(sections);
+    this.currentSections = sections;
 
     sections.forEach(({ title, games }) => {
       const sectionId = `steam-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
-      const isExpanded = collapsed.includes(title);
+      const isExpanded =
+        collapsed.includes(title) || this.shouldAutoExpandSection(title, games);
       const wrapper = createElement("div");
       wrapper.dataset.sectionWrapper = title;
       wrapper.innerHTML = `
@@ -703,16 +791,18 @@ export class GameRenderer {
 
     this.renderer.attachGridDelegation(container, onLaunch);
 
-    const sortSelect = target.querySelector(".steam-sort-select");
-    const sortBtn = target.querySelector(".steam-sort-order-btn");
+    const sortSelect = $("#steam-sort-select", target);
+    const sortBtn = $(".steam-sort-order-btn", target);
     if (sortSelect) {
-      sortSelect.addEventListener("change", () => {
-        this.renderer.sortBy = sortSelect.value;
+      setSelectMenuValue("steam-sort-select", this.renderer.sortBy, target);
+      bindSelectMenu(target);
+      bindEvent(sortSelect, "change", () => {
+        this.renderer.sortBy = getSelectMenuValue("steam-sort-select", target);
         this.renderGrid(container, onLaunch, focusCollection);
       });
     }
     if (sortBtn) {
-      sortBtn.addEventListener("click", () => {
+      bindEvent(sortBtn, "click", () => {
         this.renderer.sortReverse = !this.renderer.sortReverse;
         this.renderGrid(container, onLaunch, focusCollection);
       });

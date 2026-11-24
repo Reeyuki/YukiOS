@@ -523,7 +523,6 @@ top.
 - Scramjet / BareMux / Epoxy Transport
 - [Pyodide](https://github.com/pyodide/pyodide) (WASM Python runtime)
 - [WebContainers](https://github.com/stackblitz/webcontainer-core) (WASM Node.js runtime)
-- [Infared](https://youtube-liard-ten.vercel.app/) Alternative YouTube frontend by maacy on Discord, contact ihatecamouflage@hotmail.com. Used with permission. All rights reserved.
 - [CraxGPT](https://gpt.crax.lol) Free AI chat backend powering the YukiOS assistant.
 - [Nodium Roblox Studio](https://studio.nodium.lol) and [Nodium Roblox Player](https://player.nodium.lol) Roblox webports.
 - [Azerun](https://azerun.com/play/) World of Warcraft in the browser.

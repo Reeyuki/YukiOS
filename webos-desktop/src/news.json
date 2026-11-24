@@ -1,5 +1,49 @@
 [
   {
+    "date": "November 24, 2026",
+    "label": "Game Loading Fixes",
+    "sections": [
+      {
+        "icon": "fas fa-gamepad",
+        "title": "Game Loading Fixes",
+        "items": [
+          [
+            "fas fa-layer-group",
+            "Isolated Game Windows",
+            "Play Angry Birds, Katana Zero and other threaded ports inside YukiOS windows."
+          ],
+          [
+            "fas fa-link",
+            "Direct Game Sources",
+            "Hundreds of catalog games load from their original source without a proxy."
+          ],
+          [
+            "fas fa-server",
+            "Working Proxy Server",
+            "Proxied apps and games use a responsive default Wisp server."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "date": "November 18, 2026",
+    "label": "Game Library Expansion",
+    "sections": [
+      {
+        "icon": "fas fa-tags",
+        "title": "Tag Filters",
+        "items": [
+          [
+            "fas fa-filter",
+            "Steam Grid Tag Filters",
+            "Filter the Steam library grid by tag: Ports, Flash, Emulators, FNF, IO."
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "date": "November 11, 2026",
     "label": "Desktop Particle Effects",
     "sections": [

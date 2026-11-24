@@ -1904,16 +1904,6 @@ export const APP_MANIFESTS = [
     windowSize: ["90vw", "85vh"],
   },
   {
-    serviceKey: "infaredYoutubeApp",
-    type: "system",
-    title: "Infared Youtube",
-    icon: `${CDN_BASE}/static/icons/favicons/youtube.webp`,
-    launchType: "instance",
-    windowIdPatterns: ["infared-youtube", "infrared-youtube"],
-    category: "media",
-    description: "Watch videos with Infared Youtube experience.",
-  },
-  {
     serviceKey: "boxedWineApp",
     enhanced: true,
     type: "system",

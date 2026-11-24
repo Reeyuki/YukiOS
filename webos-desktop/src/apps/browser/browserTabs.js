@@ -80,7 +80,7 @@ const YUKI_HOME_ICON =
   "https://gcore.jsdelivr.net/gh/NaoTomori1/YukiOS@main/static/icons/logo.png";
 const VIEWPORT_SANDBOX =
   "allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation-by-user-activation allow-modals";
-const FALLBACK_WISP = "wss://racialequityleadership.com/ws?reconnect=1";
+const FALLBACK_WISP = "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/";
 const MAX_HISTORY = 500;
 const MAX_CLOSED = 20;
 const MAX_SUGGEST = 8;

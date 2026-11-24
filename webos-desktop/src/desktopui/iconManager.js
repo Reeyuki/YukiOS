@@ -59,11 +59,6 @@ const HARDCODED_DESKTOP_ICONS = [
     icon: "papirus:apps/preferences-desktop-gaming",
   },
   {
-    app: "infaredYoutubeApp",
-    name: "Infared Youtube",
-    icon: "https://gcore.jsdelivr.net/gh/NaoTomori1/yukios@main/static/icons/favicons/youtube.webp",
-  },
-  {
     app: "spriteFusionApp",
     name: "SpriteFusion Destroy",
     icon: "static/icons/spritefusion.ico",
